@@ -1,0 +1,24 @@
+﻿<Application x:Class="ClosetApp.UI.App"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <!-- 1. HandyControl 主题（放在最前，不覆盖我们的 Token） -->
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml"/>
+                <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
+
+                <!-- 2. Token 系统（定义所有 Design Token） -->
+                <ResourceDictionary Source="Themes/ButtonTokens.xaml"/>
+                <ResourceDictionary Source="Themes/Colors.xaml"/>
+
+                <!-- 3. 全局样式（依赖 Token） -->
+                <ResourceDictionary Source="Themes/Styles.xaml"/>
+                <ResourceDictionary Source="Themes/ButtonStyles.xaml"/>
+                <ResourceDictionary Source="Themes/PremiumCardStyles.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

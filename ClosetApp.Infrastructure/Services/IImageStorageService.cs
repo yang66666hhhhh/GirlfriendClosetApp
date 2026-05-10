@@ -1,0 +1,11 @@
+namespace ClosetApp.Infrastructure.Services;
+
+public interface IImageStorageService
+{
+    Task<string> SaveImageAsync(string sourcePath);
+    Task<string> SaveThumbnailAsync(string sourcePath, int maxSize = 200);
+    Task DeleteImageAsync(string imagePath);
+    Task DeleteImageWithThumbnailAsync(string imagePath);
+    string GetImageFullPath(string relativePath);
+    string GetThumbnailFullPath(string relativePath);
+}

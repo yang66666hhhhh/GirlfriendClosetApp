@@ -1,0 +1,184 @@
+<UserControl x:Class="ClosetApp.UI.Views.NavigationSidebar"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:sys="clr-namespace:System;assembly=mscorlib"
+             Width="220">
+    <UserControl.Resources>
+        <!-- ═══════════════════════════════════════
+             NAVIGATION DESIGN TOKENS
+             ═══════════════════════════════════════ -->
+
+        <!-- Sidebar Surface -->
+        <Color x:Key="SidebarBg">#FFFAF8F5</Color>
+        <SolidColorBrush x:Key="SidebarBgBrush" Color="{StaticResource SidebarBg}"/>
+        <Color x:Key="SidebarBorder">#FFF0EBE6</Color>
+        <SolidColorBrush x:Key="SidebarBorderBrush" Color="{StaticResource SidebarBorder}"/>
+
+        <!-- Accent (Primary) -->
+        <Color x:Key="Accent">#FFD9A299</Color>
+        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"/>
+        <Color x:Key="AccentLight">#FFF5EDE9</Color>
+        <SolidColorBrush x:Key="AccentLightBrush" Color="{StaticResource AccentLight}"/>
+        <Color x:Key="AccentDark">#FFC48B81</Color>
+        <SolidColorBrush x:Key="AccentDarkBrush" Color="{StaticResource AccentDark}"/>
+
+        <!-- Text -->
+        <Color x:Key="TextPrimary">#FF2D2926</Color>
+        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
+        <Color x:Key="TextSecondary">#FF9E958D</Color>
+        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
+        <Color x:Key="TextPlaceholder">#FFC8C0B8</Color>
+        <SolidColorBrush x:Key="TextPlaceholderBrush" Color="{StaticResource TextPlaceholder}"/>
+
+        <!-- Layout Tokens -->
+        <sys:Double x:Key="NavIconSize">22</sys:Double>
+        <Thickness x:Key="NavItemPadding">16,14</Thickness>
+        <CornerRadius x:Key="NavItemRadius">14</CornerRadius>
+        <sys:Double x:Key="NavHeight">52</sys:Double>
+
+        <!-- ═══════════════════════════════════════
+             NAV ITEM STYLE
+             ═══════════════════════════════════════ -->
+        <Style x:Key="NavItemStyle" TargetType="RadioButton">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="GroupName" Value="NavGroup"/>
+            <Setter Property="Height" Value="{StaticResource NavHeight}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="NavBg"
+                                Background="Transparent"
+                                CornerRadius="{StaticResource NavItemRadius}"
+                                Padding="{StaticResource NavItemPadding}"
+                                Margin="8,2">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="NavIcon"
+                                           Text="{TemplateBinding Tag}"
+                                           FontSize="{StaticResource NavIconSize}"
+                                           VerticalAlignment="Center"
+                                           Foreground="{TemplateBinding Foreground}"/>
+                                <TextBlock x:Name="NavText"
+                                           Text="{TemplateBinding Content}"
+                                           FontSize="14" FontWeight="Medium"
+                                           VerticalAlignment="Center"
+                                           Grid.Column="1"
+                                           Margin="12,0,0,0"
+                                           Foreground="{TemplateBinding Foreground}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="NavBg" Property="Background" Value="{StaticResource AccentLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="NavBg" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Collapse button style -->
+        <Style x:Key="CollapseBtnStyle" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPlaceholderBrush}"/>
+            <Setter Property="Width" Value="28"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBg" Background="Transparent" CornerRadius="14">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBg" Property="Background" Value="{StaticResource AccentLightBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- Main Sidebar Container -->
+    <Border Background="{StaticResource SidebarBgBrush}"
+            BorderBrush="{StaticResource SidebarBorderBrush}"
+            BorderThickness="0,0,1,0">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+
+            <!-- Logo / Brand Area -->
+            <StackPanel Grid.Row="0" Margin="20,28,20,24">
+                <TextBlock Text="👗 私人衣橱"
+                           FontSize="15" FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                <TextBlock x:Name="TxtClothingCount"
+                           Text="0 件衣服"
+                           FontSize="12"
+                           Foreground="{StaticResource TextPlaceholderBrush}"
+                           Margin="0,6,0,0"/>
+            </StackPanel>
+
+            <!-- Navigation Items -->
+            <StackPanel Grid.Row="1" Margin="0,4,0,0">
+                <RadioButton x:Name="NavWardrobe"
+                             Content="衣柜" Tag="👗"
+                             Style="{StaticResource NavItemStyle}"
+                             IsChecked="True"
+                             Checked="NavItem_Checked"/>
+                <RadioButton x:Name="NavOutfits"
+                             Content="搭配" Tag="✨"
+                             Style="{StaticResource NavItemStyle}"
+                             Checked="NavItem_Checked"/>
+                <RadioButton x:Name="NavTags"
+                             Content="标签" Tag="🏷"
+                             Style="{StaticResource NavItemStyle}"
+                             Checked="NavItem_Checked"/>
+
+                <!-- Divider -->
+                <Border Height="1"
+                        Background="{StaticResource SidebarBorderBrush}"
+                        Margin="20,16,20,16"
+                        Opacity="0.6"/>
+
+                <RadioButton x:Name="NavSettings"
+                             Content="设置" Tag="⚙"
+                             Style="{StaticResource NavItemStyle}"
+                             IsEnabled="False"
+                             Opacity="0.4"
+                             Checked="NavItem_Checked"/>
+            </StackPanel>
+
+            <!-- Collapse Button -->
+            <Grid Grid.Row="2" Margin="0,0,0,20">
+                <Button x:Name="BtnCollapse"
+                        Style="{StaticResource CollapseBtnStyle}"
+                        HorizontalAlignment="Right"
+                        Margin="0,0,12,0"
+                        Click="Collapse_Click">
+                    <Button.RenderTransform>
+                        <RotateTransform x:Name="CollapseRotate" Angle="0"/>
+                    </Button.RenderTransform>
+                    <TextBlock Text="◀" FontSize="11"
+                               Foreground="{StaticResource TextPlaceholderBrush}"/>
+                </Button>
+            </Grid>
+        </Grid>
+    </Border>
+</UserControl>

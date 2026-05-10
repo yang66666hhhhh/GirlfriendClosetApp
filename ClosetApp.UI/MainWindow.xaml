@@ -1,0 +1,51 @@
+<Window x:Class="ClosetApp.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:views="clr-namespace:ClosetApp.UI.Views"
+        xmlns:components="clr-namespace:ClosetApp.UI.Components"
+        xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
+        mc:Ignorable="d"
+        Title="我的衣橱"
+        Width="1400" Height="900"
+        MinWidth="1200" MinHeight="800"
+        WindowStartupLocation="CenterScreen"
+        WindowState="Normal">
+
+    <Window.Resources>
+        <conv:ImagePathConverter x:Key="ImagePathConverter"/>
+        <conv:BooleanToVisibilityConverter x:Key="BoolToVis"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVis"/>
+    </Window.Resources>
+
+    <Grid Background="#FFF6F3EE">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition x:Name="SidebarColumn" Width="220"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+
+        <!-- Sidebar -->
+        <views:NavigationSidebar x:Name="Sidebar"
+                                Grid.Column="0"
+                                NavigationChanged="Sidebar_NavigationChanged"
+                                CollapseStateChanged="Sidebar_CollapseStateChanged"/>
+
+        <!-- Content Area -->
+        <Border Grid.Column="1" Background="Transparent">
+            <views:ClothesTab x:Name="ClothesTabContent"
+                             Visibility="Visible"/>
+        </Border>
+
+        <!-- Hidden tabs -->
+        <views:OutfitsTab x:Name="OutfitsTabContent"
+                         Grid.Column="1"
+                         Visibility="Collapsed"/>
+        <views:TagsTab x:Name="TagsTabContent"
+                      Grid.Column="1"
+                      Visibility="Collapsed"/>
+
+        <!-- Global modal overlay layer -->
+        <components:ModalContainer x:Name="ModalHost" Grid.ColumnSpan="2"/>
+    </Grid>
+</Window>
