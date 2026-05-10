@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.Infrastructure.Data;
 
@@ -71,16 +72,27 @@ public class ClosetDbContext : DbContext
 
     private void SeedData(ModelBuilder modelBuilder)
     {
-        var styleTags = new[] { "韩系", "通勤", "可爱", "辣妹", "休闲" };
-        var sceneTags = new[] { "约会", "上班", "出游", "派对" };
-        var seasonTags = new[] { "春", "夏", "秋", "冬" };
+        var styleTags = new[] {
+            ("韩系", "#D8B7A3"),
+            ("极简", "#C8C2B8"),
+            ("通勤", "#B7C4B2"),
+            ("甜妹", "#E7C7C0"),
+            ("美式", "#C89B7B"),
+            ("复古", "#C4A98F"),
+            ("Clean Fit", "#A8B5A0"),
+            ("Y2K", "#D4A5C9")
+        };
+        var sceneTags = new[] {
+            ("约会", "#E88D8D"),
+            ("上班", "#8BA8D9"),
+            ("出游", "#A8D4A8"),
+            ("派对", "#D4A5E8")
+        };
 
         int id = 1;
-        foreach (var name in styleTags)
-            modelBuilder.Entity<Tag>().HasData(new Tag { Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"), Name = name, Color = "#667eea" });
-        foreach (var name in sceneTags)
-            modelBuilder.Entity<Tag>().HasData(new Tag { Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"), Name = name, Color = "#ec4899" });
-        foreach (var name in seasonTags)
-            modelBuilder.Entity<Tag>().HasData(new Tag { Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"), Name = name, Color = "#10b981" });
+        foreach (var (name, color) in styleTags)
+            modelBuilder.Entity<Tag>().HasData(new Tag { Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"), Name = name, Color = color, Category = TagCategory.Style });
+        foreach (var (name, color) in sceneTags)
+            modelBuilder.Entity<Tag>().HasData(new Tag { Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"), Name = name, Color = color, Category = TagCategory.Scene });
     }
 }

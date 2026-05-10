@@ -1,5 +1,6 @@
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 using ClosetApp.Domain.Interfaces;
 
 namespace ClosetApp.Application.Services;
@@ -16,6 +17,11 @@ public class TagService : ITagService
     public async Task<IEnumerable<Tag>> GetAllTagsAsync()
     {
         return await _repository.GetAllAsync();
+    }
+
+    public async Task<IEnumerable<Tag>> GetStyleTagsAsync()
+    {
+        return await _repository.GetByCategoryAsync(TagCategory.Style);
     }
 
     public async Task<Tag> AddTagAsync(Tag tag)

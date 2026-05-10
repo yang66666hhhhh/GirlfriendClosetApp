@@ -1,7 +1,8 @@
 <UserControl x:Class="ClosetApp.UI.Components.Clothing.ClothingEditorPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:hc="https://handyorg.github.io/handycontrol">
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             xmlns:tags="clr-namespace:ClosetApp.UI.Components.Tags.Controls">
 
     <UserControl.Resources>
         <SolidColorBrush x:Key="InputFocusBrush" Color="#FFD9A299"/>
@@ -324,22 +325,8 @@
                         <TextBox x:Name="TxtNotes" Tag="可选，写下你的感受..."
                                  Style="{StaticResource NotesInput}" Margin="0,0,0,20"/>
 
-                        <!-- 情绪标签 -->
-                        <TextBlock Text="情绪标签"
-                                   FontFamily="{StaticResource Font.Primary}"
-                                   FontSize="12" FontWeight="Medium"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   Margin="0,0,0,10"/>
-                        <WrapPanel x:Name="EmotionPanel" Margin="0,0,0,28">
-                            <ToggleButton Content="温柔风" Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
-                            <ToggleButton Content="通勤风" Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
-                            <ToggleButton Content="法式"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
-                            <ToggleButton Content="休闲"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
-                            <ToggleButton Content="运动"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
-                            <ToggleButton Content="约会"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
-                            <ToggleButton Content="度假"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
-                            <ToggleButton Content="甜美"   Style="{StaticResource EmotionTag}" Margin="0,0,0,8" Click="EmotionTag_Click"/>
-                        </WrapPanel>
+                         <!-- 风格标签 -->
+                         <tags:TagSelectionSection x:Name="TagSelection" Margin="0,0,0,28"/>
 
                         <!-- 喜欢程度 -->
                         <TextBlock Text="喜欢程度"

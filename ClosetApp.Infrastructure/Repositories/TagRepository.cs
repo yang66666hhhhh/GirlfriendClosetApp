@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 using ClosetApp.Domain.Interfaces;
 
 namespace ClosetApp.Infrastructure.Repositories;
@@ -21,6 +22,11 @@ public class TagRepository : ITagRepository
     public async Task<Tag?> GetByIdAsync(Guid id)
     {
         return await _context.Tags.FindAsync(id);
+    }
+
+    public async Task<IEnumerable<Tag>> GetByCategoryAsync(TagCategory category)
+    {
+        return await _context.Tags.Where(t => t.Category == category).ToListAsync();
     }
 
     public async Task AddAsync(Tag entity)

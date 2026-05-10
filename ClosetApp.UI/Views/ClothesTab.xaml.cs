@@ -1,8 +1,8 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
 using System.Windows.Media;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
@@ -17,7 +17,7 @@ public partial class ClothesTab : UserControl
     private readonly IClothingService _clothingService;
     private List<Clothing> _allClothes = new();
     private List<Clothing> _filteredClothes = new();
-    private IEnumerable<ClothingType>? _selectedCategories;
+    private IEnumerable<DisplayCategory>? _selectedCategories;
 
     public ClothesTab()
     {
@@ -25,6 +25,16 @@ public partial class ClothesTab : UserControl
         _clothingService = App.Services.GetRequiredService<IClothingService>();
         Loaded += (s, e) => _ = LoadClothesAsync();
     }
+
+    private static DisplayCategory ResolveDisplayCategory(Clothing c)
+    {
+        if (c.GarmentType.HasValue)
+            return ClothingMappings.GetDisplayCategory(c.GarmentType.Value);
+        return ClothingMappings.GetDisplayCategory(ClothingMappings.InferGarmentType(c.Type));
+    }
+
+    private static bool CategoryMatches(Clothing c, DisplayCategory cat)
+        => ResolveDisplayCategory(c) == cat;
 
     private async Task LoadClothesAsync()
     {
@@ -37,7 +47,7 @@ public partial class ClothesTab : UserControl
     {
         _filteredClothes = _selectedCategories == null
             ? _allClothes
-            : _allClothes.Where(c => _selectedCategories.Contains(c.Type)).ToList();
+            : _allClothes.Where(c => _selectedCategories.Any(cat => CategoryMatches(c, cat))).ToList();
         UpdateUI();
     }
 
@@ -105,11 +115,11 @@ public partial class ClothesTab : UserControl
         _selectedCategories = rb.Name switch
         {
             "ChipAll" => null,
-            "ChipTop" => new[] { ClothingType.Top, ClothingType.Outerwear },
-            "ChipBottom" => new[] { ClothingType.Bottom, ClothingType.Skirt },
-            "ChipDress" => new[] { ClothingType.Dress },
-            "ChipShoes" => new[] { ClothingType.Shoes },
-            "ChipAccessory" => new[] { ClothingType.Accessory },
+            "ChipTop" => new[] { DisplayCategory.Topwear },
+            "ChipBottom" => new[] { DisplayCategory.Bottom },
+            "ChipDress" => new[] { DisplayCategory.Dress },
+            "ChipShoes" => new[] { DisplayCategory.Footwear },
+            "ChipAccessory" => new[] { DisplayCategory.Accessory },
             _ => null
         };
         ApplyFilter();
@@ -119,14 +129,14 @@ public partial class ClothesTab : UserControl
     {
         var query = TxtSearch.Text.Trim().ToLower();
         _filteredClothes = string.IsNullOrEmpty(query)
-            ? (_selectedCategories == null ? _allClothes : _allClothes.Where(c => _selectedCategories.Contains(c.Type)).ToList())
+            ? (_selectedCategories == null ? _allClothes : _allClothes.Where(c => _selectedCategories.Any(cat => CategoryMatches(c, cat))).ToList())
             : _allClothes.Where(c =>
-                (_selectedCategories == null || _selectedCategories.Contains(c.Type)) &&
+                (_selectedCategories == null || _selectedCategories.Any(cat => CategoryMatches(c, cat))) &&
                 (c.Name.ToLower().Contains(query) ||
                  c.Type.ToString()!.ToLower().Contains(query) ||
                  c.Season.ToString()!.ToLower().Contains(query) ||
-                 (c.Color?.ToLower() ?? "").Contains(query))
-            ).ToList();
+                 (c.Color?.ToLower() ?? "").Contains(query)))
+            .ToList();
 
         TxtCount.Text = $"{_filteredClothes.Count} 件";
         ClothesList.ItemsSource = _filteredClothes;

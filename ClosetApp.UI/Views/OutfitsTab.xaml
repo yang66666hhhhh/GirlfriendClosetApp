@@ -10,7 +10,7 @@
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
 
         <DataTemplate x:Key="OutfitCardTemplate">
-            <outfit:OutfitCard Margin="12"/>
+            <outfit:OutfitCard Margin="12" Outfit="{Binding}"/>
         </DataTemplate>
     </UserControl.Resources>
 
@@ -39,8 +39,7 @@
         <!-- Content -->
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="44,20">
             <ItemsControl x:Name="OutfitsList"
-                          ItemTemplate="{StaticResource OutfitCardTemplate}"
-                          Loaded="OutfitsList_Loaded">
+                          ItemTemplate="{StaticResource OutfitCardTemplate}">
                 <ItemsControl.ItemsPanel>
                     <ItemsPanelTemplate>
                         <WrapPanel/>

@@ -5,6 +5,8 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using OutfitScene = ClosetApp.Domain.Enums.OutfitScene;
 using Season = ClosetApp.Domain.Enums.Season;
+using ClosetApp.UI.Components.Outfit.Editor;
+using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Outfit.Controls;
 
@@ -51,9 +53,31 @@ public partial class OutfitCard : UserControl
         InitializeComponent();
         MouseEnter += OnMouseEnter;
         MouseLeave += OnMouseLeave;
-        BtnEdit.Click += (s, e) => RaiseEvent(new RoutedEventArgs(EditClickedEvent));
-        BtnDelete.Click += (s, e) => RaiseEvent(new RoutedEventArgs(DeleteClickedEvent));
+        BtnEdit.Click += (s, e) =>
+        {
+            if (Outfit != null)
+            {
+                var panel = new OutfitEditorPanel(Outfit);
+                panel.SaveCompleted += () => EditCompleted?.Invoke(this, Outfit);
+                panel.CloseRequested += () => ModalService.Instance.Hide();
+                ModalService.Instance.Show(panel);
+            }
+        };
+        BtnDelete.Click += (s, e) =>
+        {
+            if (Outfit == null) return;
+            var result = MessageBox.Show(
+                $"确定删除搭配「{Outfit.Name}」吗？",
+                "删除搭配",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (result == MessageBoxResult.Yes)
+                DeleteRequested?.Invoke(this, Outfit);
+        };
     }
+
+    public event EventHandler<OutfitEntity>? EditCompleted;
+    public event EventHandler<OutfitEntity>? DeleteRequested;
 
     private static void OnOutfitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {

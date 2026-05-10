@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
@@ -21,6 +22,7 @@ public partial class ClothingEditorPanel : UserControl
     private readonly bool _isEditMode;
     private readonly global::ClosetApp.Domain.Entities.Clothing? _existingClothing;
     private readonly IImageStorageService _imageStorage;
+    private readonly ITagService _tagService;
 
     private string? _selectedImagePath;
     private bool _imageChanged;
@@ -34,6 +36,7 @@ public partial class ClothingEditorPanel : UserControl
     {
         InitializeComponent();
         _imageStorage = App.Services.GetRequiredService<IImageStorageService>();
+        _tagService = App.Services.GetRequiredService<ITagService>();
         _isEditMode = false;
         Loaded += OnLoaded;
     }
@@ -47,6 +50,8 @@ public partial class ClothingEditorPanel : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
+        _ = LoadTagsAsync();
+
         var scaleX = new DoubleAnimation(0.96, 1, TimeSpan.FromMilliseconds(220))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
@@ -66,6 +71,14 @@ public partial class ClothingEditorPanel : UserControl
         };
         var translate = FormPanel.RenderTransform as TranslateTransform;
         translate?.BeginAnimation(TranslateTransform.YProperty, slideUp);
+    }
+
+    private async Task LoadTagsAsync()
+    {
+        var styleTags = await _tagService.GetStyleTagsAsync();
+        TagSelection.LoadTags(styleTags);
+        if (_isEditMode && _existingClothing != null)
+            TagSelection.Preselect(_existingClothing.ClothingTags.Select(ct => ct.Tag));
     }
 
     private void LoadData()
@@ -372,11 +385,6 @@ public partial class ClothingEditorPanel : UserControl
         };
     }
 
-    private void EmotionTag_Click(object sender, RoutedEventArgs e)
-    {
-        IsDirty = true;
-    }
-
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
         EditorCompleted?.Invoke(this, new ClothingEditorResult(ClothingEditorResultType.Cancelled));
@@ -425,6 +433,15 @@ public partial class ClothingEditorPanel : UserControl
             {
                 clothing.ImagePath = null;
             }
+
+            var tagExistingIds = clothing.ClothingTags.Select(x => x.TagId).ToHashSet();
+            var tagSelectedIds = TagSelection.SelectedTags.Select(t => t.Id).ToHashSet();
+            var toRemove = clothing.ClothingTags
+                .Where(x => !tagSelectedIds.Contains(x.TagId)).ToList();
+            foreach (var item in toRemove)
+                clothing.ClothingTags.Remove(item);
+            foreach (var id in tagSelectedIds.Except(tagExistingIds))
+                clothing.ClothingTags.Add(new ClothingTag { ClothingId = clothing.Id, TagId = id });
         }
         else
         {
@@ -451,7 +468,10 @@ public partial class ClothingEditorPanel : UserControl
                 Season = _selectedSeason,
                 ImagePath = imagePath,
                 FavoriteLevel = _favoriteLevel,
-                IsFavorite = _favoriteLevel >= 4
+                IsFavorite = _favoriteLevel >= 4,
+                ClothingTags = TagSelection.SelectedTags
+                    .Select(t => new ClothingTag { TagId = t.Id })
+                    .ToList()
             };
         }
 

@@ -1,3 +1,4 @@
+using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.Domain.Entities;
@@ -6,6 +7,7 @@ public class Clothing : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
     public ClothingType Type { get; set; }
+    public GarmentType? GarmentType { get; set; }
     public string? ImagePath { get; set; }
     public string? Color { get; set; }
     public string? Brand { get; set; }

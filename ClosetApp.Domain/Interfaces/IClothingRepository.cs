@@ -1,9 +1,8 @@
-using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.Domain.Interfaces;
 
-public interface IClothingRepository : IRepository<Clothing>
+public interface IClothingRepository : IRepository<global::ClosetApp.Domain.Entities.Clothing>
 {
-    Task<IEnumerable<Clothing>> GetByTypeAsync(ClothingType type);
+    Task<IEnumerable<global::ClosetApp.Domain.Entities.Clothing>> GetByTypeAsync(ClothingType type);
 }

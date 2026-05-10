@@ -40,7 +40,6 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task UpdateAsync(Outfit entity)
     {
-        _context.Outfits.Update(entity);
         await _context.SaveChangesAsync();
     }
 
