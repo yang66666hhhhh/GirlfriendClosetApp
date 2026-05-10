@@ -1,0 +1,452 @@
+<UserControl x:Class="ClosetApp.UI.Components.Clothing.ClothingEditorPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:hc="https://handyorg.github.io/handycontrol">
+
+    <UserControl.Resources>
+        <SolidColorBrush x:Key="InputFocusBrush" Color="#FFD9A299"/>
+        <SolidColorBrush x:Key="InputUnderlineBrush" Color="#FFE8E2DC"/>
+
+        <!-- Underline Input Style: 透明背景 + 底部线条 -->
+        <Style x:Key="UnderlineInput" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="Regular"/>
+            <Setter Property="Padding" Value="0,8,0,8"/>
+            <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border BorderBrush="{StaticResource InputUnderlineBrush}" BorderThickness="0,0,0,1" Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <TextBlock x:Name="Ph"
+                                           Text="{TemplateBinding Tag}"
+                                           Foreground="{StaticResource TextPlaceholderBrush}"
+                                           FontSize="13"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                                <ScrollViewer x:Name="PART_ContentHost"
+                                              VerticalAlignment="Center"
+                                              Focusable="false"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="Text" Value="">
+                                <Setter TargetName="Ph" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="Ph" Property="Foreground" Value="{StaticResource TextPlaceholderBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Notes Input: 多行 Underline -->
+        <Style x:Key="NotesInput" TargetType="TextBox" BasedOn="{StaticResource UnderlineInput}">
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="MinHeight" Value="60"/>
+        </Style>
+
+        <!-- Ghost Icon Button -->
+        <Style x:Key="GhostIconBtn" TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBg" Background="Transparent" CornerRadius="8" Padding="10,6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBg" Property="Background" Value="#22FFFFFF"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <!-- MODAL -->
+    <Border x:Name="Card"
+            MinWidth="760" MaxWidth="980"
+            MinHeight="620" MaxHeight="900"
+            Width="980" Height="720"
+            Background="{StaticResource SurfaceModalBrush}"
+            CornerRadius="24"
+            RenderTransformOrigin="0.5,0.5"
+            MouseLeftButtonDown="Card_MouseDown">
+        <Border.RenderTransform>
+            <ScaleTransform ScaleX="0.96" ScaleY="0.96"/>
+        </Border.RenderTransform>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="48" ShadowDepth="8" Opacity="0.10" Color="#40000000"/>
+        </Border.Effect>
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="72"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="60"/>
+            </Grid.RowDefinitions>
+
+            <!-- ═══ HEADER ═══ -->
+            <Grid Grid.Row="0" Margin="36,0,36,0">
+                <StackPanel x:Name="HeaderAdd" VerticalAlignment="Center">
+                    <TextBlock Text="添加新衣服"
+                               FontFamily="{StaticResource Font.Primary}"
+                               FontSize="26" FontWeight="Light"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock Text="记录今天喜欢的穿搭 ✨"
+                               FontFamily="{StaticResource Font.Primary}"
+                               FontSize="12" FontWeight="Regular"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                <StackPanel x:Name="HeaderEdit" VerticalAlignment="Center" Visibility="Collapsed">
+                    <TextBlock Text="编辑衣服"
+                               FontFamily="{StaticResource Font.Primary}"
+                               FontSize="26" FontWeight="Light"
+                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                    <TextBlock Text="修改衣服信息"
+                               FontFamily="{StaticResource Font.Primary}"
+                               FontSize="12" FontWeight="Regular"
+                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="0,4,0,0"/>
+                </StackPanel>
+                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Width="36" Height="36"
+                        Background="Transparent" Cursor="Hand"
+                        Click="Cancel_Click">
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="CloseBg" Background="Transparent" CornerRadius="18">
+                                <TextBlock Text="✕" FontSize="15"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="CloseBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </Grid>
+
+            <!-- ═══ BODY ═══ -->
+            <Grid Grid.Row="1" Margin="0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="58*"/>
+                    <ColumnDefinition Width="42*"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- ── HERO AREA ── -->
+                <Grid Grid.Column="0">
+                    <!-- 空状态 -->
+                    <Border x:Name="EmptyState"
+                            Background="{StaticResource SurfaceHeroBrush}"
+                            AllowDrop="True"
+                            DragEnter="ImageArea_DragEnter"
+                            DragLeave="ImageArea_DragLeave"
+                            Drop="ImageArea_Drop"
+                            MouseEnter="EmptyState_HoverEnter"
+                            MouseLeave="EmptyState_HoverLeave"
+                            MouseLeftButtonDown="Upload_Click"
+                            Cursor="Hand">
+                        <Grid>
+                            <!-- 径向柔和光晕 -->
+                            <Ellipse Width="400" Height="400"
+                                     HorizontalAlignment="Center" VerticalAlignment="Center"
+                                     Opacity="0.4">
+                                <Ellipse.Fill>
+                                    <RadialGradientBrush>
+                                        <GradientStop Color="#40D9A299" Offset="0"/>
+                                        <GradientStop Color="#00D9A299" Offset="1"/>
+                                    </RadialGradientBrush>
+                                </Ellipse.Fill>
+                            </Ellipse>
+
+                            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <!-- 中心 Icon -->
+                                <Border Width="72" Height="72"
+                                        CornerRadius="36"
+                                        Background="{StaticResource PrimaryLightBrush}"
+                                        HorizontalAlignment="Center" Margin="0,0,0,24">
+                                    <TextBlock Text="👕" FontSize="32"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+
+                                <TextBlock Text="上传你的穿搭"
+                                           FontFamily="{StaticResource Font.Primary}"
+                                           FontSize="17" FontWeight="Medium"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                                <TextBlock Text="拖拽或点击上传图片"
+                                           FontFamily="{StaticResource Font.Primary}"
+                                           FontSize="12" FontWeight="Regular"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           HorizontalAlignment="Center"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <!-- 上传后预览 -->
+                    <Border x:Name="PreviewState"
+                            Visibility="Collapsed"
+                            Background="Transparent"
+                            AllowDrop="True"
+                            DragEnter="ImageArea_DragEnter"
+                            DragLeave="ImageArea_DragLeave"
+                            Drop="ImageArea_Drop"
+                            MouseLeftButtonDown="Upload_Click"
+                            Cursor="Hand">
+                        <Grid>
+                            <Image x:Name="PreviewImage"
+                                   Stretch="Uniform"
+                                   RenderOptions.BitmapScalingMode="HighQuality"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+
+                            <!-- 底部操作栏 -->
+                            <Border VerticalAlignment="Bottom"
+                                    Background="#66000000"
+                                    Padding="16,10">
+                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                    <Button Content="移除"
+                                            Style="{StaticResource GhostIconBtn}"
+                                            Click="DeleteImage_Click"
+                                            Margin="0,0,8,0"/>
+                                    <Button Content="更换"
+                                            Style="{StaticResource GhostIconBtn}"
+                                            Click="Upload_Click"/>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- ── FORM AREA ── -->
+                <ScrollViewer Grid.Column="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel x:Name="FormPanel" Margin="36,28,36,40">
+
+                        <!-- 基础信息 -->
+                        <TextBlock Text="基础信息"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,16"/>
+
+                        <TextBlock Text="名称"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,6"/>
+                        <TextBox x:Name="TxtName" Tag="给它起个名字"
+                                 Style="{StaticResource UnderlineInput}" Margin="0,0,0,20"/>
+
+                        <!-- 分类 -->
+                        <TextBlock Text="分类"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,10"/>
+                         <WrapPanel x:Name="CategoryPanel" Margin="0,0,0,20">
+                            <RadioButton Content="👕 上装"    Tag="Top"       Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
+                            <RadioButton Content="👖 下装"    Tag="Bottom"    Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
+                            <RadioButton Content="👗 连衣裙"  Tag="Dress"     Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
+                            <RadioButton Content="👟 鞋子"    Tag="Shoes"     Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
+                            <RadioButton Content="👜 配饰"    Tag="Accessory" Style="{StaticResource CategoryChip}" Margin="0,0,0,8" Checked="Category_Checked"/>
+                        </WrapPanel>
+
+                        <!-- 季节 -->
+                        <TextBlock Text="季节"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,10"/>
+                        <WrapPanel x:Name="SeasonPanel" Margin="0,0,0,28">
+                            <RadioButton Content="🍃 春"  Tag="Spring"  Style="{StaticResource SeasonChip}" Margin="0,0,8,8" Checked="Season_Checked"/>
+                            <RadioButton Content="☀️ 夏"  Tag="Summer"  Style="{StaticResource SeasonChip}" Margin="0,0,8,8" Checked="Season_Checked"/>
+                            <RadioButton Content="🍂 秋"  Tag="Autumn"  Style="{StaticResource SeasonChip}" Margin="0,0,8,8" Checked="Season_Checked"/>
+                            <RadioButton Content="❄️ 冬"  Tag="Winter"  Style="{StaticResource SeasonChip}" Margin="0,0,0,8" Checked="Season_Checked"/>
+                        </WrapPanel>
+
+                        <!-- 风格与颜色 -->
+                        <TextBlock Text="风格与颜色"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,16"/>
+
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="颜色"
+                                           FontFamily="{StaticResource Font.Primary}"
+                                           FontSize="12" FontWeight="Medium"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBox x:Name="TxtColor" Tag="如：奶白、雾蓝"
+                                         Style="{StaticResource UnderlineInput}"/>
+                            </StackPanel>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="品牌"
+                                           FontFamily="{StaticResource Font.Primary}"
+                                           FontSize="12" FontWeight="Medium"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Margin="0,0,0,6"/>
+                                <TextBox x:Name="TxtBrand" Tag="可选"
+                                         Style="{StaticResource UnderlineInput}"/>
+                            </StackPanel>
+                        </Grid>
+
+                        <TextBlock Text="备注"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,6"/>
+                        <TextBox x:Name="TxtNotes" Tag="可选，写下你的感受..."
+                                 Style="{StaticResource NotesInput}" Margin="0,0,0,20"/>
+
+                        <!-- 情绪标签 -->
+                        <TextBlock Text="情绪标签"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="12" FontWeight="Medium"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,10"/>
+                        <WrapPanel x:Name="EmotionPanel" Margin="0,0,0,28">
+                            <ToggleButton Content="温柔风" Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
+                            <ToggleButton Content="通勤风" Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
+                            <ToggleButton Content="法式"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
+                            <ToggleButton Content="休闲"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
+                            <ToggleButton Content="运动"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
+                            <ToggleButton Content="约会"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
+                            <ToggleButton Content="度假"   Style="{StaticResource EmotionTag}" Margin="0,0,8,8" Click="EmotionTag_Click"/>
+                            <ToggleButton Content="甜美"   Style="{StaticResource EmotionTag}" Margin="0,0,0,8" Click="EmotionTag_Click"/>
+                        </WrapPanel>
+
+                        <!-- 喜欢程度 -->
+                        <TextBlock Text="喜欢程度"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="11" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,0,0,12"/>
+                        <StackPanel x:Name="FavoritePanel" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
+                            <RadioButton Tag="1" Style="{StaticResource LevelBtn}" Content="😐" Margin="0,0,10,0" Checked="FavLevel_Checked"/>
+                            <RadioButton Tag="2" Style="{StaticResource LevelBtn}" Content="🙂" Margin="0,0,10,0" Checked="FavLevel_Checked"/>
+                            <RadioButton Tag="3" Style="{StaticResource LevelBtn}" Content="😊" Margin="0,0,10,0" Checked="FavLevel_Checked"/>
+                            <RadioButton Tag="4" Style="{StaticResource LevelBtn}" Content="😍" Margin="0,0,10,0" Checked="FavLevel_Checked"/>
+                            <RadioButton Tag="5" Style="{StaticResource LevelBtn}" Content="🤩" Checked="FavLevel_Checked"/>
+                        </StackPanel>
+                        <TextBlock x:Name="TxtFavHint" Text="选一个表情吧"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="11" FontWeight="Regular"
+                                   Foreground="{StaticResource TextPlaceholderBrush}"
+                                   HorizontalAlignment="Center" Margin="0,0,0,8"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ═══ STICKY FOOTER ═══ -->
+            <Border Grid.Row="2" Background="{StaticResource SurfaceSectionBrush}">
+                <Grid Margin="36,0">
+                    <!-- 删除按钮：文字型，弱化 -->
+                    <Button x:Name="BtnDelete"
+                            Content="删除衣服"
+                            VerticalAlignment="Center"
+                            Background="Transparent"
+                            Foreground="{StaticResource DangerBrush}"
+                            FontFamily="{StaticResource Font.Primary}"
+                            FontSize="13" FontWeight="Medium"
+                            Cursor="Hand"
+                            Padding="0,8"
+                            Click="Delete_Click"
+                            HorizontalAlignment="Left"
+                            Visibility="Collapsed">
+                        <Button.Template>
+                            <ControlTemplate TargetType="Button">
+                                <Border x:Name="DelBg" Background="Transparent" CornerRadius="8" Padding="10,6">
+                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="DelBg" Property="Background" Value="{StaticResource DangerLightBrush}"/>
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Button.Template>
+                    </Button>
+
+                    <!-- 右侧按钮组 -->
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right" VerticalAlignment="Center">
+                        <Button Content="取消"
+                                Background="Transparent"
+                                Foreground="{StaticResource TextSecondaryBrush}"
+                                FontFamily="{StaticResource Font.Primary}"
+                                FontSize="14" FontWeight="Medium"
+                                Cursor="Hand" Padding="16,10"
+                                Margin="0,0,12,0"
+                                Click="Cancel_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="CancelBg" Background="Transparent" CornerRadius="10" Padding="16,10">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="CancelBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                        <Button Content="保存 ♥"
+                                Background="{StaticResource PrimaryBrush}"
+                                Foreground="White"
+                                FontFamily="{StaticResource Font.Primary}"
+                                FontSize="14" FontWeight="Medium"
+                                Cursor="Hand"
+                                MinWidth="140" Padding="24,11"
+                                Click="Save_Click">
+                            <Button.Template>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="SaveBg"
+                                            Background="{TemplateBinding Background}"
+                                            CornerRadius="12"
+                                            Padding="{TemplateBinding Padding}">
+                                        <Border.Effect>
+                                            <DropShadowEffect BlurRadius="20" ShadowDepth="3" Opacity="0.15" Color="#40D9A299" Direction="270"/>
+                                        </Border.Effect>
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="SaveBg" Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Button.Template>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

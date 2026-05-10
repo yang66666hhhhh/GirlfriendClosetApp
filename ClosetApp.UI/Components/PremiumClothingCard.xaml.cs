@@ -52,7 +52,7 @@ public partial class PremiumClothingCard : UserControl
         InitializeComponent();
         DataContextChanged += (s, e) =>
         {
-            if (e.NewValue is Clothing)
+            if (e.NewValue is global::ClosetApp.Domain.Entities.Clothing)
             {
                 _heightApplied = false;
                 ApplyCard();
@@ -63,7 +63,7 @@ public partial class PremiumClothingCard : UserControl
 
     private void ApplyCard()
     {
-        if (DataContext is not Clothing c) return;
+        if (DataContext is not global::ClosetApp.Domain.Entities.Clothing c) return;
 
         CardImage.Stretch = Stretch.Uniform;
 
@@ -79,7 +79,7 @@ public partial class PremiumClothingCard : UserControl
 
     protected override Size MeasureOverride(Size constraint)
     {
-        if (!_heightApplied && DataContext is Clothing c)
+        if (!_heightApplied && DataContext is global::ClosetApp.Domain.Entities.Clothing c)
         {
             double colWidth = FindMasonryColumnWidth();
             if (colWidth > 0)
@@ -105,7 +105,7 @@ public partial class PremiumClothingCard : UserControl
         return 0;
     }
 
-    private double CalcImageHeight(Clothing c, double cardWidth)
+    private double CalcImageHeight(global::ClosetApp.Domain.Entities.Clothing c, double cardWidth)
     {
         string? path = c.ImagePath;
         if (string.IsNullOrEmpty(path))
@@ -198,7 +198,7 @@ public partial class PremiumClothingCard : UserControl
 
     private void Favorite_Click(object sender, RoutedEventArgs e)
     {
-        if (DataContext is not Clothing) return;
+        if (DataContext is not global::ClosetApp.Domain.Entities.Clothing) return;
 
         var heart = FavoriteBtn.Template.FindName("HeartIcon", FavoriteBtn) as FrameworkElement;
         if (heart == null) return;

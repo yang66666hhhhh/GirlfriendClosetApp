@@ -79,29 +79,32 @@
 
         <!-- ═══ CHIP ═══ -->
         <Style x:Key="ChipStyle" TargetType="RadioButton">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Background" Value="#FFF6F2EE"/>
+            <Setter Property="Foreground" Value="#FF7A746B"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="16,0"/>
             <Setter Property="GroupName" Value="CategoryGroup"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="ChipBg" Background="Transparent"
-                                CornerRadius="10" Padding="{TemplateBinding Padding}"
-                                BorderThickness="1" BorderBrush="{StaticResource BorderBrush}">
+                        <Border x:Name="ChipBg"
+                                Background="#FFF6F2EE"
+                                CornerRadius="18"
+                                Padding="{TemplateBinding Padding}"
+                                Height="{TemplateBinding Height}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ChipBg" Property="Background" Value="{StaticResource AccentLightBrush}"/>
+                                <Setter TargetName="ChipBg" Property="Background" Value="#FFEEE4DC"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="ChipBg" Property="Background" Value="{StaticResource AccentBrush}"/>
-                                <Setter Property="Foreground" Value="White"/>
-                                <Setter TargetName="ChipBg" Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="ChipBg" Property="Background" Value="#FFE6CFC2"/>
+                                <Setter Property="Foreground" Value="#FF5B4636"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -219,25 +222,22 @@
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Disabled">
                         <StackPanel Orientation="Horizontal">
-                            <RadioButton x:Name="ChipAll" Content="全部"
+                            <RadioButton x:Name="ChipAll" Content="✨ 全部"
                                          Style="{StaticResource ChipStyle}" IsChecked="True"
                                          Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipTop" Content="上衣"
+                            <RadioButton x:Name="ChipTop" Content="👕 上装"
                                          Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                          Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipBottom" Content="下装"
+                            <RadioButton x:Name="ChipBottom" Content="👖 下装"
                                          Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                          Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipDress" Content="连衣裙"
+                            <RadioButton x:Name="ChipDress" Content="👗 连衣裙"
                                          Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                          Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipOuter" Content="外套"
+                            <RadioButton x:Name="ChipShoes" Content="👟 鞋子"
                                          Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                          Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipShoes" Content="鞋子"
-                                         Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                         Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipAccessory" Content="配饰"
+                            <RadioButton x:Name="ChipAccessory" Content="👜 配饰"
                                          Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                          Checked="Category_Changed"/>
                         </StackPanel>

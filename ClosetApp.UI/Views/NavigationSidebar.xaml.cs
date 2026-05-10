@@ -5,14 +5,12 @@ using System.Windows.Media.Animation;
 
 namespace ClosetApp.UI.Views;
 
-public partial class NavigationSidebar : UserControl
+    public partial class NavigationSidebar : UserControl
 {
     public event EventHandler<int>? NavigationChanged;
     public event EventHandler<bool>? CollapseStateChanged;
 
     private bool _isCollapsed;
-    private double _expandedWidth = 220;
-    private double _collapsedWidth = 72;
 
     public bool IsCollapsed => _isCollapsed;
 

@@ -6,6 +6,7 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
+using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,7 +17,7 @@ public partial class ClothesTab : UserControl
     private readonly IClothingService _clothingService;
     private List<Clothing> _allClothes = new();
     private List<Clothing> _filteredClothes = new();
-    private ClothingType? _selectedCategory;
+    private IEnumerable<ClothingType>? _selectedCategories;
 
     public ClothesTab()
     {
@@ -34,9 +35,9 @@ public partial class ClothesTab : UserControl
 
     private void ApplyFilter()
     {
-        _filteredClothes = _selectedCategory == null
+        _filteredClothes = _selectedCategories == null
             ? _allClothes
-            : _allClothes.Where(c => c.Type == _selectedCategory).ToList();
+            : _allClothes.Where(c => _selectedCategories.Contains(c.Type)).ToList();
         UpdateUI();
     }
 
@@ -57,9 +58,7 @@ public partial class ClothesTab : UserControl
             HeroBanner.Visibility = Visibility.Visible;
             ClothesList.Visibility = Visibility.Visible;
 
-            TxtCount.Text = _selectedCategory == null
-                ? $"{_filteredClothes.Count} 件"
-                : $"{_filteredClothes.Count} 件";
+            TxtCount.Text = $"{_filteredClothes.Count} 件";
 
             ClothesList.ItemsSource = _filteredClothes;
 
@@ -103,15 +102,14 @@ public partial class ClothesTab : UserControl
     private void Category_Changed(object sender, RoutedEventArgs e)
     {
         if (sender is not RadioButton rb) return;
-        _selectedCategory = rb.Name switch
+        _selectedCategories = rb.Name switch
         {
             "ChipAll" => null,
-            "ChipTop" => ClothingType.Top,
-            "ChipBottom" => ClothingType.Bottom,
-            "ChipDress" => ClothingType.Dress,
-            "ChipOuter" => ClothingType.Outerwear,
-            "ChipShoes" => ClothingType.Shoes,
-            "ChipAccessory" => ClothingType.Accessory,
+            "ChipTop" => new[] { ClothingType.Top, ClothingType.Outerwear },
+            "ChipBottom" => new[] { ClothingType.Bottom, ClothingType.Skirt },
+            "ChipDress" => new[] { ClothingType.Dress },
+            "ChipShoes" => new[] { ClothingType.Shoes },
+            "ChipAccessory" => new[] { ClothingType.Accessory },
             _ => null
         };
         ApplyFilter();
@@ -121,9 +119,9 @@ public partial class ClothesTab : UserControl
     {
         var query = TxtSearch.Text.Trim().ToLower();
         _filteredClothes = string.IsNullOrEmpty(query)
-            ? (_selectedCategory == null ? _allClothes : _allClothes.Where(c => c.Type == _selectedCategory).ToList())
+            ? (_selectedCategories == null ? _allClothes : _allClothes.Where(c => _selectedCategories.Contains(c.Type)).ToList())
             : _allClothes.Where(c =>
-                (_selectedCategory == null || c.Type == _selectedCategory) &&
+                (_selectedCategories == null || _selectedCategories.Contains(c.Type)) &&
                 (c.Name.ToLower().Contains(query) ||
                  c.Type.ToString()!.ToLower().Contains(query) ||
                  c.Season.ToString()!.ToLower().Contains(query) ||
@@ -137,24 +135,32 @@ public partial class ClothesTab : UserControl
 
     private void AddClothing_Click(object sender, RoutedEventArgs e)
     {
-        var panel = new AddClothingPanel();
-        panel.Saved += async (_, clothing) =>
+        var panel = new ClothingEditorPanel();
+        panel.EditorCompleted += async (_, result) =>
         {
-            await _clothingService.AddClothingAsync(clothing);
+            if (result.Type == ClothingEditorResultType.Saved)
+                await _clothingService.AddClothingAsync(result.Clothing!);
             ModalService.Instance.Hide();
             await LoadClothesAsync();
         };
-        panel.Cancelled += (_, _) => ModalService.Instance.Hide();
         ModalService.Instance.Show(panel);
     }
 
-    private async void ClothingCard_Edit(object sender, RoutedEventArgs e)
+    private void ClothingCard_Edit(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;
 
-        var dialog = new EditClothingDialog(clothing);
-        if (dialog.ShowDialog() == true)
+        var panel = new ClothingEditorPanel(clothing);
+        panel.EditorCompleted += async (_, result) =>
+        {
+            if (result.Type == ClothingEditorResultType.Saved)
+                await _clothingService.UpdateClothingAsync(result.Clothing!);
+            else if (result.Type == ClothingEditorResultType.Deleted)
+                await _clothingService.DeleteClothingAsync(clothing.Id);
+            ModalService.Instance.Hide();
             await LoadClothesAsync();
+        };
+        ModalService.Instance.Show(panel);
     }
 
     private async void ClothingCard_Delete(object sender, RoutedEventArgs e)

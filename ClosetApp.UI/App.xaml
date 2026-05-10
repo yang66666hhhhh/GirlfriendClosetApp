@@ -17,6 +17,7 @@
                 <!-- 3. 全局样式（依赖 Token） -->
                 <ResourceDictionary Source="Themes/Styles.xaml"/>
                 <ResourceDictionary Source="Themes/ButtonStyles.xaml"/>
+                <ResourceDictionary Source="Themes/Chips.xaml"/>
                 <ResourceDictionary Source="Themes/PremiumCardStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

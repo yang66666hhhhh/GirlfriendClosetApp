@@ -3,6 +3,31 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
     <!-- ═══════════════════════════════════════════
+         TYPOGRAPHY TOKENS
+         ═══════════════════════════════════════════ -->
+
+    <FontFamily x:Key="Font.Primary">system-ui, "Segoe UI", sans-serif</FontFamily>
+
+    <sys:Double x:Key="FontSize.Hero">28</sys:Double>
+    <sys:Double x:Key="FontSize.Section">11</sys:Double>
+    <sys:Double x:Key="FontSize.Label">13</sys:Double>
+    <sys:Double x:Key="FontSize.Input">15</sys:Double>
+    <sys:Double x:Key="FontSize.Hint">12</sys:Double>
+    <sys:Double x:Key="FontSize.Meta">11</sys:Double>
+
+    <!-- ═══════════════════════════════════════════
+         SPACING TOKENS
+         ═══════════════════════════════════════════ -->
+
+    <Thickness x:Key="Space.4">4</Thickness>
+    <Thickness x:Key="Space.8">8</Thickness>
+    <Thickness x:Key="Space.12">12</Thickness>
+    <Thickness x:Key="Space.16">16</Thickness>
+    <Thickness x:Key="Space.24">24</Thickness>
+    <Thickness x:Key="Space.32">32</Thickness>
+    <Thickness x:Key="Space.48">48</Thickness>
+
+    <!-- ═══════════════════════════════════════════
          BUTTON DESIGN TOKENS
          ═══════════════════════════════════════════ -->
 
@@ -16,6 +41,7 @@
     <sys:Double x:Key="Radius.Medium">14</sys:Double>
     <sys:Double x:Key="Radius.Large">20</sys:Double>
     <sys:Double x:Key="Radius.Pill">999</sys:Double>
+    <CornerRadius x:Key="Radius.Chip">16</CornerRadius>
 
     <!-- Padding -->
     <Thickness x:Key="Button.Padding.Small">14,8</Thickness>
@@ -38,12 +64,16 @@
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource Primary.Dark}"/>
     <Color x:Key="Primary.Light">#FFF2E6E3</Color>
     <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource Primary.Light}"/>
+    <Color x:Key="Primary.Glow">#33D9A299</Color>
+    <SolidColorBrush x:Key="PrimaryGlowBrush" Color="{StaticResource Primary.Glow}"/>
 
     <!-- Danger -->
     <Color x:Key="Danger">#FFE88D8D</Color>
     <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}"/>
     <Color x:Key="Danger.Dark">#FFD47A7A</Color>
     <SolidColorBrush x:Key="DangerDarkBrush" Color="{StaticResource Danger.Dark}"/>
+    <Color x:Key="Danger.Light">#FFF0E6E6</Color>
+    <SolidColorBrush x:Key="DangerLightBrush" Color="{StaticResource Danger.Light}"/>
 
     <!-- Ghost / Outline -->
     <Color x:Key="Ghost">#80FFFFFF</Color>
@@ -58,12 +88,18 @@
     <SolidColorBrush x:Key="TextPlaceholderBrush" Color="{StaticResource Text.Placeholder}"/>
 
     <!-- Surface -->
-    <Color x:Key="Surface.Card">#FFFDFC</Color>
-    <SolidColorBrush x:Key="SurfaceCardBrush" Color="{StaticResource Surface.Card}"/>
     <Color x:Key="Surface.Page">#FFF6F3EE</Color>
     <SolidColorBrush x:Key="SurfacePageBrush" Color="{StaticResource Surface.Page}"/>
+    <Color x:Key="Surface.Modal">#FFFFFCF9</Color>
+    <SolidColorBrush x:Key="SurfaceModalBrush" Color="{StaticResource Surface.Modal}"/>
+    <Color x:Key="Surface.Card">#FFFDFCFC</Color>
+    <SolidColorBrush x:Key="SurfaceCardBrush" Color="{StaticResource Surface.Card}"/>
+    <Color x:Key="Surface.Hero">#FFF5F0EB</Color>
+    <SolidColorBrush x:Key="SurfaceHeroBrush" Color="{StaticResource Surface.Hero}"/>
     <Color x:Key="Surface.Section">#FFF8F5F0</Color>
     <SolidColorBrush x:Key="SurfaceSectionBrush" Color="{StaticResource Surface.Section}"/>
+    <Color x:Key="Surface.Elevated">#FFFFFFFF</Color>
+    <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="{StaticResource Surface.Elevated}"/>
 
     <!-- Border -->
     <Color x:Key="Border.Light">#FFE8E2DC</Color>
@@ -88,5 +124,9 @@
     <DropShadowEffect x:Key="Shadow.Hero"
                       BlurRadius="32" ShadowDepth="0"
                       Opacity="0.15" Color="#40D9A299"/>
+
+    <DropShadowEffect x:Key="Shadow.Modal"
+                      BlurRadius="48" ShadowDepth="8"
+                      Opacity="0.10" Color="#40000000"/>
 
 </ResourceDictionary>
