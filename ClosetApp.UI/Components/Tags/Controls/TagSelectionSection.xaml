@@ -46,7 +46,8 @@
     </UserControl.Resources>
 
     <StackPanel>
-        <TextBlock Text="🏷 风格" FontSize="12" FontWeight="Medium"
+        <TextBlock x:Name="TxtTitle"
+                  Text="🏷 风格" FontSize="12" FontWeight="Medium"
                   Foreground="#FF9E958D" Margin="0,0,0,8"/>
         <ItemsControl ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}">
             <ItemsControl.ItemsPanel>

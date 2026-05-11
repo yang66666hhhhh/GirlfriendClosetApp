@@ -3,6 +3,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Tags.Models;
 
 namespace ClosetApp.UI.Components.Tags.Controls;
@@ -25,6 +26,7 @@ public partial class TagSelectionSection : UserControl
     }
 
     public IEnumerable<Tag> SelectedTags => _tags.Where(t => t.IsSelected).Select(t => t.Tag);
+    public TagCategory Category { get; private set; } = TagCategory.Style;
 
     public TagSelectionSection()
     {
@@ -32,10 +34,18 @@ public partial class TagSelectionSection : UserControl
         Tags = _tags;
     }
 
-    public void LoadTags(IEnumerable<Tag> styleTags)
+    public void LoadTags(IEnumerable<Tag> tags, TagCategory category = TagCategory.Style)
     {
+        Category = category;
+        TxtTitle.Text = category switch
+        {
+            TagCategory.Scene => "📍 场景",
+            TagCategory.Season => "🍃 季节",
+            _ => "🏷 风格"
+        };
+
         _tags.Clear();
-        foreach (var tag in styleTags)
+        foreach (var tag in tags)
             _tags.Add(new SelectableTag(tag));
     }
 

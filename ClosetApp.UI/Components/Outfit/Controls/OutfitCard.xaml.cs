@@ -6,7 +6,7 @@ using System.Windows.Media.Animation;
 using OutfitScene = ClosetApp.Domain.Enums.OutfitScene;
 using Season = ClosetApp.Domain.Enums.Season;
 using ClosetApp.UI.Components.Outfit.Editor;
-using ClosetApp.UI.Services;
+using ClosetApp.UI.Components.Shared.Editor;
 
 namespace ClosetApp.UI.Components.Outfit.Controls;
 
@@ -57,10 +57,12 @@ public partial class OutfitCard : UserControl
         {
             if (Outfit != null)
             {
-                var panel = new OutfitEditorPanel(Outfit);
-                panel.SaveCompleted += () => EditCompleted?.Invoke(this, Outfit);
-                panel.CloseRequested += () => ModalService.Instance.Hide();
-                ModalService.Instance.Show(panel);
+                EditorModal.Show(new OutfitEditorPanel(Outfit), result =>
+                {
+                    if (result.Type == EditorResultType.Saved)
+                        EditCompleted?.Invoke(this, Outfit);
+                    return Task.CompletedTask;
+                });
             }
         };
         BtnDelete.Click += (s, e) =>

@@ -2,7 +2,12 @@
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Application.Images;
 using ClosetApp.Application.Services;
+using ClosetApp.Application.UseCases.Clothing;
+using ClosetApp.Application.UseCases.Insights;
+using ClosetApp.Application.UseCases.Outfits;
+using ClosetApp.Application.UseCases.Tags;
 using ClosetApp.Domain.Interfaces;
 using ClosetApp.Infrastructure.Data;
 using ClosetApp.Infrastructure.Repositories;
@@ -68,7 +73,12 @@ public partial class App : System.Windows.Application
         services.AddScoped<IOutfitService, OutfitService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IOutfitRecommendationService, OutfitRecommendationService>();
+        services.AddScoped<GetWardrobeOverview>();
+        services.AddScoped<GetOutfitHistorySummary>();
+        services.AddScoped<RecordOutfitWorn>();
+        services.AddScoped<GetTagsForSelection>();
         services.AddSingleton<IImageStorageService, ImageStorageService>();
+        services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
         services.AddSingleton<IWeatherService, WeatherService>();
         services.AddSingleton<ToastService>();
         services.AddSingleton<ModalService>();

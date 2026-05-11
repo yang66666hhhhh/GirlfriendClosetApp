@@ -43,6 +43,7 @@ public class OutfitCompositionEngine
         {
             CompositionMode.Dress => DressMode(clothes, cw, ch),
             CompositionMode.TopBottom => TopBottomMode(clothes, cw, ch),
+            CompositionMode.Mixed => MixedMode(clothes, cw, ch),
             _ => SoloMode(clothes[0], cw, ch)
         };
     }

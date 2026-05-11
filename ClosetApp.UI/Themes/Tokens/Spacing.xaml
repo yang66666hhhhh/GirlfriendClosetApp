@@ -1,0 +1,16 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Thickness x:Key="Space.4">4</Thickness>
+    <Thickness x:Key="Space.8">8</Thickness>
+    <Thickness x:Key="Space.12">12</Thickness>
+    <Thickness x:Key="Space.16">16</Thickness>
+    <Thickness x:Key="Space.24">24</Thickness>
+    <Thickness x:Key="Space.32">32</Thickness>
+    <Thickness x:Key="Space.48">48</Thickness>
+
+    <Thickness x:Key="Button.Padding.Small">14,8</Thickness>
+    <Thickness x:Key="Button.Padding.Medium">20,12</Thickness>
+    <Thickness x:Key="Button.Padding.Large">28,16</Thickness>
+
+</ResourceDictionary>

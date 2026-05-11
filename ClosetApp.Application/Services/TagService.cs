@@ -21,7 +21,12 @@ public class TagService : ITagService
 
     public async Task<IEnumerable<Tag>> GetStyleTagsAsync()
     {
-        return await _repository.GetByCategoryAsync(TagCategory.Style);
+        return await GetTagsByCategoryAsync(TagCategory.Style);
+    }
+
+    public async Task<IEnumerable<Tag>> GetTagsByCategoryAsync(TagCategory category)
+    {
+        return await _repository.GetByCategoryAsync(category);
     }
 
     public async Task<Tag> AddTagAsync(Tag tag)

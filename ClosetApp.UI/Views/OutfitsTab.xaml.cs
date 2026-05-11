@@ -4,7 +4,8 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Outfit.Controls;
 using ClosetApp.UI.Components.Outfit.Editor;
-using ClosetApp.UI.Services;
+using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.States;
 using Microsoft.Extensions.DependencyInjection;
 using OutfitEntity = ClosetApp.Domain.Entities.Outfit;
 
@@ -13,6 +14,7 @@ namespace ClosetApp.UI.Views;
 public partial class OutfitsTab : UserControl
 {
     private readonly IOutfitService _outfitService;
+    private readonly OutfitsTabState _state = new();
 
     public OutfitsTab()
     {
@@ -23,10 +25,11 @@ public partial class OutfitsTab : UserControl
 
     private async Task LoadOutfitsAsync()
     {
+        _state.BeginLoad();
         var outfits = await _outfitService.GetAllOutfitsAsync();
-        var list = outfits.ToList();
-        OutfitsList.ItemsSource = list;
-        TxtEmpty.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        _state.SetOutfits(outfits);
+        OutfitsList.ItemsSource = _state.Outfits;
+        TxtEmpty.Visibility = _state.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
 
         _ = Dispatcher.BeginInvoke(() =>
         {
@@ -50,10 +53,11 @@ public partial class OutfitsTab : UserControl
 
     private void CreateOutfit_Click(object sender, RoutedEventArgs e)
     {
-        var panel = new OutfitEditorPanel();
-        panel.SaveCompleted += async () => await LoadOutfitsAsync();
-        panel.CloseRequested += () => ModalService.Instance.Hide();
-        ModalService.Instance.Show(panel);
+        EditorModal.Show(new OutfitEditorPanel(), async result =>
+        {
+            if (result.Type == EditorResultType.Saved)
+                await LoadOutfitsAsync();
+        });
     }
 
     private async void OutfitCard_EditCompleted(object? sender, OutfitEntity outfit)

@@ -4,6 +4,7 @@ using System.Windows.Input;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Enums;
+using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using OutfitEntity = ClosetApp.Domain.Entities.Outfit;
@@ -14,7 +15,7 @@ using OutfitScene = ClosetApp.Domain.Enums.OutfitScene;
 
 namespace ClosetApp.UI.Components.Outfit.Editor;
 
-public partial class OutfitEditorPanel : UserControl
+public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
 {
     private readonly IClothingService _clothingService;
     private readonly IOutfitService _outfitService;
@@ -22,8 +23,7 @@ public partial class OutfitEditorPanel : UserControl
     private readonly bool _isEditMode;
     private readonly OutfitEntity? _existingOutfit;
 
-    public event Action? CloseRequested;
-    public event Action? SaveCompleted;
+    public event EventHandler<EditorResult<OutfitEntity>>? EditorCompleted;
 
     public OutfitEditorPanel()
     {
@@ -218,6 +218,7 @@ public partial class OutfitEditorPanel : UserControl
             _ => Season.AllSeason
         };
 
+        OutfitEntity savedOutfit;
         if (_isEditMode && _existingOutfit != null)
         {
             _existingOutfit.Name = TxtName.Text.Trim();
@@ -228,6 +229,7 @@ public partial class OutfitEditorPanel : UserControl
             foreach (var clothing in selectedClothes)
                 _existingOutfit.OutfitClothes.Add(new OutfitClothingEntity { OutfitId = _existingOutfit.Id, ClothingId = clothing.Id });
             await _outfitService.UpdateOutfitAsync(_existingOutfit);
+            savedOutfit = _existingOutfit;
         }
         else
         {
@@ -242,6 +244,7 @@ public partial class OutfitEditorPanel : UserControl
             foreach (var clothing in selectedClothes)
                 outfit.OutfitClothes.Add(new OutfitClothingEntity { OutfitId = outfit.Id, ClothingId = clothing.Id });
             await _outfitService.UpdateOutfitAsync(outfit);
+            savedOutfit = outfit;
         }
 
         TxtName.Text = string.Empty;
@@ -249,12 +252,14 @@ public partial class OutfitEditorPanel : UserControl
         UpdateSectionStates();
         UpdatePreview();
 
-        SaveCompleted?.Invoke();
-        CloseRequested?.Invoke();
+        EditorCompleted?.Invoke(this, new EditorResult<OutfitEntity>(EditorResultType.Saved, savedOutfit));
     }
 
-    private void CloseButton_Click(object sender, RoutedEventArgs e) => CloseRequested?.Invoke();
-    private void Cancel_Click(object sender, RoutedEventArgs e) => CloseRequested?.Invoke();
+    private void CloseButton_Click(object sender, RoutedEventArgs e) =>
+        EditorCompleted?.Invoke(this, new EditorResult<OutfitEntity>(EditorResultType.Cancelled));
+
+    private void Cancel_Click(object sender, RoutedEventArgs e) =>
+        EditorCompleted?.Invoke(this, new EditorResult<OutfitEntity>(EditorResultType.Cancelled));
 }
 
 public class SelectableClothing : System.ComponentModel.INotifyPropertyChanged

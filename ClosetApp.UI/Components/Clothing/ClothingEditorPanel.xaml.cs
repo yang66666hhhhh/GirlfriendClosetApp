@@ -9,15 +9,16 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
+using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Services;
 using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Components.Clothing;
 
-public partial class ClothingEditorPanel : UserControl
+public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::ClosetApp.Domain.Entities.Clothing>
 {
-    public event EventHandler<ClothingEditorResult>? EditorCompleted;
+    public event EventHandler<EditorResult<global::ClosetApp.Domain.Entities.Clothing>>? EditorCompleted;
 
     private readonly bool _isEditMode;
     private readonly global::ClosetApp.Domain.Entities.Clothing? _existingClothing;
@@ -387,13 +388,13 @@ public partial class ClothingEditorPanel : UserControl
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        EditorCompleted?.Invoke(this, new ClothingEditorResult(ClothingEditorResultType.Cancelled));
+        EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Cancelled));
     }
 
     private void Delete_Click(object sender, RoutedEventArgs e)
     {
         if (_existingClothing != null)
-            EditorCompleted?.Invoke(this, new ClothingEditorResult(ClothingEditorResultType.Deleted, _existingClothing));
+            EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Deleted, _existingClothing));
     }
 
     private async void Save_Click(object sender, RoutedEventArgs e)
@@ -475,7 +476,7 @@ public partial class ClothingEditorPanel : UserControl
             };
         }
 
-        EditorCompleted?.Invoke(this, new ClothingEditorResult(ClothingEditorResultType.Saved, clothing));
+        EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Saved, clothing));
     }
 
     private void ShakeElement(UIElement element)

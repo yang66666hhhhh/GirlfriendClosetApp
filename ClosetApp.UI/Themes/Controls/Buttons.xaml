@@ -1,0 +1,299 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ═══════════════════════════════════════════════════════
+         SHARED HOVER / PRESS ANIMATIONS
+         ═══════════════════════════════════════════════════════ -->
+
+    <Storyboard x:Key="HoverScaleUp">
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                        To="1.03" Duration="0:0:0.15">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                        To="1.03" Duration="0:0:0.15">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <Storyboard x:Key="HoverScaleDown">
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
+                        To="1" Duration="0:0:0.15">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                        To="1" Duration="0:0:0.15">
+            <DoubleAnimation.EasingFunction>
+                <QuadraticEase EasingMode="EaseOut"/>
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+    </Storyboard>
+
+    <!-- ═══════════════════════════════════════════════════════
+         BASE STYLE — all variants inherit this
+         ═══════════════════════════════════════════════════════ -->
+
+    <Style x:Key="AppButtonBase" TargetType="Button">
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="24,12"/>
+        <Setter Property="MinHeight" Value="44"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="BtnBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14"
+                            Padding="{TemplateBinding Padding}"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center"
+                                         VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleUp}"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleDown}"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="BtnBorder" Property="RenderTransform">
+                                <Setter.Value>
+                                    <ScaleTransform ScaleX="0.97" ScaleY="0.97"/>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BtnBorder" Property="Opacity" Value="0.4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════
+         VARIANT 1 — PRIMARY
+         Pink fill, white text, shadow
+         For: 添加衣服 / 保存 / 确认
+         ═══════════════════════════════════════════════════════ -->
+
+    <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="24,12"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="MinHeight" Value="44"/>
+        <Setter Property="MinWidth" Value="160"/>
+        <Setter Property="Effect" Value="{StaticResource Shadow.Button}"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="BtnBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14"
+                            Padding="{TemplateBinding Padding}"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            MinWidth="{TemplateBinding MinWidth}"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleUp}"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleDown}"/>
+                            </Trigger.ExitActions>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="BtnBorder" Property="RenderTransform">
+                                <Setter.Value><ScaleTransform ScaleX="0.97" ScaleY="0.97"/></Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BtnBorder" Property="Opacity" Value="0.4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════
+         VARIANT 2 — CAPSULE
+         White fill, border, pill shape
+         For: 今日搭配 / 最近收藏 / 风格筛选
+         ═══════════════════════════════════════════════════════ -->
+
+    <Style x:Key="CapsuleButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="18,10"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="BtnBorder"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="12"
+                            Padding="{TemplateBinding Padding}"
+                            MinHeight="{TemplateBinding MinHeight}"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleUp}"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleDown}"/>
+                            </Trigger.ExitActions>
+                            <Setter TargetName="BtnBorder" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="BtnBorder" Property="RenderTransform">
+                                <Setter.Value><ScaleTransform ScaleX="0.97" ScaleY="0.97"/></Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="BtnBorder" Property="Opacity" Value="0.4"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════
+         VARIANT 3 — SECONDARY
+         Light gray fill, dark text
+         For: 编辑 / 取消
+         ═══════════════════════════════════════════════════════ -->
+
+    <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+        <Setter Property="Background" Value="{StaticResource SurfaceSectionBrush}"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="38"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════
+         VARIANT 4 — DANGER
+         Muted red fill, white text
+         For: 删除
+         ═══════════════════════════════════════════════════════ -->
+
+    <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="16,10"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="38"/>
+        <Setter Property="Effect" Value="{StaticResource Shadow.Button}"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════
+         VARIANT 5 — GHOST
+         Transparent, white border/text, hover fills
+         For: Hero Banner CTA
+         ═══════════════════════════════════════════════════════ -->
+
+    <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="BorderBrush" Value="#60FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1.5"/>
+        <Setter Property="Padding" Value="22,12"/>
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="MinHeight" Value="44"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#18FFFFFF"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════════════
+         VARIANT 6 — ICON BUTTON
+         Small circle for close / icon-only actions
+         ═══════════════════════════════════════════════════════ -->
+
+    <Style x:Key="IconButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Width" Value="36"/>
+        <Setter Property="MinHeight" Value="36"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="BtnBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="18"
+                            Padding="{TemplateBinding Padding}"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                        </Border.RenderTransform>
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleUp}"/>
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource HoverScaleDown}"/>
+                            </Trigger.ExitActions>
+                            <Setter TargetName="BtnBorder" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="BtnBorder" Property="RenderTransform">
+                                <Setter.Value><ScaleTransform ScaleX="0.97" ScaleY="0.97"/></Setter.Value>
+                            </Setter>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

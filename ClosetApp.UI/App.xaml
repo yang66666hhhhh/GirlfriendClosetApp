@@ -11,14 +11,19 @@
                 <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
 
                 <!-- 2. Token 系统（定义所有 Design Token） -->
-                <ResourceDictionary Source="Themes/Colors.xaml"/>
-                <ResourceDictionary Source="Themes/ButtonTokens.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Colors.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Typography.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Spacing.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Radius.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Shadows.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Motion.xaml"/>
+                <ResourceDictionary Source="Themes/Tokens/Sizes.xaml"/>
 
                 <!-- 3. 全局样式（依赖 Token） -->
-                <ResourceDictionary Source="Themes/Styles.xaml"/>
-                <ResourceDictionary Source="Themes/ButtonStyles.xaml"/>
-                <ResourceDictionary Source="Themes/Chips.xaml"/>
-                <ResourceDictionary Source="Themes/PremiumCardStyles.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/LegacyStyles.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/Buttons.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/Chips.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/Cards.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>

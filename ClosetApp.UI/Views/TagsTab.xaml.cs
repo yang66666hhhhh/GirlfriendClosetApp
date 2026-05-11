@@ -3,7 +3,8 @@ using System.Windows.Controls;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Tags.Controls;
-using ClosetApp.UI.Services;
+using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.States;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Views;
@@ -11,6 +12,7 @@ namespace ClosetApp.UI.Views;
 public partial class TagsTab : UserControl
 {
     private readonly ITagService _tagService;
+    private readonly TagsTabState _state = new();
 
     public TagsTab()
     {
@@ -21,25 +23,23 @@ public partial class TagsTab : UserControl
 
     private async Task LoadTagsAsync()
     {
+        _state.BeginLoad();
         var tags = await _tagService.GetAllTagsAsync();
-        var list = tags.ToList();
-        TagsList.ItemsSource = list;
-        TxtEmpty.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        _state.SetTags(tags);
+        TagsList.ItemsSource = _state.Tags;
+        TxtEmpty.Visibility = _state.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
     }
 
     private void AddTag_Click(object sender, RoutedEventArgs e)
     {
-        var panel = new TagEditorPanel();
-        panel.EditorCompleted += async (s, result) =>
+        EditorModal.Show(new TagEditorPanel(), async result =>
         {
-            if (result.Type == TagEditorResultType.Saved)
+            if (result.Type == EditorResultType.Saved)
             {
-                await _tagService.AddTagAsync(result.Tag!);
+                await _tagService.AddTagAsync(result.Entity!);
                 await LoadTagsAsync();
             }
-            ModalService.Instance.Hide();
-        };
-        ModalService.Instance.Show(panel);
+        });
     }
 
     private void EditTag_Click(object sender, RoutedEventArgs e)
@@ -50,17 +50,14 @@ public partial class TagsTab : UserControl
 
     private void OpenEditPanel(Tag tag)
     {
-        var panel = new TagEditorPanel(tag);
-        panel.EditorCompleted += async (s, result) =>
+        EditorModal.Show(new TagEditorPanel(tag), async result =>
         {
-            if (result.Type == TagEditorResultType.Saved)
+            if (result.Type == EditorResultType.Saved)
             {
-                await _tagService.UpdateTagAsync(result.Tag!);
+                await _tagService.UpdateTagAsync(result.Entity!);
                 await LoadTagsAsync();
             }
-            ModalService.Instance.Hide();
-        };
-        ModalService.Instance.Show(panel);
+        });
     }
 
     private async void DeleteTag_Click(object sender, RoutedEventArgs e)

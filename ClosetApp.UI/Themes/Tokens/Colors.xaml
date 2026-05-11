@@ -1,0 +1,61 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <Color x:Key="Primary">#FFD9A299</Color>
+    <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
+    <Color x:Key="Primary.Dark">#FFC48B81</Color>
+    <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource Primary.Dark}"/>
+    <Color x:Key="Primary.Light">#FFF2E6E3</Color>
+    <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource Primary.Light}"/>
+    <Color x:Key="Primary.Glow">#33D9A299</Color>
+    <SolidColorBrush x:Key="PrimaryGlowBrush" Color="{StaticResource Primary.Glow}"/>
+
+    <Color x:Key="Danger">#FFE88D8D</Color>
+    <SolidColorBrush x:Key="DangerBrush" Color="{StaticResource Danger}"/>
+    <Color x:Key="Danger.Dark">#FFD47A7A</Color>
+    <SolidColorBrush x:Key="DangerDarkBrush" Color="{StaticResource Danger.Dark}"/>
+    <Color x:Key="Danger.Light">#FFF0E6E6</Color>
+    <SolidColorBrush x:Key="DangerLightBrush" Color="{StaticResource Danger.Light}"/>
+
+    <Color x:Key="Ghost">#80FFFFFF</Color>
+    <SolidColorBrush x:Key="GhostBrush" Color="{StaticResource Ghost}"/>
+
+    <Color x:Key="Text.Primary">#FF2D2A26</Color>
+    <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource Text.Primary}"/>
+    <Color x:Key="Text.Secondary">#FF9E958D</Color>
+    <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource Text.Secondary}"/>
+    <Color x:Key="Text.Placeholder">#FFC8C0B8</Color>
+    <SolidColorBrush x:Key="TextPlaceholderBrush" Color="{StaticResource Text.Placeholder}"/>
+    <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource Text.Placeholder}"/>
+
+    <Color x:Key="Surface.Page">#FFF6F3EE</Color>
+    <SolidColorBrush x:Key="SurfacePageBrush" Color="{StaticResource Surface.Page}"/>
+    <Color x:Key="Surface.Modal">#FFFFFCF9</Color>
+    <SolidColorBrush x:Key="SurfaceModalBrush" Color="{StaticResource Surface.Modal}"/>
+    <Color x:Key="Surface.Card">#FFFDFCFC</Color>
+    <SolidColorBrush x:Key="SurfaceCardBrush" Color="{StaticResource Surface.Card}"/>
+    <Color x:Key="Surface.Hero">#FFF5F0EB</Color>
+    <SolidColorBrush x:Key="SurfaceHeroBrush" Color="{StaticResource Surface.Hero}"/>
+    <Color x:Key="Surface.Section">#FFF8F5F0</Color>
+    <SolidColorBrush x:Key="SurfaceSectionBrush" Color="{StaticResource Surface.Section}"/>
+    <Color x:Key="Surface.Elevated">#FFFFFFFF</Color>
+    <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="{StaticResource Surface.Elevated}"/>
+
+    <Color x:Key="Border.Light">#FFE8E2DC</Color>
+    <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource Border.Light}"/>
+    <Color x:Key="Border.Divider">#FFF0ECE7</Color>
+    <SolidColorBrush x:Key="BorderDividerBrush" Color="{StaticResource Border.Divider}"/>
+
+    <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Primary.Dark}"/>
+    <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource Surface.Page}"/>
+    <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource Surface.Card}"/>
+    <SolidColorBrush x:Key="SecondaryBackgroundBrush" Color="{StaticResource Surface.Section}"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource Border.Light}"/>
+    <SolidColorBrush x:Key="BorderFocusBrush" Color="{StaticResource Primary}"/>
+    <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
+    <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
+    <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Danger}"/>
+    <SolidColorBrush x:Key="OverlayBrush" Color="#40000000"/>
+    <SolidColorBrush x:Key="RatingStarBrush" Color="#FBBF24"/>
+
+</ResourceDictionary>

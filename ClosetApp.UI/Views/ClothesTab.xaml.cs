@@ -7,7 +7,8 @@ using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
-using ClosetApp.UI.Services;
+using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.States;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Views;
@@ -15,9 +16,7 @@ namespace ClosetApp.UI.Views;
 public partial class ClothesTab : UserControl
 {
     private readonly IClothingService _clothingService;
-    private List<Clothing> _allClothes = new();
-    private List<Clothing> _filteredClothes = new();
-    private IEnumerable<DisplayCategory>? _selectedCategories;
+    private readonly ClothesTabState _state = new();
 
     public ClothesTab()
     {
@@ -26,28 +25,11 @@ public partial class ClothesTab : UserControl
         Loaded += (s, e) => _ = LoadClothesAsync();
     }
 
-    private static DisplayCategory ResolveDisplayCategory(Clothing c)
-    {
-        if (c.GarmentType.HasValue)
-            return ClothingMappings.GetDisplayCategory(c.GarmentType.Value);
-        return ClothingMappings.GetDisplayCategory(ClothingMappings.InferGarmentType(c.Type));
-    }
-
-    private static bool CategoryMatches(Clothing c, DisplayCategory cat)
-        => ResolveDisplayCategory(c) == cat;
-
     private async Task LoadClothesAsync()
     {
+        _state.BeginLoad();
         var clothes = await _clothingService.GetAllClothesAsync();
-        _allClothes = clothes.ToList();
-        ApplyFilter();
-    }
-
-    private void ApplyFilter()
-    {
-        _filteredClothes = _selectedCategories == null
-            ? _allClothes
-            : _allClothes.Where(c => _selectedCategories.Any(cat => CategoryMatches(c, cat))).ToList();
+        _state.SetClothes(clothes);
         UpdateUI();
     }
 
@@ -55,7 +37,7 @@ public partial class ClothesTab : UserControl
     {
         if (TxtCount == null) return;
 
-        if (_allClothes.Count == 0)
+        if (_state.IsEmpty)
         {
             EmptyState.Visibility = Visibility.Visible;
             HeroBanner.Visibility = Visibility.Collapsed;
@@ -68,9 +50,9 @@ public partial class ClothesTab : UserControl
             HeroBanner.Visibility = Visibility.Visible;
             ClothesList.Visibility = Visibility.Visible;
 
-            TxtCount.Text = $"{_filteredClothes.Count} 件";
+            TxtCount.Text = $"{_state.FilteredCount} 件";
 
-            ClothesList.ItemsSource = _filteredClothes;
+            ClothesList.ItemsSource = _state.FilteredClothes;
 
             Dispatcher.BeginInvoke(() => UpdateCardWidth(), System.Windows.Threading.DispatcherPriority.Loaded);
         }
@@ -112,7 +94,7 @@ public partial class ClothesTab : UserControl
     private void Category_Changed(object sender, RoutedEventArgs e)
     {
         if (sender is not RadioButton rb) return;
-        _selectedCategories = rb.Name switch
+        var selectedCategories = rb.Name switch
         {
             "ChipAll" => null,
             "ChipTop" => new[] { DisplayCategory.Topwear },
@@ -122,55 +104,38 @@ public partial class ClothesTab : UserControl
             "ChipAccessory" => new[] { DisplayCategory.Accessory },
             _ => null
         };
-        ApplyFilter();
+        _state.SetSelectedCategories(selectedCategories);
+        UpdateUI();
     }
 
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
-        var query = TxtSearch.Text.Trim().ToLower();
-        _filteredClothes = string.IsNullOrEmpty(query)
-            ? (_selectedCategories == null ? _allClothes : _allClothes.Where(c => _selectedCategories.Any(cat => CategoryMatches(c, cat))).ToList())
-            : _allClothes.Where(c =>
-                (_selectedCategories == null || _selectedCategories.Any(cat => CategoryMatches(c, cat))) &&
-                (c.Name.ToLower().Contains(query) ||
-                 c.Type.ToString()!.ToLower().Contains(query) ||
-                 c.Season.ToString()!.ToLower().Contains(query) ||
-                 (c.Color?.ToLower() ?? "").Contains(query)))
-            .ToList();
-
-        TxtCount.Text = $"{_filteredClothes.Count} 件";
-        ClothesList.ItemsSource = _filteredClothes;
-        Dispatcher.BeginInvoke(() => UpdateCardWidth(), System.Windows.Threading.DispatcherPriority.Loaded);
+        _state.SetSearchText(TxtSearch.Text);
+        UpdateUI();
     }
 
     private void AddClothing_Click(object sender, RoutedEventArgs e)
     {
-        var panel = new ClothingEditorPanel();
-        panel.EditorCompleted += async (_, result) =>
+        EditorModal.Show(new ClothingEditorPanel(), async result =>
         {
-            if (result.Type == ClothingEditorResultType.Saved)
-                await _clothingService.AddClothingAsync(result.Clothing!);
-            ModalService.Instance.Hide();
+            if (result.Type == EditorResultType.Saved)
+                await _clothingService.AddClothingAsync(result.Entity!);
             await LoadClothesAsync();
-        };
-        ModalService.Instance.Show(panel);
+        });
     }
 
     private void ClothingCard_Edit(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;
 
-        var panel = new ClothingEditorPanel(clothing);
-        panel.EditorCompleted += async (_, result) =>
+        EditorModal.Show(new ClothingEditorPanel(clothing), async result =>
         {
-            if (result.Type == ClothingEditorResultType.Saved)
-                await _clothingService.UpdateClothingAsync(result.Clothing!);
-            else if (result.Type == ClothingEditorResultType.Deleted)
+            if (result.Type == EditorResultType.Saved)
+                await _clothingService.UpdateClothingAsync(result.Entity!);
+            else if (result.Type == EditorResultType.Deleted)
                 await _clothingService.DeleteClothingAsync(clothing.Id);
-            ModalService.Instance.Hide();
             await LoadClothesAsync();
-        };
-        ModalService.Instance.Show(panel);
+        });
     }
 
     private async void ClothingCard_Delete(object sender, RoutedEventArgs e)

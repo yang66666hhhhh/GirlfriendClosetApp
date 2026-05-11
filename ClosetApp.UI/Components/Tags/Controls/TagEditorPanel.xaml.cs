@@ -3,16 +3,17 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
+using ClosetApp.UI.Components.Shared.Editor;
 
 namespace ClosetApp.UI.Components.Tags.Controls;
 
-public partial class TagEditorPanel : UserControl
+public partial class TagEditorPanel : UserControl, IEditorPanel<Tag>
 {
     private readonly Tag? _existingTag;
     private readonly bool _isEditMode;
     private string _selectedColor = "#D8B7A3";
 
-    public event EventHandler<TagEditorResult>? EditorCompleted;
+    public event EventHandler<EditorResult<Tag>>? EditorCompleted;
 
     public TagEditorPanel()
     {
@@ -104,16 +105,16 @@ public partial class TagEditorPanel : UserControl
             };
         }
 
-        EditorCompleted?.Invoke(this, new TagEditorResult(TagEditorResultType.Saved, tag));
+        EditorCompleted?.Invoke(this, new EditorResult<Tag>(EditorResultType.Saved, tag));
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
-        EditorCompleted?.Invoke(this, new TagEditorResult(TagEditorResultType.Cancelled, null));
+        EditorCompleted?.Invoke(this, new EditorResult<Tag>(EditorResultType.Cancelled));
     }
 
     private void Close_Click(object sender, RoutedEventArgs e)
     {
-        EditorCompleted?.Invoke(this, new TagEditorResult(TagEditorResultType.Cancelled, null));
+        EditorCompleted?.Invoke(this, new EditorResult<Tag>(EditorResultType.Cancelled));
     }
 }
