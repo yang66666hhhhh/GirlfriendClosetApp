@@ -3,7 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:outfit="clr-namespace:ClosetApp.UI.Components.Outfit.Controls"
              xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
-             Background="#FFF8F6F2">
+             Background="{StaticResource SurfacePageBrush}">
 
     <UserControl.Resources>
         <conv:OutfitSceneToIconConverter x:Key="SceneToIconConverter"/>
@@ -21,38 +21,70 @@
         </Grid.RowDefinitions>
 
         <!-- Header -->
-        <Border Grid.Row="0" Background="#FFF8F6F2"
-                BorderBrush="#FFE8E2DC" BorderThickness="0,0,0,1">
+        <Border Grid.Row="0" Style="{StaticResource PageHeaderBorder}">
             <Grid Height="72" Margin="64,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <TextBlock Grid.Column="0" Text="我的搭配" FontSize="20" FontWeight="Bold"
-                           VerticalAlignment="Center" Foreground="#FF2D2A26"/>
-                <Button Grid.Column="1" Content="创建搭配"
+                <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                    <TextBlock Text="我的搭配" Style="{StaticResource PageTitleText}"/>
+                    <TextBlock Text="像翻 Lookbook 一样整理日常穿搭" Style="{StaticResource PageSubtitleText}"/>
+                </StackPanel>
+                <Button Grid.Column="1" Content="+ 新建今日搭配"
                         Style="{StaticResource PrimaryButton}" Padding="16,10"
                         Click="CreateOutfit_Click"/>
             </Grid>
         </Border>
 
         <!-- Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="44,20">
-            <ItemsControl x:Name="OutfitsList"
-                          ItemTemplate="{StaticResource OutfitCardTemplate}">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel/>
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-            </ItemsControl>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="64,28,64,60">
+            <StackPanel>
+                <Border Style="{StaticResource LookbookCard}"
+                        Margin="0,0,0,24">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="今日穿搭灵感" FontSize="24" FontWeight="Bold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="把喜欢的衣服组合成一套有记忆点的搭配。"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="14" Margin="0,8,0,0"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="1" Text="♡ ✦ 👗"
+                                   FontSize="28" Foreground="{StaticResource PrimaryBrush}"
+                                   VerticalAlignment="Center" Margin="40,0,0,0"/>
+                    </Grid>
+                </Border>
+
+                <ItemsControl x:Name="OutfitsList"
+                              ItemTemplate="{StaticResource OutfitCardTemplate}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
         </ScrollViewer>
 
         <!-- Empty State -->
-        <TextBlock x:Name="TxtEmpty" Grid.Row="1"
-                   Text="还没有搭配，点击「创建搭配」开始"
-                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                   FontSize="16" Foreground="#FFA39B95"
-                   Visibility="Collapsed"/>
+        <StackPanel x:Name="TxtEmpty" Grid.Row="1"
+                    HorizontalAlignment="Center" VerticalAlignment="Center"
+                    Visibility="Collapsed">
+            <TextBlock Text="👗" FontSize="52" HorizontalAlignment="Center" Opacity="0.55"/>
+            <TextBlock Text="还没有搭配"
+                       Style="{StaticResource EmptyStateTitleText}"
+                       Margin="0,18,0,0"/>
+            <TextBlock Text="今天从一套简单的开始吧"
+                       Style="{StaticResource EmptyStateBodyText}"/>
+            <Button Content="+ 新建今日搭配"
+                    Style="{StaticResource PrimaryButton}"
+                    HorizontalAlignment="Center"
+                    Click="CreateOutfit_Click"/>
+        </StackPanel>
     </Grid>
 </UserControl>

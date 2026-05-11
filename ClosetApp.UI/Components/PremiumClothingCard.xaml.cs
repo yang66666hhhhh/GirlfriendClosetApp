@@ -109,12 +109,12 @@ public partial class PremiumClothingCard : UserControl
     {
         string? path = c.ImagePath;
         if (string.IsNullOrEmpty(path))
-            return cardWidth * 1.25;
+            return cardWidth * 1.08;
 
         try
         {
             string? resolved = ResolveImagePath(path);
-            if (resolved == null) return cardWidth * 1.25;
+            if (resolved == null) return cardWidth * 1.08;
 
             var bmp = new BitmapImage();
             bmp.BeginInit();
@@ -125,12 +125,12 @@ public partial class PremiumClothingCard : UserControl
             bmp.Freeze();
 
             double ratio = (double)bmp.PixelHeight / bmp.PixelWidth;
-            ratio = Math.Max(0.6, Math.Min(ratio, 2.0));
+            ratio = Math.Clamp(ratio, 0.78, 1.35);
             return cardWidth * ratio;
         }
         catch
         {
-            return cardWidth * 1.25;
+            return cardWidth * 1.08;
         }
     }
 

@@ -46,7 +46,15 @@ public partial class TagSelectionSection : UserControl
 
         _tags.Clear();
         foreach (var tag in tags)
-            _tags.Add(new SelectableTag(tag));
+        {
+            var selectableTag = new SelectableTag(tag);
+            selectableTag.PropertyChanged += (_, e) =>
+            {
+                if (e.PropertyName == nameof(SelectableTag.IsSelected))
+                    RefreshVisualState();
+            };
+            _tags.Add(selectableTag);
+        }
     }
 
     public void Preselect(IEnumerable<Tag> selected)

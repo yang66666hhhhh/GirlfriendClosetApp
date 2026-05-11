@@ -8,6 +8,8 @@ using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Services;
 using ClosetApp.UI.States;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -67,13 +69,13 @@ public partial class ClothesTab : UserControl
         double availWidth = ContentScroller.ActualWidth - 128;
         if (availWidth <= 0) return;
 
-        double gap = 24;
-        int cols = (int)((availWidth + gap) / (280 + gap));
+        double gap = 20;
+        int cols = (int)((availWidth + gap) / (260 + gap));
         cols = Math.Max(1, cols);
 
         double totalGap = gap * (cols - 1);
         double cardWidth = Math.Floor((availWidth - totalGap) / cols);
-        cardWidth = Math.Clamp(cardWidth, 240, 320);
+        cardWidth = Math.Clamp(cardWidth, 240, 300);
 
         masonry.ColumnWidth = cardWidth;
         masonry.Spacing = gap;
@@ -142,15 +144,33 @@ public partial class ClothesTab : UserControl
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;
 
-        var result = MessageBox.Show(
-            $"确定删除「{clothing.Name}」吗？",
-            "删除衣服",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Question);
-        if (result == MessageBoxResult.Yes)
+        var confirmed = await ShowDeleteConfirmAsync($"确定删除「{clothing.Name}」吗？");
+        if (!confirmed)
+            return;
+
+        await _clothingService.DeleteClothingAsync(clothing.Id);
+        await LoadClothesAsync();
+    }
+
+    private static async Task<bool> ShowDeleteConfirmAsync(string detail)
+    {
+        var dialog = new ConfirmDialog
         {
-            await _clothingService.DeleteClothingAsync(clothing.Id);
-            await LoadClothesAsync();
-        }
+            Title = "删除衣服",
+            Body = "删除后将无法恢复。",
+            Detail = detail,
+            ConfirmText = "删除",
+            CancelText = "取消"
+        };
+
+        var tcs = new TaskCompletionSource<bool>();
+        void ConfirmedHandler(object? sender, EventArgs e) => tcs.TrySetResult(true);
+        void CancelledHandler(object? sender, EventArgs e) => tcs.TrySetResult(false);
+        dialog.Confirmed += ConfirmedHandler;
+        dialog.Cancelled += CancelledHandler;
+        ModalService.Instance.Show(dialog);
+        var result = await tcs.Task;
+        ModalService.Instance.Hide();
+        return result;
     }
 }

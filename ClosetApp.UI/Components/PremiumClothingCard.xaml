@@ -9,19 +9,9 @@
         <conv:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColor"/>
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
 
-        <Color x:Key="TextTertiary">#FFA39B95</Color>
-        <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiary}"/>
-
         <!-- ═══════════════════════════════════════
              DESIGN TOKENS
              ═══════════════════════════════════════ -->
-        <Color x:Key="CardBg">#FFFFFDFC</Color>
-        <SolidColorBrush x:Key="CardBgBrush" Color="{StaticResource CardBg}"/>
-        <Color x:Key="TextPrimary">#FF2D2A26</Color>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
-        <Color x:Key="TextSecondary">#FF8D8D8D</Color>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
-
         <!-- ═══════════════════════════════════════
              ANIMATIONS
              ═══════════════════════════════════════ -->
@@ -146,7 +136,7 @@
 
         <!-- Main Card -->
         <Border x:Name="MainCard"
-                Background="{StaticResource CardBgBrush}"
+                Background="{StaticResource SurfaceCardBrush}"
                 CornerRadius="24"
                 ClipToBounds="True"
                 Cursor="Hand"
@@ -166,9 +156,13 @@
 
                 <!-- ═══ IMAGE AREA ═══ -->
                 <Grid Grid.Row="0">
-                    <!-- Cream image background (for transparent PNGs) -->
                     <Border CornerRadius="24,24,0,0"
-                            Background="#F3F1ED"/>
+                            Background="{StaticResource SurfaceHeroBrush}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="18" ShadowDepth="0"
+                                              Opacity="0.06" Color="#40D9A299"/>
+                        </Border.Effect>
+                    </Border>
 
                     <!-- Image with top radius 24 -->
                     <Border CornerRadius="24,24,0,0"
@@ -180,6 +174,7 @@
                             <Image x:Name="CardImage"
                                    Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}"
                                    Stretch="Uniform"
+                                   Margin="12"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
                             <!-- Fallback when no image -->
@@ -187,8 +182,8 @@
                                         Visibility="{Binding ImagePath, Converter={StaticResource InverseNullToVis}}">
                                 <Canvas Width="48" Height="56" HorizontalAlignment="Center">
                                     <Ellipse Width="9" Height="9" Canvas.Left="19.5" Canvas.Top="0"
-                                             Fill="{StaticResource TextTertiaryBrush}" Opacity="0.3"/>
-                                    <Path Stroke="{StaticResource TextTertiaryBrush}" StrokeThickness="1.5"
+                                             Fill="{StaticResource TextPlaceholderBrush}" Opacity="0.3"/>
+                                    <Path Stroke="{StaticResource TextPlaceholderBrush}" StrokeThickness="1.5"
                                           StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                                           Fill="Transparent" Opacity="0.3"
                                           Data="M24,9 L24,14 M11,19 L22,16 L33,19 M11,19 L7,47 L37,47 L33,19 M14,30 L22,27 L30,30"/>
@@ -265,7 +260,7 @@
 
                     <!-- Context menu popup -->
                     <Border x:Name="MoreMenu"
-                            Background="{StaticResource CardBgBrush}"
+                            Background="{StaticResource SurfaceCardBrush}"
                             CornerRadius="12"
                             Padding="6,4"
                             HorizontalAlignment="Right"
@@ -300,8 +295,8 @@
                 </Grid>
 
                 <!-- ═══ INFO AREA (fixed 64px) ═══ -->
-                <Border Grid.Row="1" Background="{StaticResource CardBgBrush}">
-                    <StackPanel VerticalAlignment="Center" Margin="14,0">
+                <Border Grid.Row="1" Background="{StaticResource SurfaceCardBrush}">
+                    <StackPanel VerticalAlignment="Center" Margin="16,0">
                         <!-- Title -->
                         <TextBlock Text="{Binding Name}"
                                    FontSize="14"

@@ -3,40 +3,65 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <UserControl.Resources>
         <Style x:Key="TagToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
                         <Border x:Name="ChipBorder"
-                                Background="#FFF6F2EE"
-                                BorderBrush="#FFE6CFC2"
+                                Background="{Binding SoftBackground}"
+                                BorderBrush="{Binding BorderBrush}"
                                 BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="12,6"
+                                CornerRadius="14"
+                                Padding="12,7"
                                 Margin="0,0,6,6"
                                 Opacity="{Binding UnselectedOpacity}"
                                 RenderTransformOrigin="0.5,0.5">
+                            <Border.Effect>
+                                <DropShadowEffect x:Name="ChipShadow" BlurRadius="0" ShadowDepth="0" Opacity="0" Color="#000000"/>
+                            </Border.Effect>
                             <Border.RenderTransform>
                                 <ScaleTransform ScaleX="1" ScaleY="1"/>
                             </Border.RenderTransform>
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="8" Height="8"
                                          Fill="{Binding BorderBrush}" Opacity="0.9"/>
-                                <TextBlock Text="{Binding Tag.Name}" FontSize="12"
-                                          Foreground="#FF5B4636" Margin="6,0,0,0"
-                                          VerticalAlignment="Center"/>
+                                <TextBlock x:Name="TagName"
+                                           Text="{Binding Tag.Name}" FontSize="12"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Margin="6,0,0,0"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock x:Name="CheckMark"
+                                           Text="✓"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="{Binding BorderBrush}"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
                             </StackPanel>
                         </Border>
                         <ControlTemplate.Triggers>
-                            <Trigger Property="IsChecked" Value="True">
+                            <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ChipBorder" Property="Background" Value="{Binding SelectedBackground}"/>
                                 <Setter TargetName="ChipBorder" Property="BorderThickness" Value="1.5"/>
-                            </Trigger>
-                            <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ChipBorder" Property="RenderTransform">
                                     <Setter.Value>
                                         <ScaleTransform ScaleX="1.03" ScaleY="1.03"/>
                                     </Setter.Value>
                                 </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="ChipBorder" Property="Background" Value="{Binding SelectedBackground}"/>
+                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{Binding BorderBrush}"/>
+                                <Setter TargetName="ChipBorder" Property="BorderThickness" Value="2"/>
+                                <Setter TargetName="ChipBorder" Property="Opacity" Value="1"/>
+                                <Setter TargetName="ChipBorder" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.06" ScaleY="1.06"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="TagName" Property="FontWeight" Value="SemiBold"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -47,8 +72,8 @@
 
     <StackPanel>
         <TextBlock x:Name="TxtTitle"
-                  Text="🏷 风格" FontSize="12" FontWeight="Medium"
-                  Foreground="#FF9E958D" Margin="0,0,0,8"/>
+                   Text="🏷 风格" FontSize="12" FontWeight="Medium"
+                   Foreground="#FF9E958D" Margin="0,0,0,8"/>
         <ItemsControl ItemsSource="{Binding Tags, RelativeSource={RelativeSource AncestorType=UserControl}}">
             <ItemsControl.ItemsPanel>
                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>

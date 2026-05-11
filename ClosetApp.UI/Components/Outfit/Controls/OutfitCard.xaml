@@ -27,17 +27,17 @@
         </Storyboard>
     </UserControl.Resources>
 
-    <Border x:Name="CardRoot" MinWidth="280" MaxWidth="360"
-            Background="#FFFFFDFC"
-            CornerRadius="16"
+    <Border x:Name="CardRoot" Width="320"
+            Background="{StaticResource SurfaceCardBrush}"
+            CornerRadius="24"
             Cursor="Hand"
             RenderTransformOrigin="0.5,0.5">
         <Border.RenderTransform>
             <ScaleTransform ScaleX="1" ScaleY="1"/>
         </Border.RenderTransform>
         <Border.Effect>
-            <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="4"
-                              Opacity="0.08" Color="#000000" Direction="270"/>
+            <DropShadowEffect x:Name="CardShadow" BlurRadius="20" ShadowDepth="4"
+                              Opacity="0.08" Color="#60000000" Direction="270"/>
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
@@ -46,13 +46,13 @@
             </Grid.RowDefinitions>
 
             <!-- Lookbook Preview -->
-            <Border Grid.Row="0" Background="#F8F5F2" CornerRadius="16,16,0,0" ClipToBounds="True">
+            <Border Grid.Row="0" Background="{StaticResource SurfaceHeroBrush}" CornerRadius="24,24,0,0" ClipToBounds="True">
                 <Grid>
                     <outfit:OutfitPreviewCanvas x:Name="PreviewCanvas"
-                                   Width="260" Height="300"
+                                   Width="280" Height="320"
                                    HorizontalAlignment="Center" VerticalAlignment="Top"/>
                     <Border x:Name="ActionOverlay" Visibility="Collapsed"
-                            Background="#00000030" CornerRadius="16,16,0,0">
+                            Background="#22000000" CornerRadius="24,24,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                                     VerticalAlignment="Bottom" Margin="0,0,0,12">
                             <Button x:Name="BtnEdit" Content="编辑" Padding="14,8"
@@ -67,18 +67,18 @@
             </Border>
 
             <!-- Bottom Info Bar -->
-            <Border Grid.Row="1" Padding="16,12">
+            <Border Grid.Row="1" Padding="18,14">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtName" FontSize="14" FontWeight="SemiBold"
-                                   Foreground="#FF2D2A26" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="TxtName" FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                         <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
                             <Path x:Name="SceneIcon"
-                                  Fill="#FFD9A299" Width="12" Height="12"
+                                  Fill="{StaticResource PrimaryBrush}" Width="12" Height="12"
                                   Stretch="Uniform" VerticalAlignment="Center"/>
                             <TextBlock x:Name="TxtSeason" FontSize="11"
                                        Foreground="#FFA39B95" Margin="6,0,0,0"
@@ -88,7 +88,7 @@
                     <Button x:Name="BtnFavorite" Grid.Column="1"
                             Content="♡" FontSize="18" Padding="8"
                             Background="Transparent" BorderThickness="0"
-                            Foreground="#FFD9A299" Cursor="Hand"
+                            Foreground="{StaticResource PrimaryBrush}" Cursor="Hand"
                             VerticalAlignment="Center"/>
                 </Grid>
             </Border>
