@@ -388,12 +388,20 @@
                                 Foreground="{StaticResource TextSecondaryBrush}"
                                 FontFamily="{StaticResource Font.Primary}"
                                 FontSize="14" FontWeight="Medium"
-                                Cursor="Hand" Padding="16,10"
+                                Cursor="Hand"
+                                MinWidth="96"
+                                MinHeight="40"
+                                Padding="16,10"
                                 Margin="0,0,12,0"
                                 Click="Cancel_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
-                                    <Border x:Name="CancelBg" Background="Transparent" CornerRadius="10" Padding="16,10">
+                                    <Border x:Name="CancelBg"
+                                            Background="Transparent"
+                                            CornerRadius="10"
+                                            MinWidth="{TemplateBinding MinWidth}"
+                                            MinHeight="{TemplateBinding MinHeight}"
+                                            Padding="{TemplateBinding Padding}">
                                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                     </Border>
                                     <ControlTemplate.Triggers>
@@ -410,13 +418,17 @@
                                 FontFamily="{StaticResource Font.Primary}"
                                 FontSize="14" FontWeight="Medium"
                                 Cursor="Hand"
-                                MinWidth="140" Padding="24,11"
+                                MinWidth="140"
+                                MinHeight="40"
+                                Padding="24,11"
                                 Click="Save_Click">
                             <Button.Template>
                                 <ControlTemplate TargetType="Button">
                                     <Border x:Name="SaveBg"
                                             Background="{TemplateBinding Background}"
                                             CornerRadius="12"
+                                            MinWidth="{TemplateBinding MinWidth}"
+                                            MinHeight="{TemplateBinding MinHeight}"
                                             Padding="{TemplateBinding Padding}">
                                         <Border.Effect>
                                             <DropShadowEffect BlurRadius="20" ShadowDepth="3" Opacity="0.15" Color="#40D9A299" Direction="270"/>

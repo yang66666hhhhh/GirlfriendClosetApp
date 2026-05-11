@@ -27,13 +27,19 @@
                 </ItemsControl.ItemsPanel>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Border Background="{DynamicResource CardBackgroundBrush}" CornerRadius="20" Padding="16,10" Margin="8" Cursor="Hand">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="10" ShadowDepth="2" Opacity="0.06" Color="#000"/>
-                            </Border.Effect>
+                        <Border Background="{DynamicResource CardBackgroundBrush}"
+                                CornerRadius="20" Padding="16,10" Margin="8"
+                                Cursor="Hand" Tag="{Binding}">
+                            <Border.ContextMenu>
+                                <ContextMenu>
+                                    <MenuItem Header="编辑" Click="EditTag_Click"/>
+                                    <MenuItem Header="删除" Click="DeleteTag_Click"/>
+                                </ContextMenu>
+                            </Border.ContextMenu>
                             <StackPanel Orientation="Horizontal">
                                 <Ellipse Width="12" Height="12" Fill="{Binding Color}"/>
-                                <TextBlock Text="{Binding Name}" FontSize="14" VerticalAlignment="Center" Margin="8,0,0,0"/>
+                                <TextBlock Text="{Binding Name}" FontSize="14"
+                                           VerticalAlignment="Center" Margin="8,0,0,0"/>
                             </StackPanel>
                         </Border>
                     </DataTemplate>
@@ -41,6 +47,8 @@
             </ItemsControl>
         </ScrollViewer>
 
-        <TextBlock x:Name="TxtEmpty" Grid.Row="1" Text="还没有标签，点击添加标签开始" HorizontalAlignment="Center" VerticalAlignment="Center" FontSize="16" Foreground="{DynamicResource TextTertiaryBrush}" Visibility="Collapsed"/>
+        <TextBlock x:Name="TxtEmpty" Grid.Row="1" Text="还没有标签，点击添加标签开始"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                   FontSize="16" Foreground="{DynamicResource TextTertiaryBrush}" Visibility="Collapsed"/>
     </Grid>
 </UserControl>

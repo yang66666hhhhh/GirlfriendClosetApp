@@ -2,6 +2,8 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
+using ClosetApp.UI.Components.Tags.Controls;
+using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Views;
@@ -25,13 +27,57 @@ public partial class TagsTab : UserControl
         TxtEmpty.Visibility = list.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
     }
 
-    private async void AddTag_Click(object sender, RoutedEventArgs e)
+    private void AddTag_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new AddTagDialog();
-        if (dialog.ShowDialog() == true && dialog.Result != null)
+        var panel = new TagEditorPanel();
+        panel.EditorCompleted += async (s, result) =>
         {
-            await _tagService.AddTagAsync(dialog.Result);
-            await LoadTagsAsync();
+            if (result.Type == TagEditorResultType.Saved)
+            {
+                await _tagService.AddTagAsync(result.Tag!);
+                await LoadTagsAsync();
+            }
+            ModalService.Instance.Hide();
+        };
+        ModalService.Instance.Show(panel);
+    }
+
+    private void EditTag_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.Parent is ContextMenu cm && cm.PlacementTarget is Border border && border.Tag is Tag tag)
+            OpenEditPanel(tag);
+    }
+
+    private void OpenEditPanel(Tag tag)
+    {
+        var panel = new TagEditorPanel(tag);
+        panel.EditorCompleted += async (s, result) =>
+        {
+            if (result.Type == TagEditorResultType.Saved)
+            {
+                await _tagService.UpdateTagAsync(result.Tag!);
+                await LoadTagsAsync();
+            }
+            ModalService.Instance.Hide();
+        };
+        ModalService.Instance.Show(panel);
+    }
+
+    private async void DeleteTag_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem mi && mi.Parent is ContextMenu cm && cm.PlacementTarget is Border border && border.Tag is Tag tag)
+        {
+            var confirmed = MessageBox.Show(
+                $"确定删除标签「{tag.Name}」？衣服上的此标签将被移除。",
+                "确认删除",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Warning);
+
+            if (confirmed == MessageBoxResult.OK)
+            {
+                await _tagService.DeleteTagAsync(tag.Id);
+                await LoadTagsAsync();
+            }
         }
     }
 }
