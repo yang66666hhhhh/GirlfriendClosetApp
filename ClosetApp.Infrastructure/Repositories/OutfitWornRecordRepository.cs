@@ -15,7 +15,9 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
 
     public async Task<IEnumerable<OutfitWornRecord>> GetAllAsync()
     {
-        return await _context.OutfitWornRecords.ToListAsync();
+        return await _context.OutfitWornRecords
+            .Include(r => r.Outfit)
+            .ToListAsync();
     }
 
     public async Task<OutfitWornRecord?> GetByIdAsync(Guid id)
@@ -48,14 +50,27 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     public async Task<IEnumerable<OutfitWornRecord>> GetByDateRangeAsync(DateTime start, DateTime end)
     {
         return await _context.OutfitWornRecords
+            .Include(r => r.Outfit)
             .Where(r => r.WornDate >= start && r.WornDate <= end)
+            .OrderByDescending(r => r.WornDate)
             .ToListAsync();
     }
 
     public async Task<IEnumerable<OutfitWornRecord>> GetByOutfitIdAsync(Guid outfitId)
     {
         return await _context.OutfitWornRecords
+            .Include(r => r.Outfit)
             .Where(r => r.OutfitId == outfitId)
+            .OrderByDescending(r => r.WornDate)
+            .ToListAsync();
+    }
+
+    public async Task<IEnumerable<OutfitWornRecord>> GetRecentAsync(int count)
+    {
+        return await _context.OutfitWornRecords
+            .Include(r => r.Outfit)
+            .OrderByDescending(r => r.WornDate)
+            .Take(count)
             .ToListAsync();
     }
 }

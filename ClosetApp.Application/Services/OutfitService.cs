@@ -54,6 +54,16 @@ public class OutfitService : IOutfitService
         return await _repository.GetRecentlyWornAsync(count);
     }
 
+    public async Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count)
+    {
+        return await _wornRecordRepository.GetRecentAsync(count);
+    }
+
+    public async Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end)
+    {
+        return await _wornRecordRepository.GetByDateRangeAsync(start, end);
+    }
+
     public async Task RecordWornDateAsync(Guid outfitId, DateTime date)
     {
         var outfit = await _repository.GetByIdAsync(outfitId);
@@ -68,5 +78,23 @@ public class OutfitService : IOutfitService
             });
             await _repository.UpdateAsync(outfit);
         }
+    }
+
+    public async Task DeleteWornRecordAsync(Guid recordId)
+    {
+        var record = await _wornRecordRepository.GetByIdAsync(recordId);
+        if (record == null)
+            return;
+
+        var outfit = await _repository.GetByIdAsync(record.OutfitId);
+        await _wornRecordRepository.DeleteAsync(recordId);
+
+        if (outfit == null)
+            return;
+
+        outfit.WearCount = Math.Max(0, outfit.WearCount - 1);
+        var remainingRecords = await _wornRecordRepository.GetByOutfitIdAsync(outfit.Id);
+        outfit.WornDate = remainingRecords.FirstOrDefault()?.WornDate;
+        await _repository.UpdateAsync(outfit);
     }
 }

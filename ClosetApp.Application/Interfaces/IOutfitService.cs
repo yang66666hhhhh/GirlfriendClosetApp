@@ -12,5 +12,8 @@ public interface IOutfitService
     Task DeleteOutfitAsync(Guid id);
     Task<IEnumerable<Outfit>> GetOutfitsBySceneAsync(OutfitScene scene);
     Task<IEnumerable<Outfit>> GetRecentlyWornOutfitsAsync(int count);
+    Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count);
+    Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end);
     Task RecordWornDateAsync(Guid outfitId, DateTime date);
+    Task DeleteWornRecordAsync(Guid recordId);
 }
