@@ -8,6 +8,7 @@
         xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
         mc:Ignorable="d"
         Title="我的衣橱"
+        Icon="Assets/Icons/app-avatar.png"
         Width="1400" Height="900"
         MinWidth="1200" MinHeight="800"
         WindowStartupLocation="CenterScreen"
@@ -44,6 +45,9 @@
         <views:TagsTab x:Name="TagsTabContent"
                       Grid.Column="1"
                       Visibility="Collapsed"/>
+        <views:SettingsTab x:Name="SettingsTabContent"
+                           Grid.Column="1"
+                           Visibility="Collapsed"/>
 
         <!-- Global modal overlay layer -->
         <components:ModalContainer x:Name="ModalHost" Grid.ColumnSpan="2"/>

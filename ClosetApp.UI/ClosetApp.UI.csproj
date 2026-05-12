@@ -20,4 +20,8 @@
     <UseWPF>true</UseWPF>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Resource Include="Assets\Icons\app-avatar.png" />
+  </ItemGroup>
+
 </Project>

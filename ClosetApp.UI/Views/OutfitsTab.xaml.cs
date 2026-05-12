@@ -43,8 +43,10 @@ public partial class OutfitsTab : UserControl
                     {
                         card.EditCompleted -= OutfitCard_EditCompleted;
                         card.DeleteRequested -= OutfitCard_DeleteRequested;
+                        card.WornRequested -= OutfitCard_WornRequested;
                         card.EditCompleted += OutfitCard_EditCompleted;
                         card.DeleteRequested += OutfitCard_DeleteRequested;
+                        card.WornRequested += OutfitCard_WornRequested;
                     }
                 }
             }
@@ -68,6 +70,12 @@ public partial class OutfitsTab : UserControl
     private async void OutfitCard_DeleteRequested(object? sender, OutfitEntity outfit)
     {
         await _outfitService.DeleteOutfitAsync(outfit.Id);
+        await LoadOutfitsAsync();
+    }
+
+    private async void OutfitCard_WornRequested(object? sender, OutfitEntity outfit)
+    {
+        await _outfitService.RecordWornDateAsync(outfit.Id, DateTime.Now);
         await LoadOutfitsAsync();
     }
 

@@ -52,6 +52,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
         _ = LoadTagsAsync();
+        UpdateCardClip();
 
         var scaleX = new DoubleAnimation(0.96, 1, TimeSpan.FromMilliseconds(220))
         {
@@ -72,6 +73,19 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         };
         var translate = FormPanel.RenderTransform as TranslateTransform;
         translate?.BeginAnimation(TranslateTransform.YProperty, slideUp);
+    }
+
+    private void CardClip_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateCardClip();
+
+    private void UpdateCardClip()
+    {
+        if (CardClip.ActualWidth <= 0 || CardClip.ActualHeight <= 0)
+            return;
+
+        CardClip.Clip = new RectangleGeometry(
+            new Rect(0, 0, CardClip.ActualWidth, CardClip.ActualHeight),
+            24,
+            24);
     }
 
     private async Task LoadTagsAsync()

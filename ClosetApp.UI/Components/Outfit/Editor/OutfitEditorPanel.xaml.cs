@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Enums;
@@ -32,7 +33,11 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         _outfitService = App.Services.GetRequiredService<IOutfitService>();
         CmbScene.SelectedIndex = 4;
         CmbSeason.SelectedIndex = 0;
-        Loaded += async (s, e) => await LoadClothesAsync();
+        Loaded += async (s, e) =>
+        {
+            UpdateCardClip();
+            await LoadClothesAsync();
+        };
     }
 
     public OutfitEditorPanel(OutfitEntity outfit) : this()
@@ -78,6 +83,19 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
     }
 
     public async Task LoadDataAsync() => await LoadClothesAsync();
+
+    private void CardClip_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateCardClip();
+
+    private void UpdateCardClip()
+    {
+        if (CardClip.ActualWidth <= 0 || CardClip.ActualHeight <= 0)
+            return;
+
+        CardClip.Clip = new RectangleGeometry(
+            new Rect(0, 0, CardClip.ActualWidth, CardClip.ActualHeight),
+            24,
+            24);
+    }
 
     private async Task LoadClothesAsync()
     {

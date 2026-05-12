@@ -8,10 +8,14 @@ namespace ClosetApp.Application.Services;
 public class OutfitService : IOutfitService
 {
     private readonly IOutfitRepository _repository;
+    private readonly IOutfitWornRecordRepository _wornRecordRepository;
 
-    public OutfitService(IOutfitRepository repository)
+    public OutfitService(
+        IOutfitRepository repository,
+        IOutfitWornRecordRepository wornRecordRepository)
     {
         _repository = repository;
+        _wornRecordRepository = wornRecordRepository;
     }
 
     public async Task<IEnumerable<Outfit>> GetAllOutfitsAsync()
@@ -57,6 +61,11 @@ public class OutfitService : IOutfitService
         {
             outfit.WornDate = date;
             outfit.WearCount++;
+            await _wornRecordRepository.AddAsync(new OutfitWornRecord
+            {
+                OutfitId = outfitId,
+                WornDate = date
+            });
             await _repository.UpdateAsync(outfit);
         }
     }

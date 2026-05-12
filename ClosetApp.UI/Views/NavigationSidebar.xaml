@@ -125,14 +125,34 @@
 
             <!-- Logo / Brand Area -->
             <StackPanel Grid.Row="0" Margin="20,28,20,24">
-                <TextBlock Text="👗 私人衣橱"
-                           FontSize="15" FontWeight="SemiBold"
-                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="34"
+                            Height="34"
+                            CornerRadius="17"
+                            Background="{StaticResource AccentLightBrush}">
+                        <Image Source="/ClosetApp.UI;component/Assets/Icons/app-avatar.png"
+                               Width="24"
+                               Height="24"
+                               Stretch="Uniform"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock Text="私人衣橱"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="Closet Companion"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextPlaceholderBrush}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
+                </StackPanel>
                 <TextBlock x:Name="TxtClothingCount"
                            Text="0 件衣服"
                            FontSize="12"
                            Foreground="{StaticResource TextPlaceholderBrush}"
-                           Margin="0,6,0,0"/>
+                           Margin="46,8,0,0"/>
             </StackPanel>
 
             <!-- Navigation Items -->
@@ -160,8 +180,6 @@
                 <RadioButton x:Name="NavSettings"
                              Content="设置" Tag="⚙"
                              Style="{StaticResource NavItemStyle}"
-                             IsEnabled="False"
-                             Opacity="0.4"
                              Checked="NavItem_Checked"/>
             </StackPanel>
 

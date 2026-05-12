@@ -5,6 +5,6 @@
         <Border x:Name="Overlay" Background="#66000000" MouseLeftButtonDown="Overlay_Click"/>
         <ContentControl x:Name="ModalContent"
                         HorizontalAlignment="Center" VerticalAlignment="Center"
-                        MaxWidth="1100" MaxHeight="750"/>
+                        MaxWidth="1280" MaxHeight="900"/>
     </Grid>
 </UserControl>

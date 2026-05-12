@@ -32,6 +32,8 @@ namespace ClosetApp.UI.Views;
             NavigationChanged?.Invoke(this, 1);
         else if (sender == NavTags)
             NavigationChanged?.Invoke(this, 2);
+        else if (sender == NavSettings)
+            NavigationChanged?.Invoke(this, 3);
     }
 
     private void Collapse_Click(object sender, RoutedEventArgs e)

@@ -2,9 +2,21 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="ModalCardRoot" TargetType="Border">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Effect" Value="{StaticResource Shadow.Modal}"/>
+    </Style>
+
+    <Style x:Key="ModalCardClip" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceModalBrush}"/>
         <Setter Property="CornerRadius" Value="24"/>
-        <Setter Property="Effect" Value="{StaticResource Shadow.Modal}"/>
+        <Setter Property="ClipToBounds" Value="True"/>
+    </Style>
+
+    <Style x:Key="ModalHeaderHost" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceModalBrush}"/>
+        <Setter Property="BorderBrush" Value="{StaticResource BorderDividerBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+        <Setter Property="CornerRadius" Value="24,24,0,0"/>
     </Style>
 
     <Style x:Key="ModalHeaderTitle" TargetType="TextBlock">
@@ -50,6 +62,7 @@
         <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderDividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="CornerRadius" Value="0,0,24,24"/>
     </Style>
 
 </ResourceDictionary>

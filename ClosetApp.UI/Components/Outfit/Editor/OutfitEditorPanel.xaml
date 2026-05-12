@@ -63,10 +63,13 @@
         </DataTemplate>
     </UserControl.Resources>
 
-    <Border Background="{StaticResource PageBgBrush}"
+    <Border Style="{StaticResource ModalCardRoot}"
             MinWidth="760" MinHeight="620"
             MaxWidth="1280" MaxHeight="900"
             Width="980" Height="720">
+        <Border x:Name="CardClip"
+                Style="{StaticResource ModalCardClip}"
+                SizeChanged="CardClip_SizeChanged">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="60"/>
@@ -75,16 +78,14 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Border Grid.Row="0" Background="{StaticResource PageBgBrush}"
-                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+            <Border Grid.Row="0" Style="{StaticResource ModalHeaderHost}">
                 <Grid Margin="24,0">
                     <TextBlock x:Name="TxtHeader" Text="创建搭配" FontSize="18" FontWeight="SemiBold"
                                VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                            Style="{StaticResource IconButton}" Click="CloseButton_Click">
-                        <Path Data="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"
-                              Fill="{StaticResource TextSecondaryBrush}" Width="18" Height="18" Stretch="Uniform"/>
-                    </Button>
+                            Content="✕"
+                            Style="{StaticResource ModalCloseButton}"
+                            Click="CloseButton_Click"/>
                 </Grid>
             </Border>
 
@@ -232,18 +233,20 @@
             </Grid>
 
             <!-- Bottom Buttons -->
-            <Border Grid.Row="2" Background="{StaticResource PageBgBrush}"
-                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,1,0,0" Padding="24,14">
+            <Border Grid.Row="2"
+                    Style="{StaticResource ModalFooterHost}"
+                    Padding="24,14">
                 <Grid MaxWidth="400" HorizontalAlignment="Right">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="2*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="取消" Style="{StaticResource SecondaryButton}" Click="Cancel_Click"/>
-                    <Button Grid.Column="2" x:Name="BtnSave" Content="创建搭配" Style="{StaticResource PrimaryButton}" Click="Save_Click"/>
+                    <Button Grid.Column="0" Content="取消" Style="{StaticResource ModalCancelButton}" Click="Cancel_Click"/>
+                    <Button Grid.Column="2" x:Name="BtnSave" Content="创建搭配" Style="{StaticResource ModalSaveButton}" Click="Save_Click"/>
                 </Grid>
             </Border>
         </Grid>
+        </Border>
     </Border>
 </UserControl>

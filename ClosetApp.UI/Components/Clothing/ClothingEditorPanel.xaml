@@ -36,8 +36,7 @@
             MinWidth="860" MaxWidth="1080"
             MinHeight="680" MaxHeight="900"
             Width="1040" Height="760"
-            Background="{StaticResource SurfaceModalBrush}"
-            CornerRadius="24"
+            Style="{StaticResource ModalCardRoot}"
             RenderTransformOrigin="0.5,0.5"
             MouseLeftButtonDown="Card_MouseDown">
         <Border.RenderTransform>
@@ -47,6 +46,9 @@
             <DropShadowEffect BlurRadius="48" ShadowDepth="8" Opacity="0.10" Color="#40000000"/>
         </Border.Effect>
 
+        <Border x:Name="CardClip"
+                Style="{StaticResource ModalCardClip}"
+                SizeChanged="CardClip_SizeChanged">
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="84"/>
@@ -55,49 +57,36 @@
             </Grid.RowDefinitions>
 
             <!-- ═══ HEADER ═══ -->
-            <Grid Grid.Row="0" Margin="36,0,36,0">
-                <StackPanel x:Name="HeaderAdd" VerticalAlignment="Center">
-                    <TextBlock Text="添加一件心动单品"
-                               FontFamily="{StaticResource Font.Primary}"
-                               FontSize="26" FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}"/>
-                    <TextBlock Text="照片、分类和小标签，以后都会成为搭配灵感 ✨"
-                               FontFamily="{StaticResource Font.Primary}"
-                               FontSize="12" FontWeight="Regular"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               Margin="0,4,0,0"/>
-                </StackPanel>
-                <StackPanel x:Name="HeaderEdit" VerticalAlignment="Center" Visibility="Collapsed">
-                    <TextBlock Text="编辑衣服"
-                               FontFamily="{StaticResource Font.Primary}"
-                               FontSize="26" FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}"/>
-                    <TextBlock Text="更新它的照片、标签和喜欢程度"
-                               FontFamily="{StaticResource Font.Primary}"
-                               FontSize="12" FontWeight="Regular"
-                               Foreground="{StaticResource TextSecondaryBrush}"
-                               Margin="0,4,0,0"/>
-                </StackPanel>
-                <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                        Width="36" Height="36"
-                        Background="Transparent" Cursor="Hand"
-                        Click="Cancel_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="CloseBg" Background="Transparent" CornerRadius="18">
-                                <TextBlock Text="✕" FontSize="15"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="CloseBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
-                </Button>
-            </Grid>
+            <Border Grid.Row="0" Style="{StaticResource ModalHeaderHost}">
+                <Grid Margin="36,0,36,0">
+                    <StackPanel x:Name="HeaderAdd" VerticalAlignment="Center">
+                        <TextBlock Text="添加一件心动单品"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="26" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="照片、分类和小标签，以后都会成为搭配灵感 ✨"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="12" FontWeight="Regular"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <StackPanel x:Name="HeaderEdit" VerticalAlignment="Center" Visibility="Collapsed">
+                        <TextBlock Text="编辑衣服"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="26" FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="更新它的照片、标签和喜欢程度"
+                                   FontFamily="{StaticResource Font.Primary}"
+                                   FontSize="12" FontWeight="Regular"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                            Content="✕"
+                            Style="{StaticResource ModalCloseButton}"
+                            Click="Cancel_Click"/>
+                </Grid>
+            </Border>
 
             <!-- ═══ BODY ═══ -->
             <Grid Grid.Row="1" Margin="0">
@@ -287,103 +276,35 @@
 
             <!-- ═══ STICKY FOOTER ═══ -->
             <Border Grid.Row="2"
-                    Background="{StaticResource SurfaceModalBrush}"
-                    BorderBrush="{StaticResource BorderDividerBrush}"
-                    BorderThickness="0,1,0,0">
-                <Grid Margin="36,0">
-                    <!-- 删除按钮：文字型，弱化 -->
+                    Style="{StaticResource ModalFooterHost}"
+                    Padding="24,14">
+                <Grid>
                     <Button x:Name="BtnDelete"
                             Content="删除这件衣服"
+                            Style="{StaticResource ModalDangerButton}"
                             VerticalAlignment="Center"
-                            Background="Transparent"
-                            Foreground="{StaticResource DangerBrush}"
-                            FontFamily="{StaticResource Font.Primary}"
-                            FontSize="13" FontWeight="Medium"
-                            Cursor="Hand"
-                            Padding="10,8"
                             Click="Delete_Click"
                             HorizontalAlignment="Left"
-                            Visibility="Collapsed">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                    <Border x:Name="DelBg" Background="Transparent" CornerRadius="12" Padding="{TemplateBinding Padding}">
-                                    <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="DelBg" Property="Background" Value="{StaticResource DangerLightBrush}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                            Visibility="Collapsed"/>
 
-                    <!-- 右侧按钮组 -->
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Right" VerticalAlignment="Center">
-                        <Button Content="取消"
-                                Background="Transparent"
-                                Foreground="{StaticResource TextSecondaryBrush}"
-                                FontFamily="{StaticResource Font.Primary}"
-                                FontSize="14" FontWeight="Medium"
-                                Cursor="Hand"
-                                MinWidth="104"
-                                MinHeight="44"
-                                Padding="16,10"
-                                Margin="0,0,12,0"
-                                Click="Cancel_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="CancelBg"
-                                            Background="Transparent"
-                                            CornerRadius="14"
-                                            MinWidth="{TemplateBinding MinWidth}"
-                                            MinHeight="{TemplateBinding MinHeight}"
-                                            Padding="{TemplateBinding Padding}">
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="CancelBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                        <Button Content="保存衣服 ♥"
-                                Background="{StaticResource PrimaryBrush}"
-                                Foreground="White"
-                                FontFamily="{StaticResource Font.Primary}"
-                                FontSize="14" FontWeight="Medium"
-                                Cursor="Hand"
-                                MinWidth="152"
-                                MinHeight="44"
-                                Padding="24,11"
-                                Click="Save_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="SaveBg"
-                                            Background="{TemplateBinding Background}"
-                                            CornerRadius="14"
-                                            MinWidth="{TemplateBinding MinWidth}"
-                                            MinHeight="{TemplateBinding MinHeight}"
-                                            Padding="{TemplateBinding Padding}">
-                                        <Border.Effect>
-                                            <DropShadowEffect BlurRadius="20" ShadowDepth="3" Opacity="0.15" Color="#40D9A299" Direction="270"/>
-                                        </Border.Effect>
-                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="SaveBg" Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </StackPanel>
+                    <Grid MaxWidth="400" HorizontalAlignment="Right">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Content="取消"
+                                Style="{StaticResource ModalCancelButton}"
+                                Click="Cancel_Click"/>
+                        <Button Grid.Column="2"
+                                Content="保存衣服 ♥"
+                                Style="{StaticResource ModalSaveButton}"
+                                Click="Save_Click"/>
+                    </Grid>
                 </Grid>
             </Border>
         </Grid>
+        </Border>
     </Border>
 </UserControl>

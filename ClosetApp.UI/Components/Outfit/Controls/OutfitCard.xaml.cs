@@ -25,6 +25,10 @@ public partial class OutfitCard : UserControl
         EventManager.RegisterRoutedEvent("DeleteClicked", RoutingStrategy.Bubble,
             typeof(RoutedEventHandler), typeof(OutfitCard));
 
+    public static readonly RoutedEvent WornClickedEvent =
+        EventManager.RegisterRoutedEvent("WornClicked", RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(OutfitCard));
+
     public event RoutedEventHandler EditClicked
     {
         add => AddHandler(EditClickedEvent, value);
@@ -35,6 +39,12 @@ public partial class OutfitCard : UserControl
     {
         add => AddHandler(DeleteClickedEvent, value);
         remove => RemoveHandler(DeleteClickedEvent, value);
+    }
+
+    public event RoutedEventHandler WornClicked
+    {
+        add => AddHandler(WornClickedEvent, value);
+        remove => RemoveHandler(WornClickedEvent, value);
     }
 
     public static readonly DependencyProperty OutfitProperty =
@@ -75,10 +85,17 @@ public partial class OutfitCard : UserControl
 
             DeleteRequested?.Invoke(this, Outfit);
         };
+        BtnWorn.Click += (s, e) =>
+        {
+            RaiseEvent(new RoutedEventArgs(WornClickedEvent, this));
+            if (Outfit != null)
+                WornRequested?.Invoke(this, Outfit);
+        };
     }
 
     public event EventHandler<OutfitEntity>? EditCompleted;
     public event EventHandler<OutfitEntity>? DeleteRequested;
+    public event EventHandler<OutfitEntity>? WornRequested;
 
     private static void OnOutfitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
@@ -94,6 +111,9 @@ public partial class OutfitCard : UserControl
                 Season.AllSeason => "四季",
                 _ => ""
             };
+            card.TxtWearInfo.Text = outfit.WearCount > 0
+                ? $"穿过 {outfit.WearCount} 次 · 最近 {FormatWornDate(outfit.WornDate)}"
+                : "还没记录穿着";
 
             var sceneIcon = card.SceneIcon;
             if (sceneIcon != null)
@@ -109,6 +129,20 @@ public partial class OutfitCard : UserControl
             var clothes = outfit.OutfitClothes?.Select(oc => oc.Clothing).ToList();
             card.PreviewCanvas.Clothes = clothes;
         }
+    }
+
+    private static string FormatWornDate(DateTime? wornDate)
+    {
+        if (!wornDate.HasValue)
+            return "未记录";
+
+        var date = wornDate.Value.Date;
+        var today = DateTime.Today;
+        if (date == today)
+            return "今天";
+        if (date == today.AddDays(-1))
+            return "昨天";
+        return date.ToString("M月d日");
     }
 
     private void OnMouseEnter(object sender, MouseEventArgs e)
