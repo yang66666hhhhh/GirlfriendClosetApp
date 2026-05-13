@@ -15,6 +15,7 @@ public class ClothingTypeToNameConverter : IValueConverter
                 ClothingType.Top => "上衣",
                 ClothingType.Bottom => "下装",
                 ClothingType.Dress => "连衣裙",
+                ClothingType.Skirt => "半身裙",
                 ClothingType.Outerwear => "外套",
                 ClothingType.Shoes => "鞋子",
                 ClothingType.Accessory => "配饰",

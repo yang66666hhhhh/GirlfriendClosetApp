@@ -8,6 +8,7 @@
         <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVis"/>
         <conv:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColor"/>
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
+        <conv:ClothingTypeToNameConverter x:Key="ClothingTypeToName"/>
 
         <!-- ═══════════════════════════════════════
              DESIGN TOKENS
@@ -151,46 +152,48 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="48"/>
+                    <RowDefinition Height="76"/>
                 </Grid.RowDefinitions>
 
                 <!-- ═══ IMAGE AREA ═══ -->
-                <Grid Grid.Row="0">
-                    <Border CornerRadius="24,24,0,0"
-                            Background="{StaticResource SurfaceHeroBrush}">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="18" ShadowDepth="0"
-                                              Opacity="0.06" Color="#40D9A299"/>
-                        </Border.Effect>
-                    </Border>
-
-                    <!-- Image with top radius 24 -->
-                    <Border CornerRadius="24,24,0,0"
-                            ClipToBounds="True">
-                        <Border.RenderTransform>
+                <Border Grid.Row="0"
+                        Margin="12,12,12,0"
+                        CornerRadius="20"
+                        ClipToBounds="True">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#FFFDFBFA" Offset="0"/>
+                            <GradientStop Color="#FFF5EFEC" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <Grid>
+                        <Grid.RenderTransform>
                             <ScaleTransform x:Name="ImageScale" ScaleX="1" ScaleY="1"/>
-                        </Border.RenderTransform>
-                        <Grid>
+                        </Grid.RenderTransform>
+
+                        <Border Margin="14"
+                                CornerRadius="16"
+                                Background="#66FFFFFF">
                             <Image x:Name="CardImage"
                                    Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}"
                                    Stretch="Uniform"
-                                   Margin="12"
+                                   Margin="14"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
-                            <!-- Fallback when no image -->
-                            <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
-                                        Visibility="{Binding ImagePath, Converter={StaticResource InverseNullToVis}}">
-                                <Canvas Width="48" Height="56" HorizontalAlignment="Center">
-                                    <Ellipse Width="9" Height="9" Canvas.Left="19.5" Canvas.Top="0"
-                                             Fill="{StaticResource TextPlaceholderBrush}" Opacity="0.3"/>
-                                    <Path Stroke="{StaticResource TextPlaceholderBrush}" StrokeThickness="1.5"
-                                          StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                                          Fill="Transparent" Opacity="0.3"
-                                          Data="M24,9 L24,14 M11,19 L22,16 L33,19 M11,19 L7,47 L37,47 L33,19 M14,30 L22,27 L30,30"/>
-                                </Canvas>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
+                        </Border>
+
+                        <!-- Fallback when no image -->
+                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
+                                    Visibility="{Binding ImagePath, Converter={StaticResource InverseNullToVis}}">
+                            <Canvas Width="48" Height="56" HorizontalAlignment="Center">
+                                <Ellipse Width="9" Height="9" Canvas.Left="19.5" Canvas.Top="0"
+                                         Fill="{StaticResource TextPlaceholderBrush}" Opacity="0.3"/>
+                                <Path Stroke="{StaticResource TextPlaceholderBrush}" StrokeThickness="1.5"
+                                      StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                                      Fill="Transparent" Opacity="0.3"
+                                      Data="M24,9 L24,14 M11,19 L22,16 L33,19 M11,19 L7,47 L37,47 L33,19 M14,30 L22,27 L30,30"/>
+                            </Canvas>
+                        </StackPanel>
 
                     <!-- Hover overlay buttons (top right, frosted glass) -->
                     <StackPanel x:Name="OverlayActions"
@@ -292,26 +295,47 @@
                                     Click="MenuDelete_Click"/>
                         </StackPanel>
                     </Border>
-                </Grid>
+                    </Grid>
+                </Border>
 
-                <!-- ═══ INFO AREA (fixed 64px) ═══ -->
-                <Border Grid.Row="1" Background="{StaticResource SurfaceCardBrush}">
-                    <StackPanel VerticalAlignment="Center" Margin="16,0">
-                        <!-- Title -->
+                <!-- ═══ INFO AREA ═══ -->
+                <Border Grid.Row="1"
+                        Background="{StaticResource SurfaceCardBrush}"
+                        Padding="16,10,16,12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Name}"
                                    FontSize="14"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"
                                    TextTrimming="CharacterEllipsis"/>
-                        <!-- Season · Color -->
-                        <TextBlock Margin="0,2,0,0" TextTrimming="CharacterEllipsis">
-                            <Run Text="{Binding Season, Converter={StaticResource SeasonToName}, Mode=OneWay}"
-                                 Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
-                            <Run Text=" · " Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
-                            <Run Text="{Binding Color, Mode=OneWay}"
-                                 Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"/>
-                        </TextBlock>
-                    </StackPanel>
+                        <StackPanel Grid.Row="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Bottom"
+                                    Height="26"
+                                    Margin="0,8,0,0">
+                            <Border Background="{StaticResource SurfaceSectionBrush}"
+                                    CornerRadius="10"
+                                    Padding="8,4"
+                                    Margin="0,0,6,0">
+                                <TextBlock Text="{Binding Type, Converter={StaticResource ClothingTypeToName}}"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           FontWeight="Medium"/>
+                            </Border>
+                            <Border Background="{StaticResource PrimaryLightBrush}"
+                                    CornerRadius="10"
+                                    Padding="8,4">
+                                <TextBlock Text="{Binding Season, Converter={StaticResource SeasonToName}}"
+                                           Foreground="{StaticResource PrimaryBrush}"
+                                           FontSize="11"
+                                           FontWeight="Medium"/>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
                 </Border>
             </Grid>
         </Border>

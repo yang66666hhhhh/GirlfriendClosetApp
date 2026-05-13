@@ -3,9 +3,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
-using System.Windows.Media.Imaging;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Outfit.Engine;
+using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Outfit.Controls;
 
@@ -103,7 +103,7 @@ public partial class OutfitPreviewCanvas : UserControl
                 Stretch = Stretch.Uniform,
                 Effect = shadow,
                 Opacity = item.Opacity,
-                Source = LoadImage(item.Clothing.ImagePath)
+                Source = ClothingImageLoader.Load(item.Clothing.ImagePath)
             };
 
             Canvas.SetLeft(img, item.X);
@@ -111,38 +111,5 @@ public partial class OutfitPreviewCanvas : UserControl
             Canvas.SetZIndex(img, item.ZIndex);
             RenderCanvas.Children.Add(img);
         }
-    }
-
-    private static ImageSource? LoadImage(string? path)
-    {
-        if (string.IsNullOrEmpty(path)) return null;
-        try
-        {
-            string? resolved = null;
-            if (System.IO.File.Exists(path)) resolved = path;
-            else
-            {
-                var full = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
-                if (System.IO.File.Exists(full)) resolved = full;
-                else
-                {
-                    var local = System.IO.Path.Combine(
-                        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                        "ClosetApp", "images", path);
-                    if (System.IO.File.Exists(local)) resolved = local;
-                }
-            }
-            if (resolved == null) return null;
-
-            var bmp = new BitmapImage();
-            bmp.BeginInit();
-            bmp.UriSource = new Uri(resolved, UriKind.Absolute);
-            bmp.CacheOption = BitmapCacheOption.OnLoad;
-            bmp.DecodePixelWidth = 400;
-            bmp.EndInit();
-            bmp.Freeze();
-            return bmp;
-        }
-        catch { return null; }
     }
 }

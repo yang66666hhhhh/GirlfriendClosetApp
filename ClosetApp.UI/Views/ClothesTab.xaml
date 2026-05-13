@@ -118,13 +118,13 @@
                     <TextBlock Text="收藏每一件心动单品" Style="{StaticResource PageSubtitleText}"/>
                 </StackPanel>
 
-                <!-- Center: Search -->
-                <TextBox x:Name="TxtSearch" Grid.Column="1"
-                         Style="{StaticResource SearchBoxStyle}"
-                         Width="320"
-                         HorizontalAlignment="Center"
-                         VerticalAlignment="Center"
-                         TextChanged="TxtSearch_TextChanged"/>
+                <!-- Center: Quick Hint -->
+                <TextBlock Grid.Column="1"
+                           Text="搜索、筛选、编辑都在一页完成"
+                           Foreground="{StaticResource TextTertiaryBrush}"
+                           FontSize="13"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"/>
 
                 <!-- Right: Add Button -->
                 <Button Grid.Column="2" Content="+ 添加衣服"
@@ -144,66 +144,112 @@
 
             <StackPanel x:Name="ContentStack">
 
-                <!-- ═══ HERO (short) ═══ -->
-                <Border x:Name="HeroBanner" Height="132" ClipToBounds="True">
-                    <Border.Background>
-                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="{StaticResource Primary.Dark}" Offset="0"/>
-                            <GradientStop Color="{StaticResource Primary.Light}" Offset="0.58"/>
-                            <GradientStop Color="{StaticResource Surface.Page}" Offset="1"/>
-                        </LinearGradientBrush>
-                    </Border.Background>
-                    <Grid Margin="64,18">
+                <!-- ═══ SUMMARY ═══ -->
+                <Border x:Name="WardrobeSummary"
+                        Style="{StaticResource LookbookCard}"
+                        Margin="64,24,64,18">
+                    <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
 
-                        <!-- Left: Text -->
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                            <TextBlock Text="今天穿什么 ✨"
+                            <TextBlock Text="衣柜概览"
                                        FontSize="24" FontWeight="Bold"
                                        Foreground="{StaticResource TextPrimaryBrush}"/>
-                            <TextBlock Text="温柔穿搭，从整理衣柜开始"
+                            <TextBlock Text="先快速找到衣服；需要精细筛选时再展开筛选面板。"
                                        FontSize="14" Foreground="{StaticResource TextSecondaryBrush}"
                                        Margin="0,8,0,0"/>
                         </StackPanel>
 
-                        <!-- Right: Illustration -->
-                        <Canvas Grid.Column="1" Width="120" Height="104"
-                                VerticalAlignment="Center">
-                            <Path Stroke="{StaticResource PrimaryBrush}" StrokeThickness="2.5"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                                  Fill="Transparent"
-                                  Data="M60,12 L60,22 M48,28 Q60,18 72,28"/>
-                            <Path Stroke="{StaticResource PrimaryBrush}" StrokeThickness="2.5"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                                  Fill="Transparent"
-                                  Data="M8,36 L60,26 L112,36"/>
-                            <Path Stroke="{StaticResource PrimaryBrush}" StrokeThickness="2"
-                                  StrokeStartLineCap="Round" StrokeEndLineCap="Round"
-                                  Fill="Transparent"
-                                  Data="M28,40 L20,100 L100,100 L92,40"/>
-                            <Line X1="28" Y1="40" X2="92" Y2="40"
-                                  Stroke="{StaticResource PrimaryBrush}" StrokeThickness="2"/>
-                        </Canvas>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="36,0,0,0">
+                            <Border Background="{StaticResource SurfaceSectionBrush}"
+                                    CornerRadius="18"
+                                    Padding="18,11"
+                                    Margin="0,0,10,0">
+                                <StackPanel>
+                                    <TextBlock x:Name="TxtTotalCount"
+                                               Text="0 件"
+                                               Foreground="{StaticResource TextPrimaryBrush}"
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="全部衣服"
+                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                               FontSize="11"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Background="{StaticResource PrimaryLightBrush}"
+                                    CornerRadius="18"
+                                    Padding="18,11">
+                                <StackPanel>
+                                    <TextBlock x:Name="TxtFilteredCount"
+                                               Text="0 件"
+                                               Foreground="{StaticResource PrimaryBrush}"
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="当前结果"
+                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               FontSize="11"
+                                               Margin="0,3,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
-                <!-- ═══ TOOLBAR: Chips + Count ═══ -->
-                <Grid Margin="64,16,64,18">
+                <!-- ═══ TOOLBAR: Search + Filter Toggle ═══ -->
+                <Grid Margin="64,0,64,14">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
-                    <!-- Category Chips -->
-                    <StackPanel Grid.Column="0">
-                        <TextBlock Text="分类筛选"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   Margin="0,0,0,10"/>
+                    <TextBox x:Name="InlineSearch"
+                             Grid.Column="0"
+                             Style="{StaticResource SearchBoxStyle}"
+                             MinWidth="320"
+                             TextChanged="TxtSearch_TextChanged"/>
+
+                    <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="14,0,0,0">
+                        <Button x:Name="ToggleFilterButton"
+                                Content="展开筛选"
+                                Style="{StaticResource CapsuleButton}"
+                                Click="ToggleFilter_Click"/>
+                        <Button x:Name="ClearFilterButton"
+                                Content="清除"
+                                Style="{StaticResource CapsuleButton}"
+                                Margin="10,0,0,0"
+                                Click="ClearFilter_Click"/>
+                    </StackPanel>
+                </Grid>
+
+                <!-- ═══ FILTER PANEL ═══ -->
+                <Border x:Name="FilterPanel"
+                        Style="{StaticResource LookbookCard}"
+                        Margin="64,0,64,18"
+                        Visibility="Collapsed">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,14">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock Text="分类筛选"
+                                           FontSize="16"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock x:Name="TxtFilterHint"
+                                           Text="选择分类后，衣服列表会立即收窄。"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                            <TextBlock x:Name="TxtCount" Grid.Column="1"
+                                       FontSize="13"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
                     <ScrollViewer
                                   HorizontalScrollBarVisibility="Disabled"
                                   VerticalScrollBarVisibility="Disabled">
@@ -229,12 +275,7 @@
                         </StackPanel>
                     </ScrollViewer>
                     </StackPanel>
-
-                    <!-- Count -->
-                    <TextBlock x:Name="TxtCount" Grid.Column="1"
-                               FontSize="13" Foreground="{StaticResource TextTertiaryBrush}"
-                               VerticalAlignment="Center"/>
-                </Grid>
+                </Border>
 
                 <!-- ═══ MASONRY FLOW ═══ -->
                 <ItemsControl x:Name="ClothesList" Margin="64,0,64,0">

@@ -4,14 +4,17 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using System.Windows.Media.Imaging;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
+using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components;
 
 public partial class PremiumClothingCard : UserControl
 {
+    private const double ImageStageChromeHeight = 68;
+    private const double InfoAreaHeight = 76;
+
     public static readonly RoutedEvent CardClickedEvent = EventManager.RegisterRoutedEvent(
         "CardClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PremiumClothingCard));
 
@@ -43,10 +46,6 @@ public partial class PremiumClothingCard : UserControl
     private Point _mouseDownPos;
     private bool _heightApplied;
 
-    private static readonly string ImageFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "ClosetApp", "images");
-
     public PremiumClothingCard()
     {
         InitializeComponent();
@@ -72,7 +71,7 @@ public partial class PremiumClothingCard : UserControl
         {
             double imgH = CalcImageHeight(c, colWidth);
             CardImage.Height = imgH;
-            Height = imgH + 48;
+            Height = imgH + ImageStageChromeHeight + InfoAreaHeight;
             _heightApplied = true;
         }
     }
@@ -86,7 +85,7 @@ public partial class PremiumClothingCard : UserControl
             {
                 double imgH = CalcImageHeight(c, colWidth);
                 CardImage.Height = imgH;
-                Height = imgH + 48;
+                Height = imgH + ImageStageChromeHeight + InfoAreaHeight;
                 _heightApplied = true;
             }
         }
@@ -113,18 +112,11 @@ public partial class PremiumClothingCard : UserControl
 
         try
         {
-            string? resolved = ResolveImagePath(path);
-            if (resolved == null) return cardWidth * 1.08;
+            var imageSize = ClothingImageLoader.GetDisplaySize(path);
+            if (imageSize == null || imageSize.Value.Width <= 0)
+                return cardWidth * 1.08;
 
-            var bmp = new BitmapImage();
-            bmp.BeginInit();
-            bmp.UriSource = new Uri(resolved, UriKind.Absolute);
-            bmp.CacheOption = BitmapCacheOption.OnLoad;
-            bmp.DecodePixelWidth = 400;
-            bmp.EndInit();
-            bmp.Freeze();
-
-            double ratio = (double)bmp.PixelHeight / bmp.PixelWidth;
+            double ratio = imageSize.Value.Height / imageSize.Value.Width;
             ratio = Math.Clamp(ratio, 0.78, 1.35);
             return cardWidth * ratio;
         }
@@ -132,20 +124,6 @@ public partial class PremiumClothingCard : UserControl
         {
             return cardWidth * 1.08;
         }
-    }
-
-    private static string? ResolveImagePath(string path)
-    {
-        if (File.Exists(path)) return path;
-
-        var appDir = AppDomain.CurrentDomain.BaseDirectory;
-        var full = Path.Combine(appDir, path);
-        if (File.Exists(full)) return full;
-
-        var local = Path.Combine(ImageFolder, path);
-        if (File.Exists(local)) return local;
-
-        return null;
     }
 
     public void StartLoadAnimation()

@@ -55,6 +55,8 @@ public class OutfitCompositionEngine
         return ClothingMappings.GetLayerRole(ClothingMappings.InferGarmentType(item.Type));
     }
 
+    private static double CenterX(double canvasWidth, double itemWidth) => (canvasWidth - itemWidth) / 2;
+
     private List<OutfitLayoutItem> SoloMode(global::ClosetApp.Domain.Entities.Clothing item, double cw, double ch)
     {
         var role = ResolveSoloLayerRole(item);
@@ -106,7 +108,7 @@ public class OutfitCompositionEngine
         if (dress != null)
         {
             double w = cw * _metrics.DressWidthRatio;
-            double x = (cw - w) / 2;
+            double x = CenterX(cw, w);
             double h = Math.Min(mainBudget, w / _metrics.DressHeightRatio);
             items.Add(new() { Clothing = dress, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
             y += h;
@@ -116,7 +118,7 @@ public class OutfitCompositionEngine
         {
             var shoes = clothes.First(c => ResolveLayerRole(c) == LayerRole.Footwear);
             double w = cw * _metrics.ShoesWidthRatio;
-            double x = cw * _metrics.ShoesLeftOffsetRatio;
+            double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
             items.Add(new() { Clothing = shoes, X = x, Y = y, Width = w, Height = h, ZIndex = 3, Opacity = 1.0 });
             y += h;
@@ -135,7 +137,7 @@ public class OutfitCompositionEngine
         {
             var outer = clothes.First(c => ResolveLayerRole(c) == LayerRole.OuterLayer);
             double w = cw * _metrics.OuterwearWidthRatio;
-            double x = (cw - w) / 2;
+            double x = CenterX(cw, w);
             double h = outerBudget + 10;
             items.Add(new() { Clothing = outer, X = x, Y = 0, Width = w, Height = h, ZIndex = 1, Opacity = 0.97 });
         }
@@ -163,7 +165,7 @@ public class OutfitCompositionEngine
         if (top != null)
         {
             double w = cw * _metrics.TopWidthRatio;
-            double x = (cw - w) / 2;
+            double x = CenterX(cw, w);
             double h = Math.Min(mainBudget * 0.45, w / _metrics.TopHeightRatio);
             items.Add(new() { Clothing = top, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
             y += h;
@@ -173,7 +175,7 @@ public class OutfitCompositionEngine
         if (bottom != null)
         {
             double w = cw * _metrics.BottomWidthRatio;
-            double x = cw * 0.08;
+            double x = CenterX(cw, w);
             double h = Math.Min(mainBudget * 0.55, w / _metrics.BottomHeightRatio);
             items.Add(new() { Clothing = bottom, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
             y += h;
@@ -183,7 +185,7 @@ public class OutfitCompositionEngine
         {
             var shoes = clothes.First(c => ResolveLayerRole(c) == LayerRole.Footwear);
             double w = cw * _metrics.ShoesWidthRatio;
-            double x = cw * _metrics.ShoesLeftOffsetRatio;
+            double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
             items.Add(new() { Clothing = shoes, X = x, Y = y, Width = w, Height = h, ZIndex = 3, Opacity = 1.0 });
             y += h;
@@ -202,7 +204,7 @@ public class OutfitCompositionEngine
         {
             var outer = clothes.First(c => ResolveLayerRole(c) == LayerRole.OuterLayer);
             double w = cw * _metrics.OuterwearWidthRatio;
-            double x = (cw - w) / 2;
+            double x = CenterX(cw, w);
             double h = outerBudget + 10;
             items.Add(new() { Clothing = outer, X = x, Y = 0, Width = w, Height = h, ZIndex = 1, Opacity = 0.97 });
         }
@@ -235,7 +237,7 @@ public class OutfitCompositionEngine
         double accBudget = ch * 0.18;
 
         double mainW = cw * 0.74;
-        double mainX = (cw - mainW) / 2;
+        double mainX = CenterX(cw, mainW);
         double mainY = 0.02 * ch;
         var mainRole = ResolveLayerRole(main);
         double aspect = mainRole == LayerRole.FullBody ? _metrics.DressHeightRatio :
@@ -252,7 +254,7 @@ public class OutfitCompositionEngine
         {
             var shoes = clothes.First(c => ResolveLayerRole(c) == LayerRole.Footwear);
             double w = cw * 0.42;
-            double x = cw * 0.10;
+            double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
             items.Add(new() { Clothing = shoes, X = x, Y = currentY, Width = w, Height = h, ZIndex = accZ++, Opacity = 1.0 });
             currentY += h + 4;

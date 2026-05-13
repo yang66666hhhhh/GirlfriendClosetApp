@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
 using ClosetApp.UI.Views;
+using Serilog;
 
 namespace ClosetApp.UI;
 
@@ -41,6 +42,12 @@ public partial class MainWindow : Window
         OutfitsTabContent.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         TagsTabContent.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
         SettingsTabContent.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
+
+        if (tabIndex == 1)
+        {
+            Log.Debug("Refreshing outfits after navigating to outfits tab");
+            _ = OutfitsTabContent.RefreshAsync();
+        }
     }
 
     private void Sidebar_CollapseStateChanged(object? sender, bool isCollapsed)

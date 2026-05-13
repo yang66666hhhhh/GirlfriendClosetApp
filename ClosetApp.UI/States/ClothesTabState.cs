@@ -14,6 +14,20 @@ public sealed class ClothesTabState
     public bool IsLoading { get; private set; }
     public bool IsEmpty => _allClothes.Count == 0;
     public int FilteredCount => FilteredClothes.Count;
+    public bool HasActiveFilters => !string.IsNullOrWhiteSpace(_searchText) || _selectedCategories != null;
+    public string FilterSummary
+    {
+        get
+        {
+            if (!HasActiveFilters)
+                return "全部衣服";
+            if (!string.IsNullOrWhiteSpace(_searchText) && _selectedCategories != null)
+                return $"搜索「{_searchText}」+ 分类筛选";
+            if (!string.IsNullOrWhiteSpace(_searchText))
+                return $"搜索「{_searchText}」";
+            return "分类筛选";
+        }
+    }
 
     public void BeginLoad() => IsLoading = true;
 
@@ -51,7 +65,10 @@ public sealed class ClothesTabState
                 c.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
                 c.Type.ToString().Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
                 c.Season.ToString().Contains(_searchText, StringComparison.OrdinalIgnoreCase) ||
-                (c.Color?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false));
+                (c.Color?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.Brand?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                (c.Notes?.Contains(_searchText, StringComparison.OrdinalIgnoreCase) ?? false) ||
+                c.ClothingTags.Any(ct => ct.Tag.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase)));
         }
 
         FilteredClothes = filtered.ToList();

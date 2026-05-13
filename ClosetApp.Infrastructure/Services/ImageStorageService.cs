@@ -1,10 +1,14 @@
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using Serilog;
 
 namespace ClosetApp.Infrastructure.Services;
 
 public class ImageStorageService : IImageStorageService
 {
+    private const byte ContentAlphaThreshold = 8;
+
     private readonly string _imageFolder;
     private readonly string _thumbnailFolder;
 
@@ -22,9 +26,12 @@ public class ImageStorageService : IImageStorageService
     {
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(sourcePath)}";
         var destPath = Path.Combine(_imageFolder, fileName);
-        await using var stream = File.Create(destPath);
-        await using var fileStream = File.OpenRead(sourcePath);
-        await fileStream.CopyToAsync(stream);
+
+        using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+        CropTransparentPadding(image);
+        await image.SaveAsync(destPath);
+
+        Log.Information("Saved clothing image {SourcePath} -> {FileName}", sourcePath, fileName);
         return fileName;
     }
 
@@ -33,21 +40,70 @@ public class ImageStorageService : IImageStorageService
         var fileName = $"{Guid.NewGuid()}_thumb{Path.GetExtension(sourcePath)}";
         var destPath = Path.Combine(_thumbnailFolder, fileName);
         
-        using var image = await Image.LoadAsync(sourcePath);
+        using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+        CropTransparentPadding(image);
         image.Mutate(x => x.Resize(new ResizeOptions
         {
             Size = new Size(maxSize, maxSize),
             Mode = ResizeMode.Max
         }));
         await image.SaveAsync(destPath);
+        Log.Information("Saved thumbnail {SourcePath} -> {FileName}", sourcePath, fileName);
         return fileName;
+    }
+
+    private static void CropTransparentPadding(Image<Rgba32> image)
+    {
+        var bounds = FindContentBounds(image);
+        if (bounds == null)
+            return;
+
+        var rect = bounds.Value;
+        if (rect.X == 0 && rect.Y == 0 && rect.Width == image.Width && rect.Height == image.Height)
+            return;
+
+        image.Mutate(x => x.Crop(rect));
+    }
+
+    private static Rectangle? FindContentBounds(Image<Rgba32> image)
+    {
+        var left = image.Width;
+        var top = image.Height;
+        var right = -1;
+        var bottom = -1;
+
+        image.ProcessPixelRows(accessor =>
+        {
+            for (var y = 0; y < accessor.Height; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                for (var x = 0; x < row.Length; x++)
+                {
+                    if (row[x].A <= ContentAlphaThreshold)
+                        continue;
+
+                    left = Math.Min(left, x);
+                    top = Math.Min(top, y);
+                    right = Math.Max(right, x);
+                    bottom = Math.Max(bottom, y);
+                }
+            }
+        });
+
+        if (right < left || bottom < top)
+            return null;
+
+        return new Rectangle(left, top, right - left + 1, bottom - top + 1);
     }
 
     public Task DeleteImageAsync(string imagePath)
     {
         var fullPath = GetImageFullPath(imagePath);
         if (File.Exists(fullPath))
+        {
             File.Delete(fullPath);
+            Log.Information("Deleted clothing image {ImagePath}", fullPath);
+        }
         return Task.CompletedTask;
     }
 
@@ -55,10 +111,16 @@ public class ImageStorageService : IImageStorageService
     {
         var fullPath = GetImageFullPath(imagePath);
         if (File.Exists(fullPath))
+        {
             File.Delete(fullPath);
+            Log.Information("Deleted clothing image {ImagePath}", fullPath);
+        }
         var thumbPath = GetThumbnailFullPath(imagePath);
         if (File.Exists(thumbPath))
+        {
             File.Delete(thumbPath);
+            Log.Information("Deleted clothing thumbnail {ThumbnailPath}", thumbPath);
+        }
         return Task.CompletedTask;
     }
 

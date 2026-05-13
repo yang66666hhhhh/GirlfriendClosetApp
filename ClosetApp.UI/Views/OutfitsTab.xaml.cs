@@ -11,6 +11,7 @@ using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.States;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using OutfitEntity = ClosetApp.Domain.Entities.Outfit;
 
 namespace ClosetApp.UI.Views;
@@ -34,6 +35,7 @@ public partial class OutfitsTab : UserControl
         _state.BeginLoad();
         var outfits = await _outfitService.GetAllOutfitsAsync();
         _state.SetOutfits(outfits);
+        Log.Debug("Loaded outfits. Count={OutfitCount}", _state.Outfits.Count);
         OutfitsList.ItemsSource = _state.Outfits;
         TxtEmpty.Visibility = _state.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
         TxtOutfitCount.Text = $"{_state.Outfits.Count} 套搭配";
@@ -61,6 +63,8 @@ public partial class OutfitsTab : UserControl
             }
         }, System.Windows.Threading.DispatcherPriority.Loaded);
     }
+
+    public Task RefreshAsync() => LoadOutfitsAsync();
 
     private void CreateOutfit_Click(object sender, RoutedEventArgs e)
     {

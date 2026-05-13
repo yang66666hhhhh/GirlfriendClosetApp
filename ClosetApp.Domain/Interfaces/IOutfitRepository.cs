@@ -8,4 +8,5 @@ public interface IOutfitRepository : IRepository<Outfit>
     Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene);
     Task<IEnumerable<Outfit>> GetBySeasonAsync(Season season);
     Task<IEnumerable<Outfit>> GetRecentlyWornAsync(int count);
+    Task DeleteEmptyOutfitsAsync();
 }
