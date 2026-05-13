@@ -73,7 +73,7 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource LookbookCard}">
+                        <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
                                 <TextBlock Text="图片缓存" FontSize="18" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
@@ -92,6 +92,32 @@
                                 </Grid>
                                 <Button Content="清理缩略图缓存" Style="{StaticResource DangerButton}"
                                         HorizontalAlignment="Left" Click="ClearThumbnails_Click"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource LookbookCard}">
+                            <StackPanel>
+                                <TextBlock Text="系统日志" FontSize="18" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="日志用于排查启动、图片处理和数据同步问题。默认保留最近 14 天。"
+                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtLogStats" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                                        <TextBlock x:Name="TxtLogDir" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="刷新" Style="{StaticResource CapsuleButton}" Click="RefreshStats_Click"/>
+                                </Grid>
+                                <WrapPanel>
+                                    <Button Content="打开日志目录" Style="{StaticResource CapsuleButton}"
+                                            Click="OpenLogsDir_Click" Margin="0,0,10,0"/>
+                                    <Button Content="清理历史日志" Style="{StaticResource DangerButton}"
+                                            Click="ClearLogs_Click"/>
+                                </WrapPanel>
                             </StackPanel>
                         </Border>
                     </StackPanel>

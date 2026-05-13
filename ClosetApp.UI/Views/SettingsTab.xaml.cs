@@ -19,6 +19,7 @@ public partial class SettingsTab : UserControl
     {
         TxtDataDir.Text = AppPaths.BaseDir;
         TxtImagesDir.Text = AppPaths.ImagesDir;
+        TxtLogDir.Text = AppPaths.LogsDir;
         TxtVersion.Text = $"版本 {GetVersion()}";
         RefreshStats();
     }
@@ -35,9 +36,12 @@ public partial class SettingsTab : UserControl
         var imageSize = GetDirectorySize(AppPaths.ImagesDir);
         var thumbnailCount = CountFiles(AppPaths.ThumbnailsDir);
         var thumbnailSize = GetDirectorySize(AppPaths.ThumbnailsDir);
+        var logCount = CountFiles(AppPaths.LogsDir);
+        var logSize = GetDirectorySize(AppPaths.LogsDir);
 
         TxtImageStats.Text = $"{imageCount} 张原图 · {FormatSize(imageSize)}";
         TxtCacheStats.Text = $"{thumbnailCount} 个缩略图缓存 · {FormatSize(thumbnailSize)}";
+        TxtLogStats.Text = $"{logCount} 个日志文件 · {FormatSize(logSize)}";
     }
 
     private static int CountFiles(string directory)
@@ -107,6 +111,8 @@ public partial class SettingsTab : UserControl
 
     private void OpenThumbnailsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.ThumbnailsDir);
 
+    private void OpenLogsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.LogsDir);
+
     private void OpenAppDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppDomain.CurrentDomain.BaseDirectory);
 
     private void RefreshStats_Click(object sender, RoutedEventArgs e) => RefreshStats();
@@ -130,5 +136,40 @@ public partial class SettingsTab : UserControl
 
         RefreshStats();
         MessageBox.Show("缩略图缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void ClearLogs_Click(object sender, RoutedEventArgs e)
+    {
+        var result = MessageBox.Show(
+            "确定清理历史日志吗？今天正在写入的日志会保留。",
+            "清理日志",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.OK)
+            return;
+
+        if (Directory.Exists(AppPaths.LogsDir))
+        {
+            var today = DateTime.Today;
+            foreach (var file in Directory.EnumerateFiles(AppPaths.LogsDir, "*.log", SearchOption.TopDirectoryOnly))
+            {
+                var info = new FileInfo(file);
+                if (info.LastWriteTime.Date >= today)
+                    continue;
+
+                try
+                {
+                    File.Delete(file);
+                }
+                catch
+                {
+                    // The log view should remain usable even if a file is locked by another process.
+                }
+            }
+        }
+
+        RefreshStats();
+        MessageBox.Show("历史日志已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 }
