@@ -60,6 +60,56 @@ public class ImageStorageServiceTests
         }
     }
 
+    [Fact]
+    public async Task DeleteImageAsync_AlsoRemovesThumbnail()
+    {
+        var tempDir = CreateTempDir();
+
+        try
+        {
+            var service = new ImageStorageService(tempDir);
+            var sourcePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourcePath, width: 320, height: 320);
+
+            var storedFileName = await service.SaveImageAsync(sourcePath);
+
+            await service.DeleteImageAsync(storedFileName);
+
+            Assert.False(File.Exists(service.GetImageFullPath(storedFileName)));
+            Assert.False(File.Exists(service.GetThumbnailFullPath(storedFileName)));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SaveThumbnailAsync_UsesRequestedMaxSize()
+    {
+        var tempDir = CreateTempDir();
+
+        try
+        {
+            var service = new ImageStorageService(tempDir);
+            var sourcePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourcePath, width: 720, height: 360);
+
+            var thumbnailFileName = await service.SaveThumbnailAsync(sourcePath, maxSize: 120);
+            var thumbnailPath = Path.Combine(tempDir, "thumbnails", thumbnailFileName);
+
+            Assert.True(File.Exists(thumbnailPath));
+
+            using var thumbnail = await Image.LoadAsync<Rgba32>(thumbnailPath);
+            Assert.True(thumbnail.Width <= 120);
+            Assert.True(thumbnail.Height <= 120);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
     private static async Task CreateSourceImageAsync(string path, int width, int height)
     {
         using var image = new Image<Rgba32>(width, height);

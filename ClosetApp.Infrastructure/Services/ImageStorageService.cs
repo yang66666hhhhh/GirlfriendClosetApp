@@ -1,4 +1,9 @@
 using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Formats;
+using SixLabors.ImageSharp.Formats.Bmp;
+using SixLabors.ImageSharp.Formats.Gif;
+using SixLabors.ImageSharp.Formats.Jpeg;
+using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
 using Serilog;
@@ -42,7 +47,7 @@ public class ImageStorageService : IImageStorageService
     {
         var fileName = $"{Guid.NewGuid()}_thumb{Path.GetExtension(sourcePath)}";
         var destPath = Path.Combine(_thumbnailFolder, fileName);
-        
+
         using var image = await Image.LoadAsync<Rgba32>(sourcePath);
         CropTransparentPadding(image);
         await SaveThumbnailImageAsync(image, destPath, maxSize);
@@ -78,7 +83,13 @@ public class ImageStorageService : IImageStorageService
             Size = new Size(maxSize, maxSize),
             Mode = ResizeMode.Max
         }));
-        await thumbnail.SaveAsync(destinationPath);
+
+        thumbnail.Metadata.ExifProfile = null;
+        thumbnail.Metadata.IccProfile = null;
+        thumbnail.Metadata.XmpProfile = null;
+
+        var encoder = CreateThumbnailEncoder(destinationPath, HasVisibleTransparency(thumbnail));
+        await thumbnail.SaveAsync(destinationPath, encoder);
     }
 
     private static void CropTransparentPadding(Image<Rgba32> image)
@@ -125,15 +136,9 @@ public class ImageStorageService : IImageStorageService
         return new Rectangle(left, top, right - left + 1, bottom - top + 1);
     }
 
-    public Task DeleteImageAsync(string imagePath)
+    public async Task DeleteImageAsync(string imagePath)
     {
-        var fullPath = GetImageFullPath(imagePath);
-        if (File.Exists(fullPath))
-        {
-            File.Delete(fullPath);
-            Log.Information("Deleted clothing image {ImagePath}", fullPath);
-        }
-        return Task.CompletedTask;
+        await DeleteImageWithThumbnailAsync(imagePath);
     }
 
     public Task DeleteImageWithThumbnailAsync(string imagePath)
@@ -163,5 +168,50 @@ public class ImageStorageService : IImageStorageService
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
         return Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
+    }
+
+    private static IImageEncoder CreateThumbnailEncoder(string destinationPath, bool hasTransparency)
+    {
+        return Path.GetExtension(destinationPath).ToLowerInvariant() switch
+        {
+            ".jpg" or ".jpeg" => new JpegEncoder
+            {
+                Quality = 82
+            },
+            ".png" => new PngEncoder
+            {
+                CompressionLevel = PngCompressionLevel.BestCompression,
+                ColorType = hasTransparency ? PngColorType.RgbWithAlpha : PngColorType.Rgb
+            },
+            ".gif" => new GifEncoder(),
+            ".bmp" => new BmpEncoder(),
+            _ => new PngEncoder
+            {
+                CompressionLevel = PngCompressionLevel.BestCompression,
+                ColorType = hasTransparency ? PngColorType.RgbWithAlpha : PngColorType.Rgb
+            }
+        };
+    }
+
+    private static bool HasVisibleTransparency(Image<Rgba32> image)
+    {
+        var hasTransparency = false;
+        image.ProcessPixelRows(accessor =>
+        {
+            for (var y = 0; y < accessor.Height && !hasTransparency; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                for (var x = 0; x < row.Length; x++)
+                {
+                    if (row[x].A < byte.MaxValue)
+                    {
+                        hasTransparency = true;
+                        break;
+                    }
+                }
+            }
+        });
+
+        return hasTransparency;
     }
 }
