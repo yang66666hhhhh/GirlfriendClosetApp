@@ -13,10 +13,12 @@ namespace ClosetApp.UI.Views;
 public partial class SettingsTab : UserControl
 {
     private readonly IBackupService _backupService;
+    private readonly IImageMaintenanceService _imageMaintenanceService;
 
     public SettingsTab()
     {
         _backupService = App.Services.GetRequiredService<IBackupService>();
+        _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
         InitializeComponent();
         Loaded += (_, _) => LoadSettings();
     }
@@ -44,10 +46,14 @@ public partial class SettingsTab : UserControl
         var thumbnailSize = GetDirectorySize(AppPaths.ThumbnailsDir);
         var logCount = CountFiles(AppPaths.LogsDir);
         var logSize = GetDirectorySize(AppPaths.LogsDir);
+        var missingImageCount = _imageMaintenanceService.CountMissingImagesAsync().GetAwaiter().GetResult();
 
         TxtImageStats.Text = $"{imageCount} 张原图 · {FormatSize(imageSize)}";
         TxtCacheStats.Text = $"{thumbnailCount} 个缩略图缓存 · {FormatSize(thumbnailSize)}";
         TxtLogStats.Text = $"{logCount} 个日志文件 · {FormatSize(logSize)}";
+        TxtMissingImageStats.Text = missingImageCount == 0
+            ? "没有发现缺失图片"
+            : $"{missingImageCount} 件衣服的图片路径失效";
     }
 
     private static int CountFiles(string directory)
@@ -220,5 +226,27 @@ public partial class SettingsTab : UserControl
         await _backupService.ImportAsync(dialog.FileName);
         RefreshStats();
         MessageBox.Show("数据备份已导入，建议返回各页面确认内容。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
+    {
+        var dialog = new OpenFolderDialog
+        {
+            Title = "选择旧图片所在目录，应用会按文件名尝试重连缺失图片。"
+        };
+
+        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FolderName))
+            return;
+
+        var repairedCount = await _imageMaintenanceService.RelinkMissingImagesAsync(dialog.FolderName);
+        RefreshStats();
+
+        MessageBox.Show(
+            repairedCount == 0
+                ? "没有找到可重连的图片文件。"
+                : $"已修复 {repairedCount} 张缺失图片。",
+            "图片修复",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 }

@@ -95,6 +95,29 @@
                             </StackPanel>
                         </Border>
 
+                        <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
+                            <StackPanel>
+                                <TextBlock Text="图片修复" FontSize="18" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="导入备份后，如果图片目录没一起迁移，可以从旧目录按文件名自动重连。"
+                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
+                                <Grid Margin="0,0,0,16">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtMissingImageStats" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold"/>
+                                        <TextBlock Text="统计的是数据库里有图片路径、但当前无法解析到实际文件的衣服。"
+                                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <Button Grid.Column="1" Content="刷新" Style="{StaticResource CapsuleButton}" Click="RefreshStats_Click"/>
+                                </Grid>
+                                <Button Content="从目录修复缺失图片" Style="{StaticResource CapsuleButton}"
+                                        HorizontalAlignment="Left" Click="RepairMissingImages_Click"/>
+                            </StackPanel>
+                        </Border>
+
                         <Border Style="{StaticResource LookbookCard}">
                             <StackPanel>
                                 <TextBlock Text="系统日志" FontSize="18" FontWeight="SemiBold"

@@ -115,6 +115,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<RecordOutfitWorn>();
         services.AddScoped<GetTagsForSelection>();
         services.AddSingleton<IBackupService, BackupService>();
+        services.AddSingleton<IImageMaintenanceService, ImageMaintenanceService>();
         services.AddSingleton<IImageStorageService, ImageStorageService>();
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
         services.AddSingleton<IWeatherService, WeatherService>();
