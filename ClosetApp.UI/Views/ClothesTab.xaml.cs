@@ -1,43 +1,34 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
-using ClosetApp.Domain.Enums;
-using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
-using ClosetApp.UI.States;
+using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 
 namespace ClosetApp.UI.Views;
 
 public partial class ClothesTab : UserControl
 {
-    private readonly IClothingService _clothingService;
-    private readonly IImageStorageService _imageStorageService;
-    private readonly ClothesTabState _state = new();
-    private bool _isFilterExpanded;
+    private readonly WardrobeViewModel _viewModel;
 
     public ClothesTab()
     {
         InitializeComponent();
-        _clothingService = App.Services.GetRequiredService<IClothingService>();
-        _imageStorageService = App.Services.GetRequiredService<IImageStorageService>();
+        _viewModel = App.Services.GetRequiredService<WardrobeViewModel>();
+        DataContext = _viewModel;
+        _viewModel.PropertyChanged += (_, _) => Dispatcher.Invoke(UpdateUI);
         Loaded += (s, e) => _ = LoadClothesAsync();
     }
 
     private async Task LoadClothesAsync()
     {
-        _state.BeginLoad();
-        var clothes = await _clothingService.GetAllClothesAsync();
-        _state.SetClothes(clothes);
-        Log.Debug("Loaded clothes. Total={TotalCount}, Filtered={FilteredCount}", _state.AllClothes.Count, _state.FilteredCount);
+        await _viewModel.LoadClothesAsync();
         UpdateUI();
     }
 
@@ -45,7 +36,7 @@ public partial class ClothesTab : UserControl
     {
         if (!AreViewControlsReady()) return;
 
-        if (_state.IsEmpty)
+        if (_viewModel.IsEmpty)
         {
             EmptyState.Visibility = Visibility.Visible;
             WardrobeSummary.Visibility = Visibility.Collapsed;
@@ -60,17 +51,17 @@ public partial class ClothesTab : UserControl
             WardrobeSummary.Visibility = Visibility.Visible;
             ClothesList.Visibility = Visibility.Visible;
 
-            TxtTotalCount.Text = $"{_state.AllClothes.Count} 件";
-            TxtFilteredCount.Text = $"{_state.FilteredCount} 件";
-            TxtCount.Text = $"{_state.FilterSummary} · {_state.FilteredCount} 件结果";
-            TxtFilterHint.Text = _state.HasActiveFilters
-                ? "当前已应用筛选；点「清除」可以回到完整衣柜。"
-                : "选择分类后，衣服列表会立即收窄。";
+            TxtTotalCount.Text = $"{_viewModel.TotalCount} 件";
+            TxtFilteredCount.Text = $"{_viewModel.FilteredCount} 件";
+            TxtCount.Text = $"{_viewModel.FilterSummary} · {_viewModel.FilteredCount} 件结果";
+            TxtFilterHint.Text = _viewModel.FilterHint;
 
-            ClothesList.ItemsSource = _state.FilteredClothes;
+            ClothesList.ItemsSource = _viewModel.FilteredClothes;
 
             Dispatcher.BeginInvoke(() => UpdateCardWidth(), System.Windows.Threading.DispatcherPriority.Loaded);
         }
+
+        ApplyFilterPanelState();
     }
 
     private bool AreViewControlsReady()
@@ -130,23 +121,19 @@ public partial class ClothesTab : UserControl
             "ChipAccessory" => new[] { DisplayCategory.Accessory },
             _ => null
         };
-        _state.SetSelectedCategories(selectedCategories);
-        UpdateUI();
+        _viewModel.SetSelectedCategories(selectedCategories);
     }
 
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (sender is not TextBox textBox) return;
-        _state.SetSearchText(textBox.Text);
-        UpdateUI();
+        _viewModel.SearchText = textBox.Text;
     }
 
     private void ToggleFilter_Click(object sender, RoutedEventArgs e)
     {
-        _isFilterExpanded = !_isFilterExpanded;
-        if (FilterPanel == null || ToggleFilterButton == null) return;
-        FilterPanel.Visibility = _isFilterExpanded ? Visibility.Visible : Visibility.Collapsed;
-        ToggleFilterButton.Content = _isFilterExpanded ? "收起筛选" : "展开筛选";
+        _viewModel.ToggleFilterExpanded();
+        ApplyFilterPanelState();
     }
 
     private void ClearFilter_Click(object sender, RoutedEventArgs e)
@@ -155,9 +142,8 @@ public partial class ClothesTab : UserControl
             InlineSearch.Text = "";
         if (ChipAll != null)
             ChipAll.IsChecked = true;
-        _state.SetSearchText("");
-        _state.SetSelectedCategories(null);
-        UpdateUI();
+        _viewModel.ClearFilters();
+        ApplyFilterPanelState();
     }
 
     private void AddClothing_Click(object sender, RoutedEventArgs e)
@@ -165,8 +151,7 @@ public partial class ClothesTab : UserControl
         EditorModal.Show(new ClothingEditorPanel(), async result =>
         {
             if (result.Type == EditorResultType.Saved)
-                await _clothingService.AddClothingAsync(result.Entity!);
-            await LoadClothesAsync();
+                await _viewModel.AddClothingAsync(result.Entity!);
         });
     }
 
@@ -179,14 +164,12 @@ public partial class ClothesTab : UserControl
         {
             if (result.Type == EditorResultType.Saved)
             {
-                await _clothingService.UpdateClothingAsync(result.Entity!);
-                await DeleteReplacedImageAsync(oldImagePath, result.Entity!.ImagePath);
+                await _viewModel.UpdateClothingAsync(result.Entity!, oldImagePath);
             }
             else if (result.Type == EditorResultType.Deleted)
             {
-                await DeleteClothingWithImageAsync(clothing);
+                await _viewModel.DeleteClothingAsync(clothing);
             }
-            await LoadClothesAsync();
         });
     }
 
@@ -198,40 +181,7 @@ public partial class ClothesTab : UserControl
         if (!confirmed)
             return;
 
-        await DeleteClothingWithImageAsync(clothing);
-        await LoadClothesAsync();
-    }
-
-    private async Task DeleteClothingWithImageAsync(Clothing clothing)
-    {
-        var imagePath = clothing.ImagePath;
-        Log.Information("Deleting clothing {ClothingId} ({ClothingName})", clothing.Id, clothing.Name);
-        await _clothingService.DeleteClothingAsync(clothing.Id);
-        await DeleteStoredImageAsync(imagePath);
-    }
-
-    private async Task DeleteReplacedImageAsync(string? oldImagePath, string? newImagePath)
-    {
-        if (string.Equals(oldImagePath, newImagePath, StringComparison.OrdinalIgnoreCase))
-            return;
-
-        await DeleteStoredImageAsync(oldImagePath);
-    }
-
-    private async Task DeleteStoredImageAsync(string? imagePath)
-    {
-        if (string.IsNullOrWhiteSpace(imagePath))
-            return;
-
-        try
-        {
-            await _imageStorageService.DeleteImageWithThumbnailAsync(imagePath);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to delete stored clothing image {ImagePath}", imagePath);
-            // Deleting the database record is the source of truth; stale image cleanup should not block the UI.
-        }
+        await _viewModel.DeleteClothingAsync(clothing);
     }
 
     private static async Task<bool> ShowDeleteConfirmAsync(string detail)
@@ -254,5 +204,14 @@ public partial class ClothesTab : UserControl
         var result = await tcs.Task;
         ModalService.Instance.Hide();
         return result;
+    }
+
+    private void ApplyFilterPanelState()
+    {
+        if (FilterPanel == null || ToggleFilterButton == null)
+            return;
+
+        FilterPanel.Visibility = _viewModel.IsFilterExpanded ? Visibility.Visible : Visibility.Collapsed;
+        ToggleFilterButton.Content = _viewModel.IsFilterExpanded ? "收起筛选" : "展开筛选";
     }
 }

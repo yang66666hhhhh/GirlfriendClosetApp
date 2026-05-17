@@ -8,14 +8,16 @@ namespace ClosetApp.Infrastructure.Services;
 public class ImageStorageService : IImageStorageService
 {
     private const byte ContentAlphaThreshold = 8;
+    private const int DefaultThumbnailSize = 200;
 
     private readonly string _imageFolder;
     private readonly string _thumbnailFolder;
 
-    public ImageStorageService()
+    public ImageStorageService(string? baseFolder = null)
     {
-        var folder = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
-        var appFolder = Path.Combine(folder, "ClosetApp");
+        var appFolder = string.IsNullOrWhiteSpace(baseFolder)
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClosetApp")
+            : baseFolder;
         _imageFolder = Path.Combine(appFolder, "images");
         _thumbnailFolder = Path.Combine(appFolder, "thumbnails");
         Directory.CreateDirectory(_imageFolder);
@@ -30,6 +32,7 @@ public class ImageStorageService : IImageStorageService
         using var image = await Image.LoadAsync<Rgba32>(sourcePath);
         CropTransparentPadding(image);
         await image.SaveAsync(destPath);
+        await SaveThumbnailForStoredImageAsync(image, fileName, DefaultThumbnailSize);
 
         Log.Information("Saved clothing image {SourcePath} -> {FileName}", sourcePath, fileName);
         return fileName;
@@ -42,14 +45,26 @@ public class ImageStorageService : IImageStorageService
         
         using var image = await Image.LoadAsync<Rgba32>(sourcePath);
         CropTransparentPadding(image);
-        image.Mutate(x => x.Resize(new ResizeOptions
+        await SaveThumbnailImageAsync(image, destPath, maxSize);
+        Log.Information("Saved thumbnail {SourcePath} -> {FileName}", sourcePath, fileName);
+        return fileName;
+    }
+
+    private async Task SaveThumbnailForStoredImageAsync(Image<Rgba32> image, string imageFileName, int maxSize)
+    {
+        var thumbnailPath = GetThumbnailFullPath(imageFileName);
+        await SaveThumbnailImageAsync(image, thumbnailPath, maxSize);
+    }
+
+    private static async Task SaveThumbnailImageAsync(Image<Rgba32> image, string destinationPath, int maxSize)
+    {
+        using var thumbnail = image.Clone();
+        thumbnail.Mutate(x => x.Resize(new ResizeOptions
         {
             Size = new Size(maxSize, maxSize),
             Mode = ResizeMode.Max
         }));
-        await image.SaveAsync(destPath);
-        Log.Information("Saved thumbnail {SourcePath} -> {FileName}", sourcePath, fileName);
-        return fileName;
+        await thumbnail.SaveAsync(destinationPath);
     }
 
     private static void CropTransparentPadding(Image<Rgba32> image)

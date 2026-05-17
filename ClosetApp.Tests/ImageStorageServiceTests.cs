@@ -1,0 +1,87 @@
+using System.IO;
+using ClosetApp.Infrastructure.Services;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.PixelFormats;
+using Xunit;
+
+namespace ClosetApp.Tests;
+
+public class ImageStorageServiceTests
+{
+    [Fact]
+    public async Task SaveImageAsync_CreatesThumbnailWithExpectedMaxSize()
+    {
+        var tempDir = CreateTempDir();
+
+        try
+        {
+            var service = new ImageStorageService(tempDir);
+            var sourcePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourcePath, width: 640, height: 320);
+
+            var storedFileName = await service.SaveImageAsync(sourcePath);
+            var imagePath = service.GetImageFullPath(storedFileName);
+            var thumbnailPath = service.GetThumbnailFullPath(storedFileName);
+
+            Assert.True(File.Exists(imagePath));
+            Assert.True(File.Exists(thumbnailPath));
+
+            using var thumbnail = await Image.LoadAsync<Rgba32>(thumbnailPath);
+            Assert.True(thumbnail.Width <= 200);
+            Assert.True(thumbnail.Height <= 200);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task DeleteImageWithThumbnailAsync_RemovesStoredFiles()
+    {
+        var tempDir = CreateTempDir();
+
+        try
+        {
+            var service = new ImageStorageService(tempDir);
+            var sourcePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourcePath, width: 320, height: 320);
+
+            var storedFileName = await service.SaveImageAsync(sourcePath);
+
+            await service.DeleteImageWithThumbnailAsync(storedFileName);
+
+            Assert.False(File.Exists(service.GetImageFullPath(storedFileName)));
+            Assert.False(File.Exists(service.GetThumbnailFullPath(storedFileName)));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    private static async Task CreateSourceImageAsync(string path, int width, int height)
+    {
+        using var image = new Image<Rgba32>(width, height);
+        image.ProcessPixelRows(accessor =>
+        {
+            for (var y = 60; y < height - 60; y++)
+            {
+                var row = accessor.GetRowSpan(y);
+                for (var x = 40; x < width - 40; x++)
+                {
+                    row[x] = new Rgba32(230, 120, 140, 255);
+                }
+            }
+        });
+
+        await image.SaveAsPngAsync(path);
+    }
+
+    private static string CreateTempDir()
+    {
+        var path = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(path);
+        return path;
+    }
+}
