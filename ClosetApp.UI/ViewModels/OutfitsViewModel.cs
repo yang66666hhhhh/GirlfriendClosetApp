@@ -1,49 +1,72 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
-using System.Collections.ObjectModel;
+using ClosetApp.UI.States;
+using Serilog;
 
 namespace ClosetApp.UI.ViewModels;
 
 public partial class OutfitsViewModel : ObservableObject
 {
     private readonly IOutfitService _outfitService;
-
-    [ObservableProperty]
-    private ObservableCollection<Outfit> _outfits = new();
-
-    [ObservableProperty]
-    private bool _isLoading;
-
-    [ObservableProperty]
-    private bool _isEmpty = true;
+    private readonly OutfitsTabState _state = new();
 
     public OutfitsViewModel(IOutfitService outfitService)
     {
         _outfitService = outfitService;
     }
 
-    [RelayCommand]
+    public IReadOnlyList<Outfit> Outfits => _state.Outfits;
+    public bool IsLoading => _state.IsLoading;
+    public bool IsEmpty => _state.IsEmpty;
+    public int OutfitCount => _state.Outfits.Count;
+
     public async Task LoadOutfitsAsync()
     {
-        IsLoading = true;
+        _state.BeginLoad();
+        NotifyStateChanged();
+
         try
         {
             var outfits = await _outfitService.GetAllOutfitsAsync();
-            Outfits = new ObservableCollection<Outfit>(outfits);
-            IsEmpty = Outfits.Count == 0;
+            _state.SetOutfits(outfits);
+            Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
         }
         finally
         {
-            IsLoading = false;
+            NotifyStateChanged();
         }
     }
 
-    [RelayCommand]
-    public async Task DeleteOutfitAsync(Guid id)
+    public Task RefreshAsync() => LoadOutfitsAsync();
+
+    public Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count)
     {
-        await _outfitService.DeleteOutfitAsync(id);
+        return _outfitService.GetRecentWornRecordsAsync(count);
+    }
+
+    public Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end)
+    {
+        return _outfitService.GetWornRecordsAsync(start, end);
+    }
+
+    public async Task DeleteOutfitAsync(Outfit outfit)
+    {
+        await _outfitService.DeleteOutfitAsync(outfit.Id);
         await LoadOutfitsAsync();
+    }
+
+    public async Task RecordWornDateAsync(Outfit outfit, DateTime date)
+    {
+        await _outfitService.RecordWornDateAsync(outfit.Id, date);
+        await LoadOutfitsAsync();
+    }
+
+    private void NotifyStateChanged()
+    {
+        OnPropertyChanged(nameof(Outfits));
+        OnPropertyChanged(nameof(IsLoading));
+        OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(OutfitCount));
     }
 }

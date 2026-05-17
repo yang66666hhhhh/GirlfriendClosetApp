@@ -2,43 +2,37 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Outfit.Controls;
 using ClosetApp.UI.Components.Outfit.Editor;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
-using ClosetApp.UI.States;
+using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
-using Serilog;
 using OutfitEntity = ClosetApp.Domain.Entities.Outfit;
 
 namespace ClosetApp.UI.Views;
 
 public partial class OutfitsTab : UserControl
 {
-    private readonly IOutfitService _outfitService;
-    private readonly OutfitsTabState _state = new();
+    private readonly OutfitsViewModel _viewModel;
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     private bool _isHistoryExpanded;
 
     public OutfitsTab()
     {
         InitializeComponent();
-        _outfitService = App.Services.GetRequiredService<IOutfitService>();
+        _viewModel = App.Services.GetRequiredService<OutfitsViewModel>();
+        DataContext = _viewModel;
+        _viewModel.PropertyChanged += (_, _) => Dispatcher.Invoke(UpdateOutfitsSummary);
         Loaded += async (s, e) => await LoadOutfitsAsync();
     }
 
     private async Task LoadOutfitsAsync()
     {
-        _state.BeginLoad();
-        var outfits = await _outfitService.GetAllOutfitsAsync();
-        _state.SetOutfits(outfits);
-        Log.Debug("Loaded outfits. Count={OutfitCount}", _state.Outfits.Count);
-        OutfitsList.ItemsSource = _state.Outfits;
-        TxtEmpty.Visibility = _state.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
-        TxtOutfitCount.Text = $"{_state.Outfits.Count} 套搭配";
+        await _viewModel.LoadOutfitsAsync();
+        UpdateOutfitsSummary();
         await LoadRecentWornRecordsAsync();
         await LoadCalendarAsync();
 
@@ -47,24 +41,24 @@ public partial class OutfitsTab : UserControl
             foreach (var item in OutfitsList.Items)
             {
                 var container = OutfitsList.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
-                if (container != null)
-                {
-                    var card = FindVisualChild<OutfitCard>(container);
-                    if (card != null)
-                    {
-                        card.EditCompleted -= OutfitCard_EditCompleted;
-                        card.DeleteRequested -= OutfitCard_DeleteRequested;
-                        card.WornRequested -= OutfitCard_WornRequested;
-                        card.EditCompleted += OutfitCard_EditCompleted;
-                        card.DeleteRequested += OutfitCard_DeleteRequested;
-                        card.WornRequested += OutfitCard_WornRequested;
-                    }
-                }
+                if (container == null)
+                    continue;
+
+                var card = FindVisualChild<OutfitCard>(container);
+                if (card == null)
+                    continue;
+
+                card.EditCompleted -= OutfitCard_EditCompleted;
+                card.DeleteRequested -= OutfitCard_DeleteRequested;
+                card.WornRequested -= OutfitCard_WornRequested;
+                card.EditCompleted += OutfitCard_EditCompleted;
+                card.DeleteRequested += OutfitCard_DeleteRequested;
+                card.WornRequested += OutfitCard_WornRequested;
             }
         }, System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
-    public Task RefreshAsync() => LoadOutfitsAsync();
+    public Task RefreshAsync() => _viewModel.RefreshAsync();
 
     private void CreateOutfit_Click(object sender, RoutedEventArgs e)
     {
@@ -77,24 +71,31 @@ public partial class OutfitsTab : UserControl
 
     private async void OutfitCard_EditCompleted(object? sender, OutfitEntity outfit)
     {
-        await LoadOutfitsAsync();
+        await _viewModel.RefreshAsync();
+        UpdateOutfitsSummary();
+        await LoadRecentWornRecordsAsync();
+        await LoadCalendarAsync();
     }
 
     private async void OutfitCard_DeleteRequested(object? sender, OutfitEntity outfit)
     {
-        await _outfitService.DeleteOutfitAsync(outfit.Id);
-        await LoadOutfitsAsync();
+        await _viewModel.DeleteOutfitAsync(outfit);
+        UpdateOutfitsSummary();
+        await LoadRecentWornRecordsAsync();
+        await LoadCalendarAsync();
     }
 
     private async void OutfitCard_WornRequested(object? sender, OutfitEntity outfit)
     {
-        await _outfitService.RecordWornDateAsync(outfit.Id, DateTime.Now);
-        await LoadOutfitsAsync();
+        await _viewModel.RecordWornDateAsync(outfit, DateTime.Now);
+        UpdateOutfitsSummary();
+        await LoadRecentWornRecordsAsync();
+        await LoadCalendarAsync();
     }
 
     private async Task LoadRecentWornRecordsAsync()
     {
-        var records = (await _outfitService.GetRecentWornRecordsAsync(6))
+        var records = (await _viewModel.GetRecentWornRecordsAsync(6))
             .Select(WornRecordListItem.FromRecord)
             .ToList();
 
@@ -113,7 +114,7 @@ public partial class OutfitsTab : UserControl
 
         var monthStart = _calendarMonth;
         var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
-        var monthRecords = (await _outfitService.GetWornRecordsAsync(monthStart, monthEnd)).ToList();
+        var monthRecords = (await _viewModel.GetWornRecordsAsync(monthStart, monthEnd)).ToList();
         var records = monthRecords
             .GroupBy(r => r.WornDate.Date)
             .ToDictionary(g => g.Key, g => g.ToList());
@@ -181,6 +182,13 @@ public partial class OutfitsTab : UserControl
         var dialog = new WornDayDetailsDialog(day.Date, day.Records);
         dialog.RecordsChanged += async (_, _) => await LoadOutfitsAsync();
         ModalService.Instance.Show(dialog);
+    }
+
+    private void UpdateOutfitsSummary()
+    {
+        OutfitsList.ItemsSource = _viewModel.Outfits;
+        TxtEmpty.Visibility = _viewModel.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
+        TxtOutfitCount.Text = $"{_viewModel.OutfitCount} 套搭配";
     }
 
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject

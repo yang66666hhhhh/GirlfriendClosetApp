@@ -121,6 +121,8 @@ public partial class App : System.Windows.Application
         services.AddTransient<ViewModels.MainViewModel>();
         services.AddTransient<ViewModels.WardrobeViewModel>();
         services.AddTransient<ViewModels.HomeViewModel>();
+        services.AddTransient<ViewModels.OutfitsViewModel>();
+        services.AddTransient<ViewModels.TagsViewModel>();
 
         Services = services.BuildServiceProvider();
     }

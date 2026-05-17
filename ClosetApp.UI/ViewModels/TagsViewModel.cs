@@ -1,42 +1,39 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
-using System.Collections.ObjectModel;
+using ClosetApp.UI.States;
+using Serilog;
 
 namespace ClosetApp.UI.ViewModels;
 
 public partial class TagsViewModel : ObservableObject
 {
     private readonly ITagService _tagService;
-
-    [ObservableProperty]
-    private ObservableCollection<Tag> _tags = new();
-
-    [ObservableProperty]
-    private bool _isLoading;
-
-    [ObservableProperty]
-    private bool _isEmpty = true;
+    private readonly TagsTabState _state = new();
 
     public TagsViewModel(ITagService tagService)
     {
         _tagService = tagService;
     }
 
-    [RelayCommand]
+    public IReadOnlyList<Tag> Tags => _state.Tags;
+    public bool IsLoading => _state.IsLoading;
+    public bool IsEmpty => _state.IsEmpty;
+
     public async Task LoadTagsAsync()
     {
-        IsLoading = true;
+        _state.BeginLoad();
+        NotifyStateChanged();
+
         try
         {
             var tags = await _tagService.GetAllTagsAsync();
-            Tags = new ObservableCollection<Tag>(tags);
-            IsEmpty = Tags.Count == 0;
+            _state.SetTags(tags);
+            Log.Debug("Loaded tags. Count={TagCount}", _state.Tags.Count);
         }
         finally
         {
-            IsLoading = false;
+            NotifyStateChanged();
         }
     }
 
@@ -46,10 +43,22 @@ public partial class TagsViewModel : ObservableObject
         await LoadTagsAsync();
     }
 
-    [RelayCommand]
-    public async Task DeleteTagAsync(Guid id)
+    public async Task UpdateTagAsync(Tag tag)
     {
-        await _tagService.DeleteTagAsync(id);
+        await _tagService.UpdateTagAsync(tag);
         await LoadTagsAsync();
+    }
+
+    public async Task DeleteTagAsync(Tag tag)
+    {
+        await _tagService.DeleteTagAsync(tag.Id);
+        await LoadTagsAsync();
+    }
+
+    private void NotifyStateChanged()
+    {
+        OnPropertyChanged(nameof(Tags));
+        OnPropertyChanged(nameof(IsLoading));
+        OnPropertyChanged(nameof(IsEmpty));
     }
 }

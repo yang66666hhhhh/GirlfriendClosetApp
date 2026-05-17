@@ -19,8 +19,8 @@ public partial class ClothesTab : UserControl
 
     public ClothesTab()
     {
-        InitializeComponent();
         _viewModel = App.Services.GetRequiredService<WardrobeViewModel>();
+        InitializeComponent();
         DataContext = _viewModel;
         _viewModel.PropertyChanged += (_, _) => Dispatcher.Invoke(UpdateUI);
         Loaded += (s, e) => _ = LoadClothesAsync();

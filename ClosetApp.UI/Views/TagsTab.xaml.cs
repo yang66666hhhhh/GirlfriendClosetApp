@@ -1,35 +1,32 @@
 using System.Windows;
 using System.Windows.Controls;
-using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Tags.Controls;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
-using ClosetApp.UI.States;
+using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Views;
 
 public partial class TagsTab : UserControl
 {
-    private readonly ITagService _tagService;
-    private readonly TagsTabState _state = new();
+    private readonly TagsViewModel _viewModel;
 
     public TagsTab()
     {
         InitializeComponent();
-        _tagService = App.Services.GetRequiredService<ITagService>();
+        _viewModel = App.Services.GetRequiredService<TagsViewModel>();
+        DataContext = _viewModel;
+        _viewModel.PropertyChanged += (_, _) => Dispatcher.Invoke(UpdateTagsSummary);
         Loaded += async (s, e) => await LoadTagsAsync();
     }
 
     private async Task LoadTagsAsync()
     {
-        _state.BeginLoad();
-        var tags = await _tagService.GetAllTagsAsync();
-        _state.SetTags(tags);
-        TagsList.ItemsSource = _state.Tags;
-        TxtEmpty.Visibility = _state.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
+        await _viewModel.LoadTagsAsync();
+        UpdateTagsSummary();
     }
 
     private void AddTag_Click(object sender, RoutedEventArgs e)
@@ -37,10 +34,7 @@ public partial class TagsTab : UserControl
         EditorModal.Show(new TagEditorPanel(), async result =>
         {
             if (result.Type == EditorResultType.Saved)
-            {
-                await _tagService.AddTagAsync(result.Entity!);
-                await LoadTagsAsync();
-            }
+                await _viewModel.AddTagAsync(result.Entity!);
         });
     }
 
@@ -55,10 +49,7 @@ public partial class TagsTab : UserControl
         EditorModal.Show(new TagEditorPanel(tag), async result =>
         {
             if (result.Type == EditorResultType.Saved)
-            {
-                await _tagService.UpdateTagAsync(result.Entity!);
-                await LoadTagsAsync();
-            }
+                await _viewModel.UpdateTagAsync(result.Entity!);
         });
     }
 
@@ -70,8 +61,7 @@ public partial class TagsTab : UserControl
             if (!confirmed)
                 return;
 
-            await _tagService.DeleteTagAsync(tag.Id);
-            await LoadTagsAsync();
+            await _viewModel.DeleteTagAsync(tag);
         }
     }
 
@@ -95,5 +85,11 @@ public partial class TagsTab : UserControl
         var result = await tcs.Task;
         ModalService.Instance.Hide();
         return result;
+    }
+
+    private void UpdateTagsSummary()
+    {
+        TagsList.ItemsSource = _viewModel.Tags;
+        TxtEmpty.Visibility = _viewModel.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
     }
 }
