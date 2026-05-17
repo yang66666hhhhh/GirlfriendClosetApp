@@ -16,8 +16,8 @@ public partial class TagsTab : UserControl
 
     public TagsTab()
     {
-        InitializeComponent();
         _viewModel = App.Services.GetRequiredService<TagsViewModel>();
+        InitializeComponent();
         DataContext = _viewModel;
         _viewModel.PropertyChanged += (_, _) => Dispatcher.Invoke(UpdateTagsSummary);
         Loaded += async (s, e) => await LoadTagsAsync();
