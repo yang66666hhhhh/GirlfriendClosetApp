@@ -1,3 +1,4 @@
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Images;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure.Data;
@@ -23,14 +24,54 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
 
     public async Task<int> CountMissingImagesAsync()
     {
-        await using var context = await _dbContextFactory.CreateDbContextAsync();
-        var imagePaths = await context.Clothes
-            .AsNoTracking()
-            .Where(c => c.ImagePath != null && c.ImagePath != "")
-            .Select(c => c.ImagePath!)
-            .ToListAsync();
+        var imagePaths = await GetTrackedImagePathsAsync();
 
         return imagePaths.Count(path => !_imageAssetResolver.Resolve(path).HasImage);
+    }
+
+    public async Task<int> CountMissingThumbnailsAsync()
+    {
+        var imagePaths = await GetTrackedImagePathsAsync();
+        return imagePaths.Count(NeedsThumbnailRebuild);
+    }
+
+    public async Task<ThumbnailRebuildResult> RebuildMissingThumbnailsAsync(int maxSize = 200)
+    {
+        var imagePaths = await GetTrackedImagePathsAsync();
+        var missingThumbnailCount = 0;
+        var rebuiltCount = 0;
+        var skippedCount = 0;
+        var missingSourceCount = 0;
+
+        // 统一按数据库里登记过的图片路径治理，避免同一张图被重复处理。
+        foreach (var imagePath in imagePaths)
+        {
+            var asset = _imageAssetResolver.Resolve(imagePath);
+            if (!asset.HasImage)
+            {
+                missingSourceCount++;
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(asset.ThumbnailPath))
+            {
+                skippedCount++;
+                continue;
+            }
+
+            missingThumbnailCount++;
+            if (await _imageStorageService.EnsureThumbnailAsync(imagePath, maxSize))
+                rebuiltCount++;
+            else
+                missingSourceCount++;
+        }
+
+        return new ThumbnailRebuildResult(
+            imagePaths.Count,
+            missingThumbnailCount,
+            rebuiltCount,
+            skippedCount,
+            missingSourceCount);
     }
 
     public async Task<int> RelinkMissingImagesAsync(string sourceDirectory)
@@ -63,6 +104,23 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
             await context.SaveChangesAsync();
 
         return repairedCount;
+    }
+
+    private async Task<List<string>> GetTrackedImagePathsAsync()
+    {
+        await using var context = await _dbContextFactory.CreateDbContextAsync();
+        return await context.Clothes
+            .AsNoTracking()
+            .Where(c => c.ImagePath != null && c.ImagePath != "")
+            .Select(c => c.ImagePath!)
+            .Distinct()
+            .ToListAsync();
+    }
+
+    private bool NeedsThumbnailRebuild(string imagePath)
+    {
+        var asset = _imageAssetResolver.Resolve(imagePath);
+        return asset.HasImage && string.IsNullOrWhiteSpace(asset.ThumbnailPath);
     }
 
     private static string? FindMatchingFile(string sourceDirectory, string imagePath)

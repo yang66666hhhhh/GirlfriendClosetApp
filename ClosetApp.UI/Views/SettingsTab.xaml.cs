@@ -30,7 +30,7 @@ public partial class SettingsTab : UserControl
         TxtImagesDir.Text = AppPaths.ImagesDir;
         TxtLogDir.Text = AppPaths.LogsDir;
         TxtVersion.Text = $"版本 {GetVersion()}";
-        RefreshStats();
+        await RefreshStatsAsync();
         await RefreshBackupStateAsync();
     }
 
@@ -40,7 +40,7 @@ public partial class SettingsTab : UserControl
         return version == null ? "开发版" : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
-    private void RefreshStats()
+    private async Task RefreshStatsAsync()
     {
         var imageCount = CountFiles(AppPaths.ImagesDir);
         var imageSize = GetDirectorySize(AppPaths.ImagesDir);
@@ -48,10 +48,12 @@ public partial class SettingsTab : UserControl
         var thumbnailSize = GetDirectorySize(AppPaths.ThumbnailsDir);
         var logCount = CountFiles(AppPaths.LogsDir);
         var logSize = GetDirectorySize(AppPaths.LogsDir);
-        var missingImageCount = _imageMaintenanceService.CountMissingImagesAsync().GetAwaiter().GetResult();
+        var missingImageCount = await _imageMaintenanceService.CountMissingImagesAsync();
+        var missingThumbnailCount = await _imageMaintenanceService.CountMissingThumbnailsAsync();
 
         TxtImageStats.Text = $"{imageCount} 张原图 · {FormatSize(imageSize)}";
         TxtCacheStats.Text = $"{thumbnailCount} 个缩略图缓存 · {FormatSize(thumbnailSize)}";
+        TxtThumbnailHealthStats.Text = BuildThumbnailHealthText(missingThumbnailCount);
         TxtLogStats.Text = $"{logCount} 个日志文件 · {FormatSize(logSize)}";
         TxtMissingImageStats.Text = missingImageCount == 0
             ? "没有发现缺失图片"
@@ -133,11 +135,11 @@ public partial class SettingsTab : UserControl
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
     {
-        RefreshStats();
+        await RefreshStatsAsync();
         await RefreshBackupStateAsync();
     }
 
-    private void ClearThumbnails_Click(object sender, RoutedEventArgs e)
+    private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
             "确定清理缩略图缓存吗？原始图片不会被删除。",
@@ -154,11 +156,23 @@ public partial class SettingsTab : UserControl
                 File.Delete(file);
         }
 
-        RefreshStats();
+        await RefreshStatsAsync();
         MessageBox.Show("缩略图缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
-    private void ClearLogs_Click(object sender, RoutedEventArgs e)
+    private async void RebuildThumbnails_Click(object sender, RoutedEventArgs e)
+    {
+        var result = await _imageMaintenanceService.RebuildMissingThumbnailsAsync();
+        await RefreshStatsAsync();
+
+        MessageBox.Show(
+            result.Summary,
+            "缩略图缓存",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private async void ClearLogs_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
             "确定清理历史日志吗？今天正在写入的日志会保留。",
@@ -189,7 +203,7 @@ public partial class SettingsTab : UserControl
             }
         }
 
-        RefreshStats();
+        await RefreshStatsAsync();
         MessageBox.Show("历史日志已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
@@ -259,7 +273,7 @@ public partial class SettingsTab : UserControl
             return;
 
         var result = await _backupService.ImportAsync(dialog.FileName);
-        RefreshStats();
+        await RefreshStatsAsync();
         await RefreshBackupStateAsync(result);
 
         MessageBox.Show(
@@ -280,7 +294,7 @@ public partial class SettingsTab : UserControl
             return;
 
         var repairedCount = await _imageMaintenanceService.RelinkMissingImagesAsync(dialog.FolderName);
-        RefreshStats();
+        await RefreshStatsAsync();
 
         MessageBox.Show(
             repairedCount == 0
@@ -396,6 +410,13 @@ public partial class SettingsTab : UserControl
         if (result.Warnings.Count > 0)
             message += $"\n\n提醒：{string.Join(" ", result.Warnings)}";
         return message;
+    }
+
+    private static string BuildThumbnailHealthText(int missingThumbnailCount)
+    {
+        return missingThumbnailCount == 0
+            ? "所有已存在的原图都已经生成缩略图。"
+            : $"{missingThumbnailCount} 张图片缺少缩略图，可一键重建缓存。";
     }
 
     private void UpdateLatestImportCard(BackupImportResult result)

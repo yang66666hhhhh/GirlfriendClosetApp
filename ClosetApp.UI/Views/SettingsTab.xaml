@@ -88,11 +88,16 @@
                                     <StackPanel>
                                         <TextBlock x:Name="TxtImageStats" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold"/>
                                         <TextBlock x:Name="TxtCacheStats" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0"/>
+                                        <TextBlock x:Name="TxtThumbnailHealthStats" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,4,0,0" TextWrapping="Wrap"/>
                                     </StackPanel>
                                     <Button Grid.Column="1" Content="刷新" Style="{StaticResource CapsuleButton}" Click="RefreshStats_Click"/>
                                 </Grid>
-                                <Button Content="清理缩略图缓存" Style="{StaticResource DangerButton}"
-                                        HorizontalAlignment="Left" Click="ClearThumbnails_Click"/>
+                                <WrapPanel>
+                                    <Button Content="重建缺失缩略图" Style="{StaticResource CapsuleButton}"
+                                            HorizontalAlignment="Left" Click="RebuildThumbnails_Click" Margin="0,0,10,0"/>
+                                    <Button Content="清理缩略图缓存" Style="{StaticResource DangerButton}"
+                                            HorizontalAlignment="Left" Click="ClearThumbnails_Click"/>
+                                </WrapPanel>
                             </StackPanel>
                         </Border>
 

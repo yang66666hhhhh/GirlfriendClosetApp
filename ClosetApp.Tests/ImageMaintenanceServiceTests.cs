@@ -12,6 +12,121 @@ namespace ClosetApp.Tests;
 public class ImageMaintenanceServiceTests
 {
     [Fact]
+    public async Task CountMissingThumbnailsAsync_OnlyCountsStoredImagesWithoutThumbnail()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var sourceDir = Path.Combine(tempDir, "source");
+        var storageDir = Path.Combine(tempDir, "storage");
+        Directory.CreateDirectory(tempDir);
+        Directory.CreateDirectory(sourceDir);
+        Directory.CreateDirectory(storageDir);
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            var storageService = new ImageStorageService(storageDir);
+            var firstSourceImage = Path.Combine(sourceDir, "coat-a.png");
+            var secondSourceImage = Path.Combine(sourceDir, "coat-b.png");
+            await CreatePngAsync(firstSourceImage);
+            await CreatePngAsync(secondSourceImage);
+
+            var storedWithMissingThumbnail = await storageService.SaveImageAsync(firstSourceImage);
+            var storedWithThumbnail = await storageService.SaveImageAsync(secondSourceImage);
+            File.Delete(storageService.GetThumbnailFullPath(storedWithMissingThumbnail));
+
+            await using (var context = new ClosetDbContext(options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+                context.Clothes.AddRange(
+                    CreateClothing("Missing Thumb", storedWithMissingThumbnail),
+                    CreateClothing("Healthy Thumb", storedWithThumbnail),
+                    CreateClothing("Broken Source", "broken-source.png"),
+                    CreateClothing("Duplicate Thumb", storedWithMissingThumbnail));
+                await context.SaveChangesAsync();
+            }
+
+            var resolver = new ImageAssetResolver(storageService);
+            var service = new ImageMaintenanceService(new TestDbContextFactory(options), resolver, storageService);
+
+            var missingThumbnailCount = await service.CountMissingThumbnailsAsync();
+
+            Assert.Equal(1, missingThumbnailCount);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task RebuildMissingThumbnailsAsync_RebuildsMissingThumbnailsAndReturnsSummary()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var sourceDir = Path.Combine(tempDir, "source");
+        var storageDir = Path.Combine(tempDir, "storage");
+        Directory.CreateDirectory(tempDir);
+        Directory.CreateDirectory(sourceDir);
+        Directory.CreateDirectory(storageDir);
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            var storageService = new ImageStorageService(storageDir);
+            var firstSourceImage = Path.Combine(sourceDir, "dress-a.png");
+            var secondSourceImage = Path.Combine(sourceDir, "dress-b.png");
+            await CreatePngAsync(firstSourceImage);
+            await CreatePngAsync(secondSourceImage);
+
+            var storedWithMissingThumbnail = await storageService.SaveImageAsync(firstSourceImage);
+            var storedWithThumbnail = await storageService.SaveImageAsync(secondSourceImage);
+            var missingThumbnailPath = storageService.GetThumbnailFullPath(storedWithMissingThumbnail);
+            File.Delete(missingThumbnailPath);
+
+            await using (var context = new ClosetDbContext(options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+                context.Clothes.AddRange(
+                    CreateClothing("Rebuild Me", storedWithMissingThumbnail),
+                    CreateClothing("Already Ready", storedWithThumbnail),
+                    CreateClothing("Source Missing", "missing-image.png"),
+                    CreateClothing("Duplicate Entry", storedWithMissingThumbnail));
+                await context.SaveChangesAsync();
+            }
+
+            var resolver = new ImageAssetResolver(storageService);
+            var service = new ImageMaintenanceService(new TestDbContextFactory(options), resolver, storageService);
+
+            var missingBefore = await service.CountMissingThumbnailsAsync();
+            var result = await service.RebuildMissingThumbnailsAsync(maxSize: 140);
+            var missingAfter = await service.CountMissingThumbnailsAsync();
+
+            Assert.Equal(1, missingBefore);
+            Assert.Equal(3, result.ScannedImageCount);
+            Assert.Equal(1, result.MissingThumbnailCount);
+            Assert.Equal(1, result.RebuiltCount);
+            Assert.Equal(1, result.SkippedCount);
+            Assert.Equal(1, result.MissingSourceCount);
+            Assert.Contains("重建 1 个缩略图", result.Summary);
+            Assert.Equal(0, missingAfter);
+            Assert.True(File.Exists(missingThumbnailPath));
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
     public async Task RelinkMissingImagesAsync_ReplacesBrokenImagePathWhenMatchingFileExists()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
@@ -64,14 +179,7 @@ public class ImageMaintenanceServiceTests
         }
         finally
         {
-            try
-            {
-                if (Directory.Exists(tempDir))
-                    Directory.Delete(tempDir, recursive: true);
-            }
-            catch
-            {
-            }
+            TryDeleteDirectory(tempDir);
         }
     }
 
@@ -81,6 +189,29 @@ public class ImageMaintenanceServiceTests
         await using var stream = new MemoryStream();
         await image.SaveAsync(stream, new PngEncoder());
         await File.WriteAllBytesAsync(path, stream.ToArray());
+    }
+
+    private static Clothing CreateClothing(string name, string imagePath)
+    {
+        return new Clothing
+        {
+            Name = name,
+            Type = ClothingType.Outerwear,
+            Season = Season.Winter,
+            ImagePath = imagePath
+        };
+    }
+
+    private static void TryDeleteDirectory(string directory)
+    {
+        try
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+        catch
+        {
+        }
     }
 
     private sealed class TestDbContextFactory : IDbContextFactory<ClosetDbContext>
