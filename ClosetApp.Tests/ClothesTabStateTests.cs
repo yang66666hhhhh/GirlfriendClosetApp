@@ -56,8 +56,41 @@ public class ClothesTabStateTests
         state.SetSelectedCategories([DisplayCategory.Topwear]);
         state.SetSearchText("soft");
 
-        Assert.Equal("搜索「soft」+ 分类筛选", state.FilterSummary);
+        Assert.Equal("搜索「soft」 + 分类", state.FilterSummary);
         Assert.True(state.HasActiveFilters);
+    }
+
+    [Fact]
+    public void ApplyFilter_WithSeasonTagAndFavorite_ReturnsOnlyMatchingClothes()
+    {
+        var tag = CreateTag("通勤");
+        var matching = CreateClothing(
+            "Office Knit",
+            ClothingType.Top,
+            GarmentType.Sweater,
+            tags: [tag]);
+        matching.Season = Season.Autumn;
+        matching.IsFavorite = true;
+        matching.FavoriteLevel = 4;
+
+        var otherSeason = CreateClothing("Summer Tee", ClothingType.Top, GarmentType.TShirt, tags: [tag]);
+        otherSeason.Season = Season.Summer;
+        otherSeason.IsFavorite = true;
+        otherSeason.FavoriteLevel = 4;
+
+        var notFavorite = CreateClothing("Commute Shirt", ClothingType.Top, GarmentType.Shirt, tags: [tag]);
+        notFavorite.Season = Season.Autumn;
+        notFavorite.IsFavorite = false;
+        notFavorite.FavoriteLevel = 2;
+
+        var state = new ClothesTabState();
+        state.SetClothes([matching, otherSeason, notFavorite]);
+        state.SetSelectedSeason(Season.Autumn);
+        state.SetSelectedTagIds([tag.Id]);
+        state.SetFavoriteOnly(true);
+
+        var result = Assert.Single(state.FilteredClothes);
+        Assert.Equal("Office Knit", result.Name);
     }
 
     private static Clothing CreateClothing(

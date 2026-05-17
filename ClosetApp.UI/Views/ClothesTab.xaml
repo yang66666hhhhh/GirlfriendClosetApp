@@ -250,30 +250,82 @@
                                        Foreground="{StaticResource TextTertiaryBrush}"
                                        VerticalAlignment="Center"/>
                         </Grid>
-                    <ScrollViewer
-                                  HorizontalScrollBarVisibility="Disabled"
-                                  VerticalScrollBarVisibility="Disabled">
-                        <StackPanel Orientation="Horizontal">
-                            <RadioButton x:Name="ChipAll" Content="✨ 全部"
-                                         Style="{StaticResource ChipStyle}" IsChecked="True"
-                                         Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipTop" Content="👕 上装"
-                                         Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                         Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipBottom" Content="👖 下装"
-                                         Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                         Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipDress" Content="👗 连衣裙"
-                                         Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                         Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipShoes" Content="👟 鞋子"
-                                         Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                         Checked="Category_Changed"/>
-                            <RadioButton x:Name="ChipAccessory" Content="👜 配饰"
-                                         Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                         Checked="Category_Changed"/>
+                        <StackPanel>
+                            <TextBlock Text="分类"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,0,0,10"/>
+                            <ScrollViewer HorizontalScrollBarVisibility="Disabled"
+                                          VerticalScrollBarVisibility="Disabled">
+                                <StackPanel Orientation="Horizontal">
+                                    <RadioButton x:Name="ChipAll" Content="✨ 全部"
+                                                 Style="{StaticResource ChipStyle}" IsChecked="True"
+                                                 Checked="Category_Changed"/>
+                                    <RadioButton x:Name="ChipTop" Content="👕 上装"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 Checked="Category_Changed"/>
+                                    <RadioButton x:Name="ChipBottom" Content="👖 下装"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 Checked="Category_Changed"/>
+                                    <RadioButton x:Name="ChipDress" Content="👗 连衣裙"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 Checked="Category_Changed"/>
+                                    <RadioButton x:Name="ChipShoes" Content="👟 鞋子"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 Checked="Category_Changed"/>
+                                    <RadioButton x:Name="ChipAccessory" Content="👜 配饰"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 Checked="Category_Changed"/>
+                                </StackPanel>
+                            </ScrollViewer>
+
+                            <TextBlock Text="季节"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,18,0,10"/>
+                            <WrapPanel>
+                                <RadioButton x:Name="SeasonAll" Content="四季都看"
+                                             Style="{StaticResource ChipStyle}" IsChecked="True"
+                                             GroupName="SeasonGroup"
+                                             Checked="Season_Changed"/>
+                                <RadioButton x:Name="SeasonSpring" Content="春天"
+                                             Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                             GroupName="SeasonGroup"
+                                             Checked="Season_Changed"/>
+                                <RadioButton x:Name="SeasonSummer" Content="夏天"
+                                             Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                             GroupName="SeasonGroup"
+                                             Checked="Season_Changed"/>
+                                <RadioButton x:Name="SeasonAutumn" Content="秋天"
+                                             Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                             GroupName="SeasonGroup"
+                                             Checked="Season_Changed"/>
+                                <RadioButton x:Name="SeasonWinter" Content="冬天"
+                                             Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                             GroupName="SeasonGroup"
+                                             Checked="Season_Changed"/>
+                            </WrapPanel>
+
+                            <TextBlock Text="偏好"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,18,0,10"/>
+                            <CheckBox x:Name="FavoriteOnlyCheckBox"
+                                      Content="只看收藏"
+                                      Foreground="{StaticResource TextPrimaryBrush}"
+                                      Checked="FavoriteOnly_Changed"
+                                      Unchecked="FavoriteOnly_Changed"/>
+
+                            <TextBlock Text="风格标签"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Margin="0,18,0,10"/>
+                            <WrapPanel x:Name="TagFilterPanel"/>
                         </StackPanel>
-                    </ScrollViewer>
                     </StackPanel>
                 </Border>
 

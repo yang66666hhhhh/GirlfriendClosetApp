@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
@@ -57,6 +58,14 @@ public partial class ClothesTab : UserControl
             TxtFilterHint.Text = _viewModel.FilterHint;
 
             ClothesList.ItemsSource = _viewModel.FilteredClothes;
+            SeasonAll.IsChecked = _viewModel.SelectedSeason == null;
+            SeasonSpring.IsChecked = _viewModel.SelectedSeason == Season.Spring;
+            SeasonSummer.IsChecked = _viewModel.SelectedSeason == Season.Summer;
+            SeasonAutumn.IsChecked = _viewModel.SelectedSeason == Season.Autumn;
+            SeasonWinter.IsChecked = _viewModel.SelectedSeason == Season.Winter;
+            FavoriteOnlyCheckBox.IsChecked = _viewModel.FavoriteOnly;
+
+            RenderTagFilters();
 
             Dispatcher.BeginInvoke(() => UpdateCardWidth(), System.Windows.Threading.DispatcherPriority.Loaded);
         }
@@ -130,6 +139,29 @@ public partial class ClothesTab : UserControl
         _viewModel.SearchText = textBox.Text;
     }
 
+    private void Season_Changed(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RadioButton rb || rb.IsChecked != true)
+            return;
+
+        Season? season = rb.Name switch
+        {
+            "SeasonAll" => null,
+            "SeasonSpring" => Season.Spring,
+            "SeasonSummer" => Season.Summer,
+            "SeasonAutumn" => Season.Autumn,
+            "SeasonWinter" => Season.Winter,
+            _ => null
+        };
+
+        _viewModel.SetSelectedSeason(season);
+    }
+
+    private void FavoriteOnly_Changed(object sender, RoutedEventArgs e)
+    {
+        _viewModel.SetFavoriteOnly(FavoriteOnlyCheckBox.IsChecked == true);
+    }
+
     private void ToggleFilter_Click(object sender, RoutedEventArgs e)
     {
         _viewModel.ToggleFilterExpanded();
@@ -142,7 +174,12 @@ public partial class ClothesTab : UserControl
             InlineSearch.Text = "";
         if (ChipAll != null)
             ChipAll.IsChecked = true;
+        if (SeasonAll != null)
+            SeasonAll.IsChecked = true;
+        if (FavoriteOnlyCheckBox != null)
+            FavoriteOnlyCheckBox.IsChecked = false;
         _viewModel.ClearFilters();
+        RenderTagFilters();
         ApplyFilterPanelState();
     }
 
@@ -213,5 +250,28 @@ public partial class ClothesTab : UserControl
 
         FilterPanel.Visibility = _viewModel.IsFilterExpanded ? Visibility.Visible : Visibility.Collapsed;
         ToggleFilterButton.Content = _viewModel.IsFilterExpanded ? "收起筛选" : "展开筛选";
+    }
+
+    private void RenderTagFilters()
+    {
+        if (TagFilterPanel == null)
+            return;
+
+        TagFilterPanel.Children.Clear();
+
+        foreach (var tag in _viewModel.AvailableTags)
+        {
+            var checkBox = new CheckBox
+            {
+                Content = tag.Name,
+                Margin = new Thickness(0, 0, 8, 8),
+                Padding = new Thickness(14, 8, 14, 8),
+                IsChecked = _viewModel.SelectedTagIds.Contains(tag.Id)
+            };
+
+            checkBox.Checked += (_, _) => _viewModel.ToggleTag(tag.Id, true);
+            checkBox.Unchecked += (_, _) => _viewModel.ToggleTag(tag.Id, false);
+            TagFilterPanel.Children.Add(checkBox);
+        }
     }
 }
