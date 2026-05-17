@@ -19,14 +19,12 @@ public partial class TagsTab : UserControl
         _viewModel = App.Services.GetRequiredService<TagsViewModel>();
         InitializeComponent();
         DataContext = _viewModel;
-        _viewModel.PropertyChanged += (_, _) => Dispatcher.Invoke(UpdateTagsSummary);
         Loaded += async (s, e) => await LoadTagsAsync();
     }
 
     private async Task LoadTagsAsync()
     {
         await _viewModel.LoadTagsAsync();
-        UpdateTagsSummary();
     }
 
     private void AddTag_Click(object sender, RoutedEventArgs e)
@@ -87,9 +85,4 @@ public partial class TagsTab : UserControl
         return result;
     }
 
-    private void UpdateTagsSummary()
-    {
-        TagsList.ItemsSource = _viewModel.Tags;
-        TxtEmpty.Visibility = _viewModel.IsEmpty ? Visibility.Visible : Visibility.Collapsed;
-    }
 }

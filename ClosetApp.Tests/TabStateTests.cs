@@ -1,4 +1,5 @@
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 using ClosetApp.UI.States;
 using Xunit;
 
@@ -71,5 +72,24 @@ public class TabStateTests
         Assert.False(state.IsLoading);
         Assert.False(state.IsEmpty);
         Assert.Single(state.Tags);
+    }
+
+    [Fact]
+    public void TagsTabState_SetTags_ComputesCategorySummaryAndSortsTags()
+    {
+        var state = new TagsTabState();
+
+        state.SetTags(
+        [
+            new Tag { Name = "秋冬", Color = "#FFFFFF", Category = TagCategory.Season },
+            new Tag { Name = "约会", Color = "#FFFFFF", Category = TagCategory.Scene },
+            new Tag { Name = "通勤", Color = "#FFFFFF", Category = TagCategory.Style },
+            new Tag { Name = "极简", Color = "#FFFFFF", Category = TagCategory.Style }
+        ]);
+
+        Assert.Equal(4, state.TagCount);
+        Assert.Equal("风格 2 · 场景 1 · 季节 1", state.CategorySummaryText);
+        Assert.Equal("极简", state.Tags[0].Name);
+        Assert.Equal("通勤", state.Tags[1].Name);
     }
 }

@@ -19,6 +19,9 @@ public partial class TagsViewModel : ObservableObject
     public IReadOnlyList<Tag> Tags => _state.Tags;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
+    public int TagCount => _state.TagCount;
+    public string TagCountText => $"{TagCount} 个标签";
+    public string CategorySummaryText => _state.CategorySummaryText;
 
     public async Task LoadTagsAsync()
     {
@@ -60,5 +63,8 @@ public partial class TagsViewModel : ObservableObject
         OnPropertyChanged(nameof(Tags));
         OnPropertyChanged(nameof(IsLoading));
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(TagCount));
+        OnPropertyChanged(nameof(TagCountText));
+        OnPropertyChanged(nameof(CategorySummaryText));
     }
 }
