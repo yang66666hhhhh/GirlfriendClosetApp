@@ -7,6 +7,8 @@
 
     <UserControl.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter"/>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter"/>
         <conv:ClothingTypeToNameConverter x:Key="ClothingTypeToName"/>
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
@@ -157,6 +159,73 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="TagToggleStyle" TargetType="ToggleButton">
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="ChipBorder"
+                                Background="{Binding SoftBackground}"
+                                BorderBrush="{Binding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14"
+                                Padding="12,7"
+                                Margin="0,0,8,8"
+                                Opacity="{Binding UnselectedOpacity}"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <StackPanel Orientation="Horizontal">
+                                <Ellipse Width="8"
+                                         Height="8"
+                                         Fill="{Binding BorderBrush}"
+                                         Opacity="0.9"/>
+                                <TextBlock x:Name="TagName"
+                                           Text="{Binding Tag.Name}"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Margin="6,0,0,0"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock x:Name="CheckMark"
+                                           Text="✓"
+                                           FontSize="12"
+                                           FontWeight="Bold"
+                                           Foreground="{Binding BorderBrush}"
+                                           Margin="8,0,0,0"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ChipBorder" Property="Background" Value="{Binding SelectedBackground}"/>
+                                <Setter TargetName="ChipBorder" Property="BorderThickness" Value="1.5"/>
+                                <Setter TargetName="ChipBorder" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.03" ScaleY="1.03"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="ChipBorder" Property="Background" Value="{Binding SelectedBackground}"/>
+                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{Binding BorderBrush}"/>
+                                <Setter TargetName="ChipBorder" Property="BorderThickness" Value="2"/>
+                                <Setter TargetName="ChipBorder" Property="Opacity" Value="1"/>
+                                <Setter TargetName="ChipBorder" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <ScaleTransform ScaleX="1.06" ScaleY="1.06"/>
+                                    </Setter.Value>
+                                </Setter>
+                                <Setter TargetName="TagName" Property="FontWeight" Value="SemiBold"/>
+                                <Setter TargetName="CheckMark" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <!-- ═══════════════════════════════════════════
@@ -212,7 +281,8 @@
                 <!-- ═══ SUMMARY ═══ -->
                 <Border x:Name="WardrobeSummary"
                         Style="{StaticResource LookbookCard}"
-                        Margin="64,24,64,18">
+                        Margin="64,24,64,18"
+                        Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -235,7 +305,7 @@
                                     Margin="0,0,10,0">
                                 <StackPanel>
                                     <TextBlock x:Name="TxtTotalCount"
-                                               Text="0 件"
+                                               Text="{Binding TotalCount, StringFormat={}{0} 件}"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                     <TextBlock Text="全部衣服"
@@ -249,7 +319,7 @@
                                     Padding="18,11">
                                 <StackPanel>
                                     <TextBlock x:Name="TxtFilteredCount"
-                                               Text="0 件"
+                                               Text="{Binding FilteredCount, StringFormat={}{0} 件}"
                                                Foreground="{StaticResource PrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                     <TextBlock Text="当前结果"
@@ -273,11 +343,11 @@
                              Grid.Column="0"
                              Style="{StaticResource SearchBoxStyle}"
                              MinWidth="320"
-                             TextChanged="TxtSearch_TextChanged"/>
+                             Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
                     <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="14,0,0,0">
                         <Button x:Name="ToggleFilterButton"
-                                Content="展开筛选"
+                                Content="{Binding FilterToggleText}"
                                 Style="{StaticResource CapsuleButton}"
                                 Click="ToggleFilter_Click"/>
                         <Button x:Name="ClearFilterButton"
@@ -292,7 +362,7 @@
                 <Border x:Name="FilterPanel"
                         Style="{StaticResource LookbookCard}"
                         Margin="64,0,64,18"
-                        Visibility="Collapsed">
+                        Visibility="{Binding IsFilterExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <Grid Margin="0,0,0,14">
                             <Grid.ColumnDefinitions>
@@ -305,12 +375,13 @@
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
                                 <TextBlock x:Name="TxtFilterHint"
-                                           Text="选择分类后，衣服列表会立即收窄。"
+                                           Text="{Binding FilterHint}"
                                            FontSize="12"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            Margin="0,5,0,0"/>
                             </StackPanel>
                             <TextBlock x:Name="TxtCount" Grid.Column="1"
+                                       Text="{Binding FilterResultText}"
                                        FontSize="13"
                                        Foreground="{StaticResource TextTertiaryBrush}"
                                        VerticalAlignment="Center"/>
@@ -325,23 +396,23 @@
                                           VerticalScrollBarVisibility="Disabled">
                                 <StackPanel Orientation="Horizontal">
                                     <RadioButton x:Name="ChipAll" Content="✨ 全部"
-                                                 Style="{StaticResource ChipStyle}" IsChecked="True"
-                                                 Checked="Category_Changed"/>
+                                                 Style="{StaticResource ChipStyle}"
+                                                 IsChecked="{Binding IsCategoryAllSelected, Mode=TwoWay}"/>
                                     <RadioButton x:Name="ChipTop" Content="👕 上装"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                                 Checked="Category_Changed"/>
+                                                 IsChecked="{Binding IsCategoryTopSelected, Mode=TwoWay}"/>
                                     <RadioButton x:Name="ChipBottom" Content="👖 下装"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                                 Checked="Category_Changed"/>
+                                                 IsChecked="{Binding IsCategoryBottomSelected, Mode=TwoWay}"/>
                                     <RadioButton x:Name="ChipDress" Content="👗 连衣裙"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                                 Checked="Category_Changed"/>
+                                                 IsChecked="{Binding IsCategoryDressSelected, Mode=TwoWay}"/>
                                     <RadioButton x:Name="ChipShoes" Content="👟 鞋子"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                                 Checked="Category_Changed"/>
+                                                 IsChecked="{Binding IsCategoryShoesSelected, Mode=TwoWay}"/>
                                     <RadioButton x:Name="ChipAccessory" Content="👜 配饰"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
-                                                 Checked="Category_Changed"/>
+                                                 IsChecked="{Binding IsCategoryAccessorySelected, Mode=TwoWay}"/>
                                 </StackPanel>
                             </ScrollViewer>
 
@@ -352,25 +423,25 @@
                                        Margin="0,18,0,10"/>
                             <WrapPanel>
                                 <RadioButton x:Name="SeasonAll" Content="四季都看"
-                                             Style="{StaticResource ChipStyle}" IsChecked="True"
+                                             Style="{StaticResource ChipStyle}"
                                              GroupName="SeasonGroup"
-                                             Checked="Season_Changed"/>
+                                             IsChecked="{Binding IsSeasonAllSelected, Mode=TwoWay}"/>
                                 <RadioButton x:Name="SeasonSpring" Content="春天"
                                              Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                              GroupName="SeasonGroup"
-                                             Checked="Season_Changed"/>
+                                             IsChecked="{Binding IsSeasonSpringSelected, Mode=TwoWay}"/>
                                 <RadioButton x:Name="SeasonSummer" Content="夏天"
                                              Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                              GroupName="SeasonGroup"
-                                             Checked="Season_Changed"/>
+                                             IsChecked="{Binding IsSeasonSummerSelected, Mode=TwoWay}"/>
                                 <RadioButton x:Name="SeasonAutumn" Content="秋天"
                                              Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                              GroupName="SeasonGroup"
-                                             Checked="Season_Changed"/>
+                                             IsChecked="{Binding IsSeasonAutumnSelected, Mode=TwoWay}"/>
                                 <RadioButton x:Name="SeasonWinter" Content="冬天"
                                              Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                              GroupName="SeasonGroup"
-                                             Checked="Season_Changed"/>
+                                             IsChecked="{Binding IsSeasonWinterSelected, Mode=TwoWay}"/>
                             </WrapPanel>
 
                             <TextBlock Text="偏好"
@@ -382,8 +453,7 @@
                                       Content="只看收藏"
                                       Style="{StaticResource FilterCheckStyle}"
                                       Foreground="{StaticResource TextPrimaryBrush}"
-                                      Checked="FavoriteOnly_Changed"
-                                      Unchecked="FavoriteOnly_Changed"/>
+                                      IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"/>
 
                             <TextBlock Text="风格标签"
                                        FontSize="13"
@@ -395,14 +465,29 @@
                                        FontSize="12"
                                        Foreground="{StaticResource TextTertiaryBrush}"
                                        Margin="0,0,0,8"
-                                       Visibility="Collapsed"/>
-                            <WrapPanel x:Name="TagFilterPanel"/>
+                                       Visibility="{Binding HasAvailableTags, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                            <ItemsControl ItemsSource="{Binding TagFilters}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <ToggleButton IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                      Style="{StaticResource TagToggleStyle}"/>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
                         </StackPanel>
                     </StackPanel>
                 </Border>
 
                 <!-- ═══ MASONRY FLOW ═══ -->
-                <ItemsControl x:Name="ClothesList" Margin="64,0,64,0">
+                <ItemsControl x:Name="ClothesList"
+                              Margin="64,0,64,0"
+                              ItemsSource="{Binding FilteredClothes}"
+                              Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <components:MasonryPanel ColumnWidth="280" Spacing="20"/>
@@ -418,7 +503,8 @@
                 </ItemsControl>
 
                 <!-- ═══ EMPTY STATE ═══ -->
-                <StackPanel x:Name="EmptyState" Visibility="Collapsed"
+                <StackPanel x:Name="EmptyState"
+                            Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"
                             HorizontalAlignment="Center" Margin="0,80,0,0">
                     <Canvas Width="80" Height="100" HorizontalAlignment="Center">
                         <Ellipse Width="12" Height="12" Canvas.Left="34" Canvas.Top="0"

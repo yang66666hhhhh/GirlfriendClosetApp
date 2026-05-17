@@ -7,7 +7,7 @@ namespace ClosetApp.UI.States;
 public sealed class ClothesTabState
 {
     private List<Clothing> _allClothes = new();
-    private IEnumerable<DisplayCategory>? _selectedCategories;
+    private DisplayCategory? _selectedCategory;
     private Season? _selectedSeason;
     private HashSet<Guid> _selectedTagIds = [];
     private bool? _favoriteOnly;
@@ -18,12 +18,13 @@ public sealed class ClothesTabState
     public bool IsLoading { get; private set; }
     public bool IsEmpty => _allClothes.Count == 0;
     public int FilteredCount => FilteredClothes.Count;
+    public DisplayCategory? SelectedCategory => _selectedCategory;
     public Season? SelectedSeason => _selectedSeason;
     public IReadOnlyCollection<Guid> SelectedTagIds => _selectedTagIds;
     public bool FavoriteOnly => _favoriteOnly == true;
     public bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_searchText) ||
-        _selectedCategories != null ||
+        _selectedCategory.HasValue ||
         _selectedSeason.HasValue ||
         _selectedTagIds.Count > 0 ||
         _favoriteOnly == true;
@@ -38,7 +39,7 @@ public sealed class ClothesTabState
             var parts = new List<string>();
             if (!string.IsNullOrWhiteSpace(_searchText))
                 parts.Add($"搜索「{_searchText}」");
-            if (_selectedCategories != null)
+            if (_selectedCategory.HasValue)
                 parts.Add("分类");
             if (_selectedSeason.HasValue)
                 parts.Add("季节");
@@ -66,9 +67,9 @@ public sealed class ClothesTabState
         ApplyFilter();
     }
 
-    public void SetSelectedCategories(IEnumerable<DisplayCategory>? categories)
+    public void SetSelectedCategory(DisplayCategory? category)
     {
-        _selectedCategories = categories;
+        _selectedCategory = category;
         ApplyFilter();
     }
 
@@ -94,9 +95,9 @@ public sealed class ClothesTabState
     {
         IEnumerable<Clothing> filtered = _allClothes;
 
-        if (_selectedCategories != null)
+        if (_selectedCategory.HasValue)
         {
-            filtered = filtered.Where(c => _selectedCategories.Any(cat => ResolveDisplayCategory(c) == cat));
+            filtered = filtered.Where(c => ResolveDisplayCategory(c) == _selectedCategory.Value);
         }
 
         if (_selectedSeason.HasValue)

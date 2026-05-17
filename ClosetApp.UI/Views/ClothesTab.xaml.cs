@@ -1,9 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
-using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
@@ -17,67 +15,25 @@ namespace ClosetApp.UI.Views;
 public partial class ClothesTab : UserControl
 {
     private readonly WardrobeViewModel _viewModel;
-    private bool _isSyncingFilterControls;
 
     public ClothesTab()
     {
         _viewModel = App.Services.GetRequiredService<WardrobeViewModel>();
         InitializeComponent();
         DataContext = _viewModel;
-        _viewModel.PropertyChanged += (_, _) => Dispatcher.Invoke(UpdateUI);
+        _viewModel.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName is nameof(WardrobeViewModel.FilteredClothes) or nameof(WardrobeViewModel.IsEmpty))
+                Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+        };
         Loaded += (s, e) => _ = LoadClothesAsync();
+        SizeChanged += (_, _) => UpdateCardWidth();
     }
 
     private async Task LoadClothesAsync()
     {
         await _viewModel.LoadClothesAsync();
-        UpdateUI();
-    }
-
-    private void UpdateUI()
-    {
-        if (!AreViewControlsReady()) return;
-
-        if (_viewModel.IsEmpty)
-        {
-            EmptyState.Visibility = Visibility.Visible;
-            WardrobeSummary.Visibility = Visibility.Collapsed;
-            ClothesList.Visibility = Visibility.Collapsed;
-            TxtCount.Text = "";
-            TxtTotalCount.Text = "0 件";
-            TxtFilteredCount.Text = "0 件";
-        }
-        else
-        {
-            EmptyState.Visibility = Visibility.Collapsed;
-            WardrobeSummary.Visibility = Visibility.Visible;
-            ClothesList.Visibility = Visibility.Visible;
-
-            TxtTotalCount.Text = $"{_viewModel.TotalCount} 件";
-            TxtFilteredCount.Text = $"{_viewModel.FilteredCount} 件";
-            TxtCount.Text = $"{_viewModel.FilterSummary} · {_viewModel.FilteredCount} 件结果";
-            TxtFilterHint.Text = _viewModel.FilterHint;
-
-            ClothesList.ItemsSource = _viewModel.FilteredClothes;
-            SyncFilterControlsFromState();
-
-            RenderTagFilters();
-
-            Dispatcher.BeginInvoke(() => UpdateCardWidth(), System.Windows.Threading.DispatcherPriority.Loaded);
-        }
-
-        ApplyFilterPanelState();
-    }
-
-    private bool AreViewControlsReady()
-    {
-        return EmptyState != null
-            && WardrobeSummary != null
-            && ClothesList != null
-            && TxtCount != null
-            && TxtTotalCount != null
-            && TxtFilteredCount != null
-            && TxtFilterHint != null;
+        Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     private void UpdateCardWidth()
@@ -113,84 +69,14 @@ public partial class ClothesTab : UserControl
         return null;
     }
 
-    private void Category_Changed(object sender, RoutedEventArgs e)
-    {
-        if (_isSyncingFilterControls)
-            return;
-
-        if (sender is not RadioButton rb) return;
-        var selectedCategories = rb.Name switch
-        {
-            "ChipAll" => null,
-            "ChipTop" => new[] { DisplayCategory.Topwear },
-            "ChipBottom" => new[] { DisplayCategory.Bottom },
-            "ChipDress" => new[] { DisplayCategory.Dress },
-            "ChipShoes" => new[] { DisplayCategory.Footwear },
-            "ChipAccessory" => new[] { DisplayCategory.Accessory },
-            _ => null
-        };
-        _viewModel.SetSelectedCategories(selectedCategories);
-    }
-
-    private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
-    {
-        if (_isSyncingFilterControls)
-            return;
-
-        if (sender is not TextBox textBox) return;
-        _viewModel.SearchText = textBox.Text;
-    }
-
-    private void Season_Changed(object sender, RoutedEventArgs e)
-    {
-        if (_isSyncingFilterControls)
-            return;
-
-        if (sender is not RadioButton rb || rb.IsChecked != true)
-            return;
-
-        Season? season = rb.Name switch
-        {
-            "SeasonAll" => null,
-            "SeasonSpring" => Season.Spring,
-            "SeasonSummer" => Season.Summer,
-            "SeasonAutumn" => Season.Autumn,
-            "SeasonWinter" => Season.Winter,
-            _ => null
-        };
-
-        _viewModel.SetSelectedSeason(season);
-    }
-
-    private void FavoriteOnly_Changed(object sender, RoutedEventArgs e)
-    {
-        if (_isSyncingFilterControls)
-            return;
-
-        _viewModel.SetFavoriteOnly(FavoriteOnlyCheckBox.IsChecked == true);
-    }
-
     private void ToggleFilter_Click(object sender, RoutedEventArgs e)
     {
         _viewModel.ToggleFilterExpanded();
-        ApplyFilterPanelState();
     }
 
     private void ClearFilter_Click(object sender, RoutedEventArgs e)
     {
-        _isSyncingFilterControls = true;
-        if (InlineSearch != null)
-            InlineSearch.Text = "";
-        if (ChipAll != null)
-            ChipAll.IsChecked = true;
-        if (SeasonAll != null)
-            SeasonAll.IsChecked = true;
-        if (FavoriteOnlyCheckBox != null)
-            FavoriteOnlyCheckBox.IsChecked = false;
-        _isSyncingFilterControls = false;
         _viewModel.ClearFilters();
-        RenderTagFilters();
-        ApplyFilterPanelState();
     }
 
     private void AddClothing_Click(object sender, RoutedEventArgs e)
@@ -253,85 +139,4 @@ public partial class ClothesTab : UserControl
         return result;
     }
 
-    private void ApplyFilterPanelState()
-    {
-        if (FilterPanel == null || ToggleFilterButton == null)
-            return;
-
-        FilterPanel.Visibility = _viewModel.IsFilterExpanded ? Visibility.Visible : Visibility.Collapsed;
-        ToggleFilterButton.Content = _viewModel.IsFilterExpanded ? "收起筛选" : "展开筛选";
-    }
-
-    private void RenderTagFilters()
-    {
-        if (TagFilterPanel == null)
-            return;
-
-        _isSyncingFilterControls = true;
-        TagFilterPanel.Children.Clear();
-        TxtTagFilterEmpty.Visibility = _viewModel.AvailableTags.Count == 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-
-        foreach (var tag in _viewModel.AvailableTags)
-        {
-            var checkBox = new CheckBox
-            {
-                Content = tag.Name,
-                Style = (Style)FindResource("TagChipStyle"),
-                Background = CreateTagBackgroundBrush(tag.Color),
-                BorderBrush = CreateTagBorderBrush(tag.Color),
-                Foreground = CreateTagForegroundBrush(tag.Color),
-                IsChecked = _viewModel.SelectedTagIds.Contains(tag.Id)
-            };
-
-            checkBox.Checked += (_, _) => _viewModel.ToggleTag(tag.Id, true);
-            checkBox.Unchecked += (_, _) => _viewModel.ToggleTag(tag.Id, false);
-            TagFilterPanel.Children.Add(checkBox);
-        }
-
-        _isSyncingFilterControls = false;
-    }
-
-    private void SyncFilterControlsFromState()
-    {
-        _isSyncingFilterControls = true;
-        SeasonAll.IsChecked = _viewModel.SelectedSeason == null;
-        SeasonSpring.IsChecked = _viewModel.SelectedSeason == Season.Spring;
-        SeasonSummer.IsChecked = _viewModel.SelectedSeason == Season.Summer;
-        SeasonAutumn.IsChecked = _viewModel.SelectedSeason == Season.Autumn;
-        SeasonWinter.IsChecked = _viewModel.SelectedSeason == Season.Winter;
-        FavoriteOnlyCheckBox.IsChecked = _viewModel.FavoriteOnly;
-        _isSyncingFilterControls = false;
-    }
-
-    private static Brush CreateTagBackgroundBrush(string colorText)
-    {
-        var color = ParseTagColor(colorText);
-        return new SolidColorBrush(Color.FromArgb(32, color.R, color.G, color.B));
-    }
-
-    private static Brush CreateTagBorderBrush(string colorText)
-    {
-        var color = ParseTagColor(colorText);
-        return new SolidColorBrush(Color.FromArgb(140, color.R, color.G, color.B));
-    }
-
-    private static Brush CreateTagForegroundBrush(string colorText)
-    {
-        var color = ParseTagColor(colorText);
-        return new SolidColorBrush(Color.FromArgb(255, color.R, color.G, color.B));
-    }
-
-    private static Color ParseTagColor(string colorText)
-    {
-        try
-        {
-            return (Color)ColorConverter.ConvertFromString(colorText);
-        }
-        catch
-        {
-            return Color.FromRgb(217, 162, 153);
-        }
-    }
 }

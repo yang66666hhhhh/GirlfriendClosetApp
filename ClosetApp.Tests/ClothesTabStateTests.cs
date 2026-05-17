@@ -19,7 +19,7 @@ public class ClothesTabStateTests
             CreateClothing("Weekend Tee", ClothingType.Top, GarmentType.TShirt, color: "Blue")
         ]);
 
-        state.SetSelectedCategories([DisplayCategory.Topwear]);
+        state.SetSelectedCategory(DisplayCategory.Topwear);
         state.SetSearchText("ivory");
 
         var match = Assert.Single(state.FilteredClothes);
@@ -53,7 +53,7 @@ public class ClothesTabStateTests
         var state = new ClothesTabState();
         state.SetClothes([CreateClothing("Soft Knit", ClothingType.Top, GarmentType.Sweater)]);
 
-        state.SetSelectedCategories([DisplayCategory.Topwear]);
+        state.SetSelectedCategory(DisplayCategory.Topwear);
         state.SetSearchText("soft");
 
         Assert.Equal("搜索「soft」 + 分类", state.FilterSummary);
@@ -91,6 +91,24 @@ public class ClothesTabStateTests
 
         var result = Assert.Single(state.FilteredClothes);
         Assert.Equal("Office Knit", result.Name);
+    }
+
+    [Fact]
+    public void ApplyFilter_WithSingleCategory_KeepsOnlyThatDisplayCategory()
+    {
+        var state = new ClothesTabState();
+        state.SetClothes(
+        [
+            CreateClothing("Weekend Knit", ClothingType.Top, GarmentType.Sweater),
+            CreateClothing("Daily Skirt", ClothingType.Skirt, GarmentType.Skirt),
+            CreateClothing("Soft Heels", ClothingType.Shoes, GarmentType.Heels)
+        ]);
+
+        state.SetSelectedCategory(DisplayCategory.Bottom);
+
+        var result = Assert.Single(state.FilteredClothes);
+        Assert.Equal("Daily Skirt", result.Name);
+        Assert.Equal(DisplayCategory.Bottom, state.SelectedCategory);
     }
 
     private static Clothing CreateClothing(
