@@ -92,6 +92,71 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="FilterCheckStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="CheckBg"
+                                Background="{StaticResource SurfaceSectionBrush}"
+                                BorderBrush="{StaticResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="16"
+                                Padding="14,8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CheckBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="CheckBg" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="CheckBg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TagChipStyle" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="Background" Value="{StaticResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="ChipBg"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ChipBg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="ChipBg" Property="BorderThickness" Value="1.4"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <!-- ═══════════════════════════════════════════
@@ -315,6 +380,7 @@
                                        Margin="0,18,0,10"/>
                             <CheckBox x:Name="FavoriteOnlyCheckBox"
                                       Content="只看收藏"
+                                      Style="{StaticResource FilterCheckStyle}"
                                       Foreground="{StaticResource TextPrimaryBrush}"
                                       Checked="FavoriteOnly_Changed"
                                       Unchecked="FavoriteOnly_Changed"/>
@@ -324,6 +390,12 @@
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondaryBrush}"
                                        Margin="0,18,0,10"/>
+                            <TextBlock x:Name="TxtTagFilterEmpty"
+                                       Text="还没有风格标签，先去标签页加几个会更好筛。"
+                                       FontSize="12"
+                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       Margin="0,0,0,8"
+                                       Visibility="Collapsed"/>
                             <WrapPanel x:Name="TagFilterPanel"/>
                         </StackPanel>
                     </StackPanel>

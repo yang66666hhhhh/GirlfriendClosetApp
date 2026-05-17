@@ -17,6 +17,7 @@ namespace ClosetApp.UI.Views;
 public partial class ClothesTab : UserControl
 {
     private readonly WardrobeViewModel _viewModel;
+    private bool _isSyncingFilterControls;
 
     public ClothesTab()
     {
@@ -58,12 +59,7 @@ public partial class ClothesTab : UserControl
             TxtFilterHint.Text = _viewModel.FilterHint;
 
             ClothesList.ItemsSource = _viewModel.FilteredClothes;
-            SeasonAll.IsChecked = _viewModel.SelectedSeason == null;
-            SeasonSpring.IsChecked = _viewModel.SelectedSeason == Season.Spring;
-            SeasonSummer.IsChecked = _viewModel.SelectedSeason == Season.Summer;
-            SeasonAutumn.IsChecked = _viewModel.SelectedSeason == Season.Autumn;
-            SeasonWinter.IsChecked = _viewModel.SelectedSeason == Season.Winter;
-            FavoriteOnlyCheckBox.IsChecked = _viewModel.FavoriteOnly;
+            SyncFilterControlsFromState();
 
             RenderTagFilters();
 
@@ -119,6 +115,9 @@ public partial class ClothesTab : UserControl
 
     private void Category_Changed(object sender, RoutedEventArgs e)
     {
+        if (_isSyncingFilterControls)
+            return;
+
         if (sender is not RadioButton rb) return;
         var selectedCategories = rb.Name switch
         {
@@ -135,12 +134,18 @@ public partial class ClothesTab : UserControl
 
     private void TxtSearch_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (_isSyncingFilterControls)
+            return;
+
         if (sender is not TextBox textBox) return;
         _viewModel.SearchText = textBox.Text;
     }
 
     private void Season_Changed(object sender, RoutedEventArgs e)
     {
+        if (_isSyncingFilterControls)
+            return;
+
         if (sender is not RadioButton rb || rb.IsChecked != true)
             return;
 
@@ -159,6 +164,9 @@ public partial class ClothesTab : UserControl
 
     private void FavoriteOnly_Changed(object sender, RoutedEventArgs e)
     {
+        if (_isSyncingFilterControls)
+            return;
+
         _viewModel.SetFavoriteOnly(FavoriteOnlyCheckBox.IsChecked == true);
     }
 
@@ -170,6 +178,7 @@ public partial class ClothesTab : UserControl
 
     private void ClearFilter_Click(object sender, RoutedEventArgs e)
     {
+        _isSyncingFilterControls = true;
         if (InlineSearch != null)
             InlineSearch.Text = "";
         if (ChipAll != null)
@@ -178,6 +187,7 @@ public partial class ClothesTab : UserControl
             SeasonAll.IsChecked = true;
         if (FavoriteOnlyCheckBox != null)
             FavoriteOnlyCheckBox.IsChecked = false;
+        _isSyncingFilterControls = false;
         _viewModel.ClearFilters();
         RenderTagFilters();
         ApplyFilterPanelState();
@@ -257,21 +267,71 @@ public partial class ClothesTab : UserControl
         if (TagFilterPanel == null)
             return;
 
+        _isSyncingFilterControls = true;
         TagFilterPanel.Children.Clear();
+        TxtTagFilterEmpty.Visibility = _viewModel.AvailableTags.Count == 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
 
         foreach (var tag in _viewModel.AvailableTags)
         {
             var checkBox = new CheckBox
             {
                 Content = tag.Name,
-                Margin = new Thickness(0, 0, 8, 8),
-                Padding = new Thickness(14, 8, 14, 8),
+                Style = (Style)FindResource("TagChipStyle"),
+                Background = CreateTagBackgroundBrush(tag.Color),
+                BorderBrush = CreateTagBorderBrush(tag.Color),
+                Foreground = CreateTagForegroundBrush(tag.Color),
                 IsChecked = _viewModel.SelectedTagIds.Contains(tag.Id)
             };
 
             checkBox.Checked += (_, _) => _viewModel.ToggleTag(tag.Id, true);
             checkBox.Unchecked += (_, _) => _viewModel.ToggleTag(tag.Id, false);
             TagFilterPanel.Children.Add(checkBox);
+        }
+
+        _isSyncingFilterControls = false;
+    }
+
+    private void SyncFilterControlsFromState()
+    {
+        _isSyncingFilterControls = true;
+        SeasonAll.IsChecked = _viewModel.SelectedSeason == null;
+        SeasonSpring.IsChecked = _viewModel.SelectedSeason == Season.Spring;
+        SeasonSummer.IsChecked = _viewModel.SelectedSeason == Season.Summer;
+        SeasonAutumn.IsChecked = _viewModel.SelectedSeason == Season.Autumn;
+        SeasonWinter.IsChecked = _viewModel.SelectedSeason == Season.Winter;
+        FavoriteOnlyCheckBox.IsChecked = _viewModel.FavoriteOnly;
+        _isSyncingFilterControls = false;
+    }
+
+    private static Brush CreateTagBackgroundBrush(string colorText)
+    {
+        var color = ParseTagColor(colorText);
+        return new SolidColorBrush(Color.FromArgb(32, color.R, color.G, color.B));
+    }
+
+    private static Brush CreateTagBorderBrush(string colorText)
+    {
+        var color = ParseTagColor(colorText);
+        return new SolidColorBrush(Color.FromArgb(140, color.R, color.G, color.B));
+    }
+
+    private static Brush CreateTagForegroundBrush(string colorText)
+    {
+        var color = ParseTagColor(colorText);
+        return new SolidColorBrush(Color.FromArgb(255, color.R, color.G, color.B));
+    }
+
+    private static Color ParseTagColor(string colorText)
+    {
+        try
+        {
+            return (Color)ColorConverter.ConvertFromString(colorText);
+        }
+        catch
+        {
+            return Color.FromRgb(217, 162, 153);
         }
     }
 }
