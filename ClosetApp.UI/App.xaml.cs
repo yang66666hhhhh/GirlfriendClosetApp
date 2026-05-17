@@ -15,6 +15,7 @@ using ClosetApp.Infrastructure.Data;
 using ClosetApp.Infrastructure.Repositories;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Services;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 
@@ -96,7 +97,8 @@ public partial class App : System.Windows.Application
     {
         var services = new ServiceCollection();
 
-        services.AddDbContext<ClosetDbContext>();
+        services.AddDbContextFactory<ClosetDbContext>();
+        services.AddScoped(sp => sp.GetRequiredService<IDbContextFactory<ClosetDbContext>>().CreateDbContext());
 
         services.AddScoped<IClothingRepository, ClothingRepository>();
         services.AddScoped<IOutfitRepository, OutfitRepository>();
@@ -112,6 +114,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<GetOutfitHistorySummary>();
         services.AddScoped<RecordOutfitWorn>();
         services.AddScoped<GetTagsForSelection>();
+        services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IImageStorageService, ImageStorageService>();
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
         services.AddSingleton<IWeatherService, WeatherService>();

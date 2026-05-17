@@ -24,9 +24,18 @@ public class ClosetDbContext : DbContext
         _dbPath = Path.Combine(appFolder, "closet.db");
     }
 
+    public ClosetDbContext(DbContextOptions<ClosetDbContext> options) : base(options)
+    {
+        _dbPath = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ClosetApp",
+            "closet.db");
+    }
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlite($"Data Source={_dbPath}");
+        if (!optionsBuilder.IsConfigured)
+            optionsBuilder.UseSqlite($"Data Source={_dbPath}");
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

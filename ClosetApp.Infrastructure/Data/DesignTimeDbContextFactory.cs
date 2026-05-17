@@ -18,6 +18,6 @@ public class DesignTimeDbContextFactory : IDesignTimeDbContextFactory<ClosetDbCo
         var optionsBuilder = new DbContextOptionsBuilder<ClosetDbContext>();
         optionsBuilder.UseSqlite($"Data Source={dbPath}");
 
-        return new ClosetDbContext();
+        return new ClosetDbContext(optionsBuilder.Options);
     }
 }
