@@ -14,6 +14,25 @@ public sealed record BackupValidationResult(
     int MissingImageCount,
     IReadOnlyList<string> Warnings)
 {
+    // 让设置页直接展示数据体量，不必在 UI 层重复拼接统计文案。
+    public string DataSummary =>
+        $"{ClothingCount} 件衣服 · {OutfitCount} 套搭配 · {TagCount} 个标签 · {WornRecordCount} 条穿着记录";
+
+    // 图片覆盖情况单独抽出来，方便用户判断 ZIP 是否值得导出、JSON 是否会丢图片。
+    public string ImageSummary =>
+        ReferencedImageCount == 0
+            ? "当前数据里没有关联图片。"
+            : Format == "zip"
+                ? $"引用 {ReferencedImageCount} 张图片，可打包 {IncludedImageCount} 张，缺失 {MissingImageCount} 张。"
+                : $"引用 {ReferencedImageCount} 张图片，JSON 仅导出核心数据，不包含图片文件。";
+
+    public string ReadinessSummary =>
+        IsEmptyBackup
+            ? "当前会生成一个空备份，适合先确认是否真的没有数据。"
+            : !HasWarnings
+                ? "当前数据状态适合直接导出。"
+                : "导出前建议先看下面的提醒，确认后再继续。";
+
     public bool IsEmptyBackup =>
         ClothingCount == 0 &&
         OutfitCount == 0 &&

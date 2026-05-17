@@ -204,10 +204,36 @@
                                                    Foreground="{StaticResource TextPrimaryBrush}"
                                                    FontWeight="SemiBold"
                                                    Margin="0,6,0,0"/>
+                                        <TextBlock x:Name="TxtBackupValidationData"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,8,0,0"/>
+                                        <TextBlock x:Name="TxtBackupValidationImages"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,6,0,0"/>
                                         <TextBlock x:Name="TxtBackupValidationHint"
                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap"
                                                    Margin="0,6,0,0"/>
+                                        <Border x:Name="BackupValidationWarningCard"
+                                                Background="#FFFBE9E7"
+                                                BorderBrush="{StaticResource DangerBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="12"
+                                                Margin="0,10,0,0"
+                                                Visibility="Collapsed">
+                                            <StackPanel>
+                                                <TextBlock Text="导出提醒"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock x:Name="TxtBackupValidationWarnings"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Margin="0,6,0,0"/>
+                                            </StackPanel>
+                                        </Border>
                                     </StackPanel>
                                 </Border>
                                 <WrapPanel>

@@ -347,9 +347,7 @@ public partial class SettingsTab : UserControl
     {
         var previewPath = Path.Combine(AppPaths.BackupsDir, $"preview-{Guid.NewGuid():N}.zip");
         var validation = await _backupService.ValidateExportAsync(previewPath);
-        TxtBackupValidation.Text =
-            $"{validation.ClothingCount} 件衣服 · {validation.OutfitCount} 套搭配 · {validation.TagCount} 个标签 · {validation.IncludedImageCount} 张可打包图片";
-        TxtBackupValidationHint.Text = BuildValidationHint(validation);
+        UpdateBackupValidationCard(validation);
 
         var history = await _backupService.GetHistoryAsync();
         BackupHistoryList.ItemsSource = history;
@@ -390,8 +388,11 @@ public partial class SettingsTab : UserControl
 
     private static string BuildValidationHint(BackupValidationResult validation)
     {
+        if (validation.IsEmptyBackup)
+            return validation.ReadinessSummary;
+
         if (!validation.HasWarnings)
-            return "当前可以直接导出 ZIP 备份包。";
+            return "当前可以直接导出 ZIP 备份包，建议优先使用 ZIP 保留图片。";
 
         return string.Join(" ", validation.Warnings);
     }
@@ -417,6 +418,26 @@ public partial class SettingsTab : UserControl
         return missingThumbnailCount == 0
             ? "所有已存在的原图都已经生成缩略图。"
             : $"{missingThumbnailCount} 张图片缺少缩略图，可一键重建缓存。";
+    }
+
+    // 导出前校验卡片集中在这里组装，避免散落的文本更新让状态变得难追踪。
+    private void UpdateBackupValidationCard(BackupValidationResult validation)
+    {
+        TxtBackupValidation.Text = validation.ReadinessSummary;
+        TxtBackupValidationData.Text = validation.DataSummary;
+        TxtBackupValidationImages.Text = validation.ImageSummary;
+        TxtBackupValidationHint.Text = BuildValidationHint(validation);
+
+        if (validation.HasWarnings)
+        {
+            BackupValidationWarningCard.Visibility = Visibility.Visible;
+            TxtBackupValidationWarnings.Text = string.Join("\n", validation.Warnings);
+        }
+        else
+        {
+            BackupValidationWarningCard.Visibility = Visibility.Collapsed;
+            TxtBackupValidationWarnings.Text = string.Empty;
+        }
     }
 
     private void UpdateLatestImportCard(BackupImportResult result)

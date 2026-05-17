@@ -1,5 +1,6 @@
 using System.IO;
 using System.IO.Compression;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Data;
@@ -237,6 +238,10 @@ public class BackupServiceTests
             var validation = await service.ValidateExportAsync(Path.Combine(tempDir, "backup.json"));
 
             Assert.True(validation.HasWarnings);
+            Assert.Equal(1, validation.ReferencedImageCount);
+            Assert.Equal(1, validation.IncludedImageCount);
+            Assert.Equal(0, validation.MissingImageCount);
+            Assert.Contains("JSON 仅导出核心数据", validation.ImageSummary, StringComparison.Ordinal);
             Assert.Contains(validation.Warnings, warning => warning.Contains("JSON 备份只保存核心数据", StringComparison.Ordinal));
         }
         finally
@@ -250,6 +255,80 @@ public class BackupServiceTests
             {
             }
         }
+    }
+
+    [Fact]
+    public async Task ValidateExportAsync_WithMissingZipImage_ReturnsCoverageCounts()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var storageDir = Path.Combine(tempDir, "storage");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            var imageStorage = new ImageStorageService(storageDir);
+
+            await using (var context = new ClosetDbContext(options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+                context.Clothes.Add(new Clothing
+                {
+                    Name = "Broken Coat",
+                    Type = ClothingType.Outerwear,
+                    Season = Season.Winter,
+                    ImagePath = "missing-coat.png"
+                });
+                await context.SaveChangesAsync();
+            }
+
+            var service = new BackupService(new TestDbContextFactory(options), imageStorage, Path.Combine(tempDir, "history"));
+            var validation = await service.ValidateExportAsync(Path.Combine(tempDir, "backup.zip"));
+
+            Assert.True(validation.HasWarnings);
+            Assert.Equal(1, validation.ReferencedImageCount);
+            Assert.Equal(0, validation.IncludedImageCount);
+            Assert.Equal(1, validation.MissingImageCount);
+            Assert.Contains("可打包 0 张", validation.ImageSummary, StringComparison.Ordinal);
+            Assert.Contains("缺失 1 张", validation.ImageSummary, StringComparison.Ordinal);
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    [Fact]
+    public void BackupValidationResult_WithEmptyCounts_ReportsEmptyBackupReadiness()
+    {
+        var validation = new BackupValidationResult(
+            "zip",
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            0,
+            ["当前没有可导出的数据，这会生成一个空备份。"]);
+
+        Assert.True(validation.IsEmptyBackup);
+        Assert.True(validation.HasWarnings);
+        Assert.Contains("空备份", validation.ReadinessSummary, StringComparison.Ordinal);
+        Assert.Contains("没有关联图片", validation.ImageSummary, StringComparison.Ordinal);
     }
 
     [Fact]
