@@ -8,4 +8,6 @@ public interface IBackupService
     Task<BackupExportResult> ExportAsync(string filePath);
     Task<BackupImportResult> ImportAsync(string filePath);
     Task<IReadOnlyList<BackupHistoryItem>> GetHistoryAsync(int maxCount = 8);
+    Task ClearHistoryAsync();
+    string BuildDefaultBackupPath();
 }

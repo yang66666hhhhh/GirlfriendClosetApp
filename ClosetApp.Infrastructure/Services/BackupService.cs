@@ -194,6 +194,19 @@ public sealed class BackupService : IBackupService
             .ToList();
     }
 
+    public Task ClearHistoryAsync()
+    {
+        if (File.Exists(_historyFilePath))
+            File.Delete(_historyFilePath);
+
+        return Task.CompletedTask;
+    }
+
+    public string BuildDefaultBackupPath()
+    {
+        return Path.Combine(AppPaths.BackupsDir, $"closet-backup-{DateTime.Now:yyyyMMdd-HHmm}.zip");
+    }
+
     private async Task<ClosetBackupDocument> BuildBackupDocumentAsync()
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();

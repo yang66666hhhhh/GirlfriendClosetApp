@@ -251,6 +251,79 @@ public class BackupServiceTests
         }
     }
 
+    [Fact]
+    public async Task BuildDefaultBackupPath_UsesBackupsDirectoryAndZipExtension()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={Path.Combine(tempDir, "closet.db")}")
+                .Options;
+
+            var service = new BackupService(new TestDbContextFactory(options), historyDirectory: tempDir);
+            var path = service.BuildDefaultBackupPath();
+
+            Assert.EndsWith(".zip", path, StringComparison.OrdinalIgnoreCase);
+            Assert.Contains("closet-backup-", Path.GetFileName(path), StringComparison.Ordinal);
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ClearHistoryAsync_RemovesSavedHistory()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var historyDir = Path.Combine(tempDir, "history");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            await using (var context = new ClosetDbContext(options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+            }
+
+            var service = new BackupService(new TestDbContextFactory(options), historyDirectory: historyDir);
+            await service.ExportAsync(Path.Combine(tempDir, "empty.json"));
+
+            Assert.NotEmpty(await service.GetHistoryAsync());
+
+            await service.ClearHistoryAsync();
+
+            Assert.Empty(await service.GetHistoryAsync());
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
     private static async Task CreateSourceImageAsync(string path)
     {
         using var image = new Image<Rgba32>(320, 420);

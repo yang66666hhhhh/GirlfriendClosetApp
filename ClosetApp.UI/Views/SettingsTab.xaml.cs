@@ -127,6 +127,8 @@ public partial class SettingsTab : UserControl
 
     private void OpenLogsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.LogsDir);
 
+    private void OpenBackupsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.BackupsDir);
+
     private void OpenAppDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppDomain.CurrentDomain.BaseDirectory);
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
@@ -197,7 +199,7 @@ public partial class SettingsTab : UserControl
         {
             Filter = "ZIP 备份包|*.zip|JSON 备份|*.json",
             DefaultExt = ".zip",
-            FileName = $"closet-backup-{DateTime.Now:yyyyMMdd-HHmm}.zip",
+            FileName = Path.GetFileName(_backupService.BuildDefaultBackupPath()),
             InitialDirectory = AppPaths.BackupsDir
         };
 
@@ -209,6 +211,23 @@ public partial class SettingsTab : UserControl
             return;
 
         var result = await _backupService.ExportAsync(dialog.FileName);
+        await RefreshBackupStateAsync();
+
+        MessageBox.Show(
+            BuildExportMessage(result),
+            "完成",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+    }
+
+    private async void QuickExportBackup_Click(object sender, RoutedEventArgs e)
+    {
+        var filePath = _backupService.BuildDefaultBackupPath();
+        var validation = await _backupService.ValidateExportAsync(filePath);
+        if (!ConfirmExport(validation))
+            return;
+
+        var result = await _backupService.ExportAsync(filePath);
         await RefreshBackupStateAsync();
 
         MessageBox.Show(
@@ -275,6 +294,39 @@ public partial class SettingsTab : UserControl
     private async void RefreshBackupState_Click(object sender, RoutedEventArgs e)
     {
         await RefreshBackupStateAsync();
+    }
+
+    private async void ClearBackupHistory_Click(object sender, RoutedEventArgs e)
+    {
+        var confirm = MessageBox.Show(
+            "确定清空备份历史吗？这不会删除已经导出的备份文件。",
+            "清空备份历史",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Warning);
+
+        if (confirm != MessageBoxResult.OK)
+            return;
+
+        await _backupService.ClearHistoryAsync();
+        await RefreshBackupStateAsync();
+    }
+
+    private void OpenBackupFile_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string filePath } || string.IsNullOrWhiteSpace(filePath))
+            return;
+
+        RevealFile(filePath);
+    }
+
+    private void OpenBackupFolder_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { Tag: string filePath } || string.IsNullOrWhiteSpace(filePath))
+            return;
+
+        var directory = Path.GetDirectoryName(filePath);
+        if (!string.IsNullOrWhiteSpace(directory))
+            OpenPath(directory);
     }
 
     private async Task RefreshBackupStateAsync(BackupImportResult? latestImport = null)
