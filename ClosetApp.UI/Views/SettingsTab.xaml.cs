@@ -343,12 +343,22 @@ public partial class SettingsTab : UserControl
 
         if (latestImport != null)
         {
-            TxtLastImportSummary.Text = BuildImportMessage(latestImport);
+            UpdateLatestImportCard(latestImport);
             return;
         }
 
         var latestImportHistory = history.FirstOrDefault(item => item.Operation == "Import" && item.Success);
-        TxtLastImportSummary.Text = latestImportHistory?.Summary ?? "还没有导入记录。";
+        if (latestImportHistory == null)
+        {
+            ResetLatestImportCard();
+            return;
+        }
+
+        TxtLastImportSummary.Text = latestImportHistory.Summary;
+        TxtLastImportDetail.Text = $"{latestImportHistory.TimestampText} · {latestImportHistory.FileName}";
+        LastImportWarningCard.Visibility = Visibility.Collapsed;
+        LastImportMissingCard.Visibility = Visibility.Collapsed;
+        BtnRepairAfterImport.Visibility = Visibility.Collapsed;
     }
 
     private static bool ConfirmExport(BackupValidationResult validation)
@@ -386,5 +396,48 @@ public partial class SettingsTab : UserControl
         if (result.Warnings.Count > 0)
             message += $"\n\n提醒：{string.Join(" ", result.Warnings)}";
         return message;
+    }
+
+    private void UpdateLatestImportCard(BackupImportResult result)
+    {
+        TxtLastImportSummary.Text = result.Summary;
+        TxtLastImportDetail.Text =
+            $"{result.ImportedAt:yyyy-MM-dd HH:mm} · {Path.GetFileName(result.FilePath)}\n" +
+            $"衣服 {result.ClothingCount} · 搭配 {result.OutfitCount} · 标签 {result.TagCount} · 恢复图片 {result.RestoredImageCount}";
+
+        if (result.Warnings.Count > 0)
+        {
+            LastImportWarningCard.Visibility = Visibility.Visible;
+            TxtLastImportWarning.Text = string.Join(" ", result.Warnings);
+            BtnRepairAfterImport.Visibility = result.ShouldSuggestRepair ? Visibility.Visible : Visibility.Collapsed;
+        }
+        else
+        {
+            LastImportWarningCard.Visibility = Visibility.Collapsed;
+            BtnRepairAfterImport.Visibility = Visibility.Collapsed;
+        }
+
+        if (result.MissingImageFiles.Count > 0)
+        {
+            LastImportMissingCard.Visibility = Visibility.Visible;
+            TxtLastImportMissingFiles.Text = string.Join("、", result.MissingImageFiles.Take(6)) +
+                (result.MissingImageFiles.Count > 6 ? $" 等 {result.MissingImageFiles.Count} 个文件" : string.Empty);
+        }
+        else
+        {
+            LastImportMissingCard.Visibility = Visibility.Collapsed;
+            TxtLastImportMissingFiles.Text = string.Empty;
+        }
+    }
+
+    private void ResetLatestImportCard()
+    {
+        TxtLastImportSummary.Text = "还没有导入记录。";
+        TxtLastImportDetail.Text = "导入完成后，这里会显示恢复结果和后续建议。";
+        LastImportWarningCard.Visibility = Visibility.Collapsed;
+        LastImportMissingCard.Visibility = Visibility.Collapsed;
+        BtnRepairAfterImport.Visibility = Visibility.Collapsed;
+        TxtLastImportWarning.Text = string.Empty;
+        TxtLastImportMissingFiles.Text = string.Empty;
     }
 }

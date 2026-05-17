@@ -179,6 +179,7 @@ public class BackupServiceTests
 
             Assert.Equal(1, exportResult.IncludedImageCount);
             Assert.Equal(1, importResult.RestoredImageCount);
+            Assert.Empty(importResult.MissingImageFiles);
 
             var history = await service.GetHistoryAsync();
             Assert.Equal(2, history.Count);
@@ -237,6 +238,74 @@ public class BackupServiceTests
 
             Assert.True(validation.HasWarnings);
             Assert.Contains(validation.Warnings, warning => warning.Contains("JSON 备份只保存核心数据", StringComparison.Ordinal));
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ImportAsync_ZipMissingImage_ReportsMissingFileNames()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var storageDir = Path.Combine(tempDir, "storage");
+        var historyDir = Path.Combine(tempDir, "history");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+            var imageStorage = new ImageStorageService(storageDir);
+            var sourceImagePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourceImagePath);
+            var storedFileName = await imageStorage.SaveImageAsync(sourceImagePath);
+
+            await using (var setupContext = new ClosetDbContext(options))
+            {
+                await setupContext.Database.EnsureDeletedAsync();
+                await setupContext.Database.EnsureCreatedAsync();
+                setupContext.Clothes.Add(new Clothing
+                {
+                    Name = "Missing Image Coat",
+                    Type = ClothingType.Outerwear,
+                    Season = Season.Winter,
+                    ImagePath = storedFileName
+                });
+                await setupContext.SaveChangesAsync();
+            }
+
+            var service = new BackupService(new TestDbContextFactory(options), imageStorage, historyDir);
+            var backupPath = Path.Combine(tempDir, "missing-image-backup.zip");
+            await service.ExportAsync(backupPath);
+
+            using (var archive = ZipFile.Open(backupPath, ZipArchiveMode.Update))
+            {
+                archive.GetEntry($"images/{storedFileName}")?.Delete();
+            }
+
+            await using (var resetContext = new ClosetDbContext(options))
+            {
+                resetContext.Clothes.RemoveRange(await resetContext.Clothes.ToListAsync());
+                await resetContext.SaveChangesAsync();
+            }
+
+            var importResult = await service.ImportAsync(backupPath);
+
+            Assert.Equal(0, importResult.RestoredImageCount);
+            Assert.Equal(1, importResult.MissingImageCount);
+            Assert.Contains(storedFileName, importResult.MissingImageFiles);
+            Assert.True(importResult.ShouldSuggestRepair);
         }
         finally
         {

@@ -55,12 +55,15 @@ public sealed record BackupImportResult(
     int FavoriteCount,
     int RestoredImageCount,
     int MissingImageCount,
+    IReadOnlyList<string> MissingImageFiles,
     IReadOnlyList<string> Warnings)
 {
     public string Summary =>
         Format == "zip"
             ? $"导入 {ClothingCount} 件衣服、{OutfitCount} 套搭配、{TagCount} 个标签，恢复 {RestoredImageCount} 张图片。"
             : $"导入 {ClothingCount} 件衣服、{OutfitCount} 套搭配、{TagCount} 个标签的核心数据。";
+
+    public bool ShouldSuggestRepair => MissingImageCount > 0 || (Format == "json" && MissingImageFiles.Count > 0);
 }
 
 public sealed record BackupHistoryItem(

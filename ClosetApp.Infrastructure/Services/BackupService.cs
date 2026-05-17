@@ -128,18 +128,25 @@ public sealed class BackupService : IBackupService
             ClosetBackupDocument document;
             var restoredImageCount = 0;
             var missingImageCount = 0;
+            IReadOnlyList<string> missingImageFiles = [];
 
             if (IsZipBackup(filePath))
             {
                 EnsureImageStorageAvailable();
-                (document, restoredImageCount, missingImageCount) = await ImportZipAsync(filePath);
+                (document, restoredImageCount, missingImageCount, missingImageFiles) = await ImportZipAsync(filePath);
             }
             else
             {
                 var json = await File.ReadAllTextAsync(filePath);
                 document = JsonSerializer.Deserialize<ClosetBackupDocument>(json, JsonOptions)
                     ?? throw new InvalidOperationException("备份文件格式无效。");
-                missingImageCount = document.Clothes.Count(c => !string.IsNullOrWhiteSpace(c.ImagePath));
+                missingImageFiles = document.Clothes
+                    .Where(c => !string.IsNullOrWhiteSpace(c.ImagePath))
+                    .Select(c => Path.GetFileName(c.ImagePath) ?? c.ImagePath!)
+                    .Distinct(StringComparer.OrdinalIgnoreCase)
+                    .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                    .ToList();
+                missingImageCount = missingImageFiles.Count;
             }
 
             await RestoreDocumentAsync(document);
@@ -156,6 +163,7 @@ public sealed class BackupService : IBackupService
                 document.Favorites.Count,
                 restoredImageCount,
                 missingImageCount,
+                missingImageFiles,
                 warnings);
 
             var fileInfo = new FileInfo(filePath);
@@ -314,7 +322,7 @@ public sealed class BackupService : IBackupService
         return packagedImages;
     }
 
-    private async Task<(ClosetBackupDocument Document, int RestoredImageCount, int MissingImageCount)> ImportZipAsync(string filePath)
+    private async Task<(ClosetBackupDocument Document, int RestoredImageCount, int MissingImageCount, IReadOnlyList<string> MissingImageFiles)> ImportZipAsync(string filePath)
     {
         using var archive = ZipFile.OpenRead(filePath);
         var documentEntry = archive.GetEntry(BackupDocumentEntryName)
@@ -330,7 +338,7 @@ public sealed class BackupService : IBackupService
         var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Import", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
         var restoredImageCount = 0;
-        var missingImageCount = 0;
+        var missingImageFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         try
         {
@@ -343,7 +351,7 @@ public sealed class BackupService : IBackupService
                 var imageEntry = FindZipEntry(archive, $"{ImagesEntryFolder}{imageFileName}");
                 if (imageEntry == null)
                 {
-                    missingImageCount++;
+                    missingImageFiles.Add(imageFileName);
                     continue;
                 }
 
@@ -355,7 +363,10 @@ public sealed class BackupService : IBackupService
                 restoredImageCount++;
             }
 
-            return (document, restoredImageCount, missingImageCount);
+            var orderedMissingFiles = missingImageFiles
+                .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+            return (document, restoredImageCount, orderedMissingFiles.Count, orderedMissingFiles);
         }
         finally
         {
