@@ -5,10 +5,28 @@ namespace ClosetApp.UI.States;
 public sealed class OutfitsTabState
 {
     private List<Outfit> _outfits = new();
+    private List<RecentWornListItem> _recentWornRecords = [];
+    private List<CalendarDayItem> _calendarDays = [];
+    private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private bool _isHistoryExpanded;
 
     public IReadOnlyList<Outfit> Outfits => _outfits;
+    public IReadOnlyList<RecentWornListItem> RecentWornRecords => _recentWornRecords;
+    public IReadOnlyList<CalendarDayItem> CalendarDays => _calendarDays;
     public bool IsLoading { get; private set; }
     public bool IsEmpty => _outfits.Count == 0;
+    public int OutfitCount => _outfits.Count;
+    public DateTime CalendarMonth => _calendarMonth;
+    public string CalendarMonthText => _calendarMonth.ToString("yyyy年 M月");
+    public bool IsHistoryExpanded => _isHistoryExpanded;
+    public string HistoryToggleText => _isHistoryExpanded ? "收起记录日历" : "查看记录日历";
+    public string HistoryQuickText => _recentWornRecords.Count == 0
+        ? "暂无记录"
+        : $"{_recentWornRecords.Count} 条最近记录";
+    public string HistorySummaryText => _recentWornRecords.Count == 0
+        ? "记录一次「今天穿了」，这里就会生成你的穿搭时间线。"
+        : $"最近 {_recentWornRecords.Count} 条穿着记录，点日历日期可以补记或撤销。";
+    public string CalendarSummaryText { get; private set; } = "按月份回看每天穿了哪套，慢慢就会长出你的穿搭习惯。";
 
     public void BeginLoad() => IsLoading = true;
 
@@ -16,5 +34,107 @@ public sealed class OutfitsTabState
     {
         _outfits = outfits.ToList();
         IsLoading = false;
+    }
+
+    public void ToggleHistoryExpanded() => _isHistoryExpanded = !_isHistoryExpanded;
+
+    public void MoveCalendarMonth(int offsetMonths)
+    {
+        _calendarMonth = _calendarMonth.AddMonths(offsetMonths);
+    }
+
+    public void SetRecentWornRecords(IEnumerable<OutfitWornRecord> records)
+    {
+        _recentWornRecords = records
+            .Select(RecentWornListItem.FromRecord)
+            .ToList();
+    }
+
+    public void SetCalendarRecords(IEnumerable<OutfitWornRecord> records)
+    {
+        var monthRecords = records.ToList();
+        var groupedRecords = monthRecords
+            .GroupBy(record => record.WornDate.Date)
+            .ToDictionary(group => group.Key, group => group.ToList());
+
+        CalendarSummaryText = BuildCalendarSummary(monthRecords);
+        _calendarDays = BuildCalendarDays(_calendarMonth, groupedRecords).ToList();
+    }
+
+    private static string BuildCalendarSummary(IReadOnlyList<OutfitWornRecord> records)
+    {
+        if (records.Count == 0)
+            return "这个月还没有穿搭记录。点任意一天，可以补记那天穿了什么。";
+
+        var activeDays = records.Select(record => record.WornDate.Date).Distinct().Count();
+        var mostWorn = records
+            .GroupBy(record => record.Outfit?.Name ?? "未命名搭配")
+            .OrderByDescending(group => group.Count())
+            .First();
+
+        return $"本月 {records.Count} 次记录 · {activeDays} 天有穿搭 · 最常穿「{mostWorn.Key}」";
+    }
+
+    private static IReadOnlyList<CalendarDayItem> BuildCalendarDays(
+        DateTime monthStart,
+        IReadOnlyDictionary<DateTime, List<OutfitWornRecord>> recordsByDate)
+    {
+        var firstDayOffset = ((int)monthStart.DayOfWeek + 6) % 7;
+        var calendarStart = monthStart.AddDays(-firstDayOffset);
+        var days = new List<CalendarDayItem>(42);
+
+        for (var index = 0; index < 42; index++)
+        {
+            var date = calendarStart.AddDays(index);
+            recordsByDate.TryGetValue(date, out var dayRecords);
+            days.Add(CalendarDayItem.FromDate(date, monthStart.Month, dayRecords ?? []));
+        }
+
+        return days;
+    }
+}
+
+public sealed record RecentWornListItem(string DateText, string OutfitName, string TimeText)
+{
+    public static RecentWornListItem FromRecord(OutfitWornRecord record)
+    {
+        var date = record.WornDate.Date;
+        var dateText = date == DateTime.Today
+            ? "今天"
+            : date == DateTime.Today.AddDays(-1)
+                ? "昨天"
+                : date.ToString("M月d日");
+
+        return new RecentWornListItem(
+            dateText,
+            record.Outfit?.Name ?? "未命名搭配",
+            record.WornDate.ToString("HH:mm"));
+    }
+}
+
+public sealed record CalendarDayItem(
+    DateTime Date,
+    string DayText,
+    string CountText,
+    string FirstOutfitName,
+    IReadOnlyList<OutfitWornRecord> Records,
+    bool IsInCurrentMonth,
+    bool HasRecords,
+    bool IsToday)
+{
+    public static CalendarDayItem FromDate(
+        DateTime date,
+        int currentMonth,
+        IReadOnlyList<OutfitWornRecord> records)
+    {
+        return new CalendarDayItem(
+            date,
+            date.Day.ToString(),
+            records.Count > 0 ? $"{records.Count} 套" : string.Empty,
+            records.FirstOrDefault()?.Outfit?.Name ?? string.Empty,
+            records,
+            date.Month == currentMonth,
+            records.Count > 0,
+            date == DateTime.Today);
     }
 }

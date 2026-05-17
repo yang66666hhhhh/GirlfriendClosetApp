@@ -17,9 +17,18 @@ public partial class OutfitsViewModel : ObservableObject
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
+    public IReadOnlyList<RecentWornListItem> RecentWornRecords => _state.RecentWornRecords;
+    public IReadOnlyList<CalendarDayItem> CalendarDays => _state.CalendarDays;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
-    public int OutfitCount => _state.Outfits.Count;
+    public int OutfitCount => _state.OutfitCount;
+    public string OutfitCountText => $"{OutfitCount} 套搭配";
+    public string HistoryQuickText => _state.HistoryQuickText;
+    public string HistorySummaryText => _state.HistorySummaryText;
+    public bool IsHistoryExpanded => _state.IsHistoryExpanded;
+    public string HistoryToggleText => _state.HistoryToggleText;
+    public string CalendarMonthText => _state.CalendarMonthText;
+    public string CalendarSummaryText => _state.CalendarSummaryText;
 
     public async Task LoadOutfitsAsync()
     {
@@ -30,6 +39,7 @@ public partial class OutfitsViewModel : ObservableObject
         {
             var outfits = await _outfitService.GetAllOutfitsAsync();
             _state.SetOutfits(outfits);
+            await RefreshDerivedStateAsync();
             Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
         }
         finally
@@ -39,16 +49,6 @@ public partial class OutfitsViewModel : ObservableObject
     }
 
     public Task RefreshAsync() => LoadOutfitsAsync();
-
-    public Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count)
-    {
-        return _outfitService.GetRecentWornRecordsAsync(count);
-    }
-
-    public Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end)
-    {
-        return _outfitService.GetWornRecordsAsync(start, end);
-    }
 
     public async Task DeleteOutfitAsync(Outfit outfit)
     {
@@ -62,11 +62,48 @@ public partial class OutfitsViewModel : ObservableObject
         await LoadOutfitsAsync();
     }
 
+    public void ToggleHistoryExpanded()
+    {
+        _state.ToggleHistoryExpanded();
+        NotifyStateChanged();
+    }
+
+    public async Task MoveCalendarMonthAsync(int offsetMonths)
+    {
+        _state.MoveCalendarMonth(offsetMonths);
+        await RefreshCalendarAsync();
+        NotifyStateChanged();
+    }
+
+    private async Task RefreshDerivedStateAsync()
+    {
+        var recentRecords = await _outfitService.GetRecentWornRecordsAsync(6);
+        _state.SetRecentWornRecords(recentRecords);
+        await RefreshCalendarAsync();
+    }
+
+    private async Task RefreshCalendarAsync()
+    {
+        var monthStart = _state.CalendarMonth;
+        var monthEnd = monthStart.AddMonths(1).AddTicks(-1);
+        var monthRecords = await _outfitService.GetWornRecordsAsync(monthStart, monthEnd);
+        _state.SetCalendarRecords(monthRecords);
+    }
+
     private void NotifyStateChanged()
     {
         OnPropertyChanged(nameof(Outfits));
+        OnPropertyChanged(nameof(RecentWornRecords));
+        OnPropertyChanged(nameof(CalendarDays));
         OnPropertyChanged(nameof(IsLoading));
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(OutfitCount));
+        OnPropertyChanged(nameof(OutfitCountText));
+        OnPropertyChanged(nameof(HistoryQuickText));
+        OnPropertyChanged(nameof(HistorySummaryText));
+        OnPropertyChanged(nameof(IsHistoryExpanded));
+        OnPropertyChanged(nameof(HistoryToggleText));
+        OnPropertyChanged(nameof(CalendarMonthText));
+        OnPropertyChanged(nameof(CalendarSummaryText));
     }
 }

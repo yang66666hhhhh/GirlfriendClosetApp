@@ -6,6 +6,8 @@
              Background="{StaticResource SurfacePageBrush}">
 
     <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <conv:OutfitSceneToIconConverter x:Key="SceneToIconConverter"/>
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
 
@@ -38,7 +40,10 @@
         </Border>
 
         <!-- Content -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="64,28,64,60">
+        <ScrollViewer Grid.Row="1"
+                      VerticalScrollBarVisibility="Auto"
+                      Padding="64,28,64,60"
+                      Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
                 <Border Style="{StaticResource LookbookCard}"
                         Margin="0,0,0,20">
@@ -65,7 +70,7 @@
                                     Margin="0,0,10,0">
                                 <StackPanel>
                                     <TextBlock x:Name="TxtOutfitCount"
-                                               Text="0 套搭配"
+                                               Text="{Binding OutfitCountText}"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                     <TextBlock Text="当前收藏"
@@ -79,7 +84,7 @@
                                     Padding="16,10">
                                 <StackPanel>
                                     <TextBlock x:Name="TxtHistoryQuick"
-                                               Text="暂无记录"
+                                               Text="{Binding HistoryQuickText}"
                                                Foreground="{StaticResource PrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                     <TextBlock Text="穿着时间线"
@@ -92,7 +97,7 @@
                         <Button x:Name="ToggleHistoryButton"
                                 Grid.Row="1"
                                 Grid.ColumnSpan="2"
-                                Content="查看记录日历"
+                                Content="{Binding HistoryToggleText}"
                                 Style="{StaticResource CapsuleButton}"
                                 HorizontalAlignment="Left"
                                 Margin="0,22,0,0"
@@ -103,7 +108,7 @@
                 <Border x:Name="HistoryPanel"
                         Style="{StaticResource LookbookCard}"
                         Margin="0,0,0,24"
-                        Visibility="Collapsed">
+                        Visibility="{Binding IsHistoryExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="360"/>
@@ -115,10 +120,11 @@
                             <TextBlock Text="最近穿着" FontSize="18" FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock x:Name="TxtHistorySummary"
-                                       Text="记录一次「今天穿了」，这里就会生成你的穿搭时间线。"
+                                       Text="{Binding HistorySummaryText}"
                                        Foreground="{StaticResource TextSecondaryBrush}"
                                        FontSize="13" Margin="0,6,0,16"/>
-                            <ItemsControl x:Name="RecentWornList">
+                            <ItemsControl x:Name="RecentWornList"
+                                          ItemsSource="{Binding RecentWornRecords}">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
                                         <Border Background="{StaticResource SurfaceElevatedBrush}"
@@ -154,7 +160,7 @@
                                 <TextBlock Text="穿搭日历" FontSize="18" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
                                 <TextBlock x:Name="TxtCalendarSummary"
-                                           Text="按月份回看每天穿了哪套，慢慢就会长出你的穿搭习惯。"
+                                           Text="{Binding CalendarSummaryText}"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            FontSize="13" Margin="0,6,0,0"/>
                             </StackPanel>
@@ -162,6 +168,7 @@
                                 <Button Content="‹" Style="{StaticResource CapsuleButton}"
                                         MinWidth="42" Padding="12,8" Click="PrevMonth_Click"/>
                                 <TextBlock x:Name="TxtCalendarMonth"
+                                           Text="{Binding CalendarMonthText}"
                                            Foreground="{StaticResource TextPrimaryBrush}"
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center"
@@ -181,7 +188,8 @@
                             <TextBlock Text="日" Foreground="{StaticResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
                         </UniformGrid>
 
-                        <ItemsControl x:Name="CalendarDaysList">
+                        <ItemsControl x:Name="CalendarDaysList"
+                                      ItemsSource="{Binding CalendarDays}">
                             <ItemsControl.ItemsPanel>
                                 <ItemsPanelTemplate>
                                     <UniformGrid Columns="7"/>
@@ -191,17 +199,39 @@
                                 <DataTemplate>
                                     <Border MinHeight="82"
                                             CornerRadius="16"
-                                            Background="{Binding Background}"
-                                            BorderBrush="{Binding BorderBrush}"
+                                            Background="{StaticResource SurfaceElevatedBrush}"
+                                            BorderBrush="{StaticResource BorderLightBrush}"
                                             BorderThickness="1"
                                             Padding="10"
                                             Margin="4"
                                             Cursor="Hand"
                                             MouseLeftButtonDown="CalendarDay_Click">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasRecords}" Value="True">
+                                                        <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
                                         <StackPanel>
                                             <TextBlock Text="{Binding DayText}"
-                                                       Foreground="{Binding DayBrush}"
-                                                       FontWeight="SemiBold"/>
+                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                       FontWeight="SemiBold">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsInCurrentMonth}" Value="False">
+                                                                <Setter Property="Foreground" Value="{StaticResource TextPlaceholderBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
                                             <TextBlock Text="{Binding CountText}"
                                                        Foreground="{StaticResource PrimaryBrush}"
                                                        FontSize="11"
@@ -244,6 +274,7 @@
                 </Grid>
 
                 <ItemsControl x:Name="OutfitsList"
+                              ItemsSource="{Binding Outfits}"
                               ItemTemplate="{StaticResource OutfitCardTemplate}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -257,7 +288,7 @@
         <!-- Empty State -->
         <StackPanel x:Name="TxtEmpty" Grid.Row="1"
                     HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Visibility="Collapsed">
+                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
             <TextBlock Text="👗" FontSize="52" HorizontalAlignment="Center" Opacity="0.55"/>
             <TextBlock Text="还没有搭配"
                        Style="{StaticResource EmptyStateTitleText}"
