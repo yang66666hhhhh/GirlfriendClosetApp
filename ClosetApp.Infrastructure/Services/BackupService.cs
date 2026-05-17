@@ -1,3 +1,4 @@
+using System.IO.Compression;
 using System.Text.Json;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
@@ -8,23 +9,65 @@ namespace ClosetApp.Infrastructure.Services;
 
 public sealed class BackupService : IBackupService
 {
+    private const string BackupDocumentEntryName = "backup.json";
+    private const string ImagesEntryFolder = "images/";
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         WriteIndented = true
     };
 
     private readonly IDbContextFactory<ClosetDbContext> _dbContextFactory;
+    private readonly IImageStorageService? _imageStorageService;
 
     public BackupService(IDbContextFactory<ClosetDbContext> dbContextFactory)
     {
         _dbContextFactory = dbContextFactory;
     }
 
+    public BackupService(
+        IDbContextFactory<ClosetDbContext> dbContextFactory,
+        IImageStorageService imageStorageService) : this(dbContextFactory)
+    {
+        _imageStorageService = imageStorageService;
+    }
+
     public async Task ExportAsync(string filePath)
+    {
+        var document = await BuildBackupDocumentAsync();
+
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+
+        if (IsZipBackup(filePath))
+        {
+            EnsureImageStorageAvailable();
+            await ExportZipAsync(filePath, document);
+            return;
+        }
+
+        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(document, JsonOptions));
+    }
+
+    public async Task ImportAsync(string filePath)
+    {
+        if (IsZipBackup(filePath))
+        {
+            EnsureImageStorageAvailable();
+            await ImportZipAsync(filePath);
+            return;
+        }
+
+        var json = await File.ReadAllTextAsync(filePath);
+        var document = JsonSerializer.Deserialize<ClosetBackupDocument>(json, JsonOptions)
+            ?? throw new InvalidOperationException("备份文件格式无效。");
+        await RestoreDocumentAsync(document);
+    }
+
+    private async Task<ClosetBackupDocument> BuildBackupDocumentAsync()
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
 
-        var document = new ClosetBackupDocument
+        return new ClosetBackupDocument
         {
             Tags = await context.Tags
                 .AsNoTracking()
@@ -80,16 +123,97 @@ public sealed class BackupService : IBackupService
                 .OrderBy(f => f.CreatedAt)
                 .ToListAsync()
         };
-
-        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(document, JsonOptions));
     }
 
-    public async Task ImportAsync(string filePath)
+    private async Task ExportZipAsync(string filePath, ClosetBackupDocument document)
     {
-        var json = await File.ReadAllTextAsync(filePath);
-        var document = JsonSerializer.Deserialize<ClosetBackupDocument>(json, JsonOptions)
-            ?? throw new InvalidOperationException("备份文件格式无效。");
+        var packagedImages = PreparePackagedImages(document);
+
+        if (File.Exists(filePath))
+            File.Delete(filePath);
+
+        using var archive = ZipFile.Open(filePath, ZipArchiveMode.Create);
+
+        var documentEntry = archive.CreateEntry(BackupDocumentEntryName, CompressionLevel.Optimal);
+        await using (var jsonStream = documentEntry.Open())
+        {
+            await JsonSerializer.SerializeAsync(jsonStream, document, JsonOptions);
+        }
+
+        foreach (var image in packagedImages)
+        {
+            var imageEntry = archive.CreateEntry($"{ImagesEntryFolder}{image.EntryFileName}", CompressionLevel.Optimal);
+            await using var entryStream = imageEntry.Open();
+            await using var sourceStream = File.OpenRead(image.SourcePath);
+            await sourceStream.CopyToAsync(entryStream);
+        }
+    }
+
+    private List<PackagedImage> PreparePackagedImages(ClosetBackupDocument document)
+    {
+        var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var packagedImages = new List<PackagedImage>();
+
+        foreach (var clothing in document.Clothes)
+        {
+            var sourcePath = ResolveImageSourcePath(clothing.ImagePath);
+            if (sourcePath == null)
+                continue;
+
+            var packagedFileName = BuildPackagedImageFileName(clothing, sourcePath, usedNames);
+            clothing.ImagePath = packagedFileName;
+            packagedImages.Add(new PackagedImage(sourcePath, packagedFileName));
+        }
+
+        return packagedImages;
+    }
+
+    private async Task ImportZipAsync(string filePath)
+    {
+        using var archive = ZipFile.OpenRead(filePath);
+        var documentEntry = archive.GetEntry(BackupDocumentEntryName)
+            ?? throw new InvalidOperationException("备份包缺少 backup.json。");
+
+        ClosetBackupDocument document;
+        await using (var jsonStream = documentEntry.Open())
+        {
+            document = (await JsonSerializer.DeserializeAsync<ClosetBackupDocument>(jsonStream, JsonOptions))
+                ?? throw new InvalidOperationException("备份文件格式无效。");
+        }
+
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Import", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+
+        try
+        {
+            foreach (var clothing in document.Clothes.Where(c => !string.IsNullOrWhiteSpace(c.ImagePath)))
+            {
+                var imageFileName = Path.GetFileName(clothing.ImagePath);
+                if (string.IsNullOrWhiteSpace(imageFileName))
+                    continue;
+
+                var imageEntry = FindZipEntry(archive, $"{ImagesEntryFolder}{imageFileName}");
+                if (imageEntry == null)
+                    continue;
+
+                var tempImagePath = Path.Combine(tempDir, imageFileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(tempImagePath)!);
+                imageEntry.ExtractToFile(tempImagePath, overwrite: true);
+                await _imageStorageService!.RestoreImageAsync(tempImagePath, imageFileName);
+                clothing.ImagePath = imageFileName;
+            }
+
+            await RestoreDocumentAsync(document);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDir))
+                Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    private async Task RestoreDocumentAsync(ClosetBackupDocument document)
+    {
 
         await using var context = await _dbContextFactory.CreateDbContextAsync();
         await using var transaction = await context.Database.BeginTransactionAsync();
@@ -153,6 +277,68 @@ public sealed class BackupService : IBackupService
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
     }
+
+    private static bool IsZipBackup(string filePath)
+    {
+        return string.Equals(Path.GetExtension(filePath), ".zip", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private void EnsureImageStorageAvailable()
+    {
+        if (_imageStorageService == null)
+            throw new InvalidOperationException("当前备份服务未配置图片存储服务，无法处理 ZIP 备份包。");
+    }
+
+    private string? ResolveImageSourcePath(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return null;
+
+        if (Path.IsPathRooted(imagePath) && File.Exists(imagePath))
+            return imagePath;
+
+        if (File.Exists(imagePath))
+            return Path.GetFullPath(imagePath);
+
+        if (_imageStorageService == null)
+            return null;
+
+        var storedImagePath = _imageStorageService.GetImageFullPath(imagePath);
+        return File.Exists(storedImagePath) ? storedImagePath : null;
+    }
+
+    private static string BuildPackagedImageFileName(
+        ClothingBackupItem clothing,
+        string sourcePath,
+        ISet<string> usedNames)
+    {
+        var extension = Path.GetExtension(sourcePath);
+        var currentName = string.IsNullOrWhiteSpace(clothing.ImagePath)
+            ? null
+            : Path.GetFileName(clothing.ImagePath);
+
+        var candidate = string.IsNullOrWhiteSpace(currentName)
+            ? $"{clothing.Id}{extension}"
+            : currentName;
+
+        if (usedNames.Add(candidate))
+            return candidate;
+
+        var baseName = Path.GetFileNameWithoutExtension(candidate);
+        var suffix = 1;
+        while (!usedNames.Add($"{baseName}_{suffix}{extension}"))
+            suffix++;
+
+        return $"{baseName}_{suffix}{extension}";
+    }
+
+    private static ZipArchiveEntry? FindZipEntry(ZipArchive archive, string entryName)
+    {
+        return archive.Entries.FirstOrDefault(entry =>
+            string.Equals(entry.FullName, entryName, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private sealed record PackagedImage(string SourcePath, string EntryFileName);
 
     private static async Task ClearExistingDataAsync(ClosetDbContext context)
     {

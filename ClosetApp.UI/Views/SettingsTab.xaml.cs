@@ -189,9 +189,9 @@ public partial class SettingsTab : UserControl
     {
         var dialog = new SaveFileDialog
         {
-            Filter = "JSON 文件|*.json",
-            DefaultExt = ".json",
-            FileName = $"closet-backup-{DateTime.Now:yyyyMMdd-HHmm}.json",
+            Filter = "ZIP 备份包|*.zip|JSON 备份|*.json",
+            DefaultExt = ".zip",
+            FileName = $"closet-backup-{DateTime.Now:yyyyMMdd-HHmm}.zip",
             InitialDirectory = AppPaths.BaseDir
         };
 
@@ -199,14 +199,14 @@ public partial class SettingsTab : UserControl
             return;
 
         await _backupService.ExportAsync(dialog.FileName);
-        MessageBox.Show("数据备份已导出。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show("备份文件已导出。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void ImportBackup_Click(object sender, RoutedEventArgs e)
     {
         var dialog = new OpenFileDialog
         {
-            Filter = "JSON 文件|*.json",
+            Filter = "备份文件|*.zip;*.json|ZIP 备份包|*.zip|JSON 备份|*.json",
             CheckFileExists = true,
             InitialDirectory = AppPaths.BaseDir
         };
@@ -215,7 +215,7 @@ public partial class SettingsTab : UserControl
             return;
 
         var confirm = MessageBox.Show(
-            "导入会覆盖当前数据库中的衣服、搭配、标签和穿着记录。图片文件不会自动导入，确定继续吗？",
+            "导入会覆盖当前数据库中的衣服、搭配、标签和穿着记录。ZIP 备份包会同时恢复图片，旧版 JSON 只恢复核心数据，确定继续吗？",
             "确认导入备份",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Warning);
@@ -225,7 +225,7 @@ public partial class SettingsTab : UserControl
 
         await _backupService.ImportAsync(dialog.FileName);
         RefreshStats();
-        MessageBox.Show("数据备份已导入，建议返回各页面确认内容。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show("备份文件已导入，建议返回各页面确认内容。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)

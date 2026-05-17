@@ -50,9 +50,23 @@ public class ImageStorageService : IImageStorageService
         return fileName;
     }
 
+    public async Task RestoreImageAsync(string sourcePath, string storedFileName)
+    {
+        var destPath = GetImageFullPath(storedFileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+
+        using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+        CropTransparentPadding(image);
+        await image.SaveAsync(destPath);
+        await SaveThumbnailForStoredImageAsync(image, storedFileName, DefaultThumbnailSize);
+
+        Log.Information("Restored clothing image {SourcePath} -> {FileName}", sourcePath, storedFileName);
+    }
+
     private async Task SaveThumbnailForStoredImageAsync(Image<Rgba32> image, string imageFileName, int maxSize)
     {
         var thumbnailPath = GetThumbnailFullPath(imageFileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(thumbnailPath)!);
         await SaveThumbnailImageAsync(image, thumbnailPath, maxSize);
     }
 

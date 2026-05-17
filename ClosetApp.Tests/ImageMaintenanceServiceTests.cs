@@ -78,8 +78,9 @@ public class ImageMaintenanceServiceTests
     private static async Task CreatePngAsync(string path)
     {
         using var image = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(64, 64);
-        await using var stream = File.OpenWrite(path);
+        await using var stream = new MemoryStream();
         await image.SaveAsync(stream, new PngEncoder());
+        await File.WriteAllBytesAsync(path, stream.ToArray());
     }
 
     private sealed class TestDbContextFactory : IDbContextFactory<ClosetDbContext>
