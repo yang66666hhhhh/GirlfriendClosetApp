@@ -4,7 +4,6 @@ using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Tags.Controls;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
-using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -55,34 +54,12 @@ public partial class TagsTab : UserControl
     {
         if (sender is MenuItem mi && mi.Parent is ContextMenu cm && cm.PlacementTarget is Border border && border.Tag is Tag tag)
         {
-            var confirmed = await ShowDeleteConfirmAsync($"确定删除标签「{tag.Name}」？衣服上的此标签将被移除。");
+            var confirmed = await ConfirmModal.ShowDeleteAsync(
+                $"确定删除标签「{tag.Name}」？衣服上的此标签将被移除。");
             if (!confirmed)
                 return;
 
             await _viewModel.DeleteTagAsync(tag);
         }
     }
-
-    private static async Task<bool> ShowDeleteConfirmAsync(string detail)
-    {
-        var dialog = new ConfirmDialog
-        {
-            Title = "确认删除",
-            Body = "删除后无法恢复。",
-            Detail = detail,
-            ConfirmText = "删除",
-            CancelText = "取消"
-        };
-
-        var tcs = new TaskCompletionSource<bool>();
-        void ConfirmedHandler(object? sender, EventArgs e) => tcs.TrySetResult(true);
-        void CancelledHandler(object? sender, EventArgs e) => tcs.TrySetResult(false);
-        dialog.Confirmed += ConfirmedHandler;
-        dialog.Cancelled += CancelledHandler;
-        ModalService.Instance.Show(dialog);
-        var result = await tcs.Task;
-        ModalService.Instance.Hide();
-        return result;
-    }
-
 }

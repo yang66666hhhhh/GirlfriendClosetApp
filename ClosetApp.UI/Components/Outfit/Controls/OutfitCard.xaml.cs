@@ -8,12 +8,10 @@ using Season = ClosetApp.Domain.Enums.Season;
 using ClosetApp.UI.Components.Outfit.Editor;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
-using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Outfit.Controls;
 
 using OutfitEntity = global::ClosetApp.Domain.Entities.Outfit;
-using ClothingEntity = global::ClosetApp.Domain.Entities.Clothing;
 
 public partial class OutfitCard : UserControl
 {
@@ -80,7 +78,7 @@ public partial class OutfitCard : UserControl
         BtnDelete.Click += async (s, e) =>
         {
             if (Outfit == null) return;
-            if (!await ShowDeleteConfirmAsync($"确定删除搭配「{Outfit.Name}」吗？"))
+            if (!await ConfirmModal.ShowDeleteAsync($"确定删除搭配「{Outfit.Name}」吗？"))
                 return;
 
             DeleteRequested?.Invoke(this, Outfit);
@@ -161,25 +159,4 @@ public partial class OutfitCard : UserControl
         ActionOverlay.Visibility = Visibility.Collapsed;
     }
 
-    private static async Task<bool> ShowDeleteConfirmAsync(string detail)
-    {
-        var dialog = new ConfirmDialog
-        {
-            Title = "确认删除",
-            Body = "删除后无法恢复。",
-            Detail = detail,
-            ConfirmText = "删除",
-            CancelText = "取消"
-        };
-
-        var tcs = new TaskCompletionSource<bool>();
-        void ConfirmedHandler(object? sender, EventArgs e) => tcs.TrySetResult(true);
-        void CancelledHandler(object? sender, EventArgs e) => tcs.TrySetResult(false);
-        dialog.Confirmed += ConfirmedHandler;
-        dialog.Cancelled += CancelledHandler;
-        ModalService.Instance.Show(dialog);
-        var result = await tcs.Task;
-        ModalService.Instance.Hide();
-        return result;
-    }
 }

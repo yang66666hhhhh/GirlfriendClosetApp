@@ -6,7 +6,6 @@ using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
-using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -110,33 +109,12 @@ public partial class ClothesTab : UserControl
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;
 
-        var confirmed = await ShowDeleteConfirmAsync($"确定删除「{clothing.Name}」吗？");
+        var confirmed = await ConfirmModal.ShowDeleteAsync(
+            $"确定删除「{clothing.Name}」吗？",
+            title: "删除衣服");
         if (!confirmed)
             return;
 
         await _viewModel.DeleteClothingAsync(clothing);
     }
-
-    private static async Task<bool> ShowDeleteConfirmAsync(string detail)
-    {
-        var dialog = new ConfirmDialog
-        {
-            Title = "删除衣服",
-            Body = "删除后将无法恢复。",
-            Detail = detail,
-            ConfirmText = "删除",
-            CancelText = "取消"
-        };
-
-        var tcs = new TaskCompletionSource<bool>();
-        void ConfirmedHandler(object? sender, EventArgs e) => tcs.TrySetResult(true);
-        void CancelledHandler(object? sender, EventArgs e) => tcs.TrySetResult(false);
-        dialog.Confirmed += ConfirmedHandler;
-        dialog.Cancelled += CancelledHandler;
-        ModalService.Instance.Show(dialog);
-        var result = await tcs.Task;
-        ModalService.Instance.Hide();
-        return result;
-    }
-
 }
