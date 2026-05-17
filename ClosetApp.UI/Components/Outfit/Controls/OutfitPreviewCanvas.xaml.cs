@@ -103,7 +103,9 @@ public partial class OutfitPreviewCanvas : UserControl
                 Stretch = Stretch.Uniform,
                 Effect = shadow,
                 Opacity = item.Opacity,
-                Source = ClothingImageLoader.Load(item.Clothing.ImagePath)
+                Source = ClothingImageLoader.Load(
+                    item.Clothing.ImagePath,
+                    (int)Math.Clamp(Math.Ceiling(item.Width * 1.4), 160, 360))
             };
 
             Canvas.SetLeft(img, item.X);

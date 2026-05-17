@@ -110,6 +110,56 @@ public class ImageStorageServiceTests
         }
     }
 
+    [Fact]
+    public async Task EnsureThumbnailAsync_RebuildsMissingThumbnailFromStoredImage()
+    {
+        var tempDir = CreateTempDir();
+
+        try
+        {
+            var service = new ImageStorageService(tempDir);
+            var sourcePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourcePath, width: 420, height: 420);
+
+            var storedFileName = await service.SaveImageAsync(sourcePath);
+            var thumbnailPath = service.GetThumbnailFullPath(storedFileName);
+            File.Delete(thumbnailPath);
+
+            var rebuilt = await service.EnsureThumbnailAsync(storedFileName, maxSize: 140);
+
+            Assert.True(rebuilt);
+            Assert.True(File.Exists(thumbnailPath));
+
+            using var thumbnail = await Image.LoadAsync<Rgba32>(thumbnailPath);
+            Assert.True(thumbnail.Width <= 140);
+            Assert.True(thumbnail.Height <= 140);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task EnsureThumbnailAsync_ReturnsFalseWhenStoredImageMissing()
+    {
+        var tempDir = CreateTempDir();
+
+        try
+        {
+            var service = new ImageStorageService(tempDir);
+
+            var rebuilt = await service.EnsureThumbnailAsync("missing.png");
+
+            Assert.False(rebuilt);
+            Assert.False(File.Exists(service.GetThumbnailFullPath("missing.png")));
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
     private static async Task CreateSourceImageAsync(string path, int width, int height)
     {
         using var image = new Image<Rgba32>(width, height);

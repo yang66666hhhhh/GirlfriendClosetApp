@@ -46,7 +46,7 @@
                 </Border.Style>
                 <Grid>
                     <Border CornerRadius="10" ClipToBounds="True" Margin="2">
-                        <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}}"
+                        <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}, ConverterParameter=120}"
                                Stretch="Uniform"/>
                     </Border>
                     <Border Width="20" Height="20" CornerRadius="10"

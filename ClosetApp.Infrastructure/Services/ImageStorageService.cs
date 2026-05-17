@@ -55,6 +55,26 @@ public class ImageStorageService : IImageStorageService
         return fileName;
     }
 
+    public async Task<bool> EnsureThumbnailAsync(string imagePath, int maxSize = 200)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return false;
+
+        var thumbnailPath = GetThumbnailFullPath(imagePath);
+        if (File.Exists(thumbnailPath))
+            return true;
+
+        var imageFullPath = GetImageFullPath(imagePath);
+        if (!File.Exists(imageFullPath))
+            return false;
+
+        using var image = await Image.LoadAsync<Rgba32>(imageFullPath);
+        CropTransparentPadding(image);
+        await SaveThumbnailForStoredImageAsync(image, imagePath, maxSize);
+        Log.Information("Rebuilt missing thumbnail for {ImagePath}", imagePath);
+        return true;
+    }
+
     public async Task RestoreImageAsync(string sourcePath, string storedFileName)
     {
         var destPath = GetImageFullPath(storedFileName);
