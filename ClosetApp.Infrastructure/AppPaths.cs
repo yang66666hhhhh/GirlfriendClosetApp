@@ -26,12 +26,15 @@ public static class AppPaths
 
     public static string LogsDir => Path.Combine(_baseDir, "logs");
 
+    public static string BackupsDir => Path.Combine(_baseDir, "backups");
+
     private static void EnsureDirectories()
     {
         Directory.CreateDirectory(_baseDir);
         Directory.CreateDirectory(ImagesDir);
         Directory.CreateDirectory(ThumbnailsDir);
         Directory.CreateDirectory(LogsDir);
+        Directory.CreateDirectory(BackupsDir);
     }
 
     public static string GetImageFullPath(string relativePath)

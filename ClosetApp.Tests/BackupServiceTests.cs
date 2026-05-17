@@ -19,6 +19,7 @@ public class BackupServiceTests
         var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
         var dbPath = Path.Combine(tempDir, "closet.db");
+        var historyDir = Path.Combine(tempDir, "history");
 
         try
         {
@@ -58,10 +59,10 @@ public class BackupServiceTests
             }
 
             var factory = new TestDbContextFactory(options);
-            var service = new BackupService(factory);
+            var service = new BackupService(factory, historyDirectory: historyDir);
             var backupPath = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", $"{Guid.NewGuid():N}.json");
 
-            await service.ExportAsync(backupPath);
+            var exportResult = await service.ExportAsync(backupPath);
 
             await using (var resetContext = new ClosetDbContext(options))
             {
@@ -72,7 +73,7 @@ public class BackupServiceTests
                 await resetContext.SaveChangesAsync();
             }
 
-            await service.ImportAsync(backupPath);
+            var importResult = await service.ImportAsync(backupPath);
 
             await using var assertContext = new ClosetDbContext(options);
             Assert.Contains(await assertContext.Tags.ToListAsync(), tag => tag.Name == "通勤");
@@ -92,6 +93,9 @@ public class BackupServiceTests
             Assert.Single(restoredOutfit.OutfitClothes);
 
             Assert.Contains(await assertContext.OutfitWornRecords.ToListAsync(), record => record.OutfitId == restoredOutfit.Id);
+            Assert.Equal("json", exportResult.Format);
+            Assert.Equal("json", importResult.Format);
+            Assert.Empty(importResult.Warnings);
         }
         finally
         {
@@ -114,6 +118,7 @@ public class BackupServiceTests
         Directory.CreateDirectory(tempDir);
         var dbPath = Path.Combine(tempDir, "closet.db");
         var storageDir = Path.Combine(tempDir, "storage");
+        var historyDir = Path.Combine(tempDir, "history");
 
         try
         {
@@ -143,10 +148,10 @@ public class BackupServiceTests
             }
 
             var factory = new TestDbContextFactory(options);
-            var service = new BackupService(factory, imageStorage);
+            var service = new BackupService(factory, imageStorage, historyDir);
             var backupPath = Path.Combine(tempDir, "closet-backup.zip");
 
-            await service.ExportAsync(backupPath);
+            var exportResult = await service.ExportAsync(backupPath);
 
             using (var archive = ZipFile.OpenRead(backupPath))
             {
@@ -164,13 +169,21 @@ public class BackupServiceTests
             Assert.False(File.Exists(imageStorage.GetImageFullPath(storedFileName)));
             Assert.False(File.Exists(imageStorage.GetThumbnailFullPath(storedFileName)));
 
-            await service.ImportAsync(backupPath);
+            var importResult = await service.ImportAsync(backupPath);
 
             await using var assertContext = new ClosetDbContext(options);
             var restoredClothing = Assert.Single(await assertContext.Clothes.Where(c => c.Name == "Pink Coat").ToListAsync());
             Assert.Equal(storedFileName, restoredClothing.ImagePath);
             Assert.True(File.Exists(imageStorage.GetImageFullPath(storedFileName)));
             Assert.True(File.Exists(imageStorage.GetThumbnailFullPath(storedFileName)));
+
+            Assert.Equal(1, exportResult.IncludedImageCount);
+            Assert.Equal(1, importResult.RestoredImageCount);
+
+            var history = await service.GetHistoryAsync();
+            Assert.Equal(2, history.Count);
+            Assert.Equal("Import", history[0].Operation);
+            Assert.Equal("Export", history[1].Operation);
         }
         finally
         {
@@ -182,6 +195,58 @@ public class BackupServiceTests
             catch
             {
                 // SQLite may briefly hold the file handle after the test completes.
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ValidateExportAsync_WithJsonAndImages_ReturnsImageWarning()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var storageDir = Path.Combine(tempDir, "storage");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            var imageStorage = new ImageStorageService(storageDir);
+            var sourceImagePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourceImagePath);
+            var storedFileName = await imageStorage.SaveImageAsync(sourceImagePath);
+
+            await using (var context = new ClosetDbContext(options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+                context.Clothes.Add(new Clothing
+                {
+                    Name = "Navy Shirt",
+                    Type = ClothingType.Top,
+                    Season = Season.Spring,
+                    ImagePath = storedFileName
+                });
+                await context.SaveChangesAsync();
+            }
+
+            var service = new BackupService(new TestDbContextFactory(options), imageStorage, Path.Combine(tempDir, "history"));
+            var validation = await service.ValidateExportAsync(Path.Combine(tempDir, "backup.json"));
+
+            Assert.True(validation.HasWarnings);
+            Assert.Contains(validation.Warnings, warning => warning.Contains("JSON 备份只保存核心数据", StringComparison.Ordinal));
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
             }
         }
     }

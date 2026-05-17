@@ -17,7 +17,17 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ClosetApp.UI\ClosetApp.UI.csproj" />
+    <ProjectReference Include="..\ClosetApp.Infrastructure\ClosetApp.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\ClosetApp.UI\States\ClothesTabState.cs" Link="UiLogic\States\ClothesTabState.cs" />
+    <Compile Include="..\ClosetApp.UI\States\OutfitsTabState.cs" Link="UiLogic\States\OutfitsTabState.cs" />
+    <Compile Include="..\ClosetApp.UI\States\TagsTabState.cs" Link="UiLogic\States\TagsTabState.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\CompositionMode.cs" Link="UiLogic\Outfit\Engine\CompositionMode.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitCompositionEngine.cs" Link="UiLogic\Outfit\Engine\OutfitCompositionEngine.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitLayoutItem.cs" Link="UiLogic\Outfit\Engine\OutfitLayoutItem.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitRenderMetrics.cs" Link="UiLogic\Outfit\Engine\OutfitRenderMetrics.cs" />
   </ItemGroup>
 
 </Project>

@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,16 +21,17 @@ public partial class SettingsTab : UserControl
         _backupService = App.Services.GetRequiredService<IBackupService>();
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
         InitializeComponent();
-        Loaded += (_, _) => LoadSettings();
+        Loaded += async (_, _) => await LoadSettingsAsync();
     }
 
-    private void LoadSettings()
+    private async Task LoadSettingsAsync()
     {
         TxtDataDir.Text = AppPaths.BaseDir;
         TxtImagesDir.Text = AppPaths.ImagesDir;
         TxtLogDir.Text = AppPaths.LogsDir;
         TxtVersion.Text = $"版本 {GetVersion()}";
         RefreshStats();
+        await RefreshBackupStateAsync();
     }
 
     private static string GetVersion()
@@ -127,7 +129,11 @@ public partial class SettingsTab : UserControl
 
     private void OpenAppDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppDomain.CurrentDomain.BaseDirectory);
 
-    private void RefreshStats_Click(object sender, RoutedEventArgs e) => RefreshStats();
+    private async void RefreshStats_Click(object sender, RoutedEventArgs e)
+    {
+        RefreshStats();
+        await RefreshBackupStateAsync();
+    }
 
     private void ClearThumbnails_Click(object sender, RoutedEventArgs e)
     {
@@ -192,14 +198,24 @@ public partial class SettingsTab : UserControl
             Filter = "ZIP 备份包|*.zip|JSON 备份|*.json",
             DefaultExt = ".zip",
             FileName = $"closet-backup-{DateTime.Now:yyyyMMdd-HHmm}.zip",
-            InitialDirectory = AppPaths.BaseDir
+            InitialDirectory = AppPaths.BackupsDir
         };
 
         if (dialog.ShowDialog() != true)
             return;
 
-        await _backupService.ExportAsync(dialog.FileName);
-        MessageBox.Show("备份文件已导出。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        var validation = await _backupService.ValidateExportAsync(dialog.FileName);
+        if (!ConfirmExport(validation))
+            return;
+
+        var result = await _backupService.ExportAsync(dialog.FileName);
+        await RefreshBackupStateAsync();
+
+        MessageBox.Show(
+            BuildExportMessage(result),
+            "完成",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 
     private async void ImportBackup_Click(object sender, RoutedEventArgs e)
@@ -208,7 +224,7 @@ public partial class SettingsTab : UserControl
         {
             Filter = "备份文件|*.zip;*.json|ZIP 备份包|*.zip|JSON 备份|*.json",
             CheckFileExists = true,
-            InitialDirectory = AppPaths.BaseDir
+            InitialDirectory = AppPaths.BackupsDir
         };
 
         if (dialog.ShowDialog() != true)
@@ -223,9 +239,15 @@ public partial class SettingsTab : UserControl
         if (confirm != MessageBoxResult.OK)
             return;
 
-        await _backupService.ImportAsync(dialog.FileName);
+        var result = await _backupService.ImportAsync(dialog.FileName);
         RefreshStats();
-        MessageBox.Show("备份文件已导入，建议返回各页面确认内容。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        await RefreshBackupStateAsync(result);
+
+        MessageBox.Show(
+            BuildImportMessage(result),
+            "完成",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
     }
 
     private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
@@ -248,5 +270,69 @@ public partial class SettingsTab : UserControl
             "图片修复",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+    }
+
+    private async void RefreshBackupState_Click(object sender, RoutedEventArgs e)
+    {
+        await RefreshBackupStateAsync();
+    }
+
+    private async Task RefreshBackupStateAsync(BackupImportResult? latestImport = null)
+    {
+        var previewPath = Path.Combine(AppPaths.BackupsDir, $"preview-{Guid.NewGuid():N}.zip");
+        var validation = await _backupService.ValidateExportAsync(previewPath);
+        TxtBackupValidation.Text =
+            $"{validation.ClothingCount} 件衣服 · {validation.OutfitCount} 套搭配 · {validation.TagCount} 个标签 · {validation.IncludedImageCount} 张可打包图片";
+        TxtBackupValidationHint.Text = BuildValidationHint(validation);
+
+        var history = await _backupService.GetHistoryAsync();
+        BackupHistoryList.ItemsSource = history;
+        TxtBackupHistoryEmpty.Visibility = history.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+
+        if (latestImport != null)
+        {
+            TxtLastImportSummary.Text = BuildImportMessage(latestImport);
+            return;
+        }
+
+        var latestImportHistory = history.FirstOrDefault(item => item.Operation == "Import" && item.Success);
+        TxtLastImportSummary.Text = latestImportHistory?.Summary ?? "还没有导入记录。";
+    }
+
+    private static bool ConfirmExport(BackupValidationResult validation)
+    {
+        if (!validation.HasWarnings)
+            return true;
+
+        var message = "导出前提醒：\n\n" + string.Join("\n", validation.Warnings) + "\n\n确定继续导出吗？";
+        return MessageBox.Show(
+            message,
+            "确认导出备份",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Warning) == MessageBoxResult.OK;
+    }
+
+    private static string BuildValidationHint(BackupValidationResult validation)
+    {
+        if (!validation.HasWarnings)
+            return "当前可以直接导出 ZIP 备份包。";
+
+        return string.Join(" ", validation.Warnings);
+    }
+
+    private static string BuildExportMessage(BackupExportResult result)
+    {
+        var message = $"{result.Summary}\n文件位置：{result.FilePath}";
+        if (result.Warnings.Count > 0)
+            message += $"\n\n提醒：{string.Join(" ", result.Warnings)}";
+        return message;
+    }
+
+    private static string BuildImportMessage(BackupImportResult result)
+    {
+        var message = result.Summary;
+        if (result.Warnings.Count > 0)
+            message += $"\n\n提醒：{string.Join(" ", result.Warnings)}";
+        return message;
     }
 }

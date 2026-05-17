@@ -1,5 +1,6 @@
 using System.IO.Compression;
 using System.Text.Json;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Infrastructure.Data;
@@ -10,7 +11,9 @@ namespace ClosetApp.Infrastructure.Services;
 public sealed class BackupService : IBackupService
 {
     private const string BackupDocumentEntryName = "backup.json";
+    private const string BackupHistoryFileName = "backup-history.json";
     private const string ImagesEntryFolder = "images/";
+    private const int MaxHistoryEntries = 24;
 
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
@@ -19,48 +22,176 @@ public sealed class BackupService : IBackupService
 
     private readonly IDbContextFactory<ClosetDbContext> _dbContextFactory;
     private readonly IImageStorageService? _imageStorageService;
-
-    public BackupService(IDbContextFactory<ClosetDbContext> dbContextFactory)
-    {
-        _dbContextFactory = dbContextFactory;
-    }
+    private readonly string _historyFilePath;
 
     public BackupService(
         IDbContextFactory<ClosetDbContext> dbContextFactory,
-        IImageStorageService imageStorageService) : this(dbContextFactory)
+        IImageStorageService? imageStorageService = null,
+        string? historyDirectory = null)
     {
+        _dbContextFactory = dbContextFactory;
         _imageStorageService = imageStorageService;
+        var resolvedHistoryDirectory = string.IsNullOrWhiteSpace(historyDirectory)
+            ? AppPaths.BackupsDir
+            : historyDirectory;
+        Directory.CreateDirectory(resolvedHistoryDirectory);
+        _historyFilePath = Path.Combine(resolvedHistoryDirectory, BackupHistoryFileName);
     }
 
-    public async Task ExportAsync(string filePath)
+    public async Task<BackupValidationResult> ValidateExportAsync(string filePath)
     {
+        var document = await BuildBackupDocumentAsync();
+        var imageAnalysis = AnalyzeImages(document.Clothes);
+        var format = GetBackupFormat(filePath);
+        var warnings = BuildExportWarnings(filePath, format, document, imageAnalysis);
+
+        return new BackupValidationResult(
+            format,
+            document.Clothes.Count,
+            document.Outfits.Count,
+            document.Tags.Count,
+            document.WornRecords.Count,
+            document.Favorites.Count,
+            imageAnalysis.ReferencedCount,
+            imageAnalysis.AvailableCount,
+            imageAnalysis.MissingCount,
+            warnings);
+    }
+
+    public async Task<BackupExportResult> ExportAsync(string filePath)
+    {
+        var validation = await ValidateExportAsync(filePath);
         var document = await BuildBackupDocumentAsync();
 
         Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
-        if (IsZipBackup(filePath))
+        try
         {
-            EnsureImageStorageAvailable();
-            await ExportZipAsync(filePath, document);
-            return;
-        }
+            var includedImageCount = 0;
+            if (IsZipBackup(filePath))
+            {
+                EnsureImageStorageAvailable();
+                includedImageCount = await ExportZipAsync(filePath, document);
+            }
+            else
+            {
+                await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(document, JsonOptions));
+            }
 
-        await File.WriteAllTextAsync(filePath, JsonSerializer.Serialize(document, JsonOptions));
+            var fileInfo = new FileInfo(filePath);
+            var result = new BackupExportResult(
+                filePath,
+                validation.Format,
+                DateTime.Now,
+                fileInfo.Exists ? fileInfo.Length : 0,
+                validation.ClothingCount,
+                validation.OutfitCount,
+                validation.TagCount,
+                validation.WornRecordCount,
+                validation.FavoriteCount,
+                includedImageCount,
+                validation.MissingImageCount,
+                validation.Warnings);
+
+            await AppendHistoryAsync(new BackupHistoryItem(
+                result.ExportedAt,
+                "Export",
+                result.Format,
+                result.FilePath,
+                result.FileSizeBytes,
+                Success: true,
+                result.Summary));
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await AppendHistoryAsync(new BackupHistoryItem(
+                DateTime.Now,
+                "Export",
+                validation.Format,
+                filePath,
+                0,
+                Success: false,
+                "导出备份失败。",
+                ex.Message));
+            throw;
+        }
     }
 
-    public async Task ImportAsync(string filePath)
+    public async Task<BackupImportResult> ImportAsync(string filePath)
     {
-        if (IsZipBackup(filePath))
-        {
-            EnsureImageStorageAvailable();
-            await ImportZipAsync(filePath);
-            return;
-        }
+        var format = GetBackupFormat(filePath);
 
-        var json = await File.ReadAllTextAsync(filePath);
-        var document = JsonSerializer.Deserialize<ClosetBackupDocument>(json, JsonOptions)
-            ?? throw new InvalidOperationException("备份文件格式无效。");
-        await RestoreDocumentAsync(document);
+        try
+        {
+            ClosetBackupDocument document;
+            var restoredImageCount = 0;
+            var missingImageCount = 0;
+
+            if (IsZipBackup(filePath))
+            {
+                EnsureImageStorageAvailable();
+                (document, restoredImageCount, missingImageCount) = await ImportZipAsync(filePath);
+            }
+            else
+            {
+                var json = await File.ReadAllTextAsync(filePath);
+                document = JsonSerializer.Deserialize<ClosetBackupDocument>(json, JsonOptions)
+                    ?? throw new InvalidOperationException("备份文件格式无效。");
+                missingImageCount = document.Clothes.Count(c => !string.IsNullOrWhiteSpace(c.ImagePath));
+            }
+
+            await RestoreDocumentAsync(document);
+
+            var warnings = BuildImportWarnings(format, restoredImageCount, missingImageCount, document);
+            var result = new BackupImportResult(
+                filePath,
+                format,
+                DateTime.Now,
+                document.Clothes.Count,
+                document.Outfits.Count,
+                document.Tags.Count,
+                document.WornRecords.Count,
+                document.Favorites.Count,
+                restoredImageCount,
+                missingImageCount,
+                warnings);
+
+            var fileInfo = new FileInfo(filePath);
+            await AppendHistoryAsync(new BackupHistoryItem(
+                result.ImportedAt,
+                "Import",
+                result.Format,
+                result.FilePath,
+                fileInfo.Exists ? fileInfo.Length : 0,
+                Success: true,
+                result.Summary));
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            await AppendHistoryAsync(new BackupHistoryItem(
+                DateTime.Now,
+                "Import",
+                format,
+                filePath,
+                0,
+                Success: false,
+                "导入备份失败。",
+                ex.Message));
+            throw;
+        }
+    }
+
+    public async Task<IReadOnlyList<BackupHistoryItem>> GetHistoryAsync(int maxCount = 8)
+    {
+        var history = await LoadHistoryAsync();
+        return history
+            .OrderByDescending(item => item.Timestamp)
+            .Take(maxCount)
+            .ToList();
     }
 
     private async Task<ClosetBackupDocument> BuildBackupDocumentAsync()
@@ -125,7 +256,7 @@ public sealed class BackupService : IBackupService
         };
     }
 
-    private async Task ExportZipAsync(string filePath, ClosetBackupDocument document)
+    private async Task<int> ExportZipAsync(string filePath, ClosetBackupDocument document)
     {
         var packagedImages = PreparePackagedImages(document);
 
@@ -147,6 +278,8 @@ public sealed class BackupService : IBackupService
             await using var sourceStream = File.OpenRead(image.SourcePath);
             await sourceStream.CopyToAsync(entryStream);
         }
+
+        return packagedImages.Count;
     }
 
     private List<PackagedImage> PreparePackagedImages(ClosetBackupDocument document)
@@ -168,7 +301,7 @@ public sealed class BackupService : IBackupService
         return packagedImages;
     }
 
-    private async Task ImportZipAsync(string filePath)
+    private async Task<(ClosetBackupDocument Document, int RestoredImageCount, int MissingImageCount)> ImportZipAsync(string filePath)
     {
         using var archive = ZipFile.OpenRead(filePath);
         var documentEntry = archive.GetEntry(BackupDocumentEntryName)
@@ -183,6 +316,8 @@ public sealed class BackupService : IBackupService
 
         var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Import", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
+        var restoredImageCount = 0;
+        var missingImageCount = 0;
 
         try
         {
@@ -194,16 +329,20 @@ public sealed class BackupService : IBackupService
 
                 var imageEntry = FindZipEntry(archive, $"{ImagesEntryFolder}{imageFileName}");
                 if (imageEntry == null)
+                {
+                    missingImageCount++;
                     continue;
+                }
 
                 var tempImagePath = Path.Combine(tempDir, imageFileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(tempImagePath)!);
                 imageEntry.ExtractToFile(tempImagePath, overwrite: true);
                 await _imageStorageService!.RestoreImageAsync(tempImagePath, imageFileName);
                 clothing.ImagePath = imageFileName;
+                restoredImageCount++;
             }
 
-            await RestoreDocumentAsync(document);
+            return (document, restoredImageCount, missingImageCount);
         }
         finally
         {
@@ -283,6 +422,11 @@ public sealed class BackupService : IBackupService
         return string.Equals(Path.GetExtension(filePath), ".zip", StringComparison.OrdinalIgnoreCase);
     }
 
+    private static string GetBackupFormat(string filePath)
+    {
+        return IsZipBackup(filePath) ? "zip" : "json";
+    }
+
     private void EnsureImageStorageAvailable()
     {
         if (_imageStorageService == null)
@@ -338,7 +482,96 @@ public sealed class BackupService : IBackupService
             string.Equals(entry.FullName, entryName, StringComparison.OrdinalIgnoreCase));
     }
 
+    private BackupImageAnalysis AnalyzeImages(IEnumerable<ClothingBackupItem> clothes)
+    {
+        var referencedCount = 0;
+        var availableCount = 0;
+
+        foreach (var clothing in clothes)
+        {
+            if (string.IsNullOrWhiteSpace(clothing.ImagePath))
+                continue;
+
+            referencedCount++;
+            if (ResolveImageSourcePath(clothing.ImagePath) != null)
+                availableCount++;
+        }
+
+        return new BackupImageAnalysis(referencedCount, availableCount, referencedCount - availableCount);
+    }
+
+    private List<string> BuildExportWarnings(
+        string filePath,
+        string format,
+        ClosetBackupDocument document,
+        BackupImageAnalysis imageAnalysis)
+    {
+        var warnings = new List<string>();
+
+        if (document.Clothes.Count == 0 &&
+            document.Outfits.Count == 0 &&
+            document.Tags.Count == 0 &&
+            document.WornRecords.Count == 0 &&
+            document.Favorites.Count == 0)
+        {
+            warnings.Add("当前没有可导出的数据，这会生成一个空备份。");
+        }
+
+        if (File.Exists(filePath))
+            warnings.Add("目标文件已存在，导出后会覆盖旧文件。");
+
+        if (format == "json" && imageAnalysis.ReferencedCount > 0)
+            warnings.Add("JSON 备份只保存核心数据，不会打包图片文件。");
+
+        if (format == "zip" && imageAnalysis.MissingCount > 0)
+            warnings.Add($"有 {imageAnalysis.MissingCount} 张图片路径已失效，ZIP 备份不会包含这些文件。");
+
+        return warnings;
+    }
+
+    private static List<string> BuildImportWarnings(
+        string format,
+        int restoredImageCount,
+        int missingImageCount,
+        ClosetBackupDocument document)
+    {
+        var warnings = new List<string>();
+
+        if (format == "json" && document.Clothes.Any(c => !string.IsNullOrWhiteSpace(c.ImagePath)))
+            warnings.Add("JSON 备份不会附带图片文件，导入后如出现缺图，可使用“图片修复”。");
+
+        if (format == "zip" && missingImageCount > 0)
+            warnings.Add($"备份包里有 {missingImageCount} 张图片缺失，相关衣物会保留原图片文件名。");
+
+        if (format == "zip" && restoredImageCount == 0 && document.Clothes.Any(c => !string.IsNullOrWhiteSpace(c.ImagePath)))
+            warnings.Add("备份里有图片路径，但没有恢复到任何图片文件。");
+
+        return warnings;
+    }
+
+    private async Task<List<BackupHistoryItem>> LoadHistoryAsync()
+    {
+        if (!File.Exists(_historyFilePath))
+            return [];
+
+        await using var stream = File.OpenRead(_historyFilePath);
+        return await JsonSerializer.DeserializeAsync<List<BackupHistoryItem>>(stream, JsonOptions) ?? [];
+    }
+
+    private async Task AppendHistoryAsync(BackupHistoryItem item)
+    {
+        var history = await LoadHistoryAsync();
+        history.Insert(0, item);
+        if (history.Count > MaxHistoryEntries)
+            history = history.Take(MaxHistoryEntries).ToList();
+
+        await using var stream = File.Create(_historyFilePath);
+        await JsonSerializer.SerializeAsync(stream, history, JsonOptions);
+    }
+
     private sealed record PackagedImage(string SourcePath, string EntryFileName);
+
+    private sealed record BackupImageAnalysis(int ReferencedCount, int AvailableCount, int MissingCount);
 
     private static async Task ClearExistingDataAsync(ClosetDbContext context)
     {
