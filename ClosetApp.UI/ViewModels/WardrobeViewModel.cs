@@ -1,9 +1,10 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Application.UseCases.Clothing;
 using ClosetApp.UI.Components.Tags.Models;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.States;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
@@ -16,6 +17,7 @@ public partial class WardrobeViewModel : ObservableObject
     private readonly IClothingService _clothingService;
     private readonly ITagService _tagService;
     private readonly IImageStorageService _imageStorageService;
+    private readonly ImportClothesFromImages _importClothesFromImages;
     private readonly ClothesTabState _state = new();
     private IReadOnlyList<Tag> _availableTags = [];
     private readonly ObservableCollection<SelectableTag> _tagFilters = [];
@@ -208,11 +210,13 @@ public partial class WardrobeViewModel : ObservableObject
     public WardrobeViewModel(
         IClothingService clothingService,
         ITagService tagService,
-        IImageStorageService imageStorageService)
+        IImageStorageService imageStorageService,
+        ImportClothesFromImages importClothesFromImages)
     {
         _clothingService = clothingService;
         _tagService = tagService;
         _imageStorageService = imageStorageService;
+        _importClothesFromImages = importClothesFromImages;
     }
 
     public async Task LoadClothesAsync()
@@ -286,6 +290,12 @@ public partial class WardrobeViewModel : ObservableObject
     public async Task AddClothesAsync(IEnumerable<Clothing> clothes)
     {
         await _clothingService.AddClothesAsync(clothes);
+        await LoadClothesAsync();
+    }
+
+    public async Task ImportClothesAsync(BatchClothingImportRequest request)
+    {
+        await _importClothesFromImages.ExecuteAsync(request);
         await LoadClothesAsync();
     }
 

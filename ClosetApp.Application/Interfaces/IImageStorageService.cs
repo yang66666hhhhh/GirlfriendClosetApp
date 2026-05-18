@@ -1,4 +1,4 @@
-namespace ClosetApp.Infrastructure.Services;
+namespace ClosetApp.Application.Interfaces;
 
 public interface IImageStorageService
 {

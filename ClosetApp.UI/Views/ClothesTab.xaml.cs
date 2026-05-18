@@ -6,6 +6,7 @@ using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -92,7 +93,18 @@ public partial class ClothesTab : UserControl
         EditorModal.Show(new BatchClothingImportPanel(), async result =>
         {
             if (result.Type == EditorResultType.Saved && result.Entity != null)
-                await _viewModel.AddClothesAsync(result.Entity);
+            {
+                try
+                {
+                    var importCount = result.Entity.Items.Count;
+                    await _viewModel.ImportClothesAsync(result.Entity);
+                    ToastService.Instance.ShowSuccess($"已导入 {importCount} 件衣服");
+                }
+                catch (Exception ex)
+                {
+                    ToastService.Instance.ShowError($"导入失败：{ex.Message}");
+                }
+            }
         });
     }
 

@@ -9,7 +9,6 @@ using ClosetApp.Application.Images;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Services;
 using Microsoft.Win32;

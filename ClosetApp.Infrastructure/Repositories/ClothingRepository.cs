@@ -36,6 +36,18 @@ public class ClothingRepository : IClothingRepository
         await _context.SaveChangesAsync();
     }
 
+    public async Task AddRangeAsync(IEnumerable<Clothing> clothes)
+    {
+        var items = clothes.ToList();
+        if (items.Count == 0)
+            return;
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        _context.Clothes.AddRange(items);
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
+
     public async Task UpdateAsync(Clothing entity)
     {
         _context.Clothes.Update(entity);

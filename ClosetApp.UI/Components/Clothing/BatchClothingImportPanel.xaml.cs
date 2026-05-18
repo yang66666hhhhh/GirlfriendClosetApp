@@ -2,33 +2,31 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
-using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Components.Shared.Editor;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
 namespace ClosetApp.UI.Components.Clothing;
 
-public partial class BatchClothingImportPanel : UserControl, IEditorPanel<IReadOnlyList<global::ClosetApp.Domain.Entities.Clothing>>
+public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchClothingImportRequest>
 {
     private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"];
 
-    private readonly IImageStorageService _imageStorage;
     private readonly ITagService _tagService;
-    private readonly List<string> _selectedFiles = [];
+    private readonly List<BatchClothingImportPreviewItem> _previewItems = [];
     private ClothingType _selectedType = ClothingType.Unspecified;
     private Season _selectedSeason = Season.Unspecified;
     private int _favoriteLevel;
+    private bool _isSubmitting;
 
-    public event EventHandler<EditorResult<IReadOnlyList<global::ClosetApp.Domain.Entities.Clothing>>>? EditorCompleted;
+    public event EventHandler<EditorResult<BatchClothingImportRequest>>? EditorCompleted;
 
     public BatchClothingImportPanel()
     {
         InitializeComponent();
-        _imageStorage = App.Services.GetRequiredService<IImageStorageService>();
         _tagService = App.Services.GetRequiredService<ITagService>();
         Loaded += OnLoaded;
         RefreshSelectedFiles();
@@ -42,6 +40,9 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<IReadO
 
     private void PickImages_Click(object sender, RoutedEventArgs e)
     {
+        if (_isSubmitting)
+            return;
+
         var dialog = new OpenFileDialog
         {
             Filter = "图片文件|*.jpg;*.jpeg;*.png;*.webp;*.gif;*.bmp",
@@ -68,6 +69,9 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<IReadO
 
     private void Files_Drop(object sender, DragEventArgs e)
     {
+        if (_isSubmitting)
+            return;
+
         if (!e.Data.GetDataPresent(DataFormats.FileDrop))
             return;
 
@@ -80,11 +84,15 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<IReadO
 
     private void SetSelectedFiles(IEnumerable<string> files)
     {
-        _selectedFiles.Clear();
-        _selectedFiles.AddRange(files
+        _previewItems.Clear();
+        _previewItems.AddRange(files
             .Where(IsSupportedImage)
             .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase));
+            .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+            .Select(file => new BatchClothingImportPreviewItem(
+                file,
+                Path.GetFileName(file),
+                BuildDefaultName(file))));
         RefreshSelectedFiles();
     }
 
@@ -96,15 +104,15 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<IReadO
 
     private void RefreshSelectedFiles()
     {
-        var fileNames = _selectedFiles.Select(Path.GetFileName).ToList();
-        SelectedFilesList.ItemsSource = fileNames;
-        TxtSelectedCount.Text = $"已选择 {_selectedFiles.Count} 张图片";
-        TxtImportHint.Text = _selectedFiles.Count == 0
+        SelectedFilesList.ItemsSource = null;
+        SelectedFilesList.ItemsSource = _previewItems;
+        TxtSelectedCount.Text = $"已选择 {_previewItems.Count} 张图片";
+        TxtImportHint.Text = _previewItems.Count == 0
             ? "先选择图片；其他信息不确定就留空。"
-            : $"将导入 {_selectedFiles.Count} 件衣服，名称为“未命名”，未填写的信息保持待整理。";
+            : $"将导入 {_previewItems.Count} 件衣服；可先在左侧逐件改名或移除。";
 
-        ImageEmptyState.Visibility = _selectedFiles.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        ImageListState.Visibility = _selectedFiles.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+        ImageEmptyState.Visibility = _previewItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+        ImageListState.Visibility = _previewItems.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void Category_Checked(object sender, RoutedEventArgs e)
@@ -157,42 +165,78 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<IReadO
         };
     }
 
-    private async void Save_Click(object sender, RoutedEventArgs e)
+    private void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (_selectedFiles.Count == 0)
+        if (_isSubmitting)
+            return;
+
+        if (_previewItems.Count == 0)
         {
             MessageBox.Show("先选择要导入的图片。", "批量导入", MessageBoxButton.OK, MessageBoxImage.Information);
             return;
         }
 
-        var options = new BatchClothingImportOptions(
+        SetSubmitting(true);
+
+        var request = new BatchClothingImportRequest(
+            _previewItems
+                .Select(item => new BatchClothingImportItem(item.FilePath, item.Name))
+                .ToList(),
             _selectedType,
             _selectedSeason,
             TxtColor.Text,
             TxtBrand.Text,
             TxtNotes.Text,
             _favoriteLevel,
-            TagSelection.SelectedTags.ToList());
-
-        var clothes = new List<global::ClosetApp.Domain.Entities.Clothing>();
-        foreach (var file in _selectedFiles)
-        {
-            var storedImagePath = await _imageStorage.SaveImageAsync(file);
-            clothes.Add(BatchClothingImportBuilder.CreateClothing(storedImagePath, options));
-        }
+            TagSelection.SelectedTags.Select(tag => tag.Id).ToList());
 
         EditorCompleted?.Invoke(
             this,
-            new EditorResult<IReadOnlyList<global::ClosetApp.Domain.Entities.Clothing>>(
+            new EditorResult<BatchClothingImportRequest>(
                 EditorResultType.Saved,
-                clothes));
+                request));
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
+        if (_isSubmitting)
+            return;
+
         EditorCompleted?.Invoke(
             this,
-            new EditorResult<IReadOnlyList<global::ClosetApp.Domain.Entities.Clothing>>(EditorResultType.Cancelled));
+            new EditorResult<BatchClothingImportRequest>(EditorResultType.Cancelled));
+    }
+
+    private void RemovePreviewItem_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isSubmitting)
+            return;
+
+        if (sender is FrameworkElement { DataContext: BatchClothingImportPreviewItem item })
+        {
+            _previewItems.Remove(item);
+            RefreshSelectedFiles();
+        }
+    }
+
+    private void SetSubmitting(bool isSubmitting)
+    {
+        _isSubmitting = isSubmitting;
+        BtnSave.IsEnabled = !isSubmitting;
+        BtnCancel.IsEnabled = !isSubmitting;
+        BtnFooterCancel.IsEnabled = !isSubmitting;
+        BtnPickImages.IsEnabled = !isSubmitting;
+        SelectedFilesList.IsEnabled = !isSubmitting;
+        BtnSave.Content = isSubmitting ? "正在导入..." : "导入这一批";
+        TxtImportHint.Text = isSubmitting
+            ? "正在保存图片并写入衣柜，请稍等。"
+            : $"将导入 {_previewItems.Count} 件衣服；可先在左侧逐件改名或移除。";
+    }
+
+    private static string BuildDefaultName(string filePath)
+    {
+        var name = Path.GetFileNameWithoutExtension(filePath);
+        return string.IsNullOrWhiteSpace(name) ? BatchClothingImportBuilder.DefaultName : name.Trim();
     }
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)

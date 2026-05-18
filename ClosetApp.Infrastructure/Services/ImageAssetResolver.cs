@@ -1,4 +1,5 @@
 using ClosetApp.Application.Images;
+using ClosetApp.Application.Interfaces;
 
 namespace ClosetApp.Infrastructure.Services;
 

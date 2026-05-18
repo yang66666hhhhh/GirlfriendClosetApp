@@ -6,6 +6,7 @@ using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp.Processing;
+using ClosetApp.Application.Interfaces;
 using Serilog;
 
 namespace ClosetApp.Infrastructure.Services;
