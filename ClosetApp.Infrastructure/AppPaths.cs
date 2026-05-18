@@ -26,8 +26,6 @@ public static class AppPaths
 
     public static string ThumbnailsDir => Path.Combine(ImagesDir, "thumbnails");
 
-    public static string LegacyThumbnailsDir => Path.Combine(_baseDir, "thumbnails");
-
     public static string DatabasePath => Path.Combine(_baseDir, "closet.db");
 
     public static string LogsDir => Path.Combine(_baseDir, "logs");
@@ -52,13 +50,6 @@ public static class AppPaths
         return Path.Combine(OriginalsDir, relativePath);
     }
 
-    public static string GetLegacyImageFullPath(string relativePath)
-    {
-        if (string.IsNullOrEmpty(relativePath))
-            return string.Empty;
-        return Path.Combine(ImagesDir, relativePath);
-    }
-
     public static string GetDisplayFullPath(string relativePath)
     {
         if (string.IsNullOrEmpty(relativePath))
@@ -75,12 +66,4 @@ public static class AppPaths
         return Path.Combine(ThumbnailsDir, $"{name}_thumb{ext}");
     }
 
-    public static string GetLegacyThumbnailFullPath(string relativePath)
-    {
-        if (string.IsNullOrEmpty(relativePath))
-            return string.Empty;
-        var name = Path.GetFileNameWithoutExtension(relativePath);
-        var ext = Path.GetExtension(relativePath);
-        return Path.Combine(LegacyThumbnailsDir, $"{name}_thumb{ext}");
-    }
 }

@@ -65,6 +65,9 @@ public partial class PremiumClothingCard : UserControl
         if (DataContext is not global::ClosetApp.Domain.Entities.Clothing c) return;
 
         CardImage.Stretch = Stretch.Uniform;
+        ImageFallback.Visibility = ClothingImageLoader.ResolvePath(c.ImagePath) == null
+            ? Visibility.Visible
+            : Visibility.Collapsed;
 
         double colWidth = FindMasonryColumnWidth();
         if (colWidth > 0)

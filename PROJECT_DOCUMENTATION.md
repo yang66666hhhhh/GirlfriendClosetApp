@@ -380,7 +380,7 @@ string BuildDefaultBackupPath();
 - `Display`：衣柜瀑布流、搭配卡片、穿搭预览等主视觉使用，默认最大边约 900px
 - `Thumbnail`：小型选择卡、摘要列表等轻量入口使用，默认最大边约 200px
 
-旧版 `%LocalAppData%\ClosetApp\images\文件名` 和 `%LocalAppData%\ClosetApp\thumbnails\` 仍会作为兼容 fallback 解析。
+当前图片解析只面向三层资产目录；历史旧目录兼容已移除，缺图时通过“图片修复”按文件名从用户选择的目录重新导入。
 
 原图不会随普通缓存清理删除；只有在删除衣物、更换图片或用户确认“孤儿原图清理”时，才会删除数据库未引用的原图及其同名派生缓存。
 

@@ -108,7 +108,7 @@
                             <StackPanel>
                                 <TextBlock Text="图片修复" FontSize="18" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBlock Text="导入备份后，如果图片目录没一起迁移，可以从旧目录按文件名自动重连。"
+                                <TextBlock Text="导入备份后，如果图片文件没有一起恢复，可以从备份目录按文件名自动重连。"
                                            Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
                                 <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions>

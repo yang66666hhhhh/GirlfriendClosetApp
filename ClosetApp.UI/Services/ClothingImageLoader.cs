@@ -15,9 +15,6 @@ public static class ClothingImageLoader
     private static readonly string OriginalFolder = Path.Combine(ImagesFolder, "originals");
     private static readonly string DisplayFolder = Path.Combine(ImagesFolder, "display");
     private static readonly string ThumbnailFolder = Path.Combine(ImagesFolder, "thumbnails");
-    private static readonly string LegacyThumbnailFolder = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "ClosetApp", "thumbnails");
 
     private static readonly ConcurrentDictionary<string, ImageSource?> ImageCache = new();
     private static readonly ConcurrentDictionary<string, Size?> SizeCache = new();
@@ -78,14 +75,12 @@ public static class ClothingImageLoader
         var originalPath = Path.Combine(OriginalFolder, path);
         var displayPath = Path.Combine(DisplayFolder, path);
         var thumbnailPath = BuildThumbnailPath(ThumbnailFolder, path);
-        var legacyImagePath = Path.Combine(ImagesFolder, path);
-        var legacyThumbnailPath = BuildThumbnailPath(LegacyThumbnailFolder, path);
 
         return variant switch
         {
-            ImageVariant.Original => FirstExisting(originalPath, legacyImagePath, displayPath, thumbnailPath, legacyThumbnailPath),
-            ImageVariant.Thumbnail => FirstExisting(thumbnailPath, legacyThumbnailPath, displayPath, originalPath, legacyImagePath),
-            _ => FirstExisting(displayPath, originalPath, legacyImagePath, thumbnailPath, legacyThumbnailPath)
+            ImageVariant.Original => FirstExisting(originalPath, displayPath, thumbnailPath),
+            ImageVariant.Thumbnail => FirstExisting(thumbnailPath, displayPath, originalPath),
+            _ => FirstExisting(displayPath, originalPath, thumbnailPath)
         };
     }
 

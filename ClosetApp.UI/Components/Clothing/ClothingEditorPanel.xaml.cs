@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
+using ClosetApp.Application.Images;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -187,53 +188,10 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private void LoadPreviewImage(string? imagePath)
     {
-        if (string.IsNullOrEmpty(imagePath))
-        {
-            PreviewImage.Source = null;
-            EmptyState.Visibility = Visibility.Visible;
-            PreviewState.Visibility = Visibility.Collapsed;
-            return;
-        }
-
-        string? resolved = null;
-        if (File.Exists(imagePath)) resolved = imagePath;
-        else
-        {
-            var local = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "ClosetApp", "images", imagePath);
-            if (File.Exists(local)) resolved = local;
-        }
-
-        if (resolved != null)
-        {
-            try
-            {
-                var bitmap = new BitmapImage();
-                bitmap.BeginInit();
-                bitmap.UriSource = new Uri(resolved, UriKind.Absolute);
-                bitmap.CacheOption = BitmapCacheOption.OnLoad;
-                bitmap.DecodePixelWidth = 700;
-                bitmap.EndInit();
-                bitmap.Freeze();
-                PreviewImage.Source = bitmap;
-
-                EmptyState.Visibility = Visibility.Collapsed;
-                PreviewState.Visibility = Visibility.Visible;
-            }
-            catch
-            {
-                PreviewImage.Source = null;
-                EmptyState.Visibility = Visibility.Visible;
-                PreviewState.Visibility = Visibility.Collapsed;
-            }
-        }
-        else
-        {
-            PreviewImage.Source = null;
-            EmptyState.Visibility = Visibility.Visible;
-            PreviewState.Visibility = Visibility.Collapsed;
-        }
+        var image = ClothingImageLoader.Load(imagePath, ImageVariant.Display, 700);
+        PreviewImage.Source = image;
+        EmptyState.Visibility = image == null ? Visibility.Visible : Visibility.Collapsed;
+        PreviewState.Visibility = image == null ? Visibility.Collapsed : Visibility.Visible;
     }
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)

@@ -42,8 +42,8 @@ public partial class SettingsTab : UserControl
 
     private async Task RefreshStatsAsync()
     {
-        var originalCount = CountFiles(AppPaths.OriginalsDir) + CountLegacyOriginalFiles();
-        var originalSize = GetDirectorySize(AppPaths.OriginalsDir) + GetLegacyOriginalSize();
+        var originalCount = CountFiles(AppPaths.OriginalsDir);
+        var originalSize = GetDirectorySize(AppPaths.OriginalsDir);
         var displayCount = CountFiles(AppPaths.DisplayDir);
         var displaySize = GetDirectorySize(AppPaths.DisplayDir);
         var thumbnailCount = CountFiles(AppPaths.ThumbnailsDir);
@@ -459,23 +459,6 @@ public partial class SettingsTab : UserControl
 
         foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
             File.Delete(file);
-    }
-
-    private static int CountLegacyOriginalFiles()
-    {
-        if (!Directory.Exists(AppPaths.ImagesDir))
-            return 0;
-
-        return Directory.EnumerateFiles(AppPaths.ImagesDir, "*", SearchOption.TopDirectoryOnly).Count();
-    }
-
-    private static long GetLegacyOriginalSize()
-    {
-        if (!Directory.Exists(AppPaths.ImagesDir))
-            return 0;
-
-        return Directory.EnumerateFiles(AppPaths.ImagesDir, "*", SearchOption.TopDirectoryOnly)
-            .Sum(file => new FileInfo(file).Length);
     }
 
     // 导出前校验卡片集中在这里组装，避免散落的文本更新让状态变得难追踪。

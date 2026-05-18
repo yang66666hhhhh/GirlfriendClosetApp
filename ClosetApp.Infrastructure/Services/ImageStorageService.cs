@@ -17,22 +17,20 @@ public class ImageStorageService : IImageStorageService
     private const int DefaultThumbnailSize = 200;
 
     private readonly string _originalFolder;
-    private readonly string _legacyImageFolder;
+    private readonly string _imageFolder;
     private readonly string _displayFolder;
     private readonly string _thumbnailFolder;
-    private readonly string _legacyThumbnailFolder;
 
     public ImageStorageService(string? baseFolder = null)
     {
         var appFolder = string.IsNullOrWhiteSpace(baseFolder)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClosetApp")
             : baseFolder;
-        _legacyImageFolder = Path.Combine(appFolder, "images");
-        _originalFolder = Path.Combine(_legacyImageFolder, "originals");
-        _displayFolder = Path.Combine(_legacyImageFolder, "display");
-        _thumbnailFolder = Path.Combine(_legacyImageFolder, "thumbnails");
-        _legacyThumbnailFolder = Path.Combine(appFolder, "thumbnails");
-        Directory.CreateDirectory(_legacyImageFolder);
+        _imageFolder = Path.Combine(appFolder, "images");
+        _originalFolder = Path.Combine(_imageFolder, "originals");
+        _displayFolder = Path.Combine(_imageFolder, "display");
+        _thumbnailFolder = Path.Combine(_imageFolder, "thumbnails");
+        Directory.CreateDirectory(_imageFolder);
         Directory.CreateDirectory(_originalFolder);
         Directory.CreateDirectory(_displayFolder);
         Directory.CreateDirectory(_thumbnailFolder);
@@ -219,12 +217,7 @@ public class ImageStorageService : IImageStorageService
 
     public string GetImageFullPath(string relativePath)
     {
-        var originalPath = Path.Combine(_originalFolder, relativePath);
-        if (File.Exists(originalPath))
-            return originalPath;
-
-        var legacyPath = Path.Combine(_legacyImageFolder, relativePath);
-        return File.Exists(legacyPath) ? legacyPath : originalPath;
+        return Path.Combine(_originalFolder, relativePath);
     }
 
     public string GetDisplayFullPath(string relativePath)
@@ -236,24 +229,15 @@ public class ImageStorageService : IImageStorageService
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
-        var thumbnailPath = Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
-        if (File.Exists(thumbnailPath))
-            return thumbnailPath;
-
-        var legacyPath = Path.Combine(_legacyThumbnailFolder, $"{name}_thumb{ext}");
-        return File.Exists(legacyPath) ? legacyPath : thumbnailPath;
+        return Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
     }
 
     public IReadOnlyList<string> GetOriginalImageFullPaths()
     {
-        var files = new List<string>();
-        if (Directory.Exists(_originalFolder))
-            files.AddRange(Directory.EnumerateFiles(_originalFolder, "*", SearchOption.TopDirectoryOnly));
+        if (!Directory.Exists(_originalFolder))
+            return [];
 
-        if (Directory.Exists(_legacyImageFolder))
-            files.AddRange(Directory.EnumerateFiles(_legacyImageFolder, "*", SearchOption.TopDirectoryOnly));
-
-        return files
+        return Directory.EnumerateFiles(_originalFolder, "*", SearchOption.TopDirectoryOnly)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
@@ -270,10 +254,8 @@ public class ImageStorageService : IImageStorageService
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
         yield return Path.Combine(_originalFolder, relativePath);
-        yield return Path.Combine(_legacyImageFolder, relativePath);
         yield return Path.Combine(_displayFolder, relativePath);
         yield return Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
-        yield return Path.Combine(_legacyThumbnailFolder, $"{name}_thumb{ext}");
     }
 
     private static IImageEncoder CreateDisplayEncoder(string destinationPath, bool hasTransparency)

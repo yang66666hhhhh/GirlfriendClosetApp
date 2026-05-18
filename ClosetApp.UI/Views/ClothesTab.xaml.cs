@@ -23,7 +23,7 @@ public partial class ClothesTab : UserControl
         _viewModel.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(WardrobeViewModel.FilteredClothes) or nameof(WardrobeViewModel.IsEmpty))
-                Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+                _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
         };
         Loaded += (s, e) => _ = LoadClothesAsync();
         SizeChanged += (_, _) => UpdateCardWidth();
@@ -32,7 +32,7 @@ public partial class ClothesTab : UserControl
     private async Task LoadClothesAsync()
     {
         await _viewModel.LoadClothesAsync();
-        Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+        _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     private void UpdateCardWidth()

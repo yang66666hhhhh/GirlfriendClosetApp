@@ -183,8 +183,9 @@
                         </Border>
 
                         <!-- Fallback when no image -->
-                        <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center"
-                                    Visibility="{Binding ImagePath, Converter={StaticResource InverseNullToVis}}">
+                        <StackPanel x:Name="ImageFallback"
+                                    VerticalAlignment="Center"
+                                    HorizontalAlignment="Center">
                             <Canvas Width="48" Height="56" HorizontalAlignment="Center">
                                 <Ellipse Width="9" Height="9" Canvas.Left="19.5" Canvas.Top="0"
                                          Fill="{StaticResource TextPlaceholderBrush}" Opacity="0.3"/>
