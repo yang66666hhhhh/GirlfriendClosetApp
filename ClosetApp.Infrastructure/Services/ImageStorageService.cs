@@ -13,30 +13,41 @@ namespace ClosetApp.Infrastructure.Services;
 public class ImageStorageService : IImageStorageService
 {
     private const byte ContentAlphaThreshold = 8;
+    private const int DefaultDisplayWidth = 900;
     private const int DefaultThumbnailSize = 200;
 
-    private readonly string _imageFolder;
+    private readonly string _originalFolder;
+    private readonly string _legacyImageFolder;
+    private readonly string _displayFolder;
     private readonly string _thumbnailFolder;
+    private readonly string _legacyThumbnailFolder;
 
     public ImageStorageService(string? baseFolder = null)
     {
         var appFolder = string.IsNullOrWhiteSpace(baseFolder)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClosetApp")
             : baseFolder;
-        _imageFolder = Path.Combine(appFolder, "images");
-        _thumbnailFolder = Path.Combine(appFolder, "thumbnails");
-        Directory.CreateDirectory(_imageFolder);
+        _legacyImageFolder = Path.Combine(appFolder, "images");
+        _originalFolder = Path.Combine(_legacyImageFolder, "originals");
+        _displayFolder = Path.Combine(_legacyImageFolder, "display");
+        _thumbnailFolder = Path.Combine(_legacyImageFolder, "thumbnails");
+        _legacyThumbnailFolder = Path.Combine(appFolder, "thumbnails");
+        Directory.CreateDirectory(_legacyImageFolder);
+        Directory.CreateDirectory(_originalFolder);
+        Directory.CreateDirectory(_displayFolder);
         Directory.CreateDirectory(_thumbnailFolder);
     }
 
     public async Task<string> SaveImageAsync(string sourcePath)
     {
         var fileName = $"{Guid.NewGuid()}{Path.GetExtension(sourcePath)}";
-        var destPath = Path.Combine(_imageFolder, fileName);
+        var destPath = Path.Combine(_originalFolder, fileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
 
         using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+        File.Copy(sourcePath, destPath, overwrite: true);
         CropTransparentPadding(image);
-        await image.SaveAsync(destPath);
+        await SaveDisplayForStoredImageAsync(image, fileName, DefaultDisplayWidth);
         await SaveThumbnailForStoredImageAsync(image, fileName, DefaultThumbnailSize);
 
         Log.Information("Saved clothing image {SourcePath} -> {FileName}", sourcePath, fileName);
@@ -50,7 +61,7 @@ public class ImageStorageService : IImageStorageService
 
         using var image = await Image.LoadAsync<Rgba32>(sourcePath);
         CropTransparentPadding(image);
-        await SaveThumbnailImageAsync(image, destPath, maxSize);
+        await SaveResizedImageAsync(image, destPath, maxSize, CreateThumbnailEncoder);
         Log.Information("Saved thumbnail {SourcePath} -> {FileName}", sourcePath, fileName);
         return fileName;
     }
@@ -75,41 +86,73 @@ public class ImageStorageService : IImageStorageService
         return true;
     }
 
+    public async Task<bool> EnsureDisplayAsync(string imagePath, int maxWidth = DefaultDisplayWidth)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return false;
+
+        var displayPath = GetDisplayFullPath(imagePath);
+        if (File.Exists(displayPath))
+            return true;
+
+        var imageFullPath = GetImageFullPath(imagePath);
+        if (!File.Exists(imageFullPath))
+            return false;
+
+        using var image = await Image.LoadAsync<Rgba32>(imageFullPath);
+        CropTransparentPadding(image);
+        await SaveDisplayForStoredImageAsync(image, imagePath, maxWidth);
+        Log.Information("Rebuilt missing display image for {ImagePath}", imagePath);
+        return true;
+    }
+
     public async Task RestoreImageAsync(string sourcePath, string storedFileName)
     {
         var destPath = GetImageFullPath(storedFileName);
         Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
 
         using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+        File.Copy(sourcePath, destPath, overwrite: true);
         CropTransparentPadding(image);
-        await image.SaveAsync(destPath);
+        await SaveDisplayForStoredImageAsync(image, storedFileName, DefaultDisplayWidth);
         await SaveThumbnailForStoredImageAsync(image, storedFileName, DefaultThumbnailSize);
 
         Log.Information("Restored clothing image {SourcePath} -> {FileName}", sourcePath, storedFileName);
+    }
+
+    private async Task SaveDisplayForStoredImageAsync(Image<Rgba32> image, string imageFileName, int maxWidth)
+    {
+        var displayPath = GetDisplayFullPath(imageFileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(displayPath)!);
+        await SaveResizedImageAsync(image, displayPath, maxWidth, CreateDisplayEncoder);
     }
 
     private async Task SaveThumbnailForStoredImageAsync(Image<Rgba32> image, string imageFileName, int maxSize)
     {
         var thumbnailPath = GetThumbnailFullPath(imageFileName);
         Directory.CreateDirectory(Path.GetDirectoryName(thumbnailPath)!);
-        await SaveThumbnailImageAsync(image, thumbnailPath, maxSize);
+        await SaveResizedImageAsync(image, thumbnailPath, maxSize, CreateThumbnailEncoder);
     }
 
-    private static async Task SaveThumbnailImageAsync(Image<Rgba32> image, string destinationPath, int maxSize)
+    private static async Task SaveResizedImageAsync(
+        Image<Rgba32> image,
+        string destinationPath,
+        int maxSize,
+        Func<string, bool, IImageEncoder> createEncoder)
     {
-        using var thumbnail = image.Clone();
-        thumbnail.Mutate(x => x.Resize(new ResizeOptions
+        using var resized = image.Clone();
+        resized.Mutate(x => x.Resize(new ResizeOptions
         {
             Size = new Size(maxSize, maxSize),
             Mode = ResizeMode.Max
         }));
 
-        thumbnail.Metadata.ExifProfile = null;
-        thumbnail.Metadata.IccProfile = null;
-        thumbnail.Metadata.XmpProfile = null;
+        resized.Metadata.ExifProfile = null;
+        resized.Metadata.IccProfile = null;
+        resized.Metadata.XmpProfile = null;
 
-        var encoder = CreateThumbnailEncoder(destinationPath, HasVisibleTransparency(thumbnail));
-        await thumbnail.SaveAsync(destinationPath, encoder);
+        var encoder = createEncoder(destinationPath, HasVisibleTransparency(resized));
+        await resized.SaveAsync(destinationPath, encoder);
     }
 
     private static void CropTransparentPadding(Image<Rgba32> image)
@@ -163,31 +206,76 @@ public class ImageStorageService : IImageStorageService
 
     public Task DeleteImageWithThumbnailAsync(string imagePath)
     {
-        var fullPath = GetImageFullPath(imagePath);
-        if (File.Exists(fullPath))
+        foreach (var fullPath in EnumerateVariantPaths(imagePath))
         {
+            if (!File.Exists(fullPath))
+                continue;
+
             File.Delete(fullPath);
-            Log.Information("Deleted clothing image {ImagePath}", fullPath);
-        }
-        var thumbPath = GetThumbnailFullPath(imagePath);
-        if (File.Exists(thumbPath))
-        {
-            File.Delete(thumbPath);
-            Log.Information("Deleted clothing thumbnail {ThumbnailPath}", thumbPath);
+            Log.Information("Deleted clothing image asset {ImagePath}", fullPath);
         }
         return Task.CompletedTask;
     }
 
     public string GetImageFullPath(string relativePath)
     {
-        return Path.Combine(_imageFolder, relativePath);
+        var originalPath = Path.Combine(_originalFolder, relativePath);
+        if (File.Exists(originalPath))
+            return originalPath;
+
+        var legacyPath = Path.Combine(_legacyImageFolder, relativePath);
+        return File.Exists(legacyPath) ? legacyPath : originalPath;
+    }
+
+    public string GetDisplayFullPath(string relativePath)
+    {
+        return Path.Combine(_displayFolder, relativePath);
     }
 
     public string GetThumbnailFullPath(string relativePath)
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
-        return Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
+        var thumbnailPath = Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
+        if (File.Exists(thumbnailPath))
+            return thumbnailPath;
+
+        var legacyPath = Path.Combine(_legacyThumbnailFolder, $"{name}_thumb{ext}");
+        return File.Exists(legacyPath) ? legacyPath : thumbnailPath;
+    }
+
+    private IEnumerable<string> EnumerateVariantPaths(string relativePath)
+    {
+        var name = Path.GetFileNameWithoutExtension(relativePath);
+        var ext = Path.GetExtension(relativePath);
+        yield return Path.Combine(_originalFolder, relativePath);
+        yield return Path.Combine(_legacyImageFolder, relativePath);
+        yield return Path.Combine(_displayFolder, relativePath);
+        yield return Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
+        yield return Path.Combine(_legacyThumbnailFolder, $"{name}_thumb{ext}");
+    }
+
+    private static IImageEncoder CreateDisplayEncoder(string destinationPath, bool hasTransparency)
+    {
+        return Path.GetExtension(destinationPath).ToLowerInvariant() switch
+        {
+            ".jpg" or ".jpeg" => new JpegEncoder
+            {
+                Quality = 90
+            },
+            ".png" => new PngEncoder
+            {
+                CompressionLevel = PngCompressionLevel.Level6,
+                ColorType = hasTransparency ? PngColorType.RgbWithAlpha : PngColorType.Rgb
+            },
+            ".gif" => new GifEncoder(),
+            ".bmp" => new BmpEncoder(),
+            _ => new PngEncoder
+            {
+                CompressionLevel = PngCompressionLevel.Level6,
+                ColorType = hasTransparency ? PngColorType.RgbWithAlpha : PngColorType.Rgb
+            }
+        };
     }
 
     private static IImageEncoder CreateThumbnailEncoder(string destinationPath, bool hasTransparency)

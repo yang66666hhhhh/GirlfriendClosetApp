@@ -24,6 +24,9 @@
     <Compile Include="..\ClosetApp.UI\States\ClothesTabState.cs" Link="UiLogic\States\ClothesTabState.cs" />
     <Compile Include="..\ClosetApp.UI\States\OutfitsTabState.cs" Link="UiLogic\States\OutfitsTabState.cs" />
     <Compile Include="..\ClosetApp.UI\States\TagsTabState.cs" Link="UiLogic\States\TagsTabState.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportBuilder.cs" Link="UiLogic\Clothing\BatchClothingImportBuilder.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportOptions.cs" Link="UiLogic\Clothing\BatchClothingImportOptions.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Editor\OutfitSelectionRules.cs" Link="UiLogic\Outfit\Editor\OutfitSelectionRules.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\CompositionMode.cs" Link="UiLogic\Outfit\Engine\CompositionMode.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitCompositionEngine.cs" Link="UiLogic\Outfit\Engine\OutfitCompositionEngine.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitLayoutItem.cs" Link="UiLogic\Outfit\Engine\OutfitLayoutItem.cs" />

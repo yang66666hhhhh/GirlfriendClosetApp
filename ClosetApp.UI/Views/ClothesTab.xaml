@@ -260,12 +260,16 @@
                            HorizontalAlignment="Center"
                            VerticalAlignment="Center"/>
 
-                <!-- Right: Add Button -->
-                <Button Grid.Column="2" Content="+ 添加衣服"
-                        Style="{StaticResource PrimaryButton}"
-                        VerticalAlignment="Center"
-                        Margin="24,0,0,0"
-                        Click="AddClothing_Click"/>
+                <!-- Right: Add Buttons -->
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0,0,0">
+                    <Button Content="批量导入"
+                            Style="{StaticResource CapsuleButton}"
+                            Click="BatchImport_Click"
+                            Margin="0,0,10,0"/>
+                    <Button Content="+ 添加衣服"
+                            Style="{StaticResource PrimaryButton}"
+                            Click="AddClothing_Click"/>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -398,12 +402,18 @@
                                     <RadioButton x:Name="ChipAll" Content="✨ 全部"
                                                  Style="{StaticResource ChipStyle}"
                                                  IsChecked="{Binding IsCategoryAllSelected, Mode=TwoWay}"/>
-                                    <RadioButton x:Name="ChipTop" Content="👕 上装"
+                                    <RadioButton x:Name="ChipTop" Content="👕 上衣"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                                  IsChecked="{Binding IsCategoryTopSelected, Mode=TwoWay}"/>
-                                    <RadioButton x:Name="ChipBottom" Content="👖 下装"
+                                    <RadioButton x:Name="ChipOuterwear" Content="🧥 外套"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 IsChecked="{Binding IsCategoryOuterwearSelected, Mode=TwoWay}"/>
+                                    <RadioButton x:Name="ChipBottom" Content="👖 裤装"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                                  IsChecked="{Binding IsCategoryBottomSelected, Mode=TwoWay}"/>
+                                    <RadioButton x:Name="ChipSkirt" Content="🩰 半裙"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 IsChecked="{Binding IsCategorySkirtSelected, Mode=TwoWay}"/>
                                     <RadioButton x:Name="ChipDress" Content="👗 连衣裙"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                                  IsChecked="{Binding IsCategoryDressSelected, Mode=TwoWay}"/>
@@ -413,6 +423,9 @@
                                     <RadioButton x:Name="ChipAccessory" Content="👜 配饰"
                                                  Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
                                                  IsChecked="{Binding IsCategoryAccessorySelected, Mode=TwoWay}"/>
+                                    <RadioButton x:Name="ChipUnspecified" Content="待分类"
+                                                 Style="{StaticResource ChipStyle}" Margin="8,0,0,0"
+                                                 IsChecked="{Binding IsCategoryUnspecifiedSelected, Mode=TwoWay}"/>
                                 </StackPanel>
                             </ScrollViewer>
 
@@ -519,8 +532,12 @@
                                Margin="0,24,0,0"/>
                     <TextBlock Text="先放进第一件心动单品吧"
                                Style="{StaticResource EmptyStateBodyText}"/>
-                    <Button Content="+ 添加衣服" Style="{StaticResource PrimaryButton}"
-                            HorizontalAlignment="Center" Click="AddClothing_Click"/>
+                    <WrapPanel HorizontalAlignment="Center">
+                        <Button Content="批量导入" Style="{StaticResource CapsuleButton}"
+                                Click="BatchImport_Click" Margin="0,0,10,0"/>
+                        <Button Content="+ 添加衣服" Style="{StaticResource PrimaryButton}"
+                                Click="AddClothing_Click"/>
+                    </WrapPanel>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

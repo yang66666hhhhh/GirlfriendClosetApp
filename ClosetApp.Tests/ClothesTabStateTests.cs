@@ -19,7 +19,7 @@ public class ClothesTabStateTests
             CreateClothing("Weekend Tee", ClothingType.Top, GarmentType.TShirt, color: "Blue")
         ]);
 
-        state.SetSelectedCategory(DisplayCategory.Topwear);
+        state.SetSelectedType(ClothingType.Top);
         state.SetSearchText("ivory");
 
         var match = Assert.Single(state.FilteredClothes);
@@ -53,7 +53,7 @@ public class ClothesTabStateTests
         var state = new ClothesTabState();
         state.SetClothes([CreateClothing("Soft Knit", ClothingType.Top, GarmentType.Sweater)]);
 
-        state.SetSelectedCategory(DisplayCategory.Topwear);
+        state.SetSelectedType(ClothingType.Top);
         state.SetSearchText("soft");
 
         Assert.Equal("搜索「soft」 + 分类", state.FilterSummary);
@@ -94,27 +94,62 @@ public class ClothesTabStateTests
     }
 
     [Fact]
-    public void ApplyFilter_WithSingleCategory_KeepsOnlyThatDisplayCategory()
+    public void ApplyFilter_WithSingleType_KeepsOnlyThatClothingType()
     {
         var state = new ClothesTabState();
         state.SetClothes(
         [
             CreateClothing("Weekend Knit", ClothingType.Top, GarmentType.Sweater),
-            CreateClothing("Daily Skirt", ClothingType.Skirt, GarmentType.Skirt),
+            CreateClothing("Daily Pants", ClothingType.Bottom, GarmentType.Trousers),
             CreateClothing("Soft Heels", ClothingType.Shoes, GarmentType.Heels)
         ]);
 
-        state.SetSelectedCategory(DisplayCategory.Bottom);
+        state.SetSelectedType(ClothingType.Bottom);
 
         var result = Assert.Single(state.FilteredClothes);
-        Assert.Equal("Daily Skirt", result.Name);
-        Assert.Equal(DisplayCategory.Bottom, state.SelectedCategory);
+        Assert.Equal("Daily Pants", result.Name);
+        Assert.Equal(ClothingType.Bottom, state.SelectedType);
+    }
+
+    [Fact]
+    public void ApplyFilter_WithType_DoesNotMixNearbyCategories()
+    {
+        var state = new ClothesTabState();
+        state.SetClothes(
+        [
+            CreateClothing("Weekend Knit", ClothingType.Top, GarmentType.Sweater),
+            CreateClothing("Wool Coat", ClothingType.Outerwear, GarmentType.Coat),
+            CreateClothing("Daily Pants", ClothingType.Bottom, GarmentType.Trousers),
+            CreateClothing("Pleated Skirt", ClothingType.Skirt, GarmentType.Skirt)
+        ]);
+
+        state.SetSelectedType(ClothingType.Top);
+        Assert.Equal("Weekend Knit", Assert.Single(state.FilteredClothes).Name);
+
+        state.SetSelectedType(ClothingType.Bottom);
+        Assert.Equal("Daily Pants", Assert.Single(state.FilteredClothes).Name);
+    }
+
+    [Fact]
+    public void ApplyFilter_WithType_CanFindUnspecifiedItems()
+    {
+        var state = new ClothesTabState();
+        state.SetClothes(
+        [
+            CreateClothing("Ready To Sort", ClothingType.Unspecified, null),
+            CreateClothing("Weekend Knit", ClothingType.Top, GarmentType.Sweater)
+        ]);
+
+        state.SetSelectedType(ClothingType.Unspecified);
+
+        var result = Assert.Single(state.FilteredClothes);
+        Assert.Equal("Ready To Sort", result.Name);
     }
 
     private static Clothing CreateClothing(
         string name,
         ClothingType type,
-        GarmentType garmentType,
+        GarmentType? garmentType,
         string? color = null,
         string? notes = null,
         IEnumerable<Tag>? tags = null)

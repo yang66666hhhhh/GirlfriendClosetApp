@@ -20,7 +20,13 @@ public static class AppPaths
 
     public static string ImagesDir => Path.Combine(_baseDir, "images");
 
-    public static string ThumbnailsDir => Path.Combine(_baseDir, "thumbnails");
+    public static string OriginalsDir => Path.Combine(ImagesDir, "originals");
+
+    public static string DisplayDir => Path.Combine(ImagesDir, "display");
+
+    public static string ThumbnailsDir => Path.Combine(ImagesDir, "thumbnails");
+
+    public static string LegacyThumbnailsDir => Path.Combine(_baseDir, "thumbnails");
 
     public static string DatabasePath => Path.Combine(_baseDir, "closet.db");
 
@@ -32,6 +38,8 @@ public static class AppPaths
     {
         Directory.CreateDirectory(_baseDir);
         Directory.CreateDirectory(ImagesDir);
+        Directory.CreateDirectory(OriginalsDir);
+        Directory.CreateDirectory(DisplayDir);
         Directory.CreateDirectory(ThumbnailsDir);
         Directory.CreateDirectory(LogsDir);
         Directory.CreateDirectory(BackupsDir);
@@ -41,7 +49,21 @@ public static class AppPaths
     {
         if (string.IsNullOrEmpty(relativePath))
             return string.Empty;
+        return Path.Combine(OriginalsDir, relativePath);
+    }
+
+    public static string GetLegacyImageFullPath(string relativePath)
+    {
+        if (string.IsNullOrEmpty(relativePath))
+            return string.Empty;
         return Path.Combine(ImagesDir, relativePath);
+    }
+
+    public static string GetDisplayFullPath(string relativePath)
+    {
+        if (string.IsNullOrEmpty(relativePath))
+            return string.Empty;
+        return Path.Combine(DisplayDir, relativePath);
     }
 
     public static string GetThumbnailFullPath(string relativePath)
@@ -51,5 +73,14 @@ public static class AppPaths
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
         return Path.Combine(ThumbnailsDir, $"{name}_thumb{ext}");
+    }
+
+    public static string GetLegacyThumbnailFullPath(string relativePath)
+    {
+        if (string.IsNullOrEmpty(relativePath))
+            return string.Empty;
+        var name = Path.GetFileNameWithoutExtension(relativePath);
+        var ext = Path.GetExtension(relativePath);
+        return Path.Combine(LegacyThumbnailsDir, $"{name}_thumb{ext}");
     }
 }

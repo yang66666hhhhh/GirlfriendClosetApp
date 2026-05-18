@@ -42,8 +42,10 @@ public partial class SettingsTab : UserControl
 
     private async Task RefreshStatsAsync()
     {
-        var imageCount = CountFiles(AppPaths.ImagesDir);
-        var imageSize = GetDirectorySize(AppPaths.ImagesDir);
+        var originalCount = CountFiles(AppPaths.OriginalsDir) + CountLegacyOriginalFiles();
+        var originalSize = GetDirectorySize(AppPaths.OriginalsDir) + GetLegacyOriginalSize();
+        var displayCount = CountFiles(AppPaths.DisplayDir);
+        var displaySize = GetDirectorySize(AppPaths.DisplayDir);
         var thumbnailCount = CountFiles(AppPaths.ThumbnailsDir);
         var thumbnailSize = GetDirectorySize(AppPaths.ThumbnailsDir);
         var logCount = CountFiles(AppPaths.LogsDir);
@@ -51,8 +53,8 @@ public partial class SettingsTab : UserControl
         var missingImageCount = await _imageMaintenanceService.CountMissingImagesAsync();
         var missingThumbnailCount = await _imageMaintenanceService.CountMissingThumbnailsAsync();
 
-        TxtImageStats.Text = $"{imageCount} 张原图 · {FormatSize(imageSize)}";
-        TxtCacheStats.Text = $"{thumbnailCount} 个缩略图缓存 · {FormatSize(thumbnailSize)}";
+        TxtImageStats.Text = $"{originalCount} 张原图 · {FormatSize(originalSize)}";
+        TxtCacheStats.Text = $"{displayCount} 个主视觉缓存 · {thumbnailCount} 个小预览缓存 · {FormatSize(displaySize + thumbnailSize)}";
         TxtThumbnailHealthStats.Text = BuildThumbnailHealthText(missingThumbnailCount);
         TxtLogStats.Text = $"{logCount} 个日志文件 · {FormatSize(logSize)}";
         TxtMissingImageStats.Text = missingImageCount == 0
@@ -142,7 +144,7 @@ public partial class SettingsTab : UserControl
     private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
-            "确定清理缩略图缓存吗？原始图片不会被删除。",
+            "确定清理图片缓存吗？原始图片不会被删除。",
             "清理缓存",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Question);
@@ -150,14 +152,11 @@ public partial class SettingsTab : UserControl
         if (result != MessageBoxResult.OK)
             return;
 
-        if (Directory.Exists(AppPaths.ThumbnailsDir))
-        {
-            foreach (var file in Directory.EnumerateFiles(AppPaths.ThumbnailsDir, "*", SearchOption.AllDirectories))
-                File.Delete(file);
-        }
+        DeleteFilesInDirectory(AppPaths.DisplayDir);
+        DeleteFilesInDirectory(AppPaths.ThumbnailsDir);
 
         await RefreshStatsAsync();
-        MessageBox.Show("缩略图缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show("图片缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void RebuildThumbnails_Click(object sender, RoutedEventArgs e)
@@ -167,7 +166,7 @@ public partial class SettingsTab : UserControl
 
         MessageBox.Show(
             result.Summary,
-            "缩略图缓存",
+            "图片缓存",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
     }
@@ -416,8 +415,34 @@ public partial class SettingsTab : UserControl
     private static string BuildThumbnailHealthText(int missingThumbnailCount)
     {
         return missingThumbnailCount == 0
-            ? "所有已存在的原图都已经生成缩略图。"
-            : $"{missingThumbnailCount} 张图片缺少缩略图，可一键重建缓存。";
+            ? "所有已存在的原图都已经生成主视觉和小预览缓存。"
+            : $"{missingThumbnailCount} 张图片缺少主视觉或小预览缓存，可一键重建。";
+    }
+
+    private static void DeleteFilesInDirectory(string directory)
+    {
+        if (!Directory.Exists(directory))
+            return;
+
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+            File.Delete(file);
+    }
+
+    private static int CountLegacyOriginalFiles()
+    {
+        if (!Directory.Exists(AppPaths.ImagesDir))
+            return 0;
+
+        return Directory.EnumerateFiles(AppPaths.ImagesDir, "*", SearchOption.TopDirectoryOnly).Count();
+    }
+
+    private static long GetLegacyOriginalSize()
+    {
+        if (!Directory.Exists(AppPaths.ImagesDir))
+            return 0;
+
+        return Directory.EnumerateFiles(AppPaths.ImagesDir, "*", SearchOption.TopDirectoryOnly)
+            .Sum(file => new FileInfo(file).Length);
     }
 
     // 导出前校验卡片集中在这里组装，避免散落的文本更新让状态变得难追踪。

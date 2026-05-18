@@ -204,8 +204,8 @@
                         <TextBlock Text="分类"
                                    Style="{StaticResource FormFieldLabel}" Margin="0,0,0,10"/>
                          <WrapPanel x:Name="CategoryPanel" Margin="0,0,0,20">
-                            <RadioButton Content="👕 上装"    Tag="Top"       Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
-                            <RadioButton Content="👖 下装"    Tag="Bottom"    Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
+                            <RadioButton Content="👕 上衣"    Tag="Top"       Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
+                            <RadioButton Content="👖 裤装"    Tag="Bottom"    Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
                             <RadioButton Content="🧥 外套"    Tag="Outerwear" Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
                             <RadioButton Content="👗 连衣裙"  Tag="Dress"     Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>
                             <RadioButton Content="🩰 半裙"    Tag="Skirt"     Style="{StaticResource CategoryChip}" Margin="0,0,8,8" Checked="Category_Checked"/>

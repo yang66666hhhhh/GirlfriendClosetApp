@@ -53,14 +53,20 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
                 continue;
             }
 
-            if (!string.IsNullOrWhiteSpace(asset.ThumbnailPath))
+            if (!string.IsNullOrWhiteSpace(asset.DisplayPath) &&
+                !string.IsNullOrWhiteSpace(asset.ThumbnailPath))
             {
                 skippedCount++;
                 continue;
             }
 
             missingThumbnailCount++;
-            if (await _imageStorageService.EnsureThumbnailAsync(imagePath, maxSize))
+            var displayReady = !string.IsNullOrWhiteSpace(asset.DisplayPath) ||
+                               await _imageStorageService.EnsureDisplayAsync(imagePath);
+            var thumbnailReady = !string.IsNullOrWhiteSpace(asset.ThumbnailPath) ||
+                                 await _imageStorageService.EnsureThumbnailAsync(imagePath, maxSize);
+
+            if (displayReady && thumbnailReady)
                 rebuiltCount++;
             else
                 missingSourceCount++;
@@ -120,7 +126,9 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
     private bool NeedsThumbnailRebuild(string imagePath)
     {
         var asset = _imageAssetResolver.Resolve(imagePath);
-        return asset.HasImage && string.IsNullOrWhiteSpace(asset.ThumbnailPath);
+        return asset.HasImage &&
+               (string.IsNullOrWhiteSpace(asset.DisplayPath) ||
+                string.IsNullOrWhiteSpace(asset.ThumbnailPath));
     }
 
     private static string? FindMatchingFile(string sourceDirectory, string imagePath)

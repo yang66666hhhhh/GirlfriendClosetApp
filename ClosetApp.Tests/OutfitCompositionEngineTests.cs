@@ -105,10 +105,13 @@ public class OutfitCompositionEngineTests
         var layout = _engine.CalculateLayout([dress, shoes, accessory], CanvasWidth, CanvasHeight);
 
         Assert.Equal(3, layout.Count);
-        Assert.Contains(layout, item => item.Clothing == dress && item.ZIndex == 2);
-        Assert.Contains(layout, item => item.Clothing == shoes && item.ZIndex == 3);
-        Assert.Contains(layout, item => item.Clothing == accessory && item.ZIndex == 4);
-        Assert.True(layout.Single(item => item.Clothing == shoes).Y >= layout.Single(item => item.Clothing == dress).Y);
+        var dressItem = layout.Single(item => item.Clothing == dress);
+        var shoesItem = layout.Single(item => item.Clothing == shoes);
+        var accessoryItem = layout.Single(item => item.Clothing == accessory);
+        Assert.True(shoesItem.Y >= dressItem.Y);
+        Assert.True(shoesItem.ZIndex > dressItem.ZIndex);
+        Assert.True(accessoryItem.ZIndex > shoesItem.ZIndex);
+        Assert.True(accessoryItem.IsInset);
     }
 
     [Fact]
@@ -126,6 +129,41 @@ public class OutfitCompositionEngineTests
         var shoesItem = layout.Single(item => item.Clothing == shoes);
         Assert.True(topItem.Y < bottomItem.Y);
         Assert.True(bottomItem.Y < shoesItem.Y);
+    }
+
+    [Fact]
+    public void CalculateLayout_WithOuterwearAndTop_UsesLayeredUpperBody()
+    {
+        var outerwear = Clothing("Coat", GarmentType.Coat);
+        var top = Clothing("Shirt", GarmentType.Shirt);
+
+        var layout = _engine.CalculateLayout([outerwear, top], CanvasWidth, CanvasHeight);
+
+        Assert.Equal(2, layout.Count);
+        var outerwearItem = layout.Single(item => item.Clothing == outerwear);
+        var topItem = layout.Single(item => item.Clothing == top);
+        Assert.False(outerwearItem.IsInset);
+        Assert.True(topItem.IsInset);
+        Assert.True(outerwearItem.Width > topItem.Width);
+        Assert.True(topItem.ZIndex > outerwearItem.ZIndex);
+        Assert.InRange(topItem.Y, outerwearItem.Y, outerwearItem.Y + outerwearItem.Height);
+    }
+
+    [Fact]
+    public void CalculateLayout_WithLayeredUpperBodyAndBottom_KeepsBottomBelowUpperBody()
+    {
+        var outerwear = Clothing("Coat", GarmentType.Coat);
+        var top = Clothing("Shirt", GarmentType.Shirt);
+        var bottom = Clothing("Jeans", GarmentType.Jeans);
+
+        var layout = _engine.CalculateLayout([outerwear, top, bottom], CanvasWidth, CanvasHeight);
+
+        Assert.Equal(3, layout.Count);
+        var outerwearItem = layout.Single(item => item.Clothing == outerwear);
+        var topItem = layout.Single(item => item.Clothing == top);
+        var bottomItem = layout.Single(item => item.Clothing == bottom);
+        Assert.True(topItem.IsInset);
+        Assert.True(bottomItem.Y >= outerwearItem.Y + outerwearItem.Height);
     }
 
     [Fact]

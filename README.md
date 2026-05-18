@@ -2,15 +2,15 @@
 
 私人数字衣橱桌面应用，面向个人衣物整理、搭配管理和本地数据治理场景。项目使用 WPF + SQLite，采用 Domain / Application / Infrastructure / UI 四层结构。
 
-> 更新时间：2026-05-18
+> 更新时间：2026-05-19
 > 当前运行时：.NET 10 / WPF
 
 ## 当前能力
 
-- 衣柜管理：新增、编辑、删除衣物，支持图片、季节、品牌、备注、收藏状态
-- 搭配管理：创建和编辑搭配，统一编辑器预览布局，支持穿着记录
+- 衣柜管理：新增、编辑、删除衣物，支持图片、季节、品牌、备注、收藏状态和批量导入
+- 搭配管理：创建和编辑搭配，按“人体区域 + 穿搭层级”生成预览，支持穿着记录
 - 标签管理：标签维护与选择复用组件
-- 设置中心：数据目录、日志、缓存、备份、导入恢复、缺失图片修复、缩略图重建
+- 设置中心：数据目录、日志、图片缓存、备份、导入恢复、缺失图片修复
 - 本地数据治理：
   - ZIP 备份包：`backup.json` + `images/`
   - 兼容旧版 JSON 备份导入
@@ -66,19 +66,25 @@ GirlfriendClosetApp/
 
 - `%LocalAppData%\ClosetApp\backups\backup-history.json`
 
-### 3. 图片治理
+### 3. 图片资产体系
 
-- `ImageStorageService`：原图 / 缩略图存储
-- `ImageMaintenanceService`：检测缺失图片、统计缩略图缺口并执行重建
+- `ImageStorageService`：原图 / 主视觉 / 小预览存储
+- `ImageMaintenanceService`：检测缺失图片、统计图片缓存缺口并执行重建
 - `ImageAssetResolver`：统一图片解析
+
+图片按视觉用途分层：
+
+- `Original`：原始资产，编辑器和备份使用，保存时不压缩覆盖
+- `Display`：衣柜瀑布流、搭配卡片、穿搭预览使用，默认最大边约 900px
+- `Thumbnail`：小型选择卡、摘要列表等低成本预览使用，默认最大边约 200px
 
 设置页可直接：
 
 - 查看缺失图片数量
-- 查看缩略图健康状态并一键重建缺失缓存
+- 查看图片缓存健康状态并一键重建缺失缓存
 - 查看备份前的数据规模、图片覆盖情况和导出提醒
 - 选择旧图片目录批量修复
-- 清理缩略图缓存
+- 清理主视觉和小预览缓存
 
 ### 4. 应用层 UseCases
 
@@ -89,14 +95,27 @@ GirlfriendClosetApp/
 - `RecordOutfitWorn`
 - `GetTagsForSelection`
 
+### 5. 搭配预览模型
+
+搭配预览不再按衣物分类简单堆叠，而是按人体区域表达：
+
+- 上半身区域：外套为外层主图，上衣/中层作为内层露出
+- 下半身区域：裤装或半裙二选一
+- 脚部区域：鞋子位于底部
+- 配饰区域：作为角标/侧边信息展示，不参与主轴高度
+
+当前实现位于 `ClosetApp.UI/Components/Outfit/Engine/OutfitCompositionEngine.cs`，渲染由 `OutfitPreviewCanvas` 完成。
+
 ## 本地数据目录
 
 由 `ClosetApp.Infrastructure/AppPaths.cs` 统一定义：
 
 - 数据根目录：`%LocalAppData%\ClosetApp\`
 - 数据库：`%LocalAppData%\ClosetApp\closet.db`
-- 图片：`%LocalAppData%\ClosetApp\images\`
-- 缩略图：`%LocalAppData%\ClosetApp\thumbnails\`
+- 图片根目录：`%LocalAppData%\ClosetApp\images\`
+- 原图：`%LocalAppData%\ClosetApp\images\originals\`
+- 主视觉缓存：`%LocalAppData%\ClosetApp\images\display\`
+- 小预览缓存：`%LocalAppData%\ClosetApp\images\thumbnails\`
 - 日志：`%LocalAppData%\ClosetApp\logs\`
 - 备份：`%LocalAppData%\ClosetApp\backups\`
 
@@ -124,6 +143,8 @@ rtk pwsh -Command "Get-ChildItem -Force"
 - `ImageMaintenanceService`
 - `ImageStorageService`
 - `OutfitCompositionEngine`
+- `OutfitSelectionRules`
+- `BatchClothingImportBuilder`
 - `ClothesTabState` / `OutfitsTabState` / `TagsTabState`
 
 测试工程已避免直接引用整个 `ClosetApp.UI.csproj`，而是按需链接纯逻辑源码文件，减少 WPF 生成链对测试的干扰。

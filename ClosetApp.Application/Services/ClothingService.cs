@@ -32,6 +32,12 @@ public class ClothingService : IClothingService
         return clothing;
     }
 
+    public async Task AddClothesAsync(IEnumerable<Clothing> clothes)
+    {
+        foreach (var clothing in clothes)
+            await _repository.AddAsync(clothing);
+    }
+
     public async Task UpdateClothingAsync(Clothing clothing)
     {
         await _repository.UpdateAsync(clothing);

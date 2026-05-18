@@ -1,7 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.UI.Components.Tags.Models;
-using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
@@ -34,7 +33,7 @@ public partial class WardrobeViewModel : ObservableObject
     public bool IsEmpty => _state.IsEmpty;
     public int TotalCount => _state.AllClothes.Count;
     public int FilteredCount => _state.FilteredCount;
-    public DisplayCategory? SelectedCategory => _state.SelectedCategory;
+    public ClothingType? SelectedType => _state.SelectedType;
     public string FilterSummary => _state.FilterSummary;
     public string FilterResultText => $"{FilterSummary} · {FilteredCount} 件结果";
     public bool HasActiveFilters => _state.HasActiveFilters;
@@ -81,56 +80,83 @@ public partial class WardrobeViewModel : ObservableObject
         : "分类、季节、标签和收藏都可以叠加筛选。";
     public bool IsCategoryAllSelected
     {
-        get => SelectedCategory == null;
+        get => SelectedType == null;
         set
         {
             if (value)
-                SetSelectedCategory(null);
+                SetSelectedType(null);
         }
     }
     public bool IsCategoryTopSelected
     {
-        get => SelectedCategory == DisplayCategory.Topwear;
+        get => SelectedType == ClothingType.Top;
         set
         {
             if (value)
-                SetSelectedCategory(DisplayCategory.Topwear);
+                SetSelectedType(ClothingType.Top);
+        }
+    }
+    public bool IsCategoryOuterwearSelected
+    {
+        get => SelectedType == ClothingType.Outerwear;
+        set
+        {
+            if (value)
+                SetSelectedType(ClothingType.Outerwear);
         }
     }
     public bool IsCategoryBottomSelected
     {
-        get => SelectedCategory == DisplayCategory.Bottom;
+        get => SelectedType == ClothingType.Bottom;
         set
         {
             if (value)
-                SetSelectedCategory(DisplayCategory.Bottom);
+                SetSelectedType(ClothingType.Bottom);
+        }
+    }
+    public bool IsCategorySkirtSelected
+    {
+        get => SelectedType == ClothingType.Skirt;
+        set
+        {
+            if (value)
+                SetSelectedType(ClothingType.Skirt);
         }
     }
     public bool IsCategoryDressSelected
     {
-        get => SelectedCategory == DisplayCategory.Dress;
+        get => SelectedType == ClothingType.Dress;
         set
         {
             if (value)
-                SetSelectedCategory(DisplayCategory.Dress);
+                SetSelectedType(ClothingType.Dress);
         }
     }
     public bool IsCategoryShoesSelected
     {
-        get => SelectedCategory == DisplayCategory.Footwear;
+        get => SelectedType == ClothingType.Shoes;
         set
         {
             if (value)
-                SetSelectedCategory(DisplayCategory.Footwear);
+                SetSelectedType(ClothingType.Shoes);
         }
     }
     public bool IsCategoryAccessorySelected
     {
-        get => SelectedCategory == DisplayCategory.Accessory;
+        get => SelectedType == ClothingType.Accessory;
         set
         {
             if (value)
-                SetSelectedCategory(DisplayCategory.Accessory);
+                SetSelectedType(ClothingType.Accessory);
+        }
+    }
+    public bool IsCategoryUnspecifiedSelected
+    {
+        get => SelectedType == ClothingType.Unspecified;
+        set
+        {
+            if (value)
+                SetSelectedType(ClothingType.Unspecified);
         }
     }
     public bool IsSeasonAllSelected
@@ -213,9 +239,9 @@ public partial class WardrobeViewModel : ObservableObject
         }
     }
 
-    public void SetSelectedCategory(DisplayCategory? category)
+    public void SetSelectedType(ClothingType? type)
     {
-        _state.SetSelectedCategory(category);
+        _state.SetSelectedType(type);
         NotifyStateChanged();
     }
 
@@ -240,7 +266,7 @@ public partial class WardrobeViewModel : ObservableObject
 
     public void ClearFilters()
     {
-        _state.SetSelectedCategory(null);
+        _state.SetSelectedType(null);
         _state.SetSelectedSeason(null);
         _state.SetSelectedTagIds([]);
         _state.SetFavoriteOnly(false);
@@ -254,6 +280,12 @@ public partial class WardrobeViewModel : ObservableObject
     public async Task AddClothingAsync(Clothing clothing)
     {
         await _clothingService.AddClothingAsync(clothing);
+        await LoadClothesAsync();
+    }
+
+    public async Task AddClothesAsync(IEnumerable<Clothing> clothes)
+    {
+        await _clothingService.AddClothesAsync(clothes);
         await LoadClothesAsync();
     }
 
@@ -305,7 +337,7 @@ public partial class WardrobeViewModel : ObservableObject
         OnPropertyChanged(nameof(IsEmpty));
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(FilteredCount));
-        OnPropertyChanged(nameof(SelectedCategory));
+        OnPropertyChanged(nameof(SelectedType));
         OnPropertyChanged(nameof(FilterSummary));
         OnPropertyChanged(nameof(FilterResultText));
         OnPropertyChanged(nameof(HasActiveFilters));
@@ -316,10 +348,13 @@ public partial class WardrobeViewModel : ObservableObject
         OnPropertyChanged(nameof(FilterToggleText));
         OnPropertyChanged(nameof(IsCategoryAllSelected));
         OnPropertyChanged(nameof(IsCategoryTopSelected));
+        OnPropertyChanged(nameof(IsCategoryOuterwearSelected));
         OnPropertyChanged(nameof(IsCategoryBottomSelected));
+        OnPropertyChanged(nameof(IsCategorySkirtSelected));
         OnPropertyChanged(nameof(IsCategoryDressSelected));
         OnPropertyChanged(nameof(IsCategoryShoesSelected));
         OnPropertyChanged(nameof(IsCategoryAccessorySelected));
+        OnPropertyChanged(nameof(IsCategoryUnspecifiedSelected));
         OnPropertyChanged(nameof(IsSeasonAllSelected));
         OnPropertyChanged(nameof(IsSeasonSpringSelected));
         OnPropertyChanged(nameof(IsSeasonSummerSelected));

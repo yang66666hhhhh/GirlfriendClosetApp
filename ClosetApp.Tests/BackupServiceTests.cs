@@ -168,6 +168,7 @@ public class BackupServiceTests
 
             await imageStorage.DeleteImageWithThumbnailAsync(storedFileName);
             Assert.False(File.Exists(imageStorage.GetImageFullPath(storedFileName)));
+            Assert.False(File.Exists(imageStorage.GetDisplayFullPath(storedFileName)));
             Assert.False(File.Exists(imageStorage.GetThumbnailFullPath(storedFileName)));
 
             var importResult = await service.ImportAsync(backupPath);
@@ -176,6 +177,7 @@ public class BackupServiceTests
             var restoredClothing = Assert.Single(await assertContext.Clothes.Where(c => c.Name == "Pink Coat").ToListAsync());
             Assert.Equal(storedFileName, restoredClothing.ImagePath);
             Assert.True(File.Exists(imageStorage.GetImageFullPath(storedFileName)));
+            Assert.True(File.Exists(imageStorage.GetDisplayFullPath(storedFileName)));
             Assert.True(File.Exists(imageStorage.GetThumbnailFullPath(storedFileName)));
 
             Assert.Equal(1, exportResult.IncludedImageCount);

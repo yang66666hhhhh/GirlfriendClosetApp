@@ -72,6 +72,17 @@ public static class ClothingMappings
         _ => GarmentType.TShirt
     };
 
+    public static DisplayCategory? TryGetDisplayCategory(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        if (clothing.GarmentType.HasValue)
+            return GetDisplayCategory(clothing.GarmentType.Value);
+
+        if (clothing.Type == ClothingType.Unspecified)
+            return null;
+
+        return GetDisplayCategory(InferGarmentType(clothing.Type));
+    }
+
     public static string GetDisplayName(GarmentType type) => type switch
     {
         GarmentType.TShirt => "T恤",

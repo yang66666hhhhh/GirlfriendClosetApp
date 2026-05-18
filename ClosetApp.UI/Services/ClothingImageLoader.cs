@@ -3,17 +3,19 @@ using System.IO;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using ClosetApp.Application.Images;
 
 namespace ClosetApp.UI.Services;
 
 public static class ClothingImageLoader
 {
-    private const int ThumbnailPreferredMaxWidth = 260;
-
-    private static readonly string ImageFolder = Path.Combine(
+    private static readonly string ImagesFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "ClosetApp", "images");
-    private static readonly string ThumbnailFolder = Path.Combine(
+    private static readonly string OriginalFolder = Path.Combine(ImagesFolder, "originals");
+    private static readonly string DisplayFolder = Path.Combine(ImagesFolder, "display");
+    private static readonly string ThumbnailFolder = Path.Combine(ImagesFolder, "thumbnails");
+    private static readonly string LegacyThumbnailFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "ClosetApp", "thumbnails");
 
@@ -22,7 +24,12 @@ public static class ClothingImageLoader
 
     public static ImageSource? Load(string? path, int decodePixelWidth = 400)
     {
-        var resolved = ResolvePath(path, preferThumbnail: decodePixelWidth <= ThumbnailPreferredMaxWidth);
+        return Load(path, ImageVariant.Display, decodePixelWidth);
+    }
+
+    public static ImageSource? Load(string? path, ImageVariant variant, int decodePixelWidth = 400)
+    {
+        var resolved = ResolvePath(path, variant);
         if (resolved == null)
             return null;
 
@@ -39,19 +46,24 @@ public static class ClothingImageLoader
 
     public static Size? GetDisplaySize(string? path, int decodePixelWidth = 400)
     {
-        var resolved = ResolvePath(path, preferThumbnail: true);
+        var resolved = ResolvePath(path, ImageVariant.Display);
         if (resolved == null)
             return null;
 
         var key = BuildCacheKey(resolved, decodePixelWidth);
         return SizeCache.GetOrAdd(key, _ =>
         {
-            var image = Load(resolved, decodePixelWidth);
+            var image = LoadCore(resolved, decodePixelWidth);
             return image == null ? null : new Size(image.Width, image.Height);
         });
     }
 
     public static string? ResolvePath(string? path, bool preferThumbnail = false)
+    {
+        return ResolvePath(path, preferThumbnail ? ImageVariant.Thumbnail : ImageVariant.Display);
+    }
+
+    public static string? ResolvePath(string? path, ImageVariant variant)
     {
         if (string.IsNullOrWhiteSpace(path))
             return null;
@@ -63,15 +75,18 @@ public static class ClothingImageLoader
         if (File.Exists(appPath))
             return appPath;
 
-        var thumbnailPath = BuildThumbnailPath(path);
-        if (preferThumbnail && File.Exists(thumbnailPath))
-            return thumbnailPath;
+        var originalPath = Path.Combine(OriginalFolder, path);
+        var displayPath = Path.Combine(DisplayFolder, path);
+        var thumbnailPath = BuildThumbnailPath(ThumbnailFolder, path);
+        var legacyImagePath = Path.Combine(ImagesFolder, path);
+        var legacyThumbnailPath = BuildThumbnailPath(LegacyThumbnailFolder, path);
 
-        var localPath = Path.Combine(ImageFolder, path);
-        if (File.Exists(localPath))
-            return localPath;
-
-        return File.Exists(thumbnailPath) ? thumbnailPath : null;
+        return variant switch
+        {
+            ImageVariant.Original => FirstExisting(originalPath, legacyImagePath, displayPath, thumbnailPath, legacyThumbnailPath),
+            ImageVariant.Thumbnail => FirstExisting(thumbnailPath, legacyThumbnailPath, displayPath, originalPath, legacyImagePath),
+            _ => FirstExisting(displayPath, originalPath, legacyImagePath, thumbnailPath, legacyThumbnailPath)
+        };
     }
 
     private static ImageSource? LoadCore(string path, int decodePixelWidth)
@@ -99,10 +114,15 @@ public static class ClothingImageLoader
         return $"{path}|{ticks}|{decodePixelWidth}";
     }
 
-    private static string BuildThumbnailPath(string relativePath)
+    private static string BuildThumbnailPath(string thumbnailFolder, string relativePath)
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
-        return Path.Combine(ThumbnailFolder, $"{name}_thumb{ext}");
+        return Path.Combine(thumbnailFolder, $"{name}_thumb{ext}");
+    }
+
+    private static string? FirstExisting(params string[] paths)
+    {
+        return paths.FirstOrDefault(File.Exists);
     }
 }

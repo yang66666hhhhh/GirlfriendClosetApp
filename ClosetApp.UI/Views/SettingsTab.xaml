@@ -51,7 +51,7 @@
                             <StackPanel>
                                 <TextBlock Text="存储位置" FontSize="18" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBlock Text="应用数据保存在本机 LocalAppData，图片和缩略图会单独归档。"
+                                <TextBlock Text="应用数据保存在本机 LocalAppData，图片按原图、主视觉和小预览分层归档。"
                                            Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
 
                                 <TextBlock Text="数据目录" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
@@ -69,7 +69,7 @@
                                 </Border>
                                 <WrapPanel>
                                     <Button Content="打开图片目录" Style="{StaticResource CapsuleButton}" Click="OpenImagesDir_Click" Margin="0,0,10,0"/>
-                                    <Button Content="打开缩略图目录" Style="{StaticResource CapsuleButton}" Click="OpenThumbnailsDir_Click"/>
+                                    <Button Content="打开缓存目录" Style="{StaticResource CapsuleButton}" Click="OpenThumbnailsDir_Click"/>
                                 </WrapPanel>
                             </StackPanel>
                         </Border>
@@ -78,7 +78,7 @@
                             <StackPanel>
                                 <TextBlock Text="图片缓存" FontSize="18" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBlock Text="清理缩略图不会删除原图；后续需要时可以重新生成。"
+                                <TextBlock Text="清理主视觉和小预览缓存不会删除原图；后续需要时可以重新生成。"
                                            Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
                                 <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions>
@@ -93,9 +93,9 @@
                                     <Button Grid.Column="1" Content="刷新" Style="{StaticResource CapsuleButton}" Click="RefreshStats_Click"/>
                                 </Grid>
                                 <WrapPanel>
-                                    <Button Content="重建缺失缩略图" Style="{StaticResource CapsuleButton}"
+                                    <Button Content="重建缺失图片缓存" Style="{StaticResource CapsuleButton}"
                                             HorizontalAlignment="Left" Click="RebuildThumbnails_Click" Margin="0,0,10,0"/>
-                                    <Button Content="清理缩略图缓存" Style="{StaticResource DangerButton}"
+                                    <Button Content="清理图片缓存" Style="{StaticResource DangerButton}"
                                             HorizontalAlignment="Left" Click="ClearThumbnails_Click"/>
                                 </WrapPanel>
                             </StackPanel>

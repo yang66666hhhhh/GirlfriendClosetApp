@@ -1,4 +1,3 @@
-using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 
@@ -7,7 +6,7 @@ namespace ClosetApp.UI.States;
 public sealed class ClothesTabState
 {
     private List<Clothing> _allClothes = new();
-    private DisplayCategory? _selectedCategory;
+    private ClothingType? _selectedType;
     private Season? _selectedSeason;
     private HashSet<Guid> _selectedTagIds = [];
     private bool? _favoriteOnly;
@@ -18,13 +17,13 @@ public sealed class ClothesTabState
     public bool IsLoading { get; private set; }
     public bool IsEmpty => _allClothes.Count == 0;
     public int FilteredCount => FilteredClothes.Count;
-    public DisplayCategory? SelectedCategory => _selectedCategory;
+    public ClothingType? SelectedType => _selectedType;
     public Season? SelectedSeason => _selectedSeason;
     public IReadOnlyCollection<Guid> SelectedTagIds => _selectedTagIds;
     public bool FavoriteOnly => _favoriteOnly == true;
     public bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_searchText) ||
-        _selectedCategory.HasValue ||
+        _selectedType.HasValue ||
         _selectedSeason.HasValue ||
         _selectedTagIds.Count > 0 ||
         _favoriteOnly == true;
@@ -39,7 +38,7 @@ public sealed class ClothesTabState
             var parts = new List<string>();
             if (!string.IsNullOrWhiteSpace(_searchText))
                 parts.Add($"搜索「{_searchText}」");
-            if (_selectedCategory.HasValue)
+            if (_selectedType.HasValue)
                 parts.Add("分类");
             if (_selectedSeason.HasValue)
                 parts.Add("季节");
@@ -67,9 +66,9 @@ public sealed class ClothesTabState
         ApplyFilter();
     }
 
-    public void SetSelectedCategory(DisplayCategory? category)
+    public void SetSelectedType(ClothingType? type)
     {
-        _selectedCategory = category;
+        _selectedType = type;
         ApplyFilter();
     }
 
@@ -95,9 +94,9 @@ public sealed class ClothesTabState
     {
         IEnumerable<Clothing> filtered = _allClothes;
 
-        if (_selectedCategory.HasValue)
+        if (_selectedType.HasValue)
         {
-            filtered = filtered.Where(c => ResolveDisplayCategory(c) == _selectedCategory.Value);
+            filtered = filtered.Where(c => c.Type == _selectedType.Value);
         }
 
         if (_selectedSeason.HasValue)
@@ -130,10 +129,4 @@ public sealed class ClothesTabState
         FilteredClothes = filtered.ToList();
     }
 
-    private static DisplayCategory ResolveDisplayCategory(Clothing clothing)
-    {
-        if (clothing.GarmentType.HasValue)
-            return ClothingMappings.GetDisplayCategory(clothing.GarmentType.Value);
-        return ClothingMappings.GetDisplayCategory(ClothingMappings.InferGarmentType(clothing.Type));
-    }
 }

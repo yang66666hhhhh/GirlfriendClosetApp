@@ -175,7 +175,7 @@
                                 CornerRadius="16"
                                 Background="#66FFFFFF">
                             <Image x:Name="CardImage"
-                                   Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}, ConverterParameter=220}"
+                                   Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}, ConverterParameter=Display:720}"
                                    Stretch="Uniform"
                                    Margin="14"
                                    HorizontalAlignment="Center"

@@ -48,6 +48,34 @@ public class OutfitCompositionEngine
         };
     }
 
+    private sealed class OutfitParts
+    {
+        public global::ClosetApp.Domain.Entities.Clothing? Outer { get; init; }
+        public global::ClosetApp.Domain.Entities.Clothing? Mid { get; init; }
+        public global::ClosetApp.Domain.Entities.Clothing? Inner { get; init; }
+        public global::ClosetApp.Domain.Entities.Clothing? Dress { get; init; }
+        public global::ClosetApp.Domain.Entities.Clothing? Bottom { get; init; }
+        public global::ClosetApp.Domain.Entities.Clothing? Shoes { get; init; }
+        public global::ClosetApp.Domain.Entities.Clothing? Accessory { get; init; }
+
+        public global::ClosetApp.Domain.Entities.Clothing? PrimaryUpper => Outer ?? Mid ?? Inner ?? Dress;
+        public global::ClosetApp.Domain.Entities.Clothing? InnerUpper => Outer != null ? Mid ?? Inner : null;
+    }
+
+    private static OutfitParts GetParts(IList<global::ClosetApp.Domain.Entities.Clothing> clothes)
+    {
+        return new OutfitParts
+        {
+            Outer = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.OuterLayer),
+            Mid = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.MidLayer),
+            Inner = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.BaseTop),
+            Dress = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.FullBody),
+            Bottom = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.Bottom),
+            Shoes = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.Footwear),
+            Accessory = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.Accessory)
+        };
+    }
+
     private static LayerRole ResolveSoloLayerRole(global::ClosetApp.Domain.Entities.Clothing item)
     {
         if (item.GarmentType.HasValue)
@@ -91,55 +119,44 @@ public class OutfitCompositionEngine
     private List<OutfitLayoutItem> DressMode(IList<global::ClosetApp.Domain.Entities.Clothing> clothes, double cw, double ch)
     {
         var items = new List<OutfitLayoutItem>();
+        var parts = GetParts(clothes);
 
-        bool HasRole(LayerRole role) => clothes.Any(c => ResolveLayerRole(c) == role);
+        double upperBudget = parts.Shoes != null ? ch * 0.68 : ch * 0.80;
+        double shoesBudget = parts.Shoes != null ? ch * 0.16 : 0;
+        double y = ch * 0.03;
 
-        bool hasOuter = HasRole(LayerRole.OuterLayer);
-        bool hasFootwear = HasRole(LayerRole.Footwear);
-        bool hasAcc = HasRole(LayerRole.Accessory);
-
-        double mainBudget = hasFootwear ? ch * 0.60 : ch * 0.75;
-        double shoesBudget = hasFootwear ? ch * 0.18 : 0;
-        double outerBudget = hasOuter ? ch * 0.22 : 0;
-
-        double y = outerBudget;
-
-        var dress = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.FullBody);
-        if (dress != null)
+        if (parts.Dress != null)
         {
             double w = cw * _metrics.DressWidthRatio;
             double x = CenterX(cw, w);
-            double h = Math.Min(mainBudget, w / _metrics.DressHeightRatio);
-            items.Add(new() { Clothing = dress, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
+            double h = Math.Min(upperBudget, w / _metrics.DressHeightRatio);
+            items.Add(new() { Clothing = parts.Dress, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
             y += h;
         }
 
-        if (hasFootwear)
+        if (parts.Outer != null)
         {
-            var shoes = clothes.First(c => ResolveLayerRole(c) == LayerRole.Footwear);
+            double w = cw * 0.66;
+            double x = CenterX(cw, w);
+            double h = Math.Min(ch * 0.26, w / _metrics.OuterwearHeightRatio);
+            items.Add(new() { Clothing = parts.Outer, X = x, Y = ch * 0.02, Width = w, Height = h, ZIndex = 3, Opacity = _metrics.OuterwearOpacity, IsInset = true });
+        }
+
+        if (parts.Shoes != null)
+        {
             double w = cw * _metrics.ShoesWidthRatio;
             double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
-            items.Add(new() { Clothing = shoes, X = x, Y = y, Width = w, Height = h, ZIndex = 3, Opacity = 1.0 });
+            items.Add(new() { Clothing = parts.Shoes, X = x, Y = y, Width = w, Height = h, ZIndex = 4, Opacity = 1.0 });
             y += h;
         }
 
-        if (hasAcc)
+        if (parts.Accessory != null)
         {
-            var acc = clothes.First(c => ResolveLayerRole(c) == LayerRole.Accessory);
             double w = cw * _metrics.AccessoryWidthRatio;
             double x = cw * _metrics.AccessoryRightOffsetRatio;
             double h = w;
-            items.Add(new() { Clothing = acc, X = x, Y = y - h * 0.5, Width = w, Height = h, ZIndex = 4, Opacity = 1.0 });
-        }
-
-        if (hasOuter)
-        {
-            var outer = clothes.First(c => ResolveLayerRole(c) == LayerRole.OuterLayer);
-            double w = cw * _metrics.OuterwearWidthRatio;
-            double x = CenterX(cw, w);
-            double h = outerBudget + 10;
-            items.Add(new() { Clothing = outer, X = x, Y = 0, Width = w, Height = h, ZIndex = 1, Opacity = 0.97 });
+            items.Add(new() { Clothing = parts.Accessory, X = x, Y = y - h * 0.5, Width = w, Height = h, ZIndex = 5, Opacity = 1.0, IsInset = true });
         }
 
         return items;
@@ -148,65 +165,59 @@ public class OutfitCompositionEngine
     private List<OutfitLayoutItem> TopBottomMode(IList<global::ClosetApp.Domain.Entities.Clothing> clothes, double cw, double ch)
     {
         var items = new List<OutfitLayoutItem>();
+        var parts = GetParts(clothes);
 
-        bool HasRole(LayerRole role) => clothes.Any(c => ResolveLayerRole(c) == role);
+        double upperBudget = parts.Shoes != null ? ch * 0.40 : ch * 0.46;
+        double lowerBudget = parts.Shoes != null ? ch * 0.32 : ch * 0.40;
+        double shoesBudget = parts.Shoes != null ? ch * 0.16 : 0;
+        double y = ch * 0.03;
 
-        bool hasOuter = HasRole(LayerRole.OuterLayer);
-        bool hasFootwear = HasRole(LayerRole.Footwear);
-        bool hasAcc = HasRole(LayerRole.Accessory);
-
-        double outerBudget = hasOuter ? ch * 0.22 : 0;
-        double mainBudget = hasFootwear ? ch * 0.56 : ch * 0.70;
-        double shoesBudget = hasFootwear ? ch * 0.18 : 0;
-
-        double y = outerBudget;
-
-        var top = clothes.FirstOrDefault(c => ResolveLayerRole(c) is LayerRole.BaseTop or LayerRole.MidLayer);
-        if (top != null)
+        if (parts.PrimaryUpper != null)
         {
-            double w = cw * _metrics.TopWidthRatio;
+            var upper = parts.PrimaryUpper;
+            bool isOuterLed = upper == parts.Outer;
+            double w = cw * (isOuterLed ? _metrics.OuterwearWidthRatio : _metrics.TopWidthRatio);
             double x = CenterX(cw, w);
-            double h = Math.Min(mainBudget * 0.45, w / _metrics.TopHeightRatio);
-            items.Add(new() { Clothing = top, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
+            double aspect = isOuterLed ? _metrics.OuterwearHeightRatio : _metrics.TopHeightRatio;
+            double h = Math.Min(upperBudget, w / aspect);
+            items.Add(new() { Clothing = upper, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = isOuterLed ? _metrics.OuterwearOpacity : 1.0 });
+
+            if (parts.InnerUpper != null)
+            {
+                double insetW = cw * 0.42;
+                double insetH = Math.Min(h * 0.62, insetW / _metrics.TopHeightRatio);
+                double insetX = CenterX(cw, insetW);
+                double insetY = y + h * 0.30;
+                items.Add(new() { Clothing = parts.InnerUpper, X = insetX, Y = insetY, Width = insetW, Height = insetH, ZIndex = 3, Opacity = 1.0, IsInset = true });
+            }
+
             y += h;
         }
 
-        var bottom = clothes.FirstOrDefault(c => ResolveLayerRole(c) == LayerRole.Bottom);
-        if (bottom != null)
+        if (parts.Bottom != null)
         {
             double w = cw * _metrics.BottomWidthRatio;
             double x = CenterX(cw, w);
-            double h = Math.Min(mainBudget * 0.55, w / _metrics.BottomHeightRatio);
-            items.Add(new() { Clothing = bottom, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
+            double h = Math.Min(lowerBudget, w / _metrics.BottomHeightRatio);
+            items.Add(new() { Clothing = parts.Bottom, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
             y += h;
         }
 
-        if (hasFootwear)
+        if (parts.Shoes != null)
         {
-            var shoes = clothes.First(c => ResolveLayerRole(c) == LayerRole.Footwear);
             double w = cw * _metrics.ShoesWidthRatio;
             double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
-            items.Add(new() { Clothing = shoes, X = x, Y = y, Width = w, Height = h, ZIndex = 3, Opacity = 1.0 });
+            items.Add(new() { Clothing = parts.Shoes, X = x, Y = y, Width = w, Height = h, ZIndex = 4, Opacity = 1.0 });
             y += h;
         }
 
-        if (hasAcc)
+        if (parts.Accessory != null)
         {
-            var acc = clothes.First(c => ResolveLayerRole(c) == LayerRole.Accessory);
             double w = cw * _metrics.AccessoryWidthRatio;
             double x = cw * _metrics.AccessoryRightOffsetRatio;
             double h = w;
-            items.Add(new() { Clothing = acc, X = x, Y = y - h * 0.5, Width = w, Height = h, ZIndex = 4, Opacity = 1.0 });
-        }
-
-        if (hasOuter)
-        {
-            var outer = clothes.First(c => ResolveLayerRole(c) == LayerRole.OuterLayer);
-            double w = cw * _metrics.OuterwearWidthRatio;
-            double x = CenterX(cw, w);
-            double h = outerBudget + 10;
-            items.Add(new() { Clothing = outer, X = x, Y = 0, Width = w, Height = h, ZIndex = 1, Opacity = 0.97 });
+            items.Add(new() { Clothing = parts.Accessory, X = x, Y = y - h * 0.5, Width = w, Height = h, ZIndex = 5, Opacity = 1.0, IsInset = true });
         }
 
         return items;
@@ -215,58 +226,61 @@ public class OutfitCompositionEngine
     private List<OutfitLayoutItem> MixedMode(IList<global::ClosetApp.Domain.Entities.Clothing> clothes, double cw, double ch)
     {
         var items = new List<OutfitLayoutItem>();
+        var parts = GetParts(clothes);
 
-        bool HasRole(LayerRole role) => clothes.Any(c => ResolveLayerRole(c) == role);
-        bool HasFootwear = HasRole(LayerRole.Footwear);
-        bool HasAcc = HasRole(LayerRole.Accessory);
+        double y = ch * 0.04;
+        double shoesBudget = parts.Shoes != null ? ch * 0.18 : 0;
+        double lowerBudget = parts.Bottom != null ? ch * 0.34 : 0;
+        double upperBudget = parts.Bottom != null ? ch * 0.38 : ch * 0.58;
 
-        var main = clothes
-            .OrderByDescending(c => ResolveLayerRole(c) switch
-            {
-                LayerRole.FullBody => 6,
-                LayerRole.OuterLayer => 5,
-                LayerRole.BaseTop or LayerRole.MidLayer => 4,
-                LayerRole.Bottom => 3,
-                LayerRole.Footwear => 2,
-                LayerRole.Accessory => 1,
-                _ => 0
-            }).First();
-
-        double mainBudget = ch * 0.55;
-        double shoesBudget = HasFootwear ? ch * 0.20 : 0;
-        double accBudget = ch * 0.18;
-
-        double mainW = cw * 0.74;
-        double mainX = CenterX(cw, mainW);
-        double mainY = 0.02 * ch;
-        var mainRole = ResolveLayerRole(main);
-        double aspect = mainRole == LayerRole.FullBody ? _metrics.DressHeightRatio :
-            mainRole == LayerRole.Bottom ? _metrics.BottomHeightRatio : _metrics.TopHeightRatio;
-        double mainH = Math.Min(mainBudget, mainW / aspect);
-        int mainZ = mainRole == LayerRole.OuterLayer ? 1 : 2;
-
-        items.Add(new() { Clothing = main, X = mainX, Y = mainY, Width = mainW, Height = mainH, ZIndex = mainZ, Opacity = 1.0 });
-
-        double currentY = mainY + mainH + 6;
-        int accZ = 3;
-
-        if (HasFootwear)
+        if (parts.PrimaryUpper != null)
         {
-            var shoes = clothes.First(c => ResolveLayerRole(c) == LayerRole.Footwear);
+            var upper = parts.PrimaryUpper;
+            bool isOuterLed = upper == parts.Outer;
+            bool isDress = upper == parts.Dress;
+            double w = cw * (isDress ? _metrics.DressWidthRatio : isOuterLed ? _metrics.OuterwearWidthRatio : _metrics.TopWidthRatio);
+            double x = CenterX(cw, w);
+            double aspect = isDress ? _metrics.DressHeightRatio : isOuterLed ? _metrics.OuterwearHeightRatio : _metrics.TopHeightRatio;
+            double h = Math.Min(upperBudget, w / aspect);
+            items.Add(new() { Clothing = upper, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = isOuterLed ? _metrics.OuterwearOpacity : 1.0 });
+
+            if (parts.InnerUpper != null)
+            {
+                double insetW = cw * 0.42;
+                double insetH = Math.Min(h * 0.62, insetW / _metrics.TopHeightRatio);
+                double insetX = CenterX(cw, insetW);
+                double insetY = y + h * 0.30;
+                items.Add(new() { Clothing = parts.InnerUpper, X = insetX, Y = insetY, Width = insetW, Height = insetH, ZIndex = 3, Opacity = 1.0, IsInset = true });
+            }
+
+            y += h + 6;
+        }
+
+        if (parts.Bottom != null)
+        {
+            double w = cw * _metrics.BottomWidthRatio;
+            double x = CenterX(cw, w);
+            double h = Math.Min(lowerBudget, w / _metrics.BottomHeightRatio);
+            items.Add(new() { Clothing = parts.Bottom, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
+            y += h + 4;
+        }
+
+        if (parts.Shoes != null)
+        {
             double w = cw * 0.42;
             double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
-            items.Add(new() { Clothing = shoes, X = x, Y = currentY, Width = w, Height = h, ZIndex = accZ++, Opacity = 1.0 });
-            currentY += h + 4;
+            items.Add(new() { Clothing = parts.Shoes, X = x, Y = y, Width = w, Height = h, ZIndex = 4, Opacity = 1.0 });
+            y += h + 4;
         }
 
-        if (HasAcc)
+        if (parts.Accessory != null)
         {
-            var acc = clothes.First(c => ResolveLayerRole(c) == LayerRole.Accessory);
             double w = cw * 0.28;
             double x = cw * 0.62;
-            double h = Math.Min(accBudget, w);
-            items.Add(new() { Clothing = acc, X = x, Y = currentY - h, Width = w, Height = h, ZIndex = accZ++, Opacity = 1.0 });
+            double h = Math.Min(ch * 0.18, w);
+            double accessoryY = Math.Max(ch * 0.06, y - h - 8);
+            items.Add(new() { Clothing = parts.Accessory, X = x, Y = accessoryY, Width = w, Height = h, ZIndex = 5, Opacity = 1.0, IsInset = true });
         }
 
         return items;

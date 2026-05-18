@@ -59,8 +59,8 @@ public static class ClothingTaxonomy
 
     public static string LabelForCategory(DisplayCategory category) => category switch
     {
-        DisplayCategory.Topwear => "上装",
-        DisplayCategory.Bottom => "下装",
+        DisplayCategory.Topwear => "上衣",
+        DisplayCategory.Bottom => "裤装",
         DisplayCategory.Dress => "连衣裙",
         DisplayCategory.Footwear => "鞋子",
         DisplayCategory.Accessory => "配饰",

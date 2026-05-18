@@ -12,8 +12,9 @@ public class ClothingTypeToNameConverter : IValueConverter
         {
             return type switch
             {
+                ClothingType.Unspecified => "待分类",
                 ClothingType.Top => "上衣",
-                ClothingType.Bottom => "下装",
+                ClothingType.Bottom => "裤装",
                 ClothingType.Dress => "连衣裙",
                 ClothingType.Skirt => "半身裙",
                 ClothingType.Outerwear => "外套",

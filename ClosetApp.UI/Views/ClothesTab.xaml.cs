@@ -87,6 +87,15 @@ public partial class ClothesTab : UserControl
         });
     }
 
+    private void BatchImport_Click(object sender, RoutedEventArgs e)
+    {
+        EditorModal.Show(new BatchClothingImportPanel(), async result =>
+        {
+            if (result.Type == EditorResultType.Saved && result.Entity != null)
+                await _viewModel.AddClothesAsync(result.Entity);
+        });
+    }
+
     private void ClothingCard_Edit(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;

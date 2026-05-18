@@ -12,6 +12,7 @@ public class SeasonToNameConverter : IValueConverter
         {
             return season switch
             {
+                Season.Unspecified => "待设置",
                 Season.Spring => "春",
                 Season.Summer => "夏",
                 Season.Autumn => "秋",

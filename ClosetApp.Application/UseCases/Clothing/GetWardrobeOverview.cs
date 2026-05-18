@@ -17,7 +17,10 @@ public sealed class GetWardrobeOverview
     {
         var clothes = (await _clothingService.GetAllClothesAsync()).ToList();
         var byCategory = clothes
-            .GroupBy(ResolveDisplayCategory)
+            .Select(ClothingMappings.TryGetDisplayCategory)
+            .Where(category => category.HasValue)
+            .Select(category => category!.Value)
+            .GroupBy(category => category)
             .ToDictionary(group => group.Key, group => group.Count());
 
         return new WardrobeOverviewResult(
@@ -26,12 +29,6 @@ public sealed class GetWardrobeOverview
             byCategory);
     }
 
-    private static DisplayCategory ResolveDisplayCategory(global::ClosetApp.Domain.Entities.Clothing clothing)
-    {
-        if (clothing.GarmentType.HasValue)
-            return ClothingMappings.GetDisplayCategory(clothing.GarmentType.Value);
-        return ClothingMappings.GetDisplayCategory(ClothingMappings.InferGarmentType(clothing.Type));
-    }
 }
 
 public sealed record WardrobeOverviewResult(

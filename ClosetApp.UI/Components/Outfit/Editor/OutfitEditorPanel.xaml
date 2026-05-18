@@ -46,7 +46,7 @@
                 </Border.Style>
                 <Grid>
                     <Border CornerRadius="10" ClipToBounds="True" Margin="2">
-                        <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}, ConverterParameter=120}"
+                        <Image Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}, ConverterParameter=Thumbnail:160}"
                                Stretch="Uniform"/>
                     </Border>
                     <Border Width="20" Height="20" CornerRadius="10"
@@ -152,7 +152,7 @@
                                 <TextBlock Text="选择衣服" FontSize="15" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,14"/>
                                 <Border x:Name="DressSection" Margin="0,0,0,10">
-                                    <Expander Header="连衣裙 (选了则上下装不可选)" IsExpanded="True">
+                                    <Expander Header="连衣裙 (与上衣、裤装、半裙互斥，可搭外套)" IsExpanded="True">
                                         <ItemsControl x:Name="DressList" Margin="0,8,0,0"
                                                       ItemTemplate="{StaticResource ClothSelectTemplate}">
                                             <ItemsControl.ItemsPanel>
@@ -162,7 +162,7 @@
                                     </Expander>
                                 </Border>
                                 <Border x:Name="TopSection" Margin="0,0,0,10">
-                                    <Expander Header="上装" IsExpanded="True">
+                                    <Expander Header="上衣" IsExpanded="True">
                                         <ItemsControl x:Name="TopsList" Margin="0,8,0,0"
                                                       ItemTemplate="{StaticResource ClothSelectTemplate}">
                                             <ItemsControl.ItemsPanel>
@@ -171,9 +171,29 @@
                                         </ItemsControl>
                                     </Expander>
                                 </Border>
+                                <Border x:Name="OuterwearSection" Margin="0,0,0,10">
+                                    <Expander Header="外套" IsExpanded="True">
+                                        <ItemsControl x:Name="OuterwearList" Margin="0,8,0,0"
+                                                      ItemTemplate="{StaticResource ClothSelectTemplate}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </Expander>
+                                </Border>
                                 <Border x:Name="BottomSection" Margin="0,0,0,10">
-                                    <Expander Header="下装" IsExpanded="True">
+                                    <Expander Header="裤装" IsExpanded="True">
                                         <ItemsControl x:Name="BottomsList" Margin="0,8,0,0"
+                                                      ItemTemplate="{StaticResource ClothSelectTemplate}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                        </ItemsControl>
+                                    </Expander>
+                                </Border>
+                                <Border x:Name="SkirtSection" Margin="0,0,0,10">
+                                    <Expander Header="半裙" IsExpanded="True">
+                                        <ItemsControl x:Name="SkirtsList" Margin="0,8,0,0"
                                                       ItemTemplate="{StaticResource ClothSelectTemplate}">
                                             <ItemsControl.ItemsPanel>
                                                 <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
@@ -192,7 +212,7 @@
                                     </Expander>
                                 </Border>
                                 <Border x:Name="AccessorySection">
-                                    <Expander Header="装饰" IsExpanded="True">
+                                    <Expander Header="配饰" IsExpanded="True">
                                         <ItemsControl x:Name="AccessoryList" Margin="0,8,0,0"
                                                       ItemTemplate="{StaticResource ClothSelectTemplate}">
                                             <ItemsControl.ItemsPanel>

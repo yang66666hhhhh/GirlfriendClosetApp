@@ -7,7 +7,7 @@ WPF 桌面端穿搭管理应用。Clean Architecture 分层，SQLite 持久化�
 - **UI**: WPF (.NET 10), HandyControl, CommunityToolkit.Mvvm
 - **Architecture**: Clean Architecture (Domain / Application / Infrastructure / UI)
 - **Database**: SQLite via EF Core
-- **Images**: SixLabors.ImageSharp (缩略图), 图片存储于 `%LocalAppData%\ClosetApp\images\`
+- **Images**: SixLabors.ImageSharp，图片资产分为 Original / Display / Thumbnail，存储于 `%LocalAppData%\ClosetApp\images\`
 
 ## Build & Run
 
@@ -296,14 +296,19 @@ HandyControl (SkinDefault + Theme)
 ### Outfit Creation Rules
 
 创建搭配时的衣服选择互斥规则：
-- 连衣裙 (Dress) — 选了 → 上装+下装禁用
-- 上装 (Top/Outerwear) — 选了 → 连衣裙禁用
-- 下装 (Bottom/Skirt) — 选了 → 连衣裙禁用
+- 连衣裙 (Dress) — 选了 → 上衣 + 裤装 / 半裙禁用，可搭外套
+- 上衣 (Top) — 选了 → 连衣裙禁用
+- 外套 (Outerwear) — 不占上衣位，可与上衣或连衣裙同时选择
+- 下身 (Bottom/Skirt) — 裤装与半裙二选一，选了 → 连衣裙禁用
 - 鞋子 (Shoes) — 独立
-- 装饰 (Accessory) — 独立
-- 每层最多选 1 件
+- 配饰 (Accessory) — 可多选
+- 待分类 (Unspecified) — 不参与搭配选择
 
-预览画布按穿着顺序从上到下拼接。
+预览画布按“人体区域 + 穿搭层级”表达，不按分类简单堆叠：
+- 上半身区域：外套为外层主图，上衣/中层作为内层露出
+- 下半身区域：裤装或半裙
+- 脚部区域：鞋子
+- 配饰区域：侧边或角标小卡
 
 ## Known Issues / Notes
 

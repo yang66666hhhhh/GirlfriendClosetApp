@@ -1,7 +1,7 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-05-18
-> 当前状态：主流程可用，近期重点已转向设置中心、备份恢复与本地数据治理体验
+> 最后更新时间：2026-05-19
+> 当前状态：主流程可用，近期重点已转向衣柜批量导入、搭配结构化预览与本地数据治理体验
 
 ---
 
@@ -25,7 +25,7 @@ GirlfriendClosetApp 是一款运行在 Windows 上的私人数字衣橱应用，
 | UI 组件 | HandyControl | 基础控件与样式能力 |
 | 应用层 | CommunityToolkit.Mvvm | 保留 ViewModel 能力，当前页面逻辑以 View + State + Service/UseCase 为主 |
 | 数据访问 | EF Core + SQLite | 本地数据库持久化 |
-| 图片处理 | SixLabors.ImageSharp | 图片保存与缩略图相关处理 |
+| 图片处理 | SixLabors.ImageSharp | 原图保存、主视觉缓存与小预览缓存处理 |
 | 日志 | Serilog.Sinks.File | 本地滚动日志 |
 
 ---
@@ -118,8 +118,8 @@ GirlfriendClosetApp/
 
 ### 4.2 枚举
 
-- `ClothingType`: `Top`, `Bottom`, `Outerwear`, `Dress`, `Skirt`, `Shoes`, `Accessory`
-- `Season`: `Spring`, `Summer`, `Autumn`, `Winter`, `AllSeason`
+- `ClothingType`: `Unspecified`, `Top`, `Bottom`, `Outerwear`, `Dress`, `Skirt`, `Shoes`, `Accessory`
+- `Season`: `Unspecified`, `Spring`, `Summer`, `Autumn`, `Winter`, `AllSeason`
 - `OutfitScene`: `Work`, `Date`, `Travel`, `Party`, `Casual`
 - `TagCategory`: 用于标签选择与复用
 
@@ -166,8 +166,8 @@ GirlfriendClosetApp/
 当前是本轮重点页面，负责：
 
 - 数据目录展示
-- 日志与缩略图缓存清理
-- 缩略图缺失统计与一键重建
+- 日志与图片缓存清理
+- 主视觉 / 小预览缓存缺失统计与一键重建
 - 备份导出 / 导入
 - 导出前校验与图片覆盖展示
 - 导入结果摘要卡片
@@ -208,6 +208,27 @@ GirlfriendClosetApp/
 - `Components/Outfit/Controls/OutfitPreviewCanvas`
 - `Components/Outfit/Controls/OutfitCard`
 - `Components/Outfit/Editor/OutfitEditorPanel`
+
+### 6.3 搭配预览模型
+
+搭配预览采用“人体区域 + 穿搭层级”模型，而不是按衣物分类从上到下堆叠。
+
+当前视觉结构：
+
+- 上半身区域：外套为外层主图，上衣或中层衣物作为内层露出
+- 下半身区域：裤装或半裙共用下身位，二选一
+- 脚部区域：鞋子位于底部
+- 配饰区域：以角标或侧边小卡展示，不参与主轴高度
+
+选择规则与视觉规则分开：
+
+- 外套不占上衣位，可与上衣/中层同时选择
+- 连衣裙与上衣、裤装、半裙互斥，但可搭外套
+- 裤装与半裙共用下身位
+- 鞋子单选，配饰可多选
+- 待分类衣物不参与搭配选择
+
+这样做的目标是让搭配卡片表达“穿在人身上的关系”，而不是暴露后台分类结构。
 
 #### Shared / Tags
 
@@ -311,7 +332,7 @@ string BuildDefaultBackupPath();
 - 最近备份历史列表
 - 打开备份文件 / 打开所在目录
 - 清空备份历史
-- 缩略图健康状态展示与缺失缓存重建
+- 图片缓存健康状态展示与缺失缓存重建
 - 导入后根据缺失图片情况给出修复建议
 
 ### 8.5 备份历史
@@ -336,7 +357,9 @@ string BuildDefaultBackupPath();
 %LocalAppData%\ClosetApp\
 ├── closet.db
 ├── images/
-├── thumbnails/
+│   ├── originals/
+│   ├── display/
+│   └── thumbnails/
 ├── logs/
 └── backups/
 ```
@@ -349,6 +372,14 @@ string BuildDefaultBackupPath();
 - `ImageAssetResolver`：统一判断图片是否存在并给出解析结果
 - `ImagePathConverter`：UI 图片路径转换
 - `ClothingImageLoader`：UI 端图片加载辅助
+
+图片资产按用途分为三类：
+
+- `Original`：原始资产，编辑器、备份和图片修复使用，保存时不压缩覆盖
+- `Display`：衣柜瀑布流、搭配卡片、穿搭预览等主视觉使用，默认最大边约 900px
+- `Thumbnail`：小型选择卡、摘要列表等轻量入口使用，默认最大边约 200px
+
+旧版 `%LocalAppData%\ClosetApp\images\文件名` 和 `%LocalAppData%\ClosetApp\thumbnails\` 仍会作为兼容 fallback 解析。
 
 ### 9.3 图片修复
 
@@ -441,6 +472,8 @@ Task<int> RelinkMissingImagesAsync(string sourceDirectory);
 - `ImageMaintenanceServiceTests`
 - `ImageStorageServiceTests`
 - `OutfitCompositionEngineTests`
+- `OutfitSelectionRulesTests`
+- `BatchClothingImportBuilderTests`
 - `ClothesTabStateTests`
 - `TabStateTests`
 
@@ -493,6 +526,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - SixLabors.ImageSharp 版本告警仍需后续评估
 - 继续减少 code-behind 里的非 UI 逻辑
 - 导入导出能力已经可用，后续可补更细粒度的冲突策略或预览能力
+- 批量导入当前按“未设置就留空/待整理”的策略落库，后续可补失败回滚或导入预览
 
 ---
 
@@ -501,6 +535,10 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 ### 2026-05 中旬
 
 - 完成 `SettingsTab` 数据治理体验增强
+- 增加衣柜批量导入，默认名称为“未命名”，未设置字段保持空值或待整理状态
+- 衣柜分类补齐半裙，并将外套、半裙从上衣/裤装大类中拆出精确筛选
+- 搭配预览升级为“人体区域 + 穿搭层级”模型，外套和上衣在同一上半身区域表达层级关系
+- 图片资产升级为 `Original / Display / Thumbnail` 三层，衣柜主瀑布流改用 Display 主视觉缓存
 - 备份从纯 JSON 升级为 ZIP + JSON 双格式
 - 增加导出前校验、导入结果摘要、备份历史
 - 增加缺失图片检测与目录重连修复

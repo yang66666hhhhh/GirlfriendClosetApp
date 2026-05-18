@@ -116,7 +116,7 @@ public class ImageMaintenanceServiceTests
             Assert.Equal(1, result.RebuiltCount);
             Assert.Equal(1, result.SkippedCount);
             Assert.Equal(1, result.MissingSourceCount);
-            Assert.Contains("重建 1 个缩略图", result.Summary);
+            Assert.Contains("重建 1 组图片缓存", result.Summary);
             Assert.Equal(0, missingAfter);
             Assert.True(File.Exists(missingThumbnailPath));
         }

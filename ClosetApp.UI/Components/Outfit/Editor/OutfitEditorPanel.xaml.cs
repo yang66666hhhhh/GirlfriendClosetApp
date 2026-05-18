@@ -70,11 +70,29 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         Loaded += OnLoadedForEdit;
     }
 
-    private static LayerRole GetLayerRole(ClothingEntity c)
+    private static bool IsTop(ClothingEntity clothing)
     {
-        if (c.GarmentType.HasValue)
-            return ClothingMappings.GetLayerRole(c.GarmentType.Value);
-        return ClothingMappings.GetLayerRole(ClothingMappings.InferGarmentType(c.Type));
+        return OutfitSelectionRules.GetSlot(clothing) == OutfitSelectionSlot.Top;
+    }
+
+    private static bool IsOuterwear(ClothingEntity clothing)
+    {
+        return OutfitSelectionRules.GetSlot(clothing) == OutfitSelectionSlot.Outerwear;
+    }
+
+    private static bool IsPants(ClothingEntity clothing)
+    {
+        return OutfitSelectionRules.GetSlot(clothing) == OutfitSelectionSlot.LowerBody && !IsSkirt(clothing);
+    }
+
+    private static bool IsSkirt(ClothingEntity clothing)
+    {
+        return clothing.Type == ClothingType.Skirt || clothing.GarmentType == GarmentType.Skirt;
+    }
+
+    private static bool IsLowerBody(ClothingEntity clothing)
+    {
+        return OutfitSelectionRules.GetSlot(clothing) == OutfitSelectionSlot.LowerBody;
     }
 
     private async void OnLoadedForEdit(object s, RoutedEventArgs e)
@@ -103,11 +121,13 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         _allItems.Clear();
         _allItems.AddRange(clothes.Select(c => new SelectableClothing(c)));
 
-        DressList.ItemsSource = _allItems.Where(c => GetLayerRole(c.Clothing) == LayerRole.FullBody).ToList();
-        TopsList.ItemsSource = _allItems.Where(c => GetLayerRole(c.Clothing) is LayerRole.BaseTop or LayerRole.MidLayer or LayerRole.OuterLayer).ToList();
-        BottomsList.ItemsSource = _allItems.Where(c => GetLayerRole(c.Clothing) == LayerRole.Bottom).ToList();
-        ShoesList.ItemsSource = _allItems.Where(c => GetLayerRole(c.Clothing) == LayerRole.Footwear).ToList();
-        AccessoryList.ItemsSource = _allItems.Where(c => GetLayerRole(c.Clothing) == LayerRole.Accessory).ToList();
+        DressList.ItemsSource = _allItems.Where(c => OutfitSelectionRules.GetSlot(c.Clothing) == OutfitSelectionSlot.Dress).ToList();
+        TopsList.ItemsSource = _allItems.Where(c => IsTop(c.Clothing)).ToList();
+        OuterwearList.ItemsSource = _allItems.Where(c => IsOuterwear(c.Clothing)).ToList();
+        BottomsList.ItemsSource = _allItems.Where(c => IsPants(c.Clothing)).ToList();
+        SkirtsList.ItemsSource = _allItems.Where(c => IsSkirt(c.Clothing)).ToList();
+        ShoesList.ItemsSource = _allItems.Where(c => OutfitSelectionRules.GetSlot(c.Clothing) == OutfitSelectionSlot.Footwear).ToList();
+        AccessoryList.ItemsSource = _allItems.Where(c => OutfitSelectionRules.GetSlot(c.Clothing) == OutfitSelectionSlot.Accessory).ToList();
 
         if (_isEditMode && _existingOutfit != null)
         {
@@ -131,41 +151,22 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
             return;
         }
 
-        var role = GetLayerRole(item.Clothing);
+        var slot = OutfitSelectionRules.GetSlot(item.Clothing);
+        if (slot == OutfitSelectionSlot.Unknown)
+            return;
 
-        if (role == LayerRole.FullBody)
+        if (slot == OutfitSelectionSlot.Accessory)
         {
-            ClearGroup(c => GetLayerRole(c.Clothing) is LayerRole.BaseTop or LayerRole.MidLayer or LayerRole.OuterLayer or LayerRole.Bottom);
-            SelectSingle(item, c => GetLayerRole(c.Clothing) == LayerRole.FullBody);
+            item.IsSelected = true;
         }
-        else if (role is LayerRole.BaseTop or LayerRole.MidLayer or LayerRole.OuterLayer)
+        else
         {
-            ClearGroup(c => GetLayerRole(c.Clothing) == LayerRole.FullBody);
-            SelectSingle(item, c => GetLayerRole(c.Clothing) is LayerRole.BaseTop or LayerRole.MidLayer or LayerRole.OuterLayer);
-        }
-        else if (role == LayerRole.Bottom)
-        {
-            ClearGroup(c => GetLayerRole(c.Clothing) == LayerRole.FullBody);
-            SelectSingle(item, c => GetLayerRole(c.Clothing) == LayerRole.Bottom);
-        }
-        else if (role == LayerRole.Footwear)
-        {
-            SelectSingle(item, c => GetLayerRole(c.Clothing) == LayerRole.Footwear);
-        }
-        else if (role == LayerRole.Accessory)
-        {
-            SelectSingle(item, c => GetLayerRole(c.Clothing) == LayerRole.Accessory);
+            ClearGroup(candidate => OutfitSelectionRules.ShouldClearWhenSelecting(item.Clothing, candidate.Clothing));
+            item.IsSelected = true;
         }
 
         UpdateSectionStates();
         UpdatePreview();
-    }
-
-    private void SelectSingle(SelectableClothing target, Func<SelectableClothing, bool> group)
-    {
-        foreach (var i in _allItems.Where(group))
-            i.IsSelected = false;
-        target.IsSelected = true;
     }
 
     private void ClearGroup(Func<SelectableClothing, bool> group)
@@ -176,18 +177,22 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
 
     private void UpdateSectionStates()
     {
-        bool hasFullBody = _allItems.Any(i => i.IsSelected && GetLayerRole(i.Clothing) == LayerRole.FullBody);
-        bool hasTopGroup = _allItems.Any(i => i.IsSelected && GetLayerRole(i.Clothing) is LayerRole.BaseTop or LayerRole.MidLayer or LayerRole.OuterLayer);
-        bool hasBottom = _allItems.Any(i => i.IsSelected && GetLayerRole(i.Clothing) == LayerRole.Bottom);
+        var selected = _allItems.Where(i => i.IsSelected).Select(i => i.Clothing).ToList();
+        bool hasFullBody = OutfitSelectionRules.DisablesTopOrLowerBody(selected);
+        bool disablesDress = OutfitSelectionRules.DisablesDress(selected);
 
         TopSection.IsEnabled = !hasFullBody;
+        OuterwearSection.IsEnabled = true;
         BottomSection.IsEnabled = !hasFullBody;
-        DressSection.IsEnabled = !hasTopGroup && !hasBottom;
+        SkirtSection.IsEnabled = !hasFullBody;
+        DressSection.IsEnabled = !disablesDress;
 
         double disabledOpacity = 0.4;
         TopSection.Opacity = hasFullBody ? disabledOpacity : 1;
+        OuterwearSection.Opacity = 1;
         BottomSection.Opacity = hasFullBody ? disabledOpacity : 1;
-        DressSection.Opacity = (hasTopGroup || hasBottom) ? disabledOpacity : 1;
+        SkirtSection.Opacity = hasFullBody ? disabledOpacity : 1;
+        DressSection.Opacity = disablesDress ? disabledOpacity : 1;
     }
 
     private void UpdatePreview()
