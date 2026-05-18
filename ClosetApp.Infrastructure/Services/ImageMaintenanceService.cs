@@ -112,6 +112,48 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
         return repairedCount;
     }
 
+    public async Task<OrphanOriginalsResult> AnalyzeOrphanOriginalsAsync()
+    {
+        var referencedNames = await GetReferencedImageFileNamesAsync();
+        var orphanFiles = FindOrphanOriginalFiles(referencedNames);
+
+        return new OrphanOriginalsResult(
+            orphanFiles.Count,
+            orphanFiles.Sum(file => new FileInfo(file).Length));
+    }
+
+    public async Task<OrphanOriginalsCleanupResult> CleanupOrphanOriginalsAsync()
+    {
+        var referencedNames = await GetReferencedImageFileNamesAsync();
+        var orphanFiles = FindOrphanOriginalFiles(referencedNames);
+        var deletedOriginalCount = 0;
+        var deletedDerivedAssetCount = 0;
+        long freedBytes = 0;
+
+        foreach (var originalPath in orphanFiles)
+        {
+            if (!TryDeleteFile(originalPath, out var originalBytes))
+                continue;
+
+            deletedOriginalCount++;
+            freedBytes += originalBytes;
+
+            foreach (var derivedPath in GetDerivedAssetPaths(Path.GetFileName(originalPath)))
+            {
+                if (TryDeleteFile(derivedPath, out var derivedBytes))
+                {
+                    deletedDerivedAssetCount++;
+                    freedBytes += derivedBytes;
+                }
+            }
+        }
+
+        return new OrphanOriginalsCleanupResult(
+            deletedOriginalCount,
+            deletedDerivedAssetCount,
+            freedBytes);
+    }
+
     private async Task<List<string>> GetTrackedImagePathsAsync()
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
@@ -121,6 +163,15 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
             .Select(c => c.ImagePath!)
             .Distinct()
             .ToListAsync();
+    }
+
+    private async Task<HashSet<string>> GetReferencedImageFileNamesAsync()
+    {
+        var imagePaths = await GetTrackedImagePathsAsync();
+        return imagePaths
+            .Select(Path.GetFileName)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .ToHashSet(StringComparer.OrdinalIgnoreCase)!;
     }
 
     private bool NeedsThumbnailRebuild(string imagePath)
@@ -143,5 +194,33 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
 
         return Directory.EnumerateFiles(sourceDirectory, fileName, SearchOption.AllDirectories)
             .FirstOrDefault();
+    }
+
+    private List<string> FindOrphanOriginalFiles(HashSet<string> referencedNames)
+    {
+        return _imageStorageService.GetOriginalImageFullPaths()
+            .Where(path => !referencedNames.Contains(Path.GetFileName(path)))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private IEnumerable<string> GetDerivedAssetPaths(string fileName)
+    {
+        if (string.IsNullOrWhiteSpace(fileName))
+            yield break;
+
+        foreach (var path in _imageStorageService.GetImageAssetFullPaths(fileName))
+            yield return path;
+    }
+
+    private static bool TryDeleteFile(string path, out long deletedBytes)
+    {
+        deletedBytes = 0;
+        if (!File.Exists(path))
+            return false;
+
+        deletedBytes = new FileInfo(path).Length;
+        File.Delete(path);
+        return true;
     }
 }

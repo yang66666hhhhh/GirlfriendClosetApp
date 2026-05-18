@@ -183,6 +183,110 @@ public class ImageMaintenanceServiceTests
         }
     }
 
+    [Fact]
+    public async Task AnalyzeOrphanOriginalsAsync_CountsOnlyUnreferencedOriginals()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var sourceDir = Path.Combine(tempDir, "source");
+        var storageDir = Path.Combine(tempDir, "storage");
+        Directory.CreateDirectory(tempDir);
+        Directory.CreateDirectory(sourceDir);
+        Directory.CreateDirectory(storageDir);
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            var storageService = new ImageStorageService(storageDir);
+            var referencedSource = Path.Combine(sourceDir, "referenced.png");
+            var orphanSource = Path.Combine(sourceDir, "orphan.png");
+            await CreatePngAsync(referencedSource);
+            await CreatePngAsync(orphanSource);
+
+            var referencedFileName = await storageService.SaveImageAsync(referencedSource);
+            await storageService.SaveImageAsync(orphanSource);
+
+            await using (var context = new ClosetDbContext(options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+                context.Clothes.Add(CreateClothing("Referenced", referencedFileName));
+                await context.SaveChangesAsync();
+            }
+
+            var resolver = new ImageAssetResolver(storageService);
+            var service = new ImageMaintenanceService(new TestDbContextFactory(options), resolver, storageService);
+
+            var result = await service.AnalyzeOrphanOriginalsAsync();
+
+            Assert.Equal(1, result.OrphanCount);
+            Assert.True(result.TotalBytes > 0);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task CleanupOrphanOriginalsAsync_RemovesOriginalAndDerivedAssets()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var sourceDir = Path.Combine(tempDir, "source");
+        var storageDir = Path.Combine(tempDir, "storage");
+        Directory.CreateDirectory(tempDir);
+        Directory.CreateDirectory(sourceDir);
+        Directory.CreateDirectory(storageDir);
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            var storageService = new ImageStorageService(storageDir);
+            var referencedSource = Path.Combine(sourceDir, "referenced.png");
+            var orphanSource = Path.Combine(sourceDir, "orphan.png");
+            await CreatePngAsync(referencedSource);
+            await CreatePngAsync(orphanSource);
+
+            var referencedFileName = await storageService.SaveImageAsync(referencedSource);
+            var orphanFileName = await storageService.SaveImageAsync(orphanSource);
+            var orphanOriginalPath = storageService.GetImageFullPath(orphanFileName);
+            var orphanDisplayPath = storageService.GetDisplayFullPath(orphanFileName);
+            var orphanThumbnailPath = storageService.GetThumbnailFullPath(orphanFileName);
+
+            await using (var context = new ClosetDbContext(options))
+            {
+                await context.Database.EnsureDeletedAsync();
+                await context.Database.EnsureCreatedAsync();
+                context.Clothes.Add(CreateClothing("Referenced", referencedFileName));
+                await context.SaveChangesAsync();
+            }
+
+            var resolver = new ImageAssetResolver(storageService);
+            var service = new ImageMaintenanceService(new TestDbContextFactory(options), resolver, storageService);
+
+            var result = await service.CleanupOrphanOriginalsAsync();
+
+            Assert.Equal(1, result.DeletedOriginalCount);
+            Assert.Equal(2, result.DeletedDerivedAssetCount);
+            Assert.True(result.FreedBytes > 0);
+            Assert.False(File.Exists(orphanOriginalPath));
+            Assert.False(File.Exists(orphanDisplayPath));
+            Assert.False(File.Exists(orphanThumbnailPath));
+            Assert.True(File.Exists(storageService.GetImageFullPath(referencedFileName)));
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
     private static async Task CreatePngAsync(string path)
     {
         using var image = new SixLabors.ImageSharp.Image<SixLabors.ImageSharp.PixelFormats.Rgba32>(64, 64);

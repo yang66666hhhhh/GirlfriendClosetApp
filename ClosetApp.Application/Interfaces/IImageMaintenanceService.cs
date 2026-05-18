@@ -8,4 +8,6 @@ public interface IImageMaintenanceService
     Task<int> CountMissingThumbnailsAsync();
     Task<ThumbnailRebuildResult> RebuildMissingThumbnailsAsync(int maxSize = 200);
     Task<int> RelinkMissingImagesAsync(string sourceDirectory);
+    Task<OrphanOriginalsResult> AnalyzeOrphanOriginalsAsync();
+    Task<OrphanOriginalsCleanupResult> CleanupOrphanOriginalsAsync();
 }

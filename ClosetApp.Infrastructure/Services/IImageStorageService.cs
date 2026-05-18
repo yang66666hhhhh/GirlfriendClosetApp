@@ -12,4 +12,6 @@ public interface IImageStorageService
     string GetImageFullPath(string relativePath);
     string GetDisplayFullPath(string relativePath);
     string GetThumbnailFullPath(string relativePath);
+    IReadOnlyList<string> GetOriginalImageFullPaths();
+    IReadOnlyList<string> GetImageAssetFullPaths(string relativePath);
 }

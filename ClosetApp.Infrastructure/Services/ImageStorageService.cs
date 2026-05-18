@@ -244,6 +244,27 @@ public class ImageStorageService : IImageStorageService
         return File.Exists(legacyPath) ? legacyPath : thumbnailPath;
     }
 
+    public IReadOnlyList<string> GetOriginalImageFullPaths()
+    {
+        var files = new List<string>();
+        if (Directory.Exists(_originalFolder))
+            files.AddRange(Directory.EnumerateFiles(_originalFolder, "*", SearchOption.TopDirectoryOnly));
+
+        if (Directory.Exists(_legacyImageFolder))
+            files.AddRange(Directory.EnumerateFiles(_legacyImageFolder, "*", SearchOption.TopDirectoryOnly));
+
+        return files
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    public IReadOnlyList<string> GetImageAssetFullPaths(string relativePath)
+    {
+        return EnumerateVariantPaths(relativePath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
     private IEnumerable<string> EnumerateVariantPaths(string relativePath)
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);

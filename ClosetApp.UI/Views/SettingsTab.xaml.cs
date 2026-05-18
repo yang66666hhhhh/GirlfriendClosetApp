@@ -52,10 +52,12 @@ public partial class SettingsTab : UserControl
         var logSize = GetDirectorySize(AppPaths.LogsDir);
         var missingImageCount = await _imageMaintenanceService.CountMissingImagesAsync();
         var missingThumbnailCount = await _imageMaintenanceService.CountMissingThumbnailsAsync();
+        var orphanOriginals = await _imageMaintenanceService.AnalyzeOrphanOriginalsAsync();
 
         TxtImageStats.Text = $"{originalCount} 张原图 · {FormatSize(originalSize)}";
         TxtCacheStats.Text = $"{displayCount} 个主视觉缓存 · {thumbnailCount} 个小预览缓存 · {FormatSize(displaySize + thumbnailSize)}";
         TxtThumbnailHealthStats.Text = BuildThumbnailHealthText(missingThumbnailCount);
+        TxtOrphanOriginalStats.Text = BuildOrphanOriginalsText(orphanOriginals);
         TxtLogStats.Text = $"{logCount} 个日志文件 · {FormatSize(logSize)}";
         TxtMissingImageStats.Text = missingImageCount == 0
             ? "没有发现缺失图片"
@@ -169,6 +171,30 @@ public partial class SettingsTab : UserControl
             "图片缓存",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+    }
+
+    private async void CleanupOrphanOriginals_Click(object sender, RoutedEventArgs e)
+    {
+        var analysis = await _imageMaintenanceService.AnalyzeOrphanOriginalsAsync();
+        if (!analysis.HasOrphans)
+        {
+            MessageBox.Show("没有发现可清理的孤儿原图。", "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var confirm = MessageBox.Show(
+            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FormatSize(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物引用的图片。确定继续吗？",
+            "清理孤儿原图",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Warning);
+
+        if (confirm != MessageBoxResult.OK)
+            return;
+
+        var result = await _imageMaintenanceService.CleanupOrphanOriginalsAsync();
+        await RefreshStatsAsync();
+
+        MessageBox.Show(result.Summary, "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void ClearLogs_Click(object sender, RoutedEventArgs e)
@@ -417,6 +443,13 @@ public partial class SettingsTab : UserControl
         return missingThumbnailCount == 0
             ? "所有已存在的原图都已经生成主视觉和小预览缓存。"
             : $"{missingThumbnailCount} 张图片缺少主视觉或小预览缓存，可一键重建。";
+    }
+
+    private static string BuildOrphanOriginalsText(OrphanOriginalsResult result)
+    {
+        return result.HasOrphans
+            ? $"{result.OrphanCount} 张原图未被数据库引用，占用 {FormatSize(result.TotalBytes)}。"
+            : "没有发现孤儿原图。";
     }
 
     private static void DeleteFilesInDirectory(string directory)

@@ -333,6 +333,7 @@ string BuildDefaultBackupPath();
 - 打开备份文件 / 打开所在目录
 - 清空备份历史
 - 图片缓存健康状态展示与缺失缓存重建
+- 孤儿原图扫描与确认清理
 - 导入后根据缺失图片情况给出修复建议
 
 ### 8.5 备份历史
@@ -380,6 +381,8 @@ string BuildDefaultBackupPath();
 - `Thumbnail`：小型选择卡、摘要列表等轻量入口使用，默认最大边约 200px
 
 旧版 `%LocalAppData%\ClosetApp\images\文件名` 和 `%LocalAppData%\ClosetApp\thumbnails\` 仍会作为兼容 fallback 解析。
+
+原图不会随普通缓存清理删除；只有在删除衣物、更换图片或用户确认“孤儿原图清理”时，才会删除数据库未引用的原图及其同名派生缓存。
 
 ### 9.3 图片修复
 
@@ -539,6 +542,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - 衣柜分类补齐半裙，并将外套、半裙从上衣/裤装大类中拆出精确筛选
 - 搭配预览升级为“人体区域 + 穿搭层级”模型，外套和上衣在同一上半身区域表达层级关系
 - 图片资产升级为 `Original / Display / Thumbnail` 三层，衣柜主瀑布流改用 Display 主视觉缓存
+- 设置页增加孤儿原图扫描与确认清理，避免原图资产无限增长
 - 备份从纯 JSON 升级为 ZIP + JSON 双格式
 - 增加导出前校验、导入结果摘要、备份历史
 - 增加缺失图片检测与目录重连修复
