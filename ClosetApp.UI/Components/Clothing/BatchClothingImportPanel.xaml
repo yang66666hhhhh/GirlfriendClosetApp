@@ -95,7 +95,7 @@
                                            Foreground="{StaticResource TextPrimaryBrush}"
                                            FontSize="16"
                                            FontWeight="SemiBold"/>
-                                <TextBlock Text="下面是导入预览；可逐件改名，不确定就留空或保留文件名。"
+                                <TextBlock Text="下面是导入预览；名称默认是未命名，文件名只用来帮你辨认图片。"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            TextWrapping="Wrap"
                                            Margin="0,6,0,14"/>

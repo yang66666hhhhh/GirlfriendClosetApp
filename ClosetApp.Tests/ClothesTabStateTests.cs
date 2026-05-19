@@ -146,6 +146,57 @@ public class ClothesTabStateTests
         Assert.Equal("Ready To Sort", result.Name);
     }
 
+    [Fact]
+    public void ApplyFilter_WithQueueUnnamed_ReturnsDefaultNamedItems()
+    {
+        var state = new ClothesTabState();
+        state.SetClothes(
+        [
+            CreateClothing("未命名", ClothingType.Top, GarmentType.Sweater),
+            CreateClothing("Soft Knit", ClothingType.Top, GarmentType.Sweater)
+        ]);
+
+        state.SetQueueFilter(WardrobeQueueFilter.Unnamed);
+
+        var result = Assert.Single(state.FilteredClothes);
+        Assert.Equal("未命名", result.Name);
+        Assert.Equal("未命名", state.FilterSummary);
+    }
+
+    [Fact]
+    public void ApplyFilter_WithQueueMissingBrandOrColor_ReturnsItemsMissingEitherField()
+    {
+        var complete = CreateClothing("Complete Look", ClothingType.Top, GarmentType.Shirt, color: "White");
+        complete.Brand = "Uniqlo";
+
+        var missingBrand = CreateClothing("Missing Brand", ClothingType.Top, GarmentType.Shirt, color: "Black");
+        var missingColor = CreateClothing("Missing Color", ClothingType.Top, GarmentType.Shirt);
+        missingColor.Brand = "COS";
+
+        var state = new ClothesTabState();
+        state.SetClothes([complete, missingBrand, missingColor]);
+        state.SetQueueFilter(WardrobeQueueFilter.MissingBrandOrColor);
+
+        Assert.Equal(2, state.FilteredClothes.Count);
+        Assert.Equal(2, state.GetQueueCount(WardrobeQueueFilter.MissingBrandOrColor));
+    }
+
+    [Fact]
+    public void ApplyFilter_WithQueueRecentlyImported_OnlyReturnsTrackedItems()
+    {
+        var imported = CreateClothing("Imported Coat", ClothingType.Outerwear, GarmentType.Coat);
+        var older = CreateClothing("Older Coat", ClothingType.Outerwear, GarmentType.Coat);
+
+        var state = new ClothesTabState();
+        state.SetClothes([imported, older]);
+        state.SetRecentlyImportedClothingIds([imported.Id]);
+        state.SetQueueFilter(WardrobeQueueFilter.RecentlyImported);
+
+        var result = Assert.Single(state.FilteredClothes);
+        Assert.Equal("Imported Coat", result.Name);
+        Assert.Equal(1, state.GetQueueCount(WardrobeQueueFilter.RecentlyImported));
+    }
+
     private static Clothing CreateClothing(
         string name,
         ClothingType type,

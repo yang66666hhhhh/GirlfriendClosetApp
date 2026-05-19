@@ -111,6 +111,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IOutfitRecommendationService, OutfitRecommendationService>();
         services.AddScoped<GetWardrobeOverview>();
+        services.AddScoped<CompleteClothingMetadataBatch>();
         services.AddScoped<ImportClothesFromImages>();
         services.AddScoped<GetOutfitHistorySummary>();
         services.AddScoped<RecordOutfitWorn>();

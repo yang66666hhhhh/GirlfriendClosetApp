@@ -235,8 +235,8 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
     private static string BuildDefaultName(string filePath)
     {
-        var name = Path.GetFileNameWithoutExtension(filePath);
-        return string.IsNullOrWhiteSpace(name) ? BatchClothingImportBuilder.DefaultName : name.Trim();
+        _ = filePath;
+        return BatchClothingImportBuilder.DefaultName;
     }
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)

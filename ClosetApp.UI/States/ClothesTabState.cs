@@ -3,12 +3,24 @@ using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.UI.States;
 
+public enum WardrobeQueueFilter
+{
+    Unnamed,
+    Uncategorized,
+    Unseasoned,
+    Untagged,
+    MissingBrandOrColor,
+    RecentlyImported
+}
+
 public sealed class ClothesTabState
 {
     private List<Clothing> _allClothes = new();
     private ClothingType? _selectedType;
     private Season? _selectedSeason;
     private HashSet<Guid> _selectedTagIds = [];
+    private HashSet<Guid> _recentlyImportedClothingIds = [];
+    private WardrobeQueueFilter? _activeQueueFilter;
     private bool? _favoriteOnly;
     private string _searchText = string.Empty;
 
@@ -20,12 +32,14 @@ public sealed class ClothesTabState
     public ClothingType? SelectedType => _selectedType;
     public Season? SelectedSeason => _selectedSeason;
     public IReadOnlyCollection<Guid> SelectedTagIds => _selectedTagIds;
+    public WardrobeQueueFilter? ActiveQueueFilter => _activeQueueFilter;
     public bool FavoriteOnly => _favoriteOnly == true;
     public bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_searchText) ||
         _selectedType.HasValue ||
         _selectedSeason.HasValue ||
         _selectedTagIds.Count > 0 ||
+        _activeQueueFilter.HasValue ||
         _favoriteOnly == true;
 
     public string FilterSummary
@@ -44,6 +58,8 @@ public sealed class ClothesTabState
                 parts.Add("季节");
             if (_selectedTagIds.Count > 0)
                 parts.Add("标签");
+            if (_activeQueueFilter.HasValue)
+                parts.Add(GetQueueFilterName(_activeQueueFilter.Value));
             if (_favoriteOnly == true)
                 parts.Add("收藏");
 
@@ -90,9 +106,38 @@ public sealed class ClothesTabState
         ApplyFilter();
     }
 
+    public void SetQueueFilter(WardrobeQueueFilter? queueFilter)
+    {
+        _activeQueueFilter = queueFilter;
+        ApplyFilter();
+    }
+
+    public void SetRecentlyImportedClothingIds(IEnumerable<Guid> clothingIds)
+    {
+        _recentlyImportedClothingIds = clothingIds.ToHashSet();
+        ApplyFilter();
+    }
+
+    public int GetQueueCount(WardrobeQueueFilter queueFilter)
+    {
+        return _allClothes.Count(clothing => MatchesQueueFilter(clothing, queueFilter));
+    }
+
+    public IReadOnlyList<Clothing> GetQueueItems(WardrobeQueueFilter queueFilter)
+    {
+        return _allClothes
+            .Where(clothing => MatchesQueueFilter(clothing, queueFilter))
+            .ToList();
+    }
+
     private void ApplyFilter()
     {
         IEnumerable<Clothing> filtered = _allClothes;
+
+        if (_activeQueueFilter.HasValue)
+        {
+            filtered = filtered.Where(c => MatchesQueueFilter(c, _activeQueueFilter.Value));
+        }
 
         if (_selectedType.HasValue)
         {
@@ -129,4 +174,32 @@ public sealed class ClothesTabState
         FilteredClothes = filtered.ToList();
     }
 
+    private bool MatchesQueueFilter(Clothing clothing, WardrobeQueueFilter queueFilter)
+    {
+        return queueFilter switch
+        {
+            WardrobeQueueFilter.Unnamed => string.IsNullOrWhiteSpace(clothing.Name) || clothing.Name == "未命名",
+            WardrobeQueueFilter.Uncategorized => clothing.Type == ClothingType.Unspecified,
+            WardrobeQueueFilter.Unseasoned => clothing.Season == Season.Unspecified,
+            WardrobeQueueFilter.Untagged => clothing.ClothingTags.Count == 0,
+            WardrobeQueueFilter.MissingBrandOrColor =>
+                string.IsNullOrWhiteSpace(clothing.Brand) || string.IsNullOrWhiteSpace(clothing.Color),
+            WardrobeQueueFilter.RecentlyImported => _recentlyImportedClothingIds.Contains(clothing.Id),
+            _ => false
+        };
+    }
+
+    private static string GetQueueFilterName(WardrobeQueueFilter queueFilter)
+    {
+        return queueFilter switch
+        {
+            WardrobeQueueFilter.Unnamed => "未命名",
+            WardrobeQueueFilter.Uncategorized => "未分类",
+            WardrobeQueueFilter.Unseasoned => "未设置季节",
+            WardrobeQueueFilter.Untagged => "无标签",
+            WardrobeQueueFilter.MissingBrandOrColor => "无品牌/无颜色",
+            WardrobeQueueFilter.RecentlyImported => "刚导入",
+            _ => "待整理"
+        };
+    }
 }

@@ -98,7 +98,7 @@ public partial class ClothesTab : UserControl
                 {
                     var importCount = result.Entity.Items.Count;
                     await _viewModel.ImportClothesAsync(result.Entity);
-                    ToastService.Instance.ShowSuccess($"已导入 {importCount} 件衣服");
+                    ToastService.Instance.ShowSuccess($"已导入 {importCount} 件衣服，已切到刚导入");
                 }
                 catch (Exception ex)
                 {
@@ -106,6 +106,30 @@ public partial class ClothesTab : UserControl
                 }
             }
         });
+    }
+
+    private void BatchCompleteQueue_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_viewModel.CanBatchCompleteCurrentQueue)
+            return;
+
+        EditorModal.Show(
+            new BatchClothingCompletionPanel(_viewModel.FilteredClothes.ToList(), _viewModel.ActiveQueueLabel),
+            async result =>
+            {
+                if (result.Type != EditorResultType.Saved || result.Entity == null)
+                    return;
+
+                try
+                {
+                    var summary = await _viewModel.CompleteCurrentQueueAsync(result.Entity);
+                    ToastService.Instance.ShowSuccess($"已补全 {summary.UpdatedCount} 件衣服");
+                }
+                catch (Exception ex)
+                {
+                    ToastService.Instance.ShowError($"批量补全失败：{ex.Message}");
+                }
+            });
     }
 
     private void ClothingCard_Edit(object sender, RoutedEventArgs e)

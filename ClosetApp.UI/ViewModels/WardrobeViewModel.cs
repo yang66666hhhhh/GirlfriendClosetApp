@@ -17,6 +17,7 @@ public partial class WardrobeViewModel : ObservableObject
     private readonly IClothingService _clothingService;
     private readonly ITagService _tagService;
     private readonly IImageStorageService _imageStorageService;
+    private readonly CompleteClothingMetadataBatch _completeClothingMetadataBatch;
     private readonly ImportClothesFromImages _importClothesFromImages;
     private readonly ClothesTabState _state = new();
     private IReadOnlyList<Tag> _availableTags = [];
@@ -36,6 +37,7 @@ public partial class WardrobeViewModel : ObservableObject
     public int TotalCount => _state.AllClothes.Count;
     public int FilteredCount => _state.FilteredCount;
     public ClothingType? SelectedType => _state.SelectedType;
+    public WardrobeQueueFilter? ActiveQueueFilter => _state.ActiveQueueFilter;
     public string FilterSummary => _state.FilterSummary;
     public string FilterResultText => $"{FilterSummary} · {FilteredCount} 件结果";
     public bool HasActiveFilters => _state.HasActiveFilters;
@@ -206,16 +208,110 @@ public partial class WardrobeViewModel : ObservableObject
                 SetSelectedSeason(Season.Winter);
         }
     }
+    public bool IsQueueAllSelected
+    {
+        get => ActiveQueueFilter == null;
+        set
+        {
+            if (value)
+                SetQueueFilter(null);
+        }
+    }
+    public bool IsQueueUnnamedSelected
+    {
+        get => ActiveQueueFilter == WardrobeQueueFilter.Unnamed;
+        set
+        {
+            if (value)
+                SetQueueFilter(WardrobeQueueFilter.Unnamed);
+        }
+    }
+    public bool IsQueueUncategorizedSelected
+    {
+        get => ActiveQueueFilter == WardrobeQueueFilter.Uncategorized;
+        set
+        {
+            if (value)
+                SetQueueFilter(WardrobeQueueFilter.Uncategorized);
+        }
+    }
+    public bool IsQueueUnseasonedSelected
+    {
+        get => ActiveQueueFilter == WardrobeQueueFilter.Unseasoned;
+        set
+        {
+            if (value)
+                SetQueueFilter(WardrobeQueueFilter.Unseasoned);
+        }
+    }
+    public bool IsQueueUntaggedSelected
+    {
+        get => ActiveQueueFilter == WardrobeQueueFilter.Untagged;
+        set
+        {
+            if (value)
+                SetQueueFilter(WardrobeQueueFilter.Untagged);
+        }
+    }
+    public bool IsQueueMissingBrandOrColorSelected
+    {
+        get => ActiveQueueFilter == WardrobeQueueFilter.MissingBrandOrColor;
+        set
+        {
+            if (value)
+                SetQueueFilter(WardrobeQueueFilter.MissingBrandOrColor);
+        }
+    }
+    public bool IsQueueRecentlyImportedSelected
+    {
+        get => ActiveQueueFilter == WardrobeQueueFilter.RecentlyImported;
+        set
+        {
+            if (value)
+                SetQueueFilter(WardrobeQueueFilter.RecentlyImported);
+        }
+    }
+    public string QueueAllText => "全部";
+    public string QueueUnnamedText => BuildQueueText("未命名", WardrobeQueueFilter.Unnamed);
+    public string QueueUncategorizedText => BuildQueueText("未分类", WardrobeQueueFilter.Uncategorized);
+    public string QueueUnseasonedText => BuildQueueText("未设置季节", WardrobeQueueFilter.Unseasoned);
+    public string QueueUntaggedText => BuildQueueText("无标签", WardrobeQueueFilter.Untagged);
+    public string QueueMissingBrandOrColorText => BuildQueueText("无品牌/无颜色", WardrobeQueueFilter.MissingBrandOrColor);
+    public string QueueRecentlyImportedText => BuildQueueText("刚导入", WardrobeQueueFilter.RecentlyImported);
+    public bool CanBatchCompleteCurrentQueue => ActiveQueueFilter.HasValue && FilteredCount > 0;
+    public string ActiveQueueLabel => ActiveQueueFilter switch
+    {
+        WardrobeQueueFilter.Unnamed => "未命名",
+        WardrobeQueueFilter.Uncategorized => "未分类",
+        WardrobeQueueFilter.Unseasoned => "未设置季节",
+        WardrobeQueueFilter.Untagged => "无标签",
+        WardrobeQueueFilter.MissingBrandOrColor => "无品牌/无颜色",
+        WardrobeQueueFilter.RecentlyImported => "刚导入",
+        _ => "当前结果"
+    };
+    public bool ShowRecentImportSummary => ActiveQueueFilter == WardrobeQueueFilter.RecentlyImported && RecentlyImportedCount > 0;
+    public int RecentlyImportedCount => _state.GetQueueCount(WardrobeQueueFilter.RecentlyImported);
+    public int RecentlyImportedUnnamedCount => CountRecentlyImported(clothing =>
+        string.IsNullOrWhiteSpace(clothing.Name) || clothing.Name == "未命名");
+    public int RecentlyImportedUncategorizedCount => CountRecentlyImported(clothing => clothing.Type == ClothingType.Unspecified);
+    public int RecentlyImportedUnseasonedCount => CountRecentlyImported(clothing => clothing.Season == Season.Unspecified);
+    public int RecentlyImportedUntaggedCount => CountRecentlyImported(clothing => clothing.ClothingTags.Count == 0);
+    public int RecentlyImportedMissingBrandOrColorCount => CountRecentlyImported(clothing =>
+        string.IsNullOrWhiteSpace(clothing.Brand) || string.IsNullOrWhiteSpace(clothing.Color));
+    public string RecentImportSummaryTitle => $"这批刚导入了 {RecentlyImportedCount} 件衣服";
+    public string RecentImportSummaryBody => "先从未命名、未分类和未设置季节开始补，会最快把这批衣服整理到可用状态。";
 
     public WardrobeViewModel(
         IClothingService clothingService,
         ITagService tagService,
         IImageStorageService imageStorageService,
+        CompleteClothingMetadataBatch completeClothingMetadataBatch,
         ImportClothesFromImages importClothesFromImages)
     {
         _clothingService = clothingService;
         _tagService = tagService;
         _imageStorageService = imageStorageService;
+        _completeClothingMetadataBatch = completeClothingMetadataBatch;
         _importClothesFromImages = importClothesFromImages;
     }
 
@@ -255,6 +351,12 @@ public partial class WardrobeViewModel : ObservableObject
         NotifyStateChanged();
     }
 
+    public void SetQueueFilter(WardrobeQueueFilter? queueFilter)
+    {
+        _state.SetQueueFilter(queueFilter);
+        NotifyStateChanged();
+    }
+
     public void ToggleTag(Guid tagId, bool isSelected)
     {
         var selected = _state.SelectedTagIds.ToHashSet();
@@ -270,6 +372,7 @@ public partial class WardrobeViewModel : ObservableObject
 
     public void ClearFilters()
     {
+        _state.SetQueueFilter(null);
         _state.SetSelectedType(null);
         _state.SetSelectedSeason(null);
         _state.SetSelectedTagIds([]);
@@ -295,8 +398,18 @@ public partial class WardrobeViewModel : ObservableObject
 
     public async Task ImportClothesAsync(BatchClothingImportRequest request)
     {
-        await _importClothesFromImages.ExecuteAsync(request);
+        var result = await _importClothesFromImages.ExecuteAsync(request);
+        ClearFilters();
+        _state.SetRecentlyImportedClothingIds(result.Clothes.Select(clothing => clothing.Id));
+        _state.SetQueueFilter(WardrobeQueueFilter.RecentlyImported);
         await LoadClothesAsync();
+    }
+
+    public async Task<BatchClothingCompletionResult> CompleteCurrentQueueAsync(BatchClothingCompletionRequest request)
+    {
+        var result = await _completeClothingMetadataBatch.ExecuteAsync(request);
+        await LoadClothesAsync();
+        return result;
     }
 
     public async Task UpdateClothingAsync(Clothing clothing, string? oldImagePath)
@@ -348,6 +461,7 @@ public partial class WardrobeViewModel : ObservableObject
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(FilteredCount));
         OnPropertyChanged(nameof(SelectedType));
+        OnPropertyChanged(nameof(ActiveQueueFilter));
         OnPropertyChanged(nameof(FilterSummary));
         OnPropertyChanged(nameof(FilterResultText));
         OnPropertyChanged(nameof(HasActiveFilters));
@@ -370,6 +484,31 @@ public partial class WardrobeViewModel : ObservableObject
         OnPropertyChanged(nameof(IsSeasonSummerSelected));
         OnPropertyChanged(nameof(IsSeasonAutumnSelected));
         OnPropertyChanged(nameof(IsSeasonWinterSelected));
+        OnPropertyChanged(nameof(IsQueueAllSelected));
+        OnPropertyChanged(nameof(IsQueueUnnamedSelected));
+        OnPropertyChanged(nameof(IsQueueUncategorizedSelected));
+        OnPropertyChanged(nameof(IsQueueUnseasonedSelected));
+        OnPropertyChanged(nameof(IsQueueUntaggedSelected));
+        OnPropertyChanged(nameof(IsQueueMissingBrandOrColorSelected));
+        OnPropertyChanged(nameof(IsQueueRecentlyImportedSelected));
+        OnPropertyChanged(nameof(QueueAllText));
+        OnPropertyChanged(nameof(QueueUnnamedText));
+        OnPropertyChanged(nameof(QueueUncategorizedText));
+        OnPropertyChanged(nameof(QueueUnseasonedText));
+        OnPropertyChanged(nameof(QueueUntaggedText));
+        OnPropertyChanged(nameof(QueueMissingBrandOrColorText));
+        OnPropertyChanged(nameof(QueueRecentlyImportedText));
+        OnPropertyChanged(nameof(CanBatchCompleteCurrentQueue));
+        OnPropertyChanged(nameof(ActiveQueueLabel));
+        OnPropertyChanged(nameof(ShowRecentImportSummary));
+        OnPropertyChanged(nameof(RecentlyImportedCount));
+        OnPropertyChanged(nameof(RecentlyImportedUnnamedCount));
+        OnPropertyChanged(nameof(RecentlyImportedUncategorizedCount));
+        OnPropertyChanged(nameof(RecentlyImportedUnseasonedCount));
+        OnPropertyChanged(nameof(RecentlyImportedUntaggedCount));
+        OnPropertyChanged(nameof(RecentlyImportedMissingBrandOrColorCount));
+        OnPropertyChanged(nameof(RecentImportSummaryTitle));
+        OnPropertyChanged(nameof(RecentImportSummaryBody));
     }
 
     private void BuildTagFilters(IEnumerable<Tag> tags)
@@ -421,5 +560,16 @@ public partial class WardrobeViewModel : ObservableObject
 
         foreach (var tag in _tagFilters.Where(tag => !tag.IsSelected))
             tag.UnselectedOpacity = opacity;
+    }
+
+    private string BuildQueueText(string label, WardrobeQueueFilter queueFilter)
+    {
+        var count = _state.GetQueueCount(queueFilter);
+        return count > 0 ? $"{label} {count}" : label;
+    }
+
+    private int CountRecentlyImported(Func<Clothing, bool> predicate)
+    {
+        return _state.GetQueueItems(WardrobeQueueFilter.RecentlyImported).Count(predicate);
     }
 }

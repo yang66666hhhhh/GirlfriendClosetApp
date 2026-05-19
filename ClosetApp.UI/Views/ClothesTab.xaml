@@ -362,6 +362,127 @@
                     </StackPanel>
                 </Grid>
 
+                <Border Margin="64,0,64,18"
+                        Padding="20,18"
+                        Background="{StaticResource SurfaceCardBrush}"
+                        CornerRadius="20"
+                        BorderBrush="{StaticResource BorderLightBrush}"
+                        BorderThickness="1"
+                        Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="待整理队列"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="导入后先把这些信息补齐，衣柜会好用很多。"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,5,0,12"/>
+                        <WrapPanel>
+                            <RadioButton Content="{Binding QueueAllText}"
+                                         Style="{StaticResource ChipStyle}"
+                                         GroupName="QueueGroup"
+                                         IsChecked="{Binding IsQueueAllSelected, Mode=TwoWay}"/>
+                            <RadioButton Content="{Binding QueueUnnamedText}"
+                                         Style="{StaticResource ChipStyle}"
+                                         Margin="8,0,0,8"
+                                         GroupName="QueueGroup"
+                                         IsChecked="{Binding IsQueueUnnamedSelected, Mode=TwoWay}"/>
+                            <RadioButton Content="{Binding QueueUncategorizedText}"
+                                         Style="{StaticResource ChipStyle}"
+                                         Margin="8,0,0,8"
+                                         GroupName="QueueGroup"
+                                         IsChecked="{Binding IsQueueUncategorizedSelected, Mode=TwoWay}"/>
+                            <RadioButton Content="{Binding QueueUnseasonedText}"
+                                         Style="{StaticResource ChipStyle}"
+                                         Margin="8,0,0,8"
+                                         GroupName="QueueGroup"
+                                         IsChecked="{Binding IsQueueUnseasonedSelected, Mode=TwoWay}"/>
+                            <RadioButton Content="{Binding QueueUntaggedText}"
+                                         Style="{StaticResource ChipStyle}"
+                                         Margin="8,0,0,8"
+                                         GroupName="QueueGroup"
+                                         IsChecked="{Binding IsQueueUntaggedSelected, Mode=TwoWay}"/>
+                            <RadioButton Content="{Binding QueueMissingBrandOrColorText}"
+                                         Style="{StaticResource ChipStyle}"
+                                         Margin="8,0,0,8"
+                                         GroupName="QueueGroup"
+                                         IsChecked="{Binding IsQueueMissingBrandOrColorSelected, Mode=TwoWay}"/>
+                            <RadioButton Content="{Binding QueueRecentlyImportedText}"
+                                         Style="{StaticResource ChipStyle}"
+                                         Margin="8,0,0,8"
+                                         GroupName="QueueGroup"
+                                         IsChecked="{Binding IsQueueRecentlyImportedSelected, Mode=TwoWay}"/>
+                        </WrapPanel>
+                        <Button Content="批量补全当前结果"
+                                Style="{StaticResource CapsuleButton}"
+                                HorizontalAlignment="Left"
+                                Margin="0,14,0,0"
+                                Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Click="BatchCompleteQueue_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="64,0,64,18"
+                        Padding="22,20"
+                        Background="{StaticResource SurfaceHeroBrush}"
+                        CornerRadius="22"
+                        Visibility="{Binding ShowRecentImportSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="{Binding RecentImportSummaryTitle}"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                        <TextBlock Text="{Binding RecentImportSummaryBody}"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,6,0,14"
+                                   TextWrapping="Wrap"/>
+                        <WrapPanel>
+                            <Border Background="{StaticResource SurfaceCardBrush}"
+                                    CornerRadius="16"
+                                    Padding="14,9"
+                                    Margin="0,0,10,10">
+                                <TextBlock Text="{Binding RecentlyImportedUnnamedCount, StringFormat=未命名 {0} 件}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                            <Border Background="{StaticResource SurfaceCardBrush}"
+                                    CornerRadius="16"
+                                    Padding="14,9"
+                                    Margin="0,0,10,10">
+                                <TextBlock Text="{Binding RecentlyImportedUncategorizedCount, StringFormat=未分类 {0} 件}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                            <Border Background="{StaticResource SurfaceCardBrush}"
+                                    CornerRadius="16"
+                                    Padding="14,9"
+                                    Margin="0,0,10,10">
+                                <TextBlock Text="{Binding RecentlyImportedUnseasonedCount, StringFormat=未设置季节 {0} 件}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                            <Border Background="{StaticResource SurfaceCardBrush}"
+                                    CornerRadius="16"
+                                    Padding="14,9"
+                                    Margin="0,0,10,10">
+                                <TextBlock Text="{Binding RecentlyImportedUntaggedCount, StringFormat=无标签 {0} 件}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                            <Border Background="{StaticResource SurfaceCardBrush}"
+                                    CornerRadius="16"
+                                    Padding="14,9"
+                                    Margin="0,0,0,10">
+                                <TextBlock Text="{Binding RecentlyImportedMissingBrandOrColorCount, StringFormat=无品牌/无颜色 {0} 件}"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
                 <!-- ═══ FILTER PANEL ═══ -->
                 <Border x:Name="FilterPanel"
                         Style="{StaticResource LookbookCard}"
