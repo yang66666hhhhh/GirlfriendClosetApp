@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Include="..\ClosetApp.UI\Services\WardrobeActionErrorPresenter.cs" Link="UiLogic\Services\WardrobeActionErrorPresenter.cs" />
     <Compile Include="..\ClosetApp.UI\States\ClothesTabState.cs" Link="UiLogic\States\ClothesTabState.cs" />
     <Compile Include="..\ClosetApp.UI\States\OutfitsTabState.cs" Link="UiLogic\States\OutfitsTabState.cs" />
     <Compile Include="..\ClosetApp.UI\States\TagsTabState.cs" Link="UiLogic\States\TagsTabState.cs" />

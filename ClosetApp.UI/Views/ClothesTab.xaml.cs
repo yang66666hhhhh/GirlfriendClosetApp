@@ -108,9 +108,8 @@ public partial class ClothesTab : UserControl
                 }
                 catch (Exception ex)
                 {
-                    ToastService.Instance.ShowError(
-                        "导入失败",
-                        $"这批图片还没有写进衣柜。{ex.Message}，可以先检查文件是否被占用，再重新导入。");
+                    var feedback = WardrobeActionErrorPresenter.ForImport(ex);
+                    ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
                 }
             }
         });
@@ -135,9 +134,8 @@ public partial class ClothesTab : UserControl
                 }
                 catch (Exception ex)
                 {
-                    ToastService.Instance.ShowError(
-                        "批量补全失败",
-                        $"这次没有改动现有衣服资料。{ex.Message}，可以先缩小当前结果范围，再重试。");
+                    var feedback = WardrobeActionErrorPresenter.ForBatchComplete(ex);
+                    ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
                 }
             });
     }
@@ -166,9 +164,8 @@ public partial class ClothesTab : UserControl
                 }
                 catch (Exception ex)
                 {
-                    ToastService.Instance.ShowError(
-                        "批量清空失败",
-                        $"衣柜内容还保留着。{ex.Message}，可以先关闭可能占用图片或数据库的程序，再重试。");
+                    var feedback = WardrobeActionErrorPresenter.ForBatchClear(ex);
+                    ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
                 }
             });
     }
@@ -201,6 +198,14 @@ public partial class ClothesTab : UserControl
         if (!confirmed)
             return;
 
-        await _viewModel.DeleteClothingAsync(clothing);
+        try
+        {
+            await _viewModel.DeleteClothingAsync(clothing);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForSingleDelete(ex, clothing.Name);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 }
