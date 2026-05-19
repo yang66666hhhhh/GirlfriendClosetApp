@@ -67,7 +67,17 @@ public partial class OutfitsTab : UserControl
         EditorModal.Show(new OutfitEditorPanel(), async result =>
         {
             if (result.Type == EditorResultType.Saved)
-                await LoadOutfitsAsync();
+            {
+                try
+                {
+                    await LoadOutfitsAsync();
+                    ToastService.Instance.ShowSuccess("已保存搭配", "新的搭配已经出现在列表里。");
+                }
+                catch (Exception ex)
+                {
+                    ToastService.Instance.ShowError("保存搭配后刷新失败", ex.Message);
+                }
+            }
         });
     }
 
@@ -76,6 +86,7 @@ public partial class OutfitsTab : UserControl
         try
         {
             await _viewModel.RefreshAsync();
+            ToastService.Instance.ShowSuccess($"已更新「{outfit.Name}」", "修改后的搭配已经同步到列表。");
         }
         catch (Exception ex)
         {
@@ -88,6 +99,7 @@ public partial class OutfitsTab : UserControl
         try
         {
             await _viewModel.DeleteOutfitAsync(outfit);
+            ToastService.Instance.ShowSuccess($"已删除「{outfit.Name}」", "这套搭配已经从列表移除。");
         }
         catch (Exception ex)
         {
@@ -101,6 +113,7 @@ public partial class OutfitsTab : UserControl
         try
         {
             await _viewModel.RecordWornDateAsync(outfit, DateTime.Now);
+            ToastService.Instance.ShowSuccess($"已记录穿过「{outfit.Name}」", "今天的穿着记录已经更新。");
         }
         catch (Exception ex)
         {

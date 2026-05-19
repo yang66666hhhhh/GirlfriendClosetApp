@@ -32,7 +32,17 @@ public partial class TagsTab : UserControl
         EditorModal.Show(new TagEditorPanel(), async result =>
         {
             if (result.Type == EditorResultType.Saved)
-                await _viewModel.AddTagAsync(result.Entity!);
+            {
+                try
+                {
+                    await _viewModel.AddTagAsync(result.Entity!);
+                    ToastService.Instance.ShowSuccess($"已添加标签「{result.Entity!.Name}」", "现在可以把它用在衣服筛选和整理里了。");
+                }
+                catch (Exception ex)
+                {
+                    ToastService.Instance.ShowError("添加标签失败", ex.Message);
+                }
+            }
         });
     }
 
@@ -47,7 +57,17 @@ public partial class TagsTab : UserControl
         EditorModal.Show(new TagEditorPanel(tag), async result =>
         {
             if (result.Type == EditorResultType.Saved)
-                await _viewModel.UpdateTagAsync(result.Entity!);
+            {
+                try
+                {
+                    await _viewModel.UpdateTagAsync(result.Entity!);
+                    ToastService.Instance.ShowSuccess($"已更新标签「{result.Entity!.Name}」", "标签修改已经同步到列表。");
+                }
+                catch (Exception ex)
+                {
+                    ToastService.Instance.ShowError("更新标签失败", ex.Message);
+                }
+            }
         });
     }
 
@@ -63,6 +83,7 @@ public partial class TagsTab : UserControl
                     return;
 
                 await _viewModel.DeleteTagAsync(tag);
+                ToastService.Instance.ShowSuccess($"已删除标签「{tag.Name}」", "衣服上的对应标签也已经移除。");
             }
             catch (Exception ex)
             {
