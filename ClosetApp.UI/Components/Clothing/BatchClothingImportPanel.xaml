@@ -5,6 +5,7 @@
              xmlns:tags="clr-namespace:ClosetApp.UI.Components.Tags.Controls">
     <UserControl.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter"/>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter"/>
     </UserControl.Resources>
 

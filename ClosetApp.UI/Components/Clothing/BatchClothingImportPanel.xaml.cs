@@ -41,10 +41,17 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
-        _existingClothes = (await _clothingService.GetAllClothesAsync()).ToList();
-        var styleTags = await _tagService.GetStyleTagsAsync();
-        TagSelection.LoadTags(styleTags);
-        RefreshSelectedFiles();
+        try
+        {
+            _existingClothes = (await _clothingService.GetAllClothesAsync()).ToList();
+            var styleTags = await _tagService.GetStyleTagsAsync();
+            TagSelection.LoadTags(styleTags);
+            RefreshSelectedFiles();
+        }
+        catch (Exception ex)
+        {
+            HandlePanelError("批量导入面板初始化失败", ex);
+        }
     }
 
     private void PickImages_Click(object sender, RoutedEventArgs e)
@@ -52,15 +59,22 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
         if (_isSubmitting)
             return;
 
-        var dialog = new OpenFileDialog
+        try
         {
-            Filter = "图片文件|*.jpg;*.jpeg;*.png;*.webp;*.gif;*.bmp",
-            Title = "选择要批量导入的衣服图片",
-            Multiselect = true
-        };
+            var dialog = new OpenFileDialog
+            {
+                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.webp;*.gif;*.bmp",
+                Title = "选择要批量导入的衣服图片",
+                Multiselect = true
+            };
 
-        if (dialog.ShowDialog() == true)
-            SetSelectedFiles(dialog.FileNames);
+            if (dialog.ShowDialog() == true)
+                SetSelectedFiles(dialog.FileNames);
+        }
+        catch (Exception ex)
+        {
+            HandlePanelError("选择图片失败", ex);
+        }
     }
 
     private void Files_DragEnter(object sender, DragEventArgs e)
@@ -81,28 +95,42 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
         if (_isSubmitting)
             return;
 
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
-            return;
+        try
+        {
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+                return;
 
-        var files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
-        if (files != null)
-            SetSelectedFiles(files);
+            var files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            if (files != null)
+                SetSelectedFiles(files);
+        }
+        catch (Exception ex)
+        {
+            HandlePanelError("拖入图片失败", ex);
+        }
 
         e.Handled = true;
     }
 
     private void SetSelectedFiles(IEnumerable<string> files)
     {
-        _previewItems.Clear();
-        _previewItems.AddRange(files
-            .Where(IsSupportedImage)
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
-            .Select(file => new BatchClothingImportPreviewItem(
-                file,
-                Path.GetFileName(file),
-                BuildDefaultName(file))));
-        RefreshSelectedFiles();
+        try
+        {
+            _previewItems.Clear();
+            _previewItems.AddRange(files
+                .Where(IsSupportedImage)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(Path.GetFileName, StringComparer.OrdinalIgnoreCase)
+                .Select(file => new BatchClothingImportPreviewItem(
+                    file,
+                    Path.GetFileName(file),
+                    BuildDefaultName(file))));
+            RefreshSelectedFiles();
+        }
+        catch (Exception ex)
+        {
+            HandlePanelError("整理图片列表失败", ex);
+        }
     }
 
     private static bool IsSupportedImage(string file)
@@ -113,47 +141,54 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
     private void RefreshSelectedFiles()
     {
-        _awaitingDuplicateConfirmation = false;
-        ConfirmDuplicateState.Visibility = Visibility.Collapsed;
-
-        foreach (var item in _previewItems)
+        try
         {
-            item.IsDuplicateRisk = false;
-            item.DuplicateReason = null;
-        }
+            _awaitingDuplicateConfirmation = false;
+            ConfirmDuplicateState.Visibility = Visibility.Collapsed;
 
-        var duplicateCheck = _previewItems.Count == 0
-            ? null
-            : BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
-
-        if (duplicateCheck?.HasAnyDuplicateRisk == true)
-        {
-            foreach (var item in _previewItems.Where(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath)))
+            foreach (var item in _previewItems)
             {
-                item.IsDuplicateRisk = true;
-                item.DuplicateReason = "可疑重复";
+                item.IsDuplicateRisk = false;
+                item.DuplicateReason = null;
             }
+
+            var duplicateCheck = _previewItems.Count == 0
+                ? null
+                : BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
+
+            if (duplicateCheck?.HasAnyDuplicateRisk == true)
+            {
+                foreach (var item in _previewItems.Where(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath)))
+                {
+                    item.IsDuplicateRisk = true;
+                    item.DuplicateReason = "可疑重复";
+                }
+            }
+
+            SelectedFilesList.ItemsSource = null;
+            SelectedFilesList.ItemsSource = _previewItems;
+            TxtSelectedCount.Text = $"已选择 {_previewItems.Count} 张图片";
+            TxtImportHint.Text = _previewItems.Count == 0
+                ? "先选择图片；其他信息不确定就留空。"
+                : $"将导入 {_previewItems.Count} 件衣服；可先在左侧逐件改名或移除。";
+
+            ImageEmptyState.Visibility = _previewItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
+            ImageListState.Visibility = _previewItems.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+            DuplicateWarningState.Visibility = duplicateCheck?.HasAnyDuplicateRisk == true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            TxtDuplicateWarning.Text = duplicateCheck?.HasAnyDuplicateRisk == true
+                ? $"{duplicateCheck.Summary}；建议先移除 {duplicateCheck.RiskItemCount} 项可疑重复。"
+                : string.Empty;
+            BtnRemoveDuplicateItems.Visibility = duplicateCheck?.HasAnyDuplicateRisk == true
+                ? Visibility.Visible
+                : Visibility.Collapsed;
         }
-
-        SelectedFilesList.ItemsSource = null;
-        SelectedFilesList.ItemsSource = _previewItems;
-        TxtSelectedCount.Text = $"已选择 {_previewItems.Count} 张图片";
-        TxtImportHint.Text = _previewItems.Count == 0
-            ? "先选择图片；其他信息不确定就留空。"
-            : $"将导入 {_previewItems.Count} 件衣服；可先在左侧逐件改名或移除。";
-
-        ImageEmptyState.Visibility = _previewItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-        ImageListState.Visibility = _previewItems.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
-
-        DuplicateWarningState.Visibility = duplicateCheck?.HasAnyDuplicateRisk == true
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-        TxtDuplicateWarning.Text = duplicateCheck?.HasAnyDuplicateRisk == true
-            ? $"{duplicateCheck.Summary}；建议先移除 {duplicateCheck.RiskItemCount} 项可疑重复。"
-            : string.Empty;
-        BtnRemoveDuplicateItems.Visibility = duplicateCheck?.HasAnyDuplicateRisk == true
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        catch (Exception ex)
+        {
+            HandlePanelError("刷新导入预览失败", ex);
+        }
     }
 
     private void Category_Checked(object sender, RoutedEventArgs e)
@@ -208,44 +243,52 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
     private void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (_isSubmitting)
-            return;
-
-        if (_previewItems.Count == 0)
+        try
         {
-            MessageBox.Show("先选择要导入的图片。", "批量导入", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
+            if (_isSubmitting)
+                return;
 
-        var duplicateCheck = BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
-        if (duplicateCheck.HasAnyDuplicateRisk && !_awaitingDuplicateConfirmation)
+            if (_previewItems.Count == 0)
+            {
+                MessageBox.Show("先选择要导入的图片。", "批量导入", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            var duplicateCheck = BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
+            if (duplicateCheck.HasAnyDuplicateRisk && !_awaitingDuplicateConfirmation)
+            {
+                _awaitingDuplicateConfirmation = true;
+                ConfirmDuplicateState.Visibility = Visibility.Visible;
+                ConfirmDuplicateDetail.Text = $"{duplicateCheck.Summary}。当前还有 {duplicateCheck.RiskItemCount} 项可疑重复。";
+                return;
+            }
+
+            ConfirmDuplicateState.Visibility = Visibility.Collapsed;
+            SetSubmitting(true);
+
+            var request = new BatchClothingImportRequest(
+                _previewItems
+                    .Select(item => new BatchClothingImportItem(item.FilePath, item.Name))
+                    .ToList(),
+                _selectedType,
+                _selectedSeason,
+                TxtColor.Text,
+                TxtBrand.Text,
+                TxtNotes.Text,
+                _favoriteLevel,
+                TagSelection.SelectedTags.Select(tag => tag.Id).ToList());
+
+            EditorCompleted?.Invoke(
+                this,
+                new EditorResult<BatchClothingImportRequest>(
+                    EditorResultType.Saved,
+                    request));
+        }
+        catch (Exception ex)
         {
-            _awaitingDuplicateConfirmation = true;
-            ConfirmDuplicateState.Visibility = Visibility.Visible;
-            ConfirmDuplicateDetail.Text = $"{duplicateCheck.Summary}。当前还有 {duplicateCheck.RiskItemCount} 项可疑重复。";
-            return;
+            SetSubmitting(false);
+            HandlePanelError("提交导入失败", ex);
         }
-
-        ConfirmDuplicateState.Visibility = Visibility.Collapsed;
-        SetSubmitting(true);
-
-        var request = new BatchClothingImportRequest(
-            _previewItems
-                .Select(item => new BatchClothingImportItem(item.FilePath, item.Name))
-                .ToList(),
-            _selectedType,
-            _selectedSeason,
-            TxtColor.Text,
-            TxtBrand.Text,
-            TxtNotes.Text,
-            _favoriteLevel,
-            TagSelection.SelectedTags.Select(tag => tag.Id).ToList());
-
-        EditorCompleted?.Invoke(
-            this,
-            new EditorResult<BatchClothingImportRequest>(
-                EditorResultType.Saved,
-                request));
     }
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
@@ -265,17 +308,32 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
         if (_isSubmitting)
             return;
 
-        if (sender is FrameworkElement { DataContext: BatchClothingImportPreviewItem item })
+        try
         {
-            _previewItems.Remove(item);
-            RefreshSelectedFiles();
+            if (sender is FrameworkElement { DataContext: BatchClothingImportPreviewItem item })
+            {
+                _previewItems.Remove(item);
+                RefreshSelectedFiles();
+            }
+        }
+        catch (Exception ex)
+        {
+            HandlePanelError("移除预览项失败", ex);
         }
     }
 
     private void ConfirmDuplicateContinue_Click(object sender, RoutedEventArgs e)
     {
-        _awaitingDuplicateConfirmation = true;
-        Save_Click(sender, e);
+        try
+        {
+            _awaitingDuplicateConfirmation = true;
+            Save_Click(sender, e);
+        }
+        catch (Exception ex)
+        {
+            SetSubmitting(false);
+            HandlePanelError("继续导入失败", ex);
+        }
     }
 
     private void ConfirmDuplicateBack_Click(object sender, RoutedEventArgs e)
@@ -289,12 +347,19 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
         if (_isSubmitting || _previewItems.Count == 0)
             return;
 
-        var duplicateCheck = BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
-        if (!duplicateCheck.HasAnyDuplicateRisk)
-            return;
+        try
+        {
+            var duplicateCheck = BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
+            if (!duplicateCheck.HasAnyDuplicateRisk)
+                return;
 
-        _previewItems.RemoveAll(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath));
-        RefreshSelectedFiles();
+            _previewItems.RemoveAll(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath));
+            RefreshSelectedFiles();
+        }
+        catch (Exception ex)
+        {
+            HandlePanelError("移除可疑重复项失败", ex);
+        }
     }
 
     private void SetSubmitting(bool isSubmitting)
@@ -345,5 +410,11 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)
     {
         e.Handled = true;
+    }
+
+    private void HandlePanelError(string title, Exception ex)
+    {
+        var feedback = WardrobeActionErrorPresenter.ForImport(ex);
+        ToastService.Instance.ShowError(title, feedback.Detail);
     }
 }
