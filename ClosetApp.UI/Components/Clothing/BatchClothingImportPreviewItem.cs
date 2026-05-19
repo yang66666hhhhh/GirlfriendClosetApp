@@ -12,4 +12,6 @@ public sealed class BatchClothingImportPreviewItem
     public string FilePath { get; }
     public string FileName { get; }
     public string Name { get; set; }
+    public bool IsDuplicateRisk { get; set; }
+    public string? DuplicateReason { get; set; }
 }

@@ -95,6 +95,8 @@ public class CompleteClothingMetadataBatchTests
 
         public Task DeleteAsync(Guid id) => throw new NotImplementedException();
         public Task<IEnumerable<Clothing>> GetByTypeAsync(ClothingType type) => throw new NotImplementedException();
+        public Task<IEnumerable<Clothing>> GetByTypesAsync(IEnumerable<ClothingType> types) => throw new NotImplementedException();
         public Task AddRangeAsync(IEnumerable<Clothing> clothes) => throw new NotImplementedException();
+        public Task DeleteRangeAsync(IEnumerable<Guid> ids) => throw new NotImplementedException();
     }
 }

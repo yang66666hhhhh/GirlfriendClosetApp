@@ -96,6 +96,49 @@ public class ClothingRepositoryTests
         }
     }
 
+    [Fact]
+    public async Task DeleteRangeAsync_RemovesSelectedClothes()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+
+            var keepId = Guid.NewGuid();
+            var deleteId = Guid.NewGuid();
+
+            await using (var setupContext = new ClosetDbContext(options))
+            {
+                await setupContext.Database.EnsureDeletedAsync();
+                await setupContext.Database.EnsureCreatedAsync();
+                setupContext.Clothes.AddRange(
+                    new Clothing { Id = keepId, Name = "保留外套", Type = ClothingType.Outerwear, Season = Season.Winter },
+                    new Clothing { Id = deleteId, Name = "删除半裙", Type = ClothingType.Skirt, Season = Season.Summer });
+                await setupContext.SaveChangesAsync();
+            }
+
+            await using (var deleteContext = new ClosetDbContext(options))
+            {
+                var repository = new ClothingRepository(deleteContext);
+                await repository.DeleteRangeAsync([deleteId]);
+            }
+
+            await using var assertContext = new ClosetDbContext(options);
+            var clothes = await assertContext.Clothes.OrderBy(clothing => clothing.Name).ToListAsync();
+            Assert.Single(clothes);
+            Assert.Equal(keepId, clothes[0].Id);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
     private static Clothing CreateClothing(string name, Guid tagId)
     {
         return new Clothing

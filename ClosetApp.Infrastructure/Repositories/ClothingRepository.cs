@@ -70,4 +70,36 @@ public class ClothingRepository : IClothingRepository
             .Where(c => c.Type == type)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Clothing>> GetByTypesAsync(IEnumerable<ClothingType> types)
+    {
+        var selectedTypes = types.Distinct().ToList();
+        if (selectedTypes.Count == 0)
+            return [];
+
+        return await _context.Clothes
+            .Where(clothing => selectedTypes.Contains(clothing.Type))
+            .Include(clothing => clothing.ClothingTags)
+            .ThenInclude(clothingTag => clothingTag.Tag)
+            .ToListAsync();
+    }
+
+    public async Task DeleteRangeAsync(IEnumerable<Guid> ids)
+    {
+        var selectedIds = ids.Distinct().ToList();
+        if (selectedIds.Count == 0)
+            return;
+
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+        var clothes = await _context.Clothes
+            .Where(clothing => selectedIds.Contains(clothing.Id))
+            .ToListAsync();
+
+        if (clothes.Count == 0)
+            return;
+
+        _context.Clothes.RemoveRange(clothes);
+        await _context.SaveChangesAsync();
+        await transaction.CommitAsync();
+    }
 }

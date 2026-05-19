@@ -266,6 +266,10 @@
                             Style="{StaticResource CapsuleButton}"
                             Click="BatchImport_Click"
                             Margin="0,0,10,0"/>
+                    <Button Content="批量清空"
+                            Style="{StaticResource DangerButton}"
+                            Click="BatchClearWardrobe_Click"
+                            Margin="0,0,10,0"/>
                     <Button Content="+ 添加衣服"
                             Style="{StaticResource PrimaryButton}"
                             Click="AddClothing_Click"/>
@@ -414,12 +418,17 @@
                                          GroupName="QueueGroup"
                                          IsChecked="{Binding IsQueueRecentlyImportedSelected, Mode=TwoWay}"/>
                         </WrapPanel>
-                        <Button Content="批量补全当前结果"
-                                Style="{StaticResource CapsuleButton}"
-                                HorizontalAlignment="Left"
-                                Margin="0,14,0,0"
-                                Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                Click="BatchCompleteQueue_Click"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,14,0,0">
+                            <Button Content="批量补全当前结果"
+                                    Style="{StaticResource CapsuleButton}"
+                                    HorizontalAlignment="Left"
+                                    Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    Click="BatchCompleteQueue_Click"/>
+                            <Button Content="按分类批量清空"
+                                    Style="{StaticResource DangerButton}"
+                                    Margin="10,0,0,0"
+                                    Click="BatchClearWardrobe_Click"/>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 

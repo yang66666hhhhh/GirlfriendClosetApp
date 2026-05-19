@@ -2,10 +2,13 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ClosetApp.Application.Images;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
@@ -15,18 +18,22 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 {
     private static readonly string[] ImageExtensions = [".jpg", ".jpeg", ".png", ".webp", ".gif", ".bmp"];
 
+    private readonly IClothingService _clothingService;
     private readonly ITagService _tagService;
     private readonly List<BatchClothingImportPreviewItem> _previewItems = [];
     private ClothingType _selectedType = ClothingType.Unspecified;
     private Season _selectedSeason = Season.Unspecified;
     private int _favoriteLevel;
     private bool _isSubmitting;
+    private bool _awaitingDuplicateConfirmation;
+    private IReadOnlyList<global::ClosetApp.Domain.Entities.Clothing> _existingClothes = [];
 
     public event EventHandler<EditorResult<BatchClothingImportRequest>>? EditorCompleted;
 
     public BatchClothingImportPanel()
     {
         InitializeComponent();
+        _clothingService = App.Services.GetRequiredService<IClothingService>();
         _tagService = App.Services.GetRequiredService<ITagService>();
         Loaded += OnLoaded;
         RefreshSelectedFiles();
@@ -34,8 +41,10 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
     private async void OnLoaded(object sender, RoutedEventArgs e)
     {
+        _existingClothes = (await _clothingService.GetAllClothesAsync()).ToList();
         var styleTags = await _tagService.GetStyleTagsAsync();
         TagSelection.LoadTags(styleTags);
+        RefreshSelectedFiles();
     }
 
     private void PickImages_Click(object sender, RoutedEventArgs e)
@@ -104,6 +113,28 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
     private void RefreshSelectedFiles()
     {
+        _awaitingDuplicateConfirmation = false;
+        ConfirmDuplicateState.Visibility = Visibility.Collapsed;
+
+        foreach (var item in _previewItems)
+        {
+            item.IsDuplicateRisk = false;
+            item.DuplicateReason = null;
+        }
+
+        var duplicateCheck = _previewItems.Count == 0
+            ? null
+            : BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
+
+        if (duplicateCheck?.HasAnyDuplicateRisk == true)
+        {
+            foreach (var item in _previewItems.Where(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath)))
+            {
+                item.IsDuplicateRisk = true;
+                item.DuplicateReason = "可疑重复";
+            }
+        }
+
         SelectedFilesList.ItemsSource = null;
         SelectedFilesList.ItemsSource = _previewItems;
         TxtSelectedCount.Text = $"已选择 {_previewItems.Count} 张图片";
@@ -113,6 +144,16 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
         ImageEmptyState.Visibility = _previewItems.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
         ImageListState.Visibility = _previewItems.Count == 0 ? Visibility.Collapsed : Visibility.Visible;
+
+        DuplicateWarningState.Visibility = duplicateCheck?.HasAnyDuplicateRisk == true
+            ? Visibility.Visible
+            : Visibility.Collapsed;
+        TxtDuplicateWarning.Text = duplicateCheck?.HasAnyDuplicateRisk == true
+            ? $"{duplicateCheck.Summary}；建议先移除 {duplicateCheck.RiskItemCount} 项可疑重复。"
+            : string.Empty;
+        BtnRemoveDuplicateItems.Visibility = duplicateCheck?.HasAnyDuplicateRisk == true
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void Category_Checked(object sender, RoutedEventArgs e)
@@ -176,6 +217,16 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
             return;
         }
 
+        var duplicateCheck = BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
+        if (duplicateCheck.HasAnyDuplicateRisk && !_awaitingDuplicateConfirmation)
+        {
+            _awaitingDuplicateConfirmation = true;
+            ConfirmDuplicateState.Visibility = Visibility.Visible;
+            ConfirmDuplicateDetail.Text = $"{duplicateCheck.Summary}。当前还有 {duplicateCheck.RiskItemCount} 项可疑重复。";
+            return;
+        }
+
+        ConfirmDuplicateState.Visibility = Visibility.Collapsed;
         SetSubmitting(true);
 
         var request = new BatchClothingImportRequest(
@@ -202,6 +253,8 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
         if (_isSubmitting)
             return;
 
+        ConfirmDuplicateState.Visibility = Visibility.Collapsed;
+        _awaitingDuplicateConfirmation = false;
         EditorCompleted?.Invoke(
             this,
             new EditorResult<BatchClothingImportRequest>(EditorResultType.Cancelled));
@@ -217,6 +270,31 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
             _previewItems.Remove(item);
             RefreshSelectedFiles();
         }
+    }
+
+    private void ConfirmDuplicateContinue_Click(object sender, RoutedEventArgs e)
+    {
+        _awaitingDuplicateConfirmation = true;
+        Save_Click(sender, e);
+    }
+
+    private void ConfirmDuplicateBack_Click(object sender, RoutedEventArgs e)
+    {
+        _awaitingDuplicateConfirmation = false;
+        ConfirmDuplicateState.Visibility = Visibility.Collapsed;
+    }
+
+    private void RemoveDuplicateItems_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isSubmitting || _previewItems.Count == 0)
+            return;
+
+        var duplicateCheck = BatchImportDuplicateChecker.Analyze(_previewItems, _existingClothes, GetImageMetadata);
+        if (!duplicateCheck.HasAnyDuplicateRisk)
+            return;
+
+        _previewItems.RemoveAll(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath));
+        RefreshSelectedFiles();
     }
 
     private void SetSubmitting(bool isSubmitting)
@@ -237,6 +315,31 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
     {
         _ = filePath;
         return BatchClothingImportBuilder.DefaultName;
+    }
+
+    private static (long Length, int Width, int Height)? GetImageMetadata(string path)
+    {
+        try
+        {
+            var resolved = File.Exists(path) ? path : ClothingImageLoader.ResolvePath(path, ImageVariant.Original);
+            if (string.IsNullOrWhiteSpace(resolved) || !File.Exists(resolved))
+                return null;
+
+            var fileInfo = new FileInfo(resolved);
+            var decoder = System.Windows.Media.Imaging.BitmapDecoder.Create(
+                new Uri(resolved, UriKind.Absolute),
+                System.Windows.Media.Imaging.BitmapCreateOptions.IgnoreColorProfile,
+                System.Windows.Media.Imaging.BitmapCacheOption.OnLoad);
+            var frame = decoder.Frames.FirstOrDefault();
+            if (frame == null)
+                return null;
+
+            return (fileInfo.Length, frame.PixelWidth, frame.PixelHeight);
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)

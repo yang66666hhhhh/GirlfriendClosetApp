@@ -18,6 +18,7 @@ public partial class WardrobeViewModel : ObservableObject
     private readonly ITagService _tagService;
     private readonly IImageStorageService _imageStorageService;
     private readonly CompleteClothingMetadataBatch _completeClothingMetadataBatch;
+    private readonly ClearWardrobeByTypes _clearWardrobeByTypes;
     private readonly ImportClothesFromImages _importClothesFromImages;
     private readonly ClothesTabState _state = new();
     private IReadOnlyList<Tag> _availableTags = [];
@@ -31,6 +32,7 @@ public partial class WardrobeViewModel : ObservableObject
     public IReadOnlyList<Tag> AvailableTags => _availableTags;
     public ObservableCollection<SelectableTag> TagFilters => _tagFilters;
     public bool HasAvailableTags => _tagFilters.Count > 0;
+    public IReadOnlyList<Clothing> AllClothes => _state.AllClothes;
     public IReadOnlyList<Clothing> FilteredClothes => _state.FilteredClothes;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
@@ -306,12 +308,14 @@ public partial class WardrobeViewModel : ObservableObject
         ITagService tagService,
         IImageStorageService imageStorageService,
         CompleteClothingMetadataBatch completeClothingMetadataBatch,
+        ClearWardrobeByTypes clearWardrobeByTypes,
         ImportClothesFromImages importClothesFromImages)
     {
         _clothingService = clothingService;
         _tagService = tagService;
         _imageStorageService = imageStorageService;
         _completeClothingMetadataBatch = completeClothingMetadataBatch;
+        _clearWardrobeByTypes = clearWardrobeByTypes;
         _importClothesFromImages = importClothesFromImages;
     }
 
@@ -412,6 +416,13 @@ public partial class WardrobeViewModel : ObservableObject
         return result;
     }
 
+    public async Task<BatchWardrobeClearResult> ClearWardrobeByTypesAsync(BatchWardrobeClearRequest request)
+    {
+        var result = await _clearWardrobeByTypes.ExecuteAsync(request);
+        await LoadClothesAsync();
+        return result;
+    }
+
     public async Task UpdateClothingAsync(Clothing clothing, string? oldImagePath)
     {
         await _clothingService.UpdateClothingAsync(clothing);
@@ -455,6 +466,7 @@ public partial class WardrobeViewModel : ObservableObject
         OnPropertyChanged(nameof(AvailableTags));
         OnPropertyChanged(nameof(TagFilters));
         OnPropertyChanged(nameof(HasAvailableTags));
+        OnPropertyChanged(nameof(AllClothes));
         OnPropertyChanged(nameof(FilteredClothes));
         OnPropertyChanged(nameof(IsLoading));
         OnPropertyChanged(nameof(IsEmpty));

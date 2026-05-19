@@ -132,6 +132,35 @@ public partial class ClothesTab : UserControl
             });
     }
 
+    private void BatchClearWardrobe_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.TotalCount == 0)
+        {
+            ToastService.Instance.ShowInfo("衣柜已经是空的了。");
+            return;
+        }
+
+        EditorModal.Show(
+            new BatchWardrobeClearPanel(_viewModel.AllClothes.ToList(), _viewModel.SelectedType),
+            async result =>
+            {
+                if (result.Type != EditorResultType.Saved || result.Entity == null)
+                    return;
+
+                try
+                {
+                    var summary = await _viewModel.ClearWardrobeByTypesAsync(result.Entity);
+                    ToastService.Instance.ShowSuccess(summary.DeletedCount == 0
+                        ? "选中的分类里没有可清空的衣服。"
+                        : $"已清空 {summary.DeletedCount} 件衣服");
+                }
+                catch (Exception ex)
+                {
+                    ToastService.Instance.ShowError($"批量清空失败：{ex.Message}");
+                }
+            });
+    }
+
     private void ClothingCard_Edit(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;

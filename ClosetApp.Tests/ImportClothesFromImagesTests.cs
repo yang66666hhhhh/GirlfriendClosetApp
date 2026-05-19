@@ -87,6 +87,7 @@ public class ImportClothesFromImagesTests
         public Task UpdateAsync(Clothing entity) => throw new NotImplementedException();
         public Task DeleteAsync(Guid id) => throw new NotImplementedException();
         public Task<IEnumerable<Clothing>> GetByTypeAsync(ClothingType type) => Task.FromResult(Enumerable.Empty<Clothing>());
+        public Task<IEnumerable<Clothing>> GetByTypesAsync(IEnumerable<ClothingType> types) => Task.FromResult(Enumerable.Empty<Clothing>());
 
         public Task AddRangeAsync(IEnumerable<Clothing> clothes)
         {
@@ -96,6 +97,8 @@ public class ImportClothesFromImagesTests
             _addedClothes.AddRange(clothes);
             return Task.CompletedTask;
         }
+
+        public Task DeleteRangeAsync(IEnumerable<Guid> ids) => throw new NotImplementedException();
     }
 
     private sealed class FakeImageStorageService : IImageStorageService
