@@ -400,13 +400,14 @@ public partial class WardrobeViewModel : ObservableObject
         await LoadClothesAsync();
     }
 
-    public async Task ImportClothesAsync(BatchClothingImportRequest request)
+    public async Task<BatchClothingImportResult> ImportClothesAsync(BatchClothingImportRequest request)
     {
         var result = await _importClothesFromImages.ExecuteAsync(request);
         ClearFilters();
         _state.SetRecentlyImportedClothingIds(result.Clothes.Select(clothing => clothing.Id));
         _state.SetQueueFilter(WardrobeQueueFilter.RecentlyImported);
         await LoadClothesAsync();
+        return result;
     }
 
     public async Task<BatchClothingCompletionResult> CompleteCurrentQueueAsync(BatchClothingCompletionRequest request)

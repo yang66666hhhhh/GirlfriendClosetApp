@@ -27,6 +27,7 @@
     <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportBuilder.cs" Link="UiLogic\Clothing\BatchClothingImportBuilder.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportOptions.cs" Link="UiLogic\Clothing\BatchClothingImportOptions.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportPreviewItem.cs" Link="UiLogic\Clothing\BatchClothingImportPreviewItem.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportSummaryBuilder.cs" Link="UiLogic\Clothing\BatchClothingImportSummaryBuilder.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchImportDuplicateCheckResult.cs" Link="UiLogic\Clothing\BatchImportDuplicateCheckResult.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchImportDuplicateChecker.cs" Link="UiLogic\Clothing\BatchImportDuplicateChecker.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Editor\OutfitSelectionRules.cs" Link="UiLogic\Outfit\Editor\OutfitSelectionRules.cs" />

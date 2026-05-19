@@ -7,17 +7,26 @@ namespace ClosetApp.UI.Services;
 
 public class ToastService
 {
+    private const string ToastOverlayTag = "__ClosetAppToastOverlay";
+    private static readonly TimeSpan SuccessDuration = TimeSpan.FromSeconds(2.2);
+    private static readonly TimeSpan InfoDuration = TimeSpan.FromSeconds(3.0);
+    private static readonly TimeSpan ErrorDuration = TimeSpan.FromSeconds(4.8);
+
     private static readonly Lazy<ToastService> _instance = new(() => new ToastService());
     public static ToastService Instance => _instance.Value;
 
     private readonly List<Border> _activeToasts = new();
-    private readonly object _lock = new();
 
-    public void ShowSuccess(string message) => ShowToast(message, new SolidColorBrush(Color.FromRgb(16, 185, 129)));
-    public void ShowError(string message) => ShowToast(message, new SolidColorBrush(Color.FromRgb(239, 68, 68)));
-    public void ShowInfo(string message) => ShowToast(message, new SolidColorBrush(Color.FromRgb(102, 126, 234)));
+    public void ShowSuccess(string message, string? detail = null)
+        => ShowToast(message, detail, new SolidColorBrush(Color.FromRgb(16, 185, 129)), SuccessDuration);
 
-    private void ShowToast(string message, Brush backgroundBrush)
+    public void ShowError(string message, string? detail = null)
+        => ShowToast(message, detail, new SolidColorBrush(Color.FromRgb(239, 68, 68)), ErrorDuration);
+
+    public void ShowInfo(string message, string? detail = null)
+        => ShowToast(message, detail, new SolidColorBrush(Color.FromRgb(102, 126, 234)), InfoDuration);
+
+    private void ShowToast(string message, string? detail, Brush backgroundBrush, TimeSpan displayDuration)
     {
         try
         {
@@ -31,8 +40,7 @@ public class ToastService
                     CornerRadius = new CornerRadius(12),
                     Padding = new Thickness(20, 12, 20, 12),
                     Margin = new Thickness(0, 0, 0, 10),
-                    HorizontalAlignment = HorizontalAlignment.Right,
-                    VerticalAlignment = VerticalAlignment.Top,
+                    MaxWidth = 360,
                     Effect = new System.Windows.Media.Effects.DropShadowEffect
                     {
                         BlurRadius = 20,
@@ -42,27 +50,38 @@ public class ToastService
                     }
                 };
 
-                var text = new TextBlock
+                var content = new StackPanel();
+
+                var titleText = new TextBlock
                 {
                     Text = message,
                     Foreground = Brushes.White,
                     FontSize = 14,
-                    FontWeight = FontWeights.Medium
+                    FontWeight = FontWeights.Medium,
+                    TextWrapping = TextWrapping.Wrap
                 };
+                content.Children.Add(titleText);
 
-                toast.Child = text;
+                if (!string.IsNullOrWhiteSpace(detail))
+                {
+                    content.Children.Add(new TextBlock
+                    {
+                        Text = detail,
+                        Foreground = new SolidColorBrush(Color.FromArgb(224, 255, 255, 255)),
+                        FontSize = 12,
+                        Margin = new Thickness(0, 4, 0, 0),
+                        TextWrapping = TextWrapping.Wrap
+                    });
+                }
+
+                toast.Child = content;
 
                 var mainWindow = System.Windows.Application.Current.MainWindow;
                 var grid = mainWindow.Content as Grid;
                 if (grid == null) return;
 
-                var toastContainer = new Canvas { Name = "ToastContainer" };
-                Grid.SetRow(toastContainer, 0);
-                grid.Children.Add(toastContainer);
-
-                Canvas.SetRight(toast, 20);
-                Canvas.SetTop(toast, 20 + (_activeToasts.Count * 70));
-                toastContainer.Children.Add(toast);
+                var toastHost = GetOrCreateToastHost(grid);
+                toastHost.Children.Add(toast);
                 _activeToasts.Add(toast);
 
                 toast.RenderTransform = new TranslateTransform(300, 0);
@@ -74,7 +93,7 @@ public class ToastService
 
                 var fadeOut = new DoubleAnimation(1, 0, TimeSpan.FromMilliseconds(300))
                 {
-                    BeginTime = TimeSpan.FromSeconds(2.5),
+                    BeginTime = displayDuration,
                     EasingFunction = new CubicEase { EasingMode = EasingMode.EaseIn }
                 };
 
@@ -82,9 +101,8 @@ public class ToastService
                 {
                     try
                     {
-                        toastContainer.Children.Remove(toast);
+                        toastHost.Children.Remove(toast);
                         _activeToasts.Remove(toast);
-                        RepositionToasts();
                     }
                     catch { }
                 }
@@ -96,11 +114,38 @@ public class ToastService
         catch { }
     }
 
-    private void RepositionToasts()
+    private static StackPanel GetOrCreateToastHost(Grid root)
     {
-        for (int i = 0; i < _activeToasts.Count; i++)
+        foreach (var child in root.Children)
         {
-            Canvas.SetTop(_activeToasts[i], 20 + (i * 70));
+            if (child is Grid { Tag: ToastOverlayTag } existingOverlay &&
+                existingOverlay.Children.OfType<StackPanel>().FirstOrDefault() is { } existingHost)
+            {
+                return existingHost;
+            }
         }
+
+        var host = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(0, 24, 24, 0),
+            IsHitTestVisible = false
+        };
+
+        var toastOverlay = new Grid
+        {
+            Tag = ToastOverlayTag,
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            VerticalAlignment = VerticalAlignment.Stretch,
+            IsHitTestVisible = false
+        };
+        Panel.SetZIndex(toastOverlay, 3000);
+        Grid.SetColumnSpan(toastOverlay, Math.Max(1, root.ColumnDefinitions.Count));
+        Grid.SetRowSpan(toastOverlay, Math.Max(1, root.RowDefinitions.Count));
+        toastOverlay.Children.Add(host);
+        root.Children.Add(toastOverlay);
+
+        return host;
     }
 }

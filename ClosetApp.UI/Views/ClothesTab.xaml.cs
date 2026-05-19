@@ -1,12 +1,14 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
+using ClosetApp.UI.States;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -96,13 +98,19 @@ public partial class ClothesTab : UserControl
             {
                 try
                 {
-                    var importCount = result.Entity.Items.Count;
-                    await _viewModel.ImportClothesAsync(result.Entity);
-                    ToastService.Instance.ShowSuccess($"已导入 {importCount} 件衣服，已切到刚导入");
+                    var importResult = await _viewModel.ImportClothesAsync(result.Entity);
+                    var summary = BatchClothingImportSummaryBuilder.Build(result.Entity, importResult.Clothes);
+                    _ = Dispatcher.BeginInvoke(
+                        () => ModalService.Instance.Show(new BatchClothingImportSummaryDialog(
+                            summary,
+                            () => _viewModel.SetQueueFilter(WardrobeQueueFilter.RecentlyImported))),
+                        DispatcherPriority.Background);
                 }
                 catch (Exception ex)
                 {
-                    ToastService.Instance.ShowError($"导入失败：{ex.Message}");
+                    ToastService.Instance.ShowError(
+                        "导入失败",
+                        $"这批图片还没有写进衣柜。{ex.Message}，可以先检查文件是否被占用，再重新导入。");
                 }
             }
         });
@@ -127,7 +135,9 @@ public partial class ClothesTab : UserControl
                 }
                 catch (Exception ex)
                 {
-                    ToastService.Instance.ShowError($"批量补全失败：{ex.Message}");
+                    ToastService.Instance.ShowError(
+                        "批量补全失败",
+                        $"这次没有改动现有衣服资料。{ex.Message}，可以先缩小当前结果范围，再重试。");
                 }
             });
     }
@@ -156,7 +166,9 @@ public partial class ClothesTab : UserControl
                 }
                 catch (Exception ex)
                 {
-                    ToastService.Instance.ShowError($"批量清空失败：{ex.Message}");
+                    ToastService.Instance.ShowError(
+                        "批量清空失败",
+                        $"衣柜内容还保留着。{ex.Message}，可以先关闭可能占用图片或数据库的程序，再重试。");
                 }
             });
     }

@@ -1,0 +1,185 @@
+<UserControl x:Class="ClosetApp.UI.Components.Clothing.BatchClothingImportSummaryDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <Border Style="{StaticResource ModalCardRoot}"
+            Width="620"
+            MaxHeight="760">
+        <Border Style="{StaticResource ModalCardClip}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Style="{StaticResource ModalHeaderHost}">
+                    <Grid Margin="32,24,28,20">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock x:Name="TitleText"
+                                       Style="{StaticResource ModalHeaderTitle}"
+                                       Text="导入完成"/>
+                            <TextBlock x:Name="SubtitleText"
+                                       Style="{StaticResource ModalHeaderSubtitle}"
+                                       Margin="0,8,0,0"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="✕"
+                                Style="{StaticResource ModalCloseButton}"
+                                Click="CloseButton_Click"/>
+                    </Grid>
+                </Border>
+
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel Margin="28,24,28,28">
+                        <Border Background="{StaticResource SurfaceHeroBrush}"
+                                CornerRadius="18"
+                                Padding="18,16">
+                            <StackPanel>
+                                <TextBlock x:Name="SummaryText"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock x:Name="SummaryDetailText"
+                                           FontSize="12"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <StackPanel x:Name="PerfectStatePanel"
+                                    Margin="0,18,0,0"
+                                    Visibility="Collapsed">
+                            <Border Background="{StaticResource SurfaceSectionBrush}"
+                                    CornerRadius="16"
+                                    Padding="18,16">
+                                <TextBlock Text="这批资料已经很完整了，直接去刚导入里继续看图和整理就行。"
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           FontSize="13"
+                                           TextWrapping="Wrap"/>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel x:Name="UnnamedSection"
+                                    Margin="0,18,0,0"
+                                    Visibility="Collapsed">
+                            <TextBlock x:Name="UnnamedTitle"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <ItemsControl x:Name="UnnamedList"
+                                          Margin="0,10,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource SurfaceCardBrush}"
+                                                BorderBrush="{StaticResource BorderLightBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="14,12"
+                                                Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding SourceFileName, StringFormat=原图：{0}}"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           FontSize="11"
+                                                           Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <StackPanel x:Name="UncategorizedSection"
+                                    Margin="0,18,0,0"
+                                    Visibility="Collapsed">
+                            <TextBlock x:Name="UncategorizedTitle"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <ItemsControl x:Name="UncategorizedList"
+                                          Margin="0,10,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource SurfaceCardBrush}"
+                                                BorderBrush="{StaticResource BorderLightBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="14,12"
+                                                Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding SourceFileName, StringFormat=原图：{0}}"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           FontSize="11"
+                                                           Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+
+                        <StackPanel x:Name="UnseasonedSection"
+                                    Margin="0,18,0,0"
+                                    Visibility="Collapsed">
+                            <TextBlock x:Name="UnseasonedTitle"
+                                       FontSize="14"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <ItemsControl x:Name="UnseasonedList"
+                                          Margin="0,10,0,0">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="{StaticResource SurfaceCardBrush}"
+                                                BorderBrush="{StaticResource BorderLightBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="14"
+                                                Padding="14,12"
+                                                Margin="0,0,0,8">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding DisplayName}"
+                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding SourceFileName, StringFormat=原图：{0}}"
+                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           FontSize="11"
+                                                           Margin="0,4,0,0"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+
+                <Border Grid.Row="2"
+                        Style="{StaticResource ModalFooterHost}"
+                        Padding="20,14">
+                    <StackPanel Orientation="Horizontal"
+                                HorizontalAlignment="Right">
+                        <Button Content="稍后再说"
+                                Style="{StaticResource ModalCancelButton}"
+                                Margin="0,0,12,0"
+                                Click="CloseButton_Click"/>
+                        <Button Content="查看刚导入"
+                                Style="{StaticResource ModalSaveButton}"
+                                Click="JumpButton_Click"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </Border>
+    </Border>
+</UserControl>
