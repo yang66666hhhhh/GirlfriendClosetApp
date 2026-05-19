@@ -4,6 +4,7 @@ using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Tags.Controls;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -54,12 +55,20 @@ public partial class TagsTab : UserControl
     {
         if (sender is MenuItem mi && mi.Parent is ContextMenu cm && cm.PlacementTarget is Border border && border.Tag is Tag tag)
         {
-            var confirmed = await ConfirmModal.ShowDeleteAsync(
-                $"确定删除标签「{tag.Name}」？衣服上的此标签将被移除。");
-            if (!confirmed)
-                return;
+            try
+            {
+                var confirmed = await ConfirmModal.ShowDeleteAsync(
+                    $"确定删除标签「{tag.Name}」？衣服上的此标签将被移除。");
+                if (!confirmed)
+                    return;
 
-            await _viewModel.DeleteTagAsync(tag);
+                await _viewModel.DeleteTagAsync(tag);
+            }
+            catch (Exception ex)
+            {
+                var feedback = WardrobeActionErrorPresenter.ForTagDelete(ex, tag.Name);
+                ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+            }
         }
     }
 }

@@ -89,6 +89,105 @@ public static class WardrobeActionErrorPresenter
         return ("删除失败", $"「{clothingName}」还没有删掉。可以稍后再试一次。");
     }
 
+    public static (string Title, string Detail) ForClothingEditorLoad(Exception exception)
+    {
+        if (IsDatabaseBusy(exception))
+        {
+            return ("编辑面板初始化失败", "当前还没把标签和衣服资料准备好。数据库正在忙，稍等一下再打开编辑面板。");
+        }
+
+        return ("编辑面板初始化失败", "这次还没把衣服资料准备好。可以关闭面板后重新打开，再试一次。");
+    }
+
+    public static (string Title, string Detail) ForClothingImageLoad(Exception exception)
+    {
+        if (IsFileBusy(exception))
+        {
+            return ("图片加载失败", "这张图片可能正被别的程序占用。先关闭看图工具、同步盘或编辑器，再重新选择。");
+        }
+
+        if (IsPermissionIssue(exception))
+        {
+            return ("图片加载失败", "当前没有权限读取这张图片。先确认原图文件夹可访问，再重新选择。");
+        }
+
+        return ("图片加载失败", "这张图片暂时没法读取。先确认文件还在、格式完整，再重新选择。");
+    }
+
+    public static (string Title, string Detail) ForClothingSave(Exception exception, bool isEditMode)
+    {
+        if (TryGetValidationMessage(exception, out var validationMessage))
+        {
+            return ("保存失败", validationMessage);
+        }
+
+        if (IsDatabaseBusy(exception))
+        {
+            return ("保存失败", isEditMode
+                ? "这件衣服的修改还没有保存。数据库正在忙，先稍等一下，再试一次。"
+                : "这件衣服还没有加入衣柜。数据库正在忙，先稍等一下，再试一次。");
+        }
+
+        if (IsFileBusy(exception))
+        {
+            return ("保存失败", "图片文件可能正被别的程序占用。这次还没有保存衣服资料，先关闭相关程序后再试。");
+        }
+
+        if (IsPermissionIssue(exception))
+        {
+            return ("保存失败", "当前没有权限写入图片或衣服资料。这次还没有保存成功，先确认权限后再试。");
+        }
+
+        return ("保存失败", isEditMode
+            ? "这件衣服的修改还没有保存。可以稍后再试一次。"
+            : "这件衣服还没有加入衣柜。可以稍后再试一次。");
+    }
+
+    public static (string Title, string Detail) ForOutfitDelete(Exception exception, string outfitName)
+    {
+        if (TryGetValidationMessage(exception, out var validationMessage))
+        {
+            return ("删除搭配失败", validationMessage);
+        }
+
+        if (IsDatabaseBusy(exception))
+        {
+            return ("删除搭配失败", $"「{outfitName}」还留在搭配列表里。数据库正在忙，先稍等一下，再试一次。");
+        }
+
+        return ("删除搭配失败", $"「{outfitName}」还没有删掉。可以稍后再试一次。");
+    }
+
+    public static (string Title, string Detail) ForOutfitRecord(Exception exception, string outfitName)
+    {
+        if (TryGetValidationMessage(exception, out var validationMessage))
+        {
+            return ("记录穿着失败", validationMessage);
+        }
+
+        if (IsDatabaseBusy(exception))
+        {
+            return ("记录穿着失败", $"「{outfitName}」这次还没有记进穿着记录。数据库正在忙，先稍等一下，再试一次。");
+        }
+
+        return ("记录穿着失败", $"「{outfitName}」这次还没有记进穿着记录。可以稍后再试一次。");
+    }
+
+    public static (string Title, string Detail) ForTagDelete(Exception exception, string tagName)
+    {
+        if (TryGetValidationMessage(exception, out var validationMessage))
+        {
+            return ("删除标签失败", validationMessage);
+        }
+
+        if (IsDatabaseBusy(exception))
+        {
+            return ("删除标签失败", $"标签「{tagName}」还没有删掉。数据库正在忙，先稍等一下，再试一次。");
+        }
+
+        return ("删除标签失败", $"标签「{tagName}」还没有删掉。可以稍后再试一次。");
+    }
+
     // Known validation failures should still surface directly because they are already user-facing.
     private static bool TryGetValidationMessage(Exception exception, out string message)
     {

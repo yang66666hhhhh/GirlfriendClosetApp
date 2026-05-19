@@ -51,7 +51,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        _ = LoadTagsAsync();
+        _ = LoadTagsSafelyAsync();
         UpdateCardClip();
 
         var scaleX = new DoubleAnimation(0.96, 1, TimeSpan.FromMilliseconds(220))
@@ -94,6 +94,19 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         TagSelection.LoadTags(styleTags);
         if (_isEditMode && _existingClothing != null)
             TagSelection.Preselect(_existingClothing.ClothingTags.Select(ct => ct.Tag));
+    }
+
+    private async Task LoadTagsSafelyAsync()
+    {
+        try
+        {
+            await LoadTagsAsync();
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForClothingEditorLoad(ex);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 
     private void LoadData()
@@ -219,31 +232,47 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private void ImageArea_Drop(object sender, DragEventArgs e)
     {
-        if (sender is Border b) b.Background = (SolidColorBrush)FindResource("SurfaceHeroBrush");
+        try
+        {
+            if (sender is Border b) b.Background = (SolidColorBrush)FindResource("SurfaceHeroBrush");
 
-        if (!e.Data.GetDataPresent(DataFormats.FileDrop))
-            return;
+            if (!e.Data.GetDataPresent(DataFormats.FileDrop))
+                return;
 
-        var files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
-        if (files == null || files.Length == 0)
-            return;
+            var files = (string[]?)e.Data.GetData(DataFormats.FileDrop);
+            if (files == null || files.Length == 0)
+                return;
 
-        var ext = Path.GetExtension(files[0]).ToLowerInvariant();
-        if (ext is ".jpg" or ".jpeg" or ".png" or ".webp" or ".gif" or ".bmp")
-            LoadImage(files[0]);
+            var ext = Path.GetExtension(files[0]).ToLowerInvariant();
+            if (ext is ".jpg" or ".jpeg" or ".png" or ".webp" or ".gif" or ".bmp")
+                LoadImage(files[0]);
 
-        e.Handled = true;
+            e.Handled = true;
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForClothingImageLoad(ex);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 
     private void Upload_Click(object sender, RoutedEventArgs e)
     {
-        var dlg = new OpenFileDialog
+        try
         {
-            Filter = "图片文件|*.jpg;*.jpeg;*.png;*.webp;*.gif;*.bmp",
-            Title = "选择衣服图片"
-        };
-        if (dlg.ShowDialog() == true)
-            LoadImage(dlg.FileName);
+            var dlg = new OpenFileDialog
+            {
+                Filter = "图片文件|*.jpg;*.jpeg;*.png;*.webp;*.gif;*.bmp",
+                Title = "选择衣服图片"
+            };
+            if (dlg.ShowDialog() == true)
+                LoadImage(dlg.FileName);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForClothingImageLoad(ex);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 
     private void LoadImage(string path)
@@ -275,9 +304,10 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
             };
             PreviewState.BeginAnimation(OpacityProperty, fadeIn);
         }
-        catch
+        catch (Exception ex)
         {
-            MessageBox.Show("图片加载失败，请重试", "提示", MessageBoxButton.OK, MessageBoxImage.Warning);
+            var feedback = WardrobeActionErrorPresenter.ForClothingImageLoad(ex);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
     }
 
@@ -377,77 +407,71 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
             return;
         }
 
-        global::ClosetApp.Domain.Entities.Clothing clothing;
-        if (_isEditMode && _existingClothing != null)
+        try
         {
-            clothing = _existingClothing;
-            clothing.Name = TxtName.Text.Trim();
-            clothing.Type = _selectedType;
-            clothing.Season = _selectedSeason;
-            clothing.Color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim();
-            clothing.Brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim();
-            clothing.Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
-            clothing.FavoriteLevel = _favoriteLevel;
-            clothing.IsFavorite = _favoriteLevel >= 4;
-
-            if (_imageChanged && !string.IsNullOrEmpty(_selectedImagePath))
+            global::ClosetApp.Domain.Entities.Clothing clothing;
+            if (_isEditMode && _existingClothing != null)
             {
-                try
+                clothing = _existingClothing;
+                clothing.Name = TxtName.Text.Trim();
+                clothing.Type = _selectedType;
+                clothing.Season = _selectedSeason;
+                clothing.Color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim();
+                clothing.Brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim();
+                clothing.Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
+                clothing.FavoriteLevel = _favoriteLevel;
+                clothing.IsFavorite = _favoriteLevel >= 4;
+
+                if (_imageChanged && !string.IsNullOrEmpty(_selectedImagePath))
                 {
                     clothing.ImagePath = await _imageStorage.SaveImageAsync(_selectedImagePath);
                 }
-                catch
+                else if (_imageChanged && string.IsNullOrEmpty(_selectedImagePath))
                 {
-                    // keep existing path on failure
+                    clothing.ImagePath = null;
                 }
-            }
-            else if (_imageChanged && string.IsNullOrEmpty(_selectedImagePath))
-            {
-                clothing.ImagePath = null;
-            }
 
-            var tagExistingIds = clothing.ClothingTags.Select(x => x.TagId).ToHashSet();
-            var tagSelectedIds = TagSelection.SelectedTags.Select(t => t.Id).ToHashSet();
-            var toRemove = clothing.ClothingTags
-                .Where(x => !tagSelectedIds.Contains(x.TagId)).ToList();
-            foreach (var item in toRemove)
-                clothing.ClothingTags.Remove(item);
-            foreach (var id in tagSelectedIds.Except(tagExistingIds))
-                clothing.ClothingTags.Add(new ClothingTag { ClothingId = clothing.Id, TagId = id });
-        }
-        else
-        {
-            string imagePath = string.Empty;
-            if (!string.IsNullOrEmpty(_selectedImagePath) && File.Exists(_selectedImagePath))
+                var tagExistingIds = clothing.ClothingTags.Select(x => x.TagId).ToHashSet();
+                var tagSelectedIds = TagSelection.SelectedTags.Select(t => t.Id).ToHashSet();
+                var toRemove = clothing.ClothingTags
+                    .Where(x => !tagSelectedIds.Contains(x.TagId)).ToList();
+                foreach (var item in toRemove)
+                    clothing.ClothingTags.Remove(item);
+                foreach (var id in tagSelectedIds.Except(tagExistingIds))
+                    clothing.ClothingTags.Add(new ClothingTag { ClothingId = clothing.Id, TagId = id });
+            }
+            else
             {
-                try
+                string imagePath = string.Empty;
+                if (!string.IsNullOrEmpty(_selectedImagePath) && File.Exists(_selectedImagePath))
                 {
                     imagePath = await _imageStorage.SaveImageAsync(_selectedImagePath);
                 }
-                catch
+
+                clothing = new global::ClosetApp.Domain.Entities.Clothing
                 {
-                    imagePath = string.Empty;
-                }
+                    Name = TxtName.Text.Trim(),
+                    Type = _selectedType,
+                    Color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim(),
+                    Brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim(),
+                    Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim(),
+                    Season = _selectedSeason,
+                    ImagePath = imagePath,
+                    FavoriteLevel = _favoriteLevel,
+                    IsFavorite = _favoriteLevel >= 4,
+                    ClothingTags = TagSelection.SelectedTags
+                        .Select(t => new ClothingTag { TagId = t.Id })
+                        .ToList()
+                };
             }
 
-            clothing = new global::ClosetApp.Domain.Entities.Clothing
-            {
-                Name = TxtName.Text.Trim(),
-                Type = _selectedType,
-                Color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim(),
-                Brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim(),
-                Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim(),
-                Season = _selectedSeason,
-                ImagePath = imagePath,
-                FavoriteLevel = _favoriteLevel,
-                IsFavorite = _favoriteLevel >= 4,
-                ClothingTags = TagSelection.SelectedTags
-                    .Select(t => new ClothingTag { TagId = t.Id })
-                    .ToList()
-            };
+            EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Saved, clothing));
         }
-
-        EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Saved, clothing));
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, _isEditMode);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 
     private void ShakeElement(UIElement element)

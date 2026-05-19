@@ -73,27 +73,64 @@ public partial class OutfitsTab : UserControl
 
     private async void OutfitCard_EditCompleted(object? sender, OutfitEntity outfit)
     {
-        await _viewModel.RefreshAsync();
+        try
+        {
+            await _viewModel.RefreshAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+        }
     }
 
     private async void OutfitCard_DeleteRequested(object? sender, OutfitEntity outfit)
     {
-        await _viewModel.DeleteOutfitAsync(outfit);
+        try
+        {
+            await _viewModel.DeleteOutfitAsync(outfit);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForOutfitDelete(ex, outfit.Name);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 
     private async void OutfitCard_WornRequested(object? sender, OutfitEntity outfit)
     {
-        await _viewModel.RecordWornDateAsync(outfit, DateTime.Now);
+        try
+        {
+            await _viewModel.RecordWornDateAsync(outfit, DateTime.Now);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, outfit.Name);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 
     private async void PrevMonth_Click(object sender, RoutedEventArgs e)
     {
-        await _viewModel.MoveCalendarMonthAsync(-1);
+        try
+        {
+            await _viewModel.MoveCalendarMonthAsync(-1);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("切换月份失败", ex.Message);
+        }
     }
 
     private async void NextMonth_Click(object sender, RoutedEventArgs e)
     {
-        await _viewModel.MoveCalendarMonthAsync(1);
+        try
+        {
+            await _viewModel.MoveCalendarMonthAsync(1);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("切换月份失败", ex.Message);
+        }
     }
 
     private void ToggleHistory_Click(object sender, RoutedEventArgs e)
@@ -107,7 +144,17 @@ public partial class OutfitsTab : UserControl
             return;
 
         var dialog = new WornDayDetailsDialog(day.Date, day.Records);
-        dialog.RecordsChanged += async (_, _) => await LoadOutfitsAsync();
+        dialog.RecordsChanged += async (_, _) =>
+        {
+            try
+            {
+                await LoadOutfitsAsync();
+            }
+            catch (Exception ex)
+            {
+                ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+            }
+        };
         ModalService.Instance.Show(dialog);
     }
 
