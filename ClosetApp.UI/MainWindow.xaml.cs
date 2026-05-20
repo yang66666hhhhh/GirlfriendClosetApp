@@ -37,11 +37,7 @@ public partial class MainWindow : Window
 
     private void Sidebar_NavigationChanged(object? sender, int tabIndex)
     {
-        _currentTabIndex = tabIndex;
-        ClothesTabContent.Visibility = tabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
-        OutfitsTabContent.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
-        TagsTabContent.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
-        SettingsTabContent.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
+        ShowTab(tabIndex);
 
         if (tabIndex == 1)
         {
@@ -61,6 +57,21 @@ public partial class MainWindow : Window
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
         SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, anim);
+    }
+
+    public void NavigateToSettings()
+    {
+        Sidebar.SetSelectedTab(3);
+        ShowTab(3);
+    }
+
+    private void ShowTab(int tabIndex)
+    {
+        _currentTabIndex = tabIndex;
+        ClothesTabContent.Visibility = tabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
+        OutfitsTabContent.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
+        TagsTabContent.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
+        SettingsTabContent.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
     }
 }
 

@@ -24,6 +24,25 @@ namespace ClosetApp.UI.Views;
         TxtClothingCount.Text = $"{count} 件衣服";
     }
 
+    public void SetSelectedTab(int tabIndex)
+    {
+        switch (tabIndex)
+        {
+            case 0:
+                NavWardrobe.IsChecked = true;
+                break;
+            case 1:
+                NavOutfits.IsChecked = true;
+                break;
+            case 2:
+                NavTags.IsChecked = true;
+                break;
+            case 3:
+                NavSettings.IsChecked = true;
+                break;
+        }
+    }
+
     private void NavItem_Checked(object sender, RoutedEventArgs e)
     {
         if (sender == NavWardrobe)

@@ -151,6 +151,27 @@ public partial class OutfitsTab : UserControl
         _viewModel.ToggleHistoryExpanded();
     }
 
+    private async void RefreshWeatherRecommendations_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            await _viewModel.RefreshWeatherRecommendationsAsync();
+            ToastService.Instance.ShowSuccess("已刷新天气推荐", "当前城市的天气和今日推荐已经更新。");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新天气推荐失败", ex.Message);
+        }
+    }
+
+    private void OpenSettings_Click(object sender, RoutedEventArgs e)
+    {
+        if (Window.GetWindow(this) is not MainWindow window)
+            return;
+
+        window.NavigateToSettings();
+    }
+
     private void CalendarDay_Click(object sender, MouseButtonEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: CalendarDayItem day })

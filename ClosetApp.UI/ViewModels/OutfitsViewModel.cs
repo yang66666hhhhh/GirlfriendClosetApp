@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.States;
 using Serilog;
 
@@ -9,11 +10,39 @@ namespace ClosetApp.UI.ViewModels;
 public partial class OutfitsViewModel : ObservableObject
 {
     private readonly IOutfitService _outfitService;
+    private readonly IOutfitRecommendationService _recommendationService;
+    private readonly IWeatherService _weatherService;
+    private readonly IWeatherPreferencesService _weatherPreferencesService;
     private readonly OutfitsTabState _state = new();
 
-    public OutfitsViewModel(IOutfitService outfitService)
+    [ObservableProperty]
+    private string _weatherCity = "Shanghai";
+
+    [ObservableProperty]
+    private int _weatherTemperature = 22;
+
+    [ObservableProperty]
+    private string _weatherCondition = "晴";
+
+    [ObservableProperty]
+    private bool _isWeatherLoading;
+
+    [ObservableProperty]
+    private string _weatherStatusText = "正在根据当前天气整理推荐搭配。";
+
+    [ObservableProperty]
+    private IReadOnlyList<Outfit> _weatherRecommendations = [];
+
+    public OutfitsViewModel(
+        IOutfitService outfitService,
+        IOutfitRecommendationService recommendationService,
+        IWeatherService weatherService,
+        IWeatherPreferencesService weatherPreferencesService)
     {
         _outfitService = outfitService;
+        _recommendationService = recommendationService;
+        _weatherService = weatherService;
+        _weatherPreferencesService = weatherPreferencesService;
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
@@ -29,6 +58,11 @@ public partial class OutfitsViewModel : ObservableObject
     public string HistoryToggleText => _state.HistoryToggleText;
     public string CalendarMonthText => _state.CalendarMonthText;
     public string CalendarSummaryText => _state.CalendarSummaryText;
+    public string WeatherHeadlineText => $"{WeatherCity} · {WeatherTemperature}°C · {WeatherCondition}";
+    public bool HasWeatherRecommendations => WeatherRecommendations.Count > 0;
+    public string WeatherRecommendationHintText => WeatherRecommendations.Count == 0
+        ? "还没有可推荐的搭配，先创建几套搭配会更有意思。"
+        : $"按当前天气挑出 {WeatherRecommendations.Count} 套更适合今天的搭配。";
 
     public async Task LoadOutfitsAsync()
     {
@@ -40,6 +74,7 @@ public partial class OutfitsViewModel : ObservableObject
             var outfits = await _outfitService.GetAllOutfitsAsync();
             _state.SetOutfits(outfits);
             await RefreshDerivedStateAsync();
+            await RefreshWeatherRecommendationsAsync();
             Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
         }
         finally
@@ -60,6 +95,50 @@ public partial class OutfitsViewModel : ObservableObject
     {
         await _outfitService.RecordWornDateAsync(outfit.Id, date);
         await LoadOutfitsAsync();
+    }
+
+    public async Task RefreshWeatherRecommendationsAsync()
+    {
+        IsWeatherLoading = true;
+        WeatherStatusText = "正在刷新当前天气和推荐搭配...";
+
+        try
+        {
+            var preferences = await _weatherPreferencesService.GetAsync();
+            WeatherCity = preferences.DefaultCity;
+
+            var weather = await _weatherService.GetCurrentWeatherAsync(WeatherCity);
+            if (weather != null)
+            {
+                WeatherCity = weather.City;
+                WeatherTemperature = weather.Temperature;
+                WeatherCondition = weather.Condition;
+            }
+            else
+            {
+                WeatherStatusText = $"暂时拿不到 {WeatherCity} 的天气，先按当前默认温度继续推荐。";
+            }
+
+            WeatherRecommendations = (await _recommendationService.GetRecommendationsByRuleAsync(WeatherTemperature, null))
+                .Take(3)
+                .ToList();
+
+            if (WeatherRecommendations.Count > 0)
+                WeatherStatusText = "已按当前天气刷新推荐。";
+            else if (weather != null)
+                WeatherStatusText = "天气已刷新，但衣橱里还没有匹配出来的搭配。";
+        }
+        catch (Exception ex)
+        {
+            WeatherRecommendations = [];
+            WeatherStatusText = $"刷新推荐失败：{ex.Message}";
+            Log.Warning(ex, "Failed to refresh weather recommendations for outfits tab");
+        }
+        finally
+        {
+            IsWeatherLoading = false;
+            NotifyWeatherStateChanged();
+        }
     }
 
     public void ToggleHistoryExpanded()
@@ -105,5 +184,19 @@ public partial class OutfitsViewModel : ObservableObject
         OnPropertyChanged(nameof(HistoryToggleText));
         OnPropertyChanged(nameof(CalendarMonthText));
         OnPropertyChanged(nameof(CalendarSummaryText));
+        NotifyWeatherStateChanged();
+    }
+
+    private void NotifyWeatherStateChanged()
+    {
+        OnPropertyChanged(nameof(WeatherCity));
+        OnPropertyChanged(nameof(WeatherTemperature));
+        OnPropertyChanged(nameof(WeatherCondition));
+        OnPropertyChanged(nameof(IsWeatherLoading));
+        OnPropertyChanged(nameof(WeatherStatusText));
+        OnPropertyChanged(nameof(WeatherRecommendations));
+        OnPropertyChanged(nameof(HasWeatherRecommendations));
+        OnPropertyChanged(nameof(WeatherHeadlineText));
+        OnPropertyChanged(nameof(WeatherRecommendationHintText));
     }
 }

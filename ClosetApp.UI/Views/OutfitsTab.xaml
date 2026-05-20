@@ -14,6 +14,31 @@
         <DataTemplate x:Key="OutfitCardTemplate">
             <outfit:OutfitCard Margin="12" Outfit="{Binding}"/>
         </DataTemplate>
+
+        <DataTemplate x:Key="WeatherRecommendationTemplate">
+            <Border Background="{StaticResource SurfaceElevatedBrush}"
+                    CornerRadius="16"
+                    Padding="14,12"
+                    Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="{Binding Name}"
+                               Foreground="{StaticResource TextPrimaryBrush}"
+                               FontWeight="SemiBold"
+                               TextTrimming="CharacterEllipsis"/>
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="{Binding Season, Converter={StaticResource SeasonToName}}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                        <TextBlock Text=" · "
+                                   Foreground="{StaticResource TextPlaceholderBrush}"
+                                   FontSize="12"/>
+                        <TextBlock Text="{Binding WearCount, StringFormat=已穿 {0} 次}"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   FontSize="12"/>
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
     </UserControl.Resources>
 
     <Grid>
@@ -102,6 +127,61 @@
                                 HorizontalAlignment="Left"
                                 Margin="0,22,0,0"
                                 Click="ToggleHistory_Click"/>
+                    </Grid>
+                </Border>
+
+                <Border Style="{StaticResource LookbookCard}"
+                        Margin="0,0,0,24">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.2*"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="0.8*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="今日天气推荐"
+                                       FontSize="18"
+                                       FontWeight="SemiBold"
+                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="{Binding WeatherHeadlineText}"
+                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Margin="0,10,0,0"/>
+                            <TextBlock Text="{Binding WeatherRecommendationHintText}"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="13"
+                                       Margin="0,8,0,0"
+                                       TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding WeatherStatusText}"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="12"
+                                       Margin="0,10,0,0"
+                                       TextWrapping="Wrap"/>
+                            <WrapPanel Margin="0,14,0,0">
+                                <Button Content="刷新天气推荐"
+                                        Style="{StaticResource CapsuleButton}"
+                                        Click="RefreshWeatherRecommendations_Click"
+                                        Margin="0,0,10,0"/>
+                                <Button Content="去设置城市"
+                                        Style="{StaticResource CapsuleButton}"
+                                        Click="OpenSettings_Click"/>
+                            </WrapPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <TextBlock Text="适合今天"
+                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       FontSize="12"/>
+                            <ItemsControl ItemsSource="{Binding WeatherRecommendations}"
+                                          ItemTemplate="{StaticResource WeatherRecommendationTemplate}"
+                                          Margin="0,10,0,0"/>
+                            <TextBlock Text="还没有推荐结果。"
+                                       Foreground="{StaticResource TextPlaceholderBrush}"
+                                       Margin="0,8,0,0"
+                                       Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                        </StackPanel>
                     </Grid>
                 </Border>
 
