@@ -117,11 +117,17 @@ public partial class App : System.Windows.Application
         services.AddScoped<GetOutfitHistorySummary>();
         services.AddScoped<RecordOutfitWorn>();
         services.AddScoped<GetTagsForSelection>();
+        services.AddMemoryCache();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IImageMaintenanceService, ImageMaintenanceService>();
         services.AddSingleton<IImageStorageService, ImageStorageService>();
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
-        services.AddSingleton<IWeatherService, WeatherService>();
+        services.AddSingleton<IWeatherPreferencesService, WeatherPreferencesService>();
+        services.AddHttpClient<IWeatherService, WeatherService>(client =>
+        {
+            client.Timeout = TimeSpan.FromSeconds(10);
+            client.DefaultRequestHeaders.UserAgent.ParseAdd("GirlfriendClosetApp/1.0");
+        });
         services.AddSingleton<ToastService>();
         services.AddSingleton<ModalService>();
 

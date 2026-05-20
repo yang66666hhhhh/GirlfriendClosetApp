@@ -157,6 +157,63 @@
                     <StackPanel Grid.Column="2">
                         <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
+                                <TextBlock Text="天气与城市" FontSize="18" FontWeight="SemiBold"
+                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="默认城市会用于获取实时天气，后面做天气穿搭推荐时也会直接复用这里。"
+                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"
+                                           TextWrapping="Wrap"/>
+
+                                <TextBlock Text="默认城市" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                <TextBox x:Name="TxtWeatherCity"
+                                         Margin="0,6,0,12"
+                                         MinHeight="40"
+                                         Padding="12,10"
+                                         Text="Shanghai"/>
+
+                                <WrapPanel Margin="0,0,0,14">
+                                    <Button x:Name="BtnRefreshWeather"
+                                            Content="刷新天气"
+                                            Style="{StaticResource CapsuleButton}"
+                                            Click="RefreshWeather_Click"
+                                            Margin="0,0,10,10"/>
+                                    <Button x:Name="BtnSaveWeatherCity"
+                                            Content="保存默认城市"
+                                            Style="{StaticResource CapsuleButton}"
+                                            Click="SaveWeatherCity_Click"
+                                            Margin="0,0,10,10"/>
+                                </WrapPanel>
+
+                                <Border Background="{StaticResource SurfaceElevatedBrush}" CornerRadius="18" Padding="16">
+                                    <StackPanel>
+                                        <TextBlock x:Name="TxtWeatherSummary"
+                                                   Text="还没有获取天气。"
+                                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                                   FontWeight="SemiBold"/>
+                                        <TextBlock x:Name="TxtWeatherDetails"
+                                                   Text="保存城市后，点一次刷新就可以验证天气接口是否接通。"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Margin="0,6,0,0"
+                                                   TextWrapping="Wrap"/>
+                                        <TextBlock x:Name="TxtWeatherObservedAt"
+                                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Margin="0,6,0,0"/>
+                                        <Border x:Name="WeatherStatusCard"
+                                                Background="{StaticResource SurfacePageBrush}"
+                                                CornerRadius="14"
+                                                Padding="12"
+                                                Margin="0,12,0,0"
+                                                Visibility="Collapsed">
+                                            <TextBlock x:Name="TxtWeatherStatus"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       TextWrapping="Wrap"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
+                            <StackPanel>
                                 <TextBlock Text="主题与外观" FontSize="18" FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
                                 <TextBlock Text="当前使用暖粉色设计系统。主题切换会在后续版本开放。"

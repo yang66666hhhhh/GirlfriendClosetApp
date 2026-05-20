@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
+using ClosetApp.Infrastructure.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
@@ -15,11 +16,16 @@ public partial class SettingsTab : UserControl
 {
     private readonly IBackupService _backupService;
     private readonly IImageMaintenanceService _imageMaintenanceService;
+    private readonly IWeatherService _weatherService;
+    private readonly IWeatherPreferencesService _weatherPreferencesService;
+    private bool _isRefreshingWeather;
 
     public SettingsTab()
     {
         _backupService = App.Services.GetRequiredService<IBackupService>();
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
+        _weatherService = App.Services.GetRequiredService<IWeatherService>();
+        _weatherPreferencesService = App.Services.GetRequiredService<IWeatherPreferencesService>();
         InitializeComponent();
         Loaded += async (_, _) => await LoadSettingsAsync();
     }
@@ -30,8 +36,10 @@ public partial class SettingsTab : UserControl
         TxtImagesDir.Text = AppPaths.ImagesDir;
         TxtLogDir.Text = AppPaths.LogsDir;
         TxtVersion.Text = $"版本 {GetVersion()}";
+        await LoadWeatherPreferencesAsync();
         await RefreshStatsAsync();
         await RefreshBackupStateAsync();
+        await RefreshWeatherAsync(showStatus: false);
     }
 
     private static string GetVersion()
@@ -141,6 +149,29 @@ public partial class SettingsTab : UserControl
     {
         await RefreshStatsAsync();
         await RefreshBackupStateAsync();
+    }
+
+    private async void RefreshWeather_Click(object sender, RoutedEventArgs e)
+    {
+        await RefreshWeatherAsync(showStatus: true);
+    }
+
+    private async void SaveWeatherCity_Click(object sender, RoutedEventArgs e)
+    {
+        var city = TxtWeatherCity.Text.Trim();
+        if (string.IsNullOrWhiteSpace(city))
+        {
+            ShowWeatherStatus("请先输入默认城市。");
+            TxtWeatherCity.Focus();
+            return;
+        }
+
+        await _weatherPreferencesService.SaveAsync(new WeatherPreferences
+        {
+            DefaultCity = city
+        });
+
+        ShowWeatherStatus($"默认城市已保存为 {city}。");
     }
 
     private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
@@ -335,6 +366,61 @@ public partial class SettingsTab : UserControl
         await RefreshBackupStateAsync();
     }
 
+    private async Task LoadWeatherPreferencesAsync()
+    {
+        var preferences = await _weatherPreferencesService.GetAsync();
+        TxtWeatherCity.Text = preferences.DefaultCity;
+    }
+
+    private async Task RefreshWeatherAsync(bool showStatus)
+    {
+        if (_isRefreshingWeather)
+            return;
+
+        var city = TxtWeatherCity.Text.Trim();
+        if (string.IsNullOrWhiteSpace(city))
+        {
+            UpdateWeatherCard(null, "请输入城市后再刷新。");
+            return;
+        }
+
+        _isRefreshingWeather = true;
+        BtnRefreshWeather.IsEnabled = false;
+        BtnSaveWeatherCity.IsEnabled = false;
+        TxtWeatherSummary.Text = "正在获取天气...";
+        TxtWeatherDetails.Text = "稍等一下，我正在请求实时天气。";
+        TxtWeatherObservedAt.Text = string.Empty;
+        if (showStatus)
+            ShowWeatherStatus("正在刷新天气...");
+
+        try
+        {
+            await _weatherPreferencesService.SaveAsync(new WeatherPreferences
+            {
+                DefaultCity = city
+            });
+
+            var weather = await _weatherService.GetCurrentWeatherAsync(city);
+            if (weather == null)
+            {
+                UpdateWeatherCard(null, $"没有找到“{city}”的天气数据，请试试中文全名、英文城市名，或带上省/州名。");
+                return;
+            }
+
+            UpdateWeatherCard(weather, showStatus ? $"已刷新 {weather.City} 的实时天气。" : null);
+        }
+        catch (Exception ex)
+        {
+            UpdateWeatherCard(null, $"天气刷新失败：{ex.Message}");
+        }
+        finally
+        {
+            _isRefreshingWeather = false;
+            BtnRefreshWeather.IsEnabled = true;
+            BtnSaveWeatherCity.IsEnabled = true;
+        }
+    }
+
     private async void ClearBackupHistory_Click(object sender, RoutedEventArgs e)
     {
         var confirm = MessageBox.Show(
@@ -522,5 +608,51 @@ public partial class SettingsTab : UserControl
         BtnRepairAfterImport.Visibility = Visibility.Collapsed;
         TxtLastImportWarning.Text = string.Empty;
         TxtLastImportMissingFiles.Text = string.Empty;
+    }
+
+    private void UpdateWeatherCard(WeatherInfo? weather, string? status)
+    {
+        if (weather == null)
+        {
+            TxtWeatherSummary.Text = "暂时没有可用天气。";
+            TxtWeatherDetails.Text = "你可以检查网络，或者换一个更完整的城市名重新试一次。";
+            TxtWeatherObservedAt.Text = string.Empty;
+            ShowWeatherStatus(status);
+            return;
+        }
+
+        TxtWeatherSummary.Text = $"{weather.City} · {weather.Temperature}°C · {weather.Condition}";
+        TxtWeatherDetails.Text = $"湿度 {weather.Humidity}%{BuildTimezoneSuffix(weather.Timezone)}";
+        TxtWeatherObservedAt.Text = weather.ObservedAt.HasValue
+            ? $"观测时间 {weather.ObservedAt:yyyy-MM-dd HH:mm}"
+            : string.Empty;
+
+        if (!string.IsNullOrWhiteSpace(status))
+            ShowWeatherStatus(status);
+        else
+            HideWeatherStatus();
+    }
+
+    private static string BuildTimezoneSuffix(string timezone)
+    {
+        return string.IsNullOrWhiteSpace(timezone) ? string.Empty : $" · {timezone}";
+    }
+
+    private void ShowWeatherStatus(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message))
+        {
+            HideWeatherStatus();
+            return;
+        }
+
+        WeatherStatusCard.Visibility = Visibility.Visible;
+        TxtWeatherStatus.Text = message;
+    }
+
+    private void HideWeatherStatus()
+    {
+        WeatherStatusCard.Visibility = Visibility.Collapsed;
+        TxtWeatherStatus.Text = string.Empty;
     }
 }
