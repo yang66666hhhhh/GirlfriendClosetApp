@@ -41,7 +41,7 @@
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="344"/>
+                <RowDefinition Height="324"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
@@ -52,12 +52,12 @@
                     CornerRadius="18,18,0,0"
                     ClipToBounds="True">
                 <Grid>
-                    <Border Width="176"
+                    <Border Width="192"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Stretch"
-                            Margin="0,12,0,22"
+                            Margin="0,8,0,14"
                             CornerRadius="88"
-                            Opacity="0.72">
+                            Opacity="0.62">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
                                 <GradientStop Color="#30FFFFFF" Offset="0"/>
@@ -66,12 +66,12 @@
                             </LinearGradientBrush>
                         </Border.Background>
                     </Border>
-                    <Ellipse Width="156"
-                             Height="20"
+                    <Ellipse Width="132"
+                             Height="16"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Bottom"
-                             Margin="0,0,0,28"
-                             Opacity="0.42"
+                             Margin="0,0,0,34"
+                             Opacity="0.28"
                              IsHitTestVisible="False">
                         <Ellipse.Fill>
                             <RadialGradientBrush RadiusX="0.76" RadiusY="0.84">
@@ -81,7 +81,7 @@
                         </Ellipse.Fill>
                     </Ellipse>
                     <outfit:OutfitPreviewCanvas x:Name="PreviewCanvas"
-                                                Margin="8,8,8,0"
+                                                Margin="6,4,6,0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
                     <Border x:Name="ActionOverlay" Visibility="Collapsed"

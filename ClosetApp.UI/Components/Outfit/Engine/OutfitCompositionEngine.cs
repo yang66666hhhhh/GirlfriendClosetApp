@@ -5,6 +5,12 @@ namespace ClosetApp.UI.Components.Outfit.Engine;
 
 public class OutfitCompositionEngine
 {
+    private const double DressShoeGroundLineRatio = 0.81;
+    private const double SeparateShoeGroundLineRatio = 0.80;
+    private const double TopZoneTopRatio = 0.02;
+    private const double BottomZoneTopRatio = 0.27;
+    private const double ShoesZoneTopRatio = 0.61;
+
     private readonly OutfitRenderMetrics _metrics;
 
     public OutfitCompositionEngine(OutfitRenderMetrics? metrics = null)
@@ -85,6 +91,24 @@ public class OutfitCompositionEngine
 
     private static double CenterX(double canvasWidth, double itemWidth) => (canvasWidth - itemWidth) / 2;
 
+    private static double AlignToGround(double canvasHeight, double itemHeight, double groundLineRatio)
+    {
+        return (canvasHeight * groundLineRatio) - itemHeight;
+    }
+
+    private static double AlignToZoneStart(double canvasHeight, double zoneTopRatio)
+    {
+        return canvasHeight * zoneTopRatio;
+    }
+
+    private static double CenterInZone(double zoneTop, double zoneHeight, double itemHeight)
+    {
+        if (zoneHeight <= itemHeight)
+            return zoneTop;
+
+        return zoneTop + ((zoneHeight - itemHeight) / 2);
+    }
+
     private List<OutfitLayoutItem> SoloMode(global::ClosetApp.Domain.Entities.Clothing item, double cw, double ch)
     {
         var role = ResolveSoloLayerRole(item);
@@ -129,18 +153,17 @@ public class OutfitCompositionEngine
         var items = new List<OutfitLayoutItem>();
         var parts = GetParts(clothes);
 
-        double upperBudget = parts.Shoes != null ? ch * 0.79 : ch * 0.88;
-        double shoesBudget = parts.Shoes != null ? ch * 0.12 : 0;
-        double shoesGap = ch * 0.028;
-        double y = ch * 0.01;
+        double dressTop = ch * 0.015;
+        double dressZoneHeight = parts.Shoes != null ? ch * 0.74 : ch * 0.84;
+        double shoesZoneTop = ch * 0.71;
+        double shoesBudget = parts.Shoes != null ? ch * 0.16 : 0;
 
         if (parts.Dress != null)
         {
-            double w = cw * (_metrics.DressWidthRatio + 0.02);
+            double w = cw * (_metrics.DressWidthRatio + 0.12);
             double x = CenterX(cw, w);
-            double h = Math.Min(upperBudget, w / _metrics.DressHeightRatio);
-            items.Add(new() { Clothing = parts.Dress, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
-            y += h - ch * 0.03;
+            double h = Math.Max(ch * 0.73, dressZoneHeight);
+            items.Add(new() { Clothing = parts.Dress, X = x, Y = dressTop, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
         }
 
         if (parts.Outer != null)
@@ -153,12 +176,11 @@ public class OutfitCompositionEngine
 
         if (parts.Shoes != null)
         {
-            double w = cw * (_metrics.ShoesWidthRatio + 0.015);
+            double w = cw * 0.36;
             double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
-            var shoeY = Math.Min(ch - h - ch * 0.04, y + shoesGap);
+            var shoeY = Math.Max(shoesZoneTop, AlignToGround(ch, h, DressShoeGroundLineRatio));
             items.Add(new() { Clothing = parts.Shoes, X = x, Y = shoeY, Width = w, Height = h, ZIndex = 4, Opacity = 0.98 });
-            y += h;
         }
 
         if (parts.Accessory != null)
@@ -177,52 +199,50 @@ public class OutfitCompositionEngine
         var items = new List<OutfitLayoutItem>();
         var parts = GetParts(clothes);
 
-        double upperBudget = parts.Shoes != null ? ch * 0.30 : ch * 0.34;
-        double lowerBudget = parts.Shoes != null ? ch * 0.31 : ch * 0.35;
-        double shoesBudget = parts.Shoes != null ? ch * 0.12 : 0;
-        double sectionGap = ch * 0.035;
-        double shoesGap = ch * 0.03;
-        double y = ch * 0.04;
+        double upperY = AlignToZoneStart(ch, TopZoneTopRatio);
+        double upperBudget = ch * 0.24;
+        double lowerY = AlignToZoneStart(ch, BottomZoneTopRatio);
+        double lowerBudget = ch * 0.28;
+        double shoesBudget = parts.Shoes != null ? ch * 0.16 : 0;
+        double shoesZoneTop = AlignToZoneStart(ch, ShoesZoneTopRatio);
 
         if (parts.PrimaryUpper != null)
         {
             var upper = parts.PrimaryUpper;
             bool isOuterLed = upper == parts.Outer;
-            double w = cw * (isOuterLed ? _metrics.OuterwearWidthRatio : _metrics.TopWidthRatio + 0.06);
+            double w = cw * (isOuterLed ? _metrics.OuterwearWidthRatio : _metrics.TopWidthRatio + 0.10);
             double x = CenterX(cw, w);
             double aspect = isOuterLed ? _metrics.OuterwearHeightRatio : _metrics.TopHeightRatio;
             double h = Math.Min(upperBudget, w / aspect);
-            items.Add(new() { Clothing = upper, X = x, Y = y, Width = w, Height = h, ZIndex = 3, Opacity = isOuterLed ? _metrics.OuterwearOpacity : 1.0 });
+            double upperZoneY = CenterInZone(upperY, upperBudget, h);
+            items.Add(new() { Clothing = upper, X = x, Y = upperZoneY, Width = w, Height = h, ZIndex = 3, Opacity = isOuterLed ? _metrics.OuterwearOpacity : 1.0 });
 
             if (parts.InnerUpper != null)
             {
                 double insetW = cw * 0.30;
                 double insetH = Math.Min(h * 0.38, insetW / _metrics.TopHeightRatio);
                 double insetX = CenterX(cw, insetW);
-                double insetY = y + h * 0.22;
+                double insetY = upperZoneY + h * 0.22;
                 items.Add(new() { Clothing = parts.InnerUpper, X = insetX, Y = insetY, Width = insetW, Height = insetH, ZIndex = 4, Opacity = 0.92 });
             }
-
-            y += h + sectionGap;
         }
 
         if (parts.Bottom != null)
         {
-            double w = cw * _metrics.BottomWidthRatio;
+            double w = cw * (_metrics.BottomWidthRatio + 0.06);
             double x = CenterX(cw, w);
             double h = Math.Min(lowerBudget, w / _metrics.BottomHeightRatio);
-            items.Add(new() { Clothing = parts.Bottom, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
-            y += h + sectionGap * 0.7;
+            double lowerZoneY = CenterInZone(lowerY, lowerBudget, h);
+            items.Add(new() { Clothing = parts.Bottom, X = x, Y = lowerZoneY, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
         }
 
         if (parts.Shoes != null)
         {
-            double w = cw * (_metrics.ShoesWidthRatio + 0.02);
+            double w = cw * 0.38;
             double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
-            var shoeY = Math.Min(ch - h - ch * 0.045, y + shoesGap);
+            var shoeY = Math.Max(shoesZoneTop, AlignToGround(ch, h, SeparateShoeGroundLineRatio));
             items.Add(new() { Clothing = parts.Shoes, X = x, Y = shoeY, Width = w, Height = h, ZIndex = 5, Opacity = 0.98 });
-            y += h;
         }
 
         if (parts.Accessory != null)
@@ -241,53 +261,51 @@ public class OutfitCompositionEngine
         var items = new List<OutfitLayoutItem>();
         var parts = GetParts(clothes);
 
-        double y = ch * 0.04;
-        double shoesBudget = parts.Shoes != null ? ch * 0.12 : 0;
-        double lowerBudget = parts.Bottom != null ? ch * 0.31 : 0;
-        double upperBudget = parts.Bottom != null ? ch * 0.30 : ch * 0.70;
-        double sectionGap = ch * 0.035;
-        double shoesGap = ch * 0.03;
+        double upperY = AlignToZoneStart(ch, TopZoneTopRatio);
+        double upperBudget = parts.Bottom != null ? ch * 0.25 : ch * 0.70;
+        double lowerY = AlignToZoneStart(ch, BottomZoneTopRatio);
+        double lowerBudget = parts.Bottom != null ? ch * 0.28 : 0;
+        double shoesBudget = parts.Shoes != null ? ch * 0.16 : 0;
+        double shoesZoneTop = AlignToZoneStart(ch, ShoesZoneTopRatio);
 
         if (parts.PrimaryUpper != null)
         {
             var upper = parts.PrimaryUpper;
             bool isOuterLed = upper == parts.Outer;
             bool isDress = upper == parts.Dress;
-            double w = cw * (isDress ? _metrics.DressWidthRatio + 0.01 : isOuterLed ? _metrics.OuterwearWidthRatio : _metrics.TopWidthRatio + 0.05);
+            double w = cw * (isDress ? _metrics.DressWidthRatio + 0.04 : isOuterLed ? _metrics.OuterwearWidthRatio : _metrics.TopWidthRatio + 0.09);
             double x = CenterX(cw, w);
             double aspect = isDress ? _metrics.DressHeightRatio : isOuterLed ? _metrics.OuterwearHeightRatio : _metrics.TopHeightRatio;
             double h = Math.Min(upperBudget, w / aspect);
-            items.Add(new() { Clothing = upper, X = x, Y = y, Width = w, Height = h, ZIndex = 3, Opacity = isOuterLed ? _metrics.OuterwearOpacity : 1.0 });
+            double upperZoneY = CenterInZone(upperY, upperBudget, h);
+            items.Add(new() { Clothing = upper, X = x, Y = upperZoneY, Width = w, Height = h, ZIndex = 3, Opacity = isOuterLed ? _metrics.OuterwearOpacity : 1.0 });
 
             if (parts.InnerUpper != null)
             {
                 double insetW = cw * 0.30;
                 double insetH = Math.Min(h * 0.36, insetW / _metrics.TopHeightRatio);
                 double insetX = CenterX(cw, insetW);
-                double insetY = y + h * 0.22;
+                double insetY = upperZoneY + h * 0.22;
                 items.Add(new() { Clothing = parts.InnerUpper, X = insetX, Y = insetY, Width = insetW, Height = insetH, ZIndex = 4, Opacity = 0.92 });
             }
-
-            y += h + sectionGap;
         }
 
         if (parts.Bottom != null)
         {
-            double w = cw * _metrics.BottomWidthRatio;
+            double w = cw * (_metrics.BottomWidthRatio + 0.06);
             double x = CenterX(cw, w);
             double h = Math.Min(lowerBudget, w / _metrics.BottomHeightRatio);
-            items.Add(new() { Clothing = parts.Bottom, X = x, Y = y, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
-            y += h + sectionGap * 0.7;
+            double lowerZoneY = CenterInZone(lowerY, lowerBudget, h);
+            items.Add(new() { Clothing = parts.Bottom, X = x, Y = lowerZoneY, Width = w, Height = h, ZIndex = 2, Opacity = 1.0 });
         }
 
         if (parts.Shoes != null)
         {
-            double w = cw * (_metrics.ShoesWidthRatio + 0.02);
+            double w = cw * 0.38;
             double x = CenterX(cw, w);
             double h = Math.Min(shoesBudget, w / _metrics.ShoesHeightRatio);
-            var shoeY = Math.Min(ch - h - ch * 0.045, y + shoesGap);
+            var shoeY = Math.Max(shoesZoneTop, AlignToGround(ch, h, SeparateShoeGroundLineRatio));
             items.Add(new() { Clothing = parts.Shoes, X = x, Y = shoeY, Width = w, Height = h, ZIndex = 5, Opacity = 0.98 });
-            y += h;
         }
 
         if (parts.Accessory != null)
@@ -295,7 +313,9 @@ public class OutfitCompositionEngine
             double w = cw * _metrics.AccessoryWidthRatio;
             double x = cw * 0.70;
             double h = Math.Min(ch * 0.18, w);
-            double accessoryY = Math.Max(ch * 0.12, y - h - 6);
+            double accessoryY = parts.Bottom != null
+                ? Math.Max(ch * 0.12, lowerY - h - 8)
+                : Math.Max(ch * 0.12, upperY + ch * 0.06);
             items.Add(new() { Clothing = parts.Accessory, X = x, Y = accessoryY, Width = w, Height = h, ZIndex = 5, Opacity = 0.96 });
         }
 

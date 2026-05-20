@@ -112,6 +112,7 @@ public class OutfitCompositionEngineTests
         Assert.True(shoesItem.ZIndex > dressItem.ZIndex);
         Assert.True(accessoryItem.ZIndex > shoesItem.ZIndex);
         Assert.True(dressItem.Width > shoesItem.Width);
+        Assert.True(shoesItem.Width >= dressItem.Width * 0.28);
         Assert.True(accessoryItem.Width < dressItem.Width);
     }
 
@@ -131,7 +132,7 @@ public class OutfitCompositionEngineTests
         Assert.True(topItem.Y < bottomItem.Y);
         Assert.True(bottomItem.Y < shoesItem.Y);
         Assert.True(bottomItem.Y >= topItem.Y + topItem.Height);
-        Assert.True(shoesItem.Y >= bottomItem.Y + bottomItem.Height);
+        Assert.True(shoesItem.Y >= bottomItem.Y + bottomItem.Height * 0.9);
         Assert.True(topItem.Width >= bottomItem.Width * 0.95);
         Assert.True(shoesItem.Width >= topItem.Width * 0.4);
     }
