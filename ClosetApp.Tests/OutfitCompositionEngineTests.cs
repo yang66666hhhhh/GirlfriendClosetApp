@@ -130,6 +130,10 @@ public class OutfitCompositionEngineTests
         var shoesItem = layout.Single(item => item.Clothing == shoes);
         Assert.True(topItem.Y < bottomItem.Y);
         Assert.True(bottomItem.Y < shoesItem.Y);
+        Assert.True(bottomItem.Y >= topItem.Y + topItem.Height);
+        Assert.True(shoesItem.Y >= bottomItem.Y + bottomItem.Height);
+        Assert.True(topItem.Width >= bottomItem.Width * 0.95);
+        Assert.True(shoesItem.Width >= topItem.Width * 0.4);
     }
 
     [Fact]

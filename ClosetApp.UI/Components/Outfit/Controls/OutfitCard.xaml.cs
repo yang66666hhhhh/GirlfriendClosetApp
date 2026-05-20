@@ -99,14 +99,16 @@ public partial class OutfitCard : UserControl
     {
         if (d is OutfitCard card && e.NewValue is OutfitEntity outfit)
         {
-            card.TxtName.Text = outfit.Name;
-            card.TxtMoodLine.Text = BuildMoodLine(outfit);
+            var clothes = outfit.OutfitClothes?.Select(oc => oc.Clothing).ToList();
+            var chips = BuildMoodChips(outfit, clothes);
+            card.TxtName.Text = BuildDisplayName(outfit, clothes);
+            card.TxtMoodLine.Text = chips.Count > 0 ? string.Join(" · ", chips.Take(2)) : "今日搭配";
             card.TxtWearInfo.Text = outfit.WearCount > 0
                 ? $"穿过 {outfit.WearCount} 次 · 最近 {FormatWornDate(outfit.WornDate)}"
                 : "还没记录穿着";
-            var clothes = outfit.OutfitClothes?.Select(oc => oc.Clothing).ToList();
             card.PreviewCanvas.Clothes = clothes;
             card.ApplyPreviewBackdrop(outfit, clothes);
+            card.RenderMoodChips(chips);
         }
     }
 
@@ -140,36 +142,62 @@ public partial class OutfitCard : UserControl
         ActionOverlay.Visibility = Visibility.Collapsed;
     }
 
-    private static string BuildMoodLine(OutfitEntity outfit)
+    private static string BuildDisplayName(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
     {
-        var parts = new List<string>();
+        var currentName = outfit.Name?.Trim();
+        if (!string.IsNullOrWhiteSpace(currentName) &&
+            currentName is not "未命名" and not "新搭配" and not "新的搭配")
+            return currentName!;
 
-        var season = outfit.Season switch
-        {
-            Season.Spring => "春",
-            Season.Summer => "夏",
-            Season.Autumn => "秋",
-            Season.Winter => "冬",
-            Season.AllSeason => "四季",
-            _ => string.Empty
-        };
+        // 只有占位标题时才兜底，不覆盖用户自己起的名字。
+        var tone = ResolveColorTone(clothes);
+        var scene = ResolveSceneTitle(outfit.Scene);
+        var season = ResolveSeasonTitle(outfit.Season);
 
-        var scene = outfit.Scene switch
-        {
-            OutfitScene.Work => "通勤",
-            OutfitScene.Date => "约会",
-            OutfitScene.Travel => "出游",
-            OutfitScene.Party => "聚会",
-            OutfitScene.Casual => "日常",
-            _ => string.Empty
-        };
-
-        if (!string.IsNullOrWhiteSpace(season))
-            parts.Add(season);
+        if (!string.IsNullOrWhiteSpace(tone) && !string.IsNullOrWhiteSpace(scene))
+            return $"{tone}{scene}";
+        if (!string.IsNullOrWhiteSpace(season) && !string.IsNullOrWhiteSpace(scene))
+            return $"{season}{scene}";
+        if (!string.IsNullOrWhiteSpace(tone))
+            return $"{tone}轻搭";
         if (!string.IsNullOrWhiteSpace(scene))
-            parts.Add(scene);
+            return $"{scene}穿搭";
+        if (!string.IsNullOrWhiteSpace(season))
+            return $"{season}轻搭";
 
-        return parts.Count > 0 ? string.Join(" · ", parts) : "今日搭配";
+        return "今日穿搭";
+    }
+
+    private void RenderMoodChips(IReadOnlyList<string> chips)
+    {
+        MoodChipPanel.Children.Clear();
+
+        foreach (var chip in chips.Take(3))
+        {
+            var border = new Border
+            {
+                Background = new SolidColorBrush(Color.FromArgb(28, 217, 162, 153)),
+                BorderBrush = new SolidColorBrush(Color.FromArgb(36, 217, 162, 153)),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(9),
+                Padding = new Thickness(8, 3, 8, 3),
+                Margin = new Thickness(0, 0, 6, 6)
+            };
+
+            border.Child = new TextBlock
+            {
+                Text = chip,
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = global::System.Windows.Application.Current?.TryFindResource("PrimaryBrush") as Brush ?? Brushes.Black
+            };
+
+            MoodChipPanel.Children.Add(border);
+        }
+
+        MoodChipPanel.Visibility = MoodChipPanel.Children.Count > 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void ApplyPreviewBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
@@ -211,4 +239,134 @@ public partial class OutfitCard : UserControl
         };
     }
 
+    private static IReadOnlyList<string> BuildMoodChips(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    {
+        var chips = new List<string>();
+        var season = ResolveSeasonChip(outfit.Season);
+        var tone = ResolveColorTone(clothes);
+        var scene = ResolveSceneChip(outfit.Scene);
+        var silhouette = ResolveSilhouetteChip(clothes);
+
+        if (!string.IsNullOrWhiteSpace(season))
+            chips.Add(season);
+        if (!string.IsNullOrWhiteSpace(tone))
+            chips.Add(tone);
+        if (!string.IsNullOrWhiteSpace(scene))
+            chips.Add(scene);
+        if (!string.IsNullOrWhiteSpace(silhouette))
+            chips.Add(silhouette);
+
+        return chips.Distinct().ToList();
+    }
+
+    private static string ResolveSeasonChip(Season season)
+    {
+        return season switch
+        {
+            Season.Spring => "春",
+            Season.Summer => "夏",
+            Season.Autumn => "秋",
+            Season.Winter => "冬",
+            Season.AllSeason => "四季",
+            _ => string.Empty
+        };
+    }
+
+    private static string ResolveSeasonTitle(Season season)
+    {
+        return season switch
+        {
+            Season.Spring => "春日",
+            Season.Summer => "夏日",
+            Season.Autumn => "秋日",
+            Season.Winter => "冬日",
+            Season.AllSeason => "四季",
+            _ => string.Empty
+        };
+    }
+
+    private static string ResolveSceneChip(OutfitScene scene)
+    {
+        return scene switch
+        {
+            OutfitScene.Work => "通勤",
+            OutfitScene.Date => "约会",
+            OutfitScene.Travel => "出游",
+            OutfitScene.Party => "聚会",
+            OutfitScene.Casual => "休闲",
+            _ => string.Empty
+        };
+    }
+
+    private static string ResolveSceneTitle(OutfitScene scene)
+    {
+        return scene switch
+        {
+            OutfitScene.Work => "通勤",
+            OutfitScene.Date => "约会",
+            OutfitScene.Travel => "出游",
+            OutfitScene.Party => "派对",
+            OutfitScene.Casual => "休闲",
+            _ => string.Empty
+        };
+    }
+
+    private static string? ResolveSilhouetteChip(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    {
+        if (clothes == null || clothes.Count == 0)
+            return null;
+
+        bool hasDress = clothes.Any(c => IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Dress, "dress"));
+        bool hasSkirt = clothes.Any(c => IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Skirt, "skirt"));
+        bool hasOuterwear = clothes.Any(c => IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Outerwear, "coat", "jacket", "cardigan"));
+
+        if (hasDress)
+            return "连衣裙";
+        if (hasOuterwear)
+            return "叠穿";
+        if (hasSkirt)
+            return "裙装";
+
+        return "轻搭";
+    }
+
+    private static string? ResolveColorTone(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    {
+        var colorTokens = clothes?
+            .Select(c => c.Color?.ToLowerInvariant())
+            .Where(c => !string.IsNullOrWhiteSpace(c))
+            .ToList();
+
+        if (colorTokens == null || colorTokens.Count == 0)
+            return null;
+
+        if (colorTokens.Any(c => c!.Contains("pink") || c.Contains("粉")))
+            return "奶油粉";
+        if (colorTokens.Any(c => c!.Contains("white") || c.Contains("cream") || c.Contains("白") || c.Contains("米")))
+            return "奶油白";
+        if (colorTokens.Any(c => c!.Contains("blue") || c.Contains("蓝")))
+            return "雾蓝";
+        if (colorTokens.Any(c => c!.Contains("green") || c.Contains("绿")))
+            return "柔绿";
+        if (colorTokens.Any(c => c!.Contains("yellow") || c.Contains("黄")))
+            return "奶油黄";
+        if (colorTokens.Any(c => c!.Contains("brown") || c.Contains("棕") || c.Contains("咖")))
+            return "可可棕";
+        if (colorTokens.Any(c => c!.Contains("black") || c.Contains("黑") || c.Contains("gray") || c.Contains("grey") || c.Contains("灰")))
+            return "灰调";
+
+        return null;
+    }
+
+    private static bool IsType(global::ClosetApp.Domain.Entities.Clothing clothing, global::ClosetApp.Domain.Enums.ClothingType type, params string[] garmentHints)
+    {
+        if (clothing.Type == type)
+            return true;
+
+        var garment = clothing.GarmentType?.ToString();
+        if (string.IsNullOrWhiteSpace(garment))
+            return false;
+
+        return garmentHints.Any(hint => garment.Contains(hint, StringComparison.OrdinalIgnoreCase));
+    }
 }

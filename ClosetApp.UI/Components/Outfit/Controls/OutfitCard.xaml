@@ -41,7 +41,7 @@
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="360"/>
+                <RowDefinition Height="344"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
@@ -52,8 +52,36 @@
                     CornerRadius="18,18,0,0"
                     ClipToBounds="True">
                 <Grid>
+                    <Border Width="176"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Stretch"
+                            Margin="0,12,0,22"
+                            CornerRadius="88"
+                            Opacity="0.72">
+                        <Border.Background>
+                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                <GradientStop Color="#30FFFFFF" Offset="0"/>
+                                <GradientStop Color="#14FFFFFF" Offset="0.48"/>
+                                <GradientStop Color="#05FFFFFF" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Border.Background>
+                    </Border>
+                    <Ellipse Width="156"
+                             Height="20"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Bottom"
+                             Margin="0,0,0,28"
+                             Opacity="0.42"
+                             IsHitTestVisible="False">
+                        <Ellipse.Fill>
+                            <RadialGradientBrush RadiusX="0.76" RadiusY="0.84">
+                                <GradientStop Color="#22000000" Offset="0"/>
+                                <GradientStop Color="#00000000" Offset="1"/>
+                            </RadialGradientBrush>
+                        </Ellipse.Fill>
+                    </Ellipse>
                     <outfit:OutfitPreviewCanvas x:Name="PreviewCanvas"
-                                                Margin="18,14,18,8"
+                                                Margin="8,8,8,0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
                     <Border x:Name="ActionOverlay" Visibility="Collapsed"
@@ -89,9 +117,11 @@
                                    Foreground="{StaticResource TextSecondaryBrush}"
                                    Margin="0,5,0,0"
                                    TextTrimming="CharacterEllipsis"/>
+                        <WrapPanel x:Name="MoodChipPanel"
+                                   Margin="0,8,0,0"/>
                         <TextBlock x:Name="TxtWearInfo" FontSize="11"
                                    Foreground="{StaticResource TextTertiaryBrush}"
-                                   Margin="0,8,0,0"
+                                   Margin="0,10,0,0"
                                    TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                     <Button x:Name="BtnFavorite" Grid.Column="1"
