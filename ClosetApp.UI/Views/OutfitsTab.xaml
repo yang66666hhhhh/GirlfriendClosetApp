@@ -8,6 +8,8 @@
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+        <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter"/>
         <conv:OutfitSceneToIconConverter x:Key="SceneToIconConverter"/>
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
 
@@ -17,24 +19,25 @@
 
         <DataTemplate x:Key="WeatherRecommendationTemplate">
             <Border Background="{StaticResource SurfaceElevatedBrush}"
-                    CornerRadius="14"
-                    Padding="14,12"
-                    Margin="0,0,0,10">
+                    CornerRadius="12"
+                    Padding="12,10"
+                    Margin="0,0,0,6">
                 <StackPanel>
                     <TextBlock Text="{Binding Name}"
                                Foreground="{StaticResource TextPrimaryBrush}"
                                FontWeight="SemiBold"
+                               FontSize="13"
                                TextTrimming="CharacterEllipsis"/>
                     <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
                         <TextBlock Text="{Binding Season, Converter={StaticResource SeasonToName}}"
                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="12"/>
+                                   FontSize="11"/>
                         <TextBlock Text=" · "
                                    Foreground="{StaticResource TextPlaceholderBrush}"
-                                   FontSize="12"/>
+                                   FontSize="11"/>
                         <TextBlock Text="{Binding WearCount, StringFormat=已穿 {0} 次}"
                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="12"/>
+                                   FontSize="11"/>
                     </StackPanel>
                 </StackPanel>
             </Border>
@@ -67,66 +70,91 @@
         <!-- Content -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="64,28,64,60"
+                      Padding="64,20,64,48"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
                 <Border Style="{StaticResource LookbookCard}"
-                        Margin="0,0,0,24">
+                        Margin="0,0,0,12"
+                        Padding="20,16">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.05*"/>
-                            <ColumnDefinition Width="24"/>
-                            <ColumnDefinition Width="0.95*"/>
+                            <ColumnDefinition Width="1.65*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="0.45*"/>
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="搭配总览"
-                                       FontSize="22"
+                                       FontSize="16"
                                        FontWeight="Bold"
                                        Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Text="先看今天适合穿什么，再按需展开记录和日历。"
                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="13"
-                                       Margin="0,8,0,0"
+                                       FontSize="10"
+                                       Margin="0,3,0,0"
                                        TextWrapping="Wrap"/>
 
-                            <WrapPanel Margin="0,16,0,0">
+                            <WrapPanel Margin="0,8,0,0">
                                 <Border Background="{StaticResource SurfaceSectionBrush}"
-                                        CornerRadius="16"
-                                        Padding="14,10"
-                                        Margin="0,0,10,10">
+                                        CornerRadius="12"
+                                        Padding="10,6"
+                                        Margin="0,0,6,4">
                                     <StackPanel>
                                         <TextBlock x:Name="TxtOutfitCount"
                                                    Text="{Binding OutfitCountText}"
                                                    Foreground="{StaticResource TextPrimaryBrush}"
-                                           FontWeight="SemiBold"/>
+                                                   FontWeight="SemiBold"
+                                                   FontSize="12"/>
                                         <TextBlock Text="当前收藏"
                                                    Foreground="{StaticResource TextTertiaryBrush}"
-                                                   FontSize="11"
-                                                   Margin="0,3,0,0"/>
+                                                   FontSize="9"
+                                                   Margin="0,1,0,0"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Background="{StaticResource PrimaryLightBrush}"
-                                        CornerRadius="16"
-                                        Padding="14,10"
-                                        Margin="0,0,10,10">
+                                        CornerRadius="12"
+                                        Padding="10,6"
+                                        Margin="0,0,6,4">
                                     <StackPanel>
                                         <TextBlock x:Name="TxtHistoryQuick"
                                                    Text="{Binding HistoryQuickText}"
                                                    Foreground="{StaticResource PrimaryBrush}"
-                                                   FontWeight="SemiBold"/>
+                                                   FontWeight="SemiBold"
+                                                   FontSize="12"/>
                                         <TextBlock Text="穿着时间线"
                                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                                   FontSize="11"
-                                                   Margin="0,3,0,0"/>
+                                                   FontSize="9"
+                                                   Margin="0,1,0,0"/>
                                     </StackPanel>
                                 </Border>
                             </WrapPanel>
 
-                            <Border Background="{StaticResource SurfaceElevatedBrush}"
-                                    CornerRadius="18"
-                                    Padding="18,16"
-                                    Margin="0,8,0,0">
+                            <WrapPanel Margin="0,6,0,0">
+                                <Button Content="刷新天气推荐"
+                                        Style="{StaticResource CapsuleButton}"
+                                        Click="RefreshWeatherRecommendations_Click"
+                                        Padding="10,6"
+                                        Margin="0,0,6,0"
+                                        FontSize="12"/>
+                                <Button x:Name="ToggleHistoryButton"
+                                        Content="{Binding HistoryToggleText}"
+                                        Style="{StaticResource CapsuleButton}"
+                                        Click="ToggleHistory_Click"
+                                        Padding="10,6"
+                                        Margin="0,0,6,0"
+                                        FontSize="12"/>
+                                <Button Content="去设置城市"
+                                        Style="{StaticResource CapsuleButton}"
+                                        Click="OpenSettings_Click"
+                                        Padding="10,6"
+                                        FontSize="12"/>
+                            </WrapPanel>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <Border Background="{StaticResource SurfaceSectionBrush}"
+                                    CornerRadius="12"
+                                    Padding="12,10">
                                 <StackPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -134,84 +162,48 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <StackPanel>
-                                            <TextBlock Text="当前天气"
+                                            <TextBlock Text="今日天气"
                                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                                       FontSize="12"/>
-                                            <TextBlock Text="{Binding WeatherHeadlineText}"
+                                                       FontSize="9"/>
+                                            <TextBlock Text="{Binding WeatherCompactSummaryText}"
                                                        Foreground="{StaticResource TextPrimaryBrush}"
-                                                       FontSize="21"
+                                                       FontSize="14"
                                                        FontWeight="Bold"
-                                                       Margin="0,8,0,0"
+                                                       Margin="0,2,0,0"/>
+                                            <TextBlock Text="{Binding WeatherCityCompactText}"
+                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       FontSize="9"
+                                                       Margin="0,2,0,0"
                                                        TextWrapping="Wrap"/>
                                         </StackPanel>
                                         <Border Grid.Column="1"
                                                 Background="{StaticResource SurfacePageBrush}"
-                                                CornerRadius="14"
-                                                Padding="12,8"
-                                                Margin="16,0,0,0"
+                                                CornerRadius="9"
+                                                Padding="8,5"
+                                                Margin="8,0,0,0"
                                                 VerticalAlignment="Top">
                                             <StackPanel>
-                                                <TextBlock Text="今日推荐"
+                                                <TextBlock Text="推荐"
                                                            Foreground="{StaticResource TextSecondaryBrush}"
-                                                           FontSize="11"/>
-                                                <TextBlock Text="{Binding WeatherRecommendations.Count, StringFormat={}{0} 套}"
+                                                           FontSize="8"/>
+                                                <TextBlock Text="{Binding WeatherRecommendationCountText}"
                                                            Foreground="{StaticResource TextPrimaryBrush}"
                                                            FontWeight="SemiBold"
-                                                           Margin="0,4,0,0"/>
+                                                           Margin="0,2,0,0"
+                                                           FontSize="11"/>
                                             </StackPanel>
                                         </Border>
                                     </Grid>
-                                    <TextBlock Text="{Binding WeatherRecommendationHintText}"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               FontSize="13"
-                                               Margin="0,10,0,0"
-                                               TextWrapping="Wrap"/>
-                                    <TextBlock Text="{Binding WeatherStatusText}"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
-                                               FontSize="12"
-                                               Margin="0,8,0,0"
-                                               TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Border>
 
-                            <UniformGrid Columns="3" Margin="0,16,0,0">
-                                <Button Content="刷新天气推荐"
-                                        Style="{StaticResource CapsuleButton}"
-                                        Click="RefreshWeatherRecommendations_Click"
-                                        Margin="0,0,10,0"
-                                        Padding="12,9"/>
-                                <Button x:Name="ToggleHistoryButton"
-                                        Content="{Binding HistoryToggleText}"
-                                        Style="{StaticResource CapsuleButton}"
-                                        Click="ToggleHistory_Click"
-                                        Margin="0,0,10,0"
-                                        Padding="12,9"/>
-                                <Button Content="去设置城市"
-                                        Style="{StaticResource CapsuleButton}"
-                                        Click="OpenSettings_Click"
-                                        Padding="12,9"/>
-                            </UniformGrid>
-                        </StackPanel>
-
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="适合今天"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="12"/>
-                            <TextBlock Text="按当前天气排在前面的搭配"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="13"
-                                       Margin="0,6,0,0"/>
-                            <Border Background="{StaticResource SurfaceSectionBrush}"
-                                    CornerRadius="18"
-                                    Padding="16"
-                                    Margin="0,12,0,0">
-                                <StackPanel>
-                                    <ItemsControl ItemsSource="{Binding WeatherRecommendations}"
-                                                  ItemTemplate="{StaticResource WeatherRecommendationTemplate}"/>
-                                    <TextBlock Text="还没有推荐结果。"
+                                    <ContentControl Content="{Binding PrimaryWeatherRecommendation}"
+                                                    ContentTemplate="{StaticResource WeatherRecommendationTemplate}"
+                                                    Margin="0,8,0,0"
+                                                    Visibility="{Binding PrimaryWeatherRecommendation, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                    <TextBlock Text="按当前天气暂时没有更合适的搭配。"
                                                Foreground="{StaticResource TextPlaceholderBrush}"
-                                               Margin="0,4,0,0"
-                                               Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                               FontSize="9"
+                                               Margin="0,6,0,0"
+                                               Visibility="{Binding PrimaryWeatherRecommendation, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
@@ -364,26 +356,20 @@
                     </Grid>
                 </Border>
 
-                <Grid Margin="0,4,0,12">
+                <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel>
                         <TextBlock Text="全部搭配"
-                                   FontSize="18"
+                                   FontSize="17"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"/>
                         <TextBlock Text="悬停卡片可编辑、删除或快速记录「今天穿了」。"
                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="13"
-                                   Margin="0,5,0,0"/>
+                                   FontSize="12"
+                                   Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Button Grid.Column="1"
-                            Content="+ 新建"
-                            Style="{StaticResource CapsuleButton}"
-                            VerticalAlignment="Center"
-                            Click="CreateOutfit_Click"/>
                 </Grid>
 
                 <ItemsControl x:Name="OutfitsList"

@@ -59,7 +59,11 @@ public partial class OutfitsViewModel : ObservableObject
     public string CalendarMonthText => _state.CalendarMonthText;
     public string CalendarSummaryText => _state.CalendarSummaryText;
     public string WeatherHeadlineText => $"{WeatherCity} · {WeatherTemperature}°C · {WeatherCondition}";
+    public string WeatherCityCompactText => BuildCompactWeatherCity(WeatherCity);
+    public string WeatherCompactSummaryText => $"{WeatherTemperature}°C · {WeatherCondition}";
     public bool HasWeatherRecommendations => WeatherRecommendations.Count > 0;
+    public string WeatherRecommendationCountText => HasWeatherRecommendations ? $"{WeatherRecommendations.Count} 套" : "暂无";
+    public Outfit? PrimaryWeatherRecommendation => WeatherRecommendations.FirstOrDefault();
     public string WeatherRecommendationHintText => WeatherRecommendations.Count == 0
         ? "还没有可推荐的搭配，先创建几套搭配会更有意思。"
         : $"按当前天气挑出 {WeatherRecommendations.Count} 套更适合今天的搭配。";
@@ -197,6 +201,23 @@ public partial class OutfitsViewModel : ObservableObject
         OnPropertyChanged(nameof(WeatherRecommendations));
         OnPropertyChanged(nameof(HasWeatherRecommendations));
         OnPropertyChanged(nameof(WeatherHeadlineText));
+        OnPropertyChanged(nameof(WeatherCityCompactText));
+        OnPropertyChanged(nameof(WeatherCompactSummaryText));
+        OnPropertyChanged(nameof(WeatherRecommendationCountText));
+        OnPropertyChanged(nameof(PrimaryWeatherRecommendation));
         OnPropertyChanged(nameof(WeatherRecommendationHintText));
+    }
+
+    private static string BuildCompactWeatherCity(string city)
+    {
+        if (string.IsNullOrWhiteSpace(city))
+            return string.Empty;
+
+        var parts = city
+            .Split(" · ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Take(2)
+            .ToArray();
+
+        return parts.Length == 0 ? city : string.Join(" · ", parts);
     }
 }
