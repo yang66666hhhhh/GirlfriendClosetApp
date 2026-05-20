@@ -108,10 +108,11 @@ public class OutfitCompositionEngineTests
         var dressItem = layout.Single(item => item.Clothing == dress);
         var shoesItem = layout.Single(item => item.Clothing == shoes);
         var accessoryItem = layout.Single(item => item.Clothing == accessory);
-        Assert.True(shoesItem.Y >= dressItem.Y);
+        Assert.True(shoesItem.Y > dressItem.Y + dressItem.Height * 0.7);
         Assert.True(shoesItem.ZIndex > dressItem.ZIndex);
         Assert.True(accessoryItem.ZIndex > shoesItem.ZIndex);
-        Assert.True(accessoryItem.IsInset);
+        Assert.True(dressItem.Width > shoesItem.Width);
+        Assert.True(accessoryItem.Width < dressItem.Width);
     }
 
     [Fact]
@@ -143,10 +144,10 @@ public class OutfitCompositionEngineTests
         var outerwearItem = layout.Single(item => item.Clothing == outerwear);
         var topItem = layout.Single(item => item.Clothing == top);
         Assert.False(outerwearItem.IsInset);
-        Assert.True(topItem.IsInset);
         Assert.True(outerwearItem.Width > topItem.Width);
         Assert.True(topItem.ZIndex > outerwearItem.ZIndex);
         Assert.InRange(topItem.Y, outerwearItem.Y, outerwearItem.Y + outerwearItem.Height);
+        Assert.True(topItem.Height < outerwearItem.Height);
     }
 
     [Fact]
@@ -162,8 +163,9 @@ public class OutfitCompositionEngineTests
         var outerwearItem = layout.Single(item => item.Clothing == outerwear);
         var topItem = layout.Single(item => item.Clothing == top);
         var bottomItem = layout.Single(item => item.Clothing == bottom);
-        Assert.True(topItem.IsInset);
-        Assert.True(bottomItem.Y >= outerwearItem.Y + outerwearItem.Height);
+        Assert.True(topItem.ZIndex > outerwearItem.ZIndex);
+        Assert.True(topItem.Height < outerwearItem.Height);
+        Assert.True(bottomItem.Y >= topItem.Y + topItem.Height * 0.6);
     }
 
     [Fact]
