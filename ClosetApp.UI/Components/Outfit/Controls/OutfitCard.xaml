@@ -29,39 +29,44 @@
 
     <Border x:Name="CardRoot" Width="320"
             Background="{StaticResource SurfaceCardBrush}"
-            CornerRadius="24"
+            CornerRadius="18"
             Cursor="Hand"
             RenderTransformOrigin="0.5,0.5">
         <Border.RenderTransform>
             <ScaleTransform ScaleX="1" ScaleY="1"/>
         </Border.RenderTransform>
         <Border.Effect>
-            <DropShadowEffect x:Name="CardShadow" BlurRadius="20" ShadowDepth="4"
-                              Opacity="0.08" Color="#60000000" Direction="270"/>
+            <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="4"
+                              Opacity="0.07" Color="#60000000" Direction="270"/>
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="*"/>
+                <RowDefinition Height="360"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Lookbook Preview -->
-            <Border Grid.Row="0" Background="{StaticResource SurfaceHeroBrush}" CornerRadius="24,24,0,0" ClipToBounds="True">
+            <!-- Outfit Canvas -->
+            <Border x:Name="PreviewShell"
+                    Grid.Row="0"
+                    Background="#F5EFE8"
+                    CornerRadius="18,18,0,0"
+                    ClipToBounds="True">
                 <Grid>
                     <outfit:OutfitPreviewCanvas x:Name="PreviewCanvas"
-                                   Width="280" Height="320"
-                                   HorizontalAlignment="Center" VerticalAlignment="Top"/>
+                                                Margin="18,14,18,8"
+                                                HorizontalAlignment="Stretch"
+                                                VerticalAlignment="Stretch"/>
                     <Border x:Name="ActionOverlay" Visibility="Collapsed"
-                            Background="#22000000" CornerRadius="24,24,0,0">
+                            Background="#18000000" CornerRadius="18,18,0,0">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                                     VerticalAlignment="Bottom" Margin="0,0,0,12">
-                            <Button x:Name="BtnEdit" Content="编辑" Padding="14,8"
+                            <Button x:Name="BtnEdit" Content="编辑" Padding="12,7"
                                     Style="{StaticResource CapsuleButton}"
                                     FontSize="12" Margin="0,0,10,0"/>
-                            <Button x:Name="BtnDelete" Content="删除" Padding="14,8"
+                            <Button x:Name="BtnDelete" Content="删除" Padding="12,7"
                                     Style="{StaticResource CapsuleButton}"
                                     FontSize="12" Foreground="#E88D8D"/>
-                            <Button x:Name="BtnWorn" Content="今天穿了" Padding="14,8"
+                            <Button x:Name="BtnWorn" Content="今天穿了" Padding="12,7"
                                     Style="{StaticResource PrimaryButton}"
                                     FontSize="12" Margin="10,0,0,0"/>
                         </StackPanel>
@@ -69,27 +74,24 @@
                 </Grid>
             </Border>
 
-            <!-- Bottom Info Bar -->
-            <Border Grid.Row="1" Padding="18,14">
+            <!-- Bottom Info -->
+            <Border Grid.Row="1" Padding="18,16,18,18">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtName" FontSize="15" FontWeight="SemiBold"
+                        <TextBlock x:Name="TxtName" FontSize="16" FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
-                        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
-                            <Path x:Name="SceneIcon"
-                                  Fill="{StaticResource PrimaryBrush}" Width="12" Height="12"
-                                  Stretch="Uniform" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="TxtSeason" FontSize="11"
-                                       Foreground="#FFA39B95" Margin="6,0,0,0"
-                                       VerticalAlignment="Center"/>
-                        </StackPanel>
+                        <TextBlock x:Name="TxtMoodLine"
+                                   FontSize="12"
+                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Margin="0,5,0,0"
+                                   TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="TxtWearInfo" FontSize="11"
                                    Foreground="{StaticResource TextTertiaryBrush}"
-                                   Margin="0,6,0,0"
+                                   Margin="0,8,0,0"
                                    TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                     <Button x:Name="BtnFavorite" Grid.Column="1"

@@ -91,9 +91,9 @@ public partial class OutfitPreviewCanvas : UserControl
             var shadow = new DropShadowEffect
             {
                 Color = Colors.Black,
-                BlurRadius = 10,
+                BlurRadius = item.IsInset ? 6 : 8,
                 ShadowDepth = 2,
-                Opacity = 0.09,
+                Opacity = item.IsInset ? 0.05 : 0.07,
                 Direction = 270
             };
 
@@ -109,29 +109,6 @@ public partial class OutfitPreviewCanvas : UserControl
                     ImageVariant.Display,
                     (int)Math.Clamp(Math.Ceiling(item.Width * 1.4), 160, 360))
             };
-
-            if (item.IsInset)
-            {
-                var insetHost = new Border
-                {
-                    Width = item.Width + 10,
-                    Height = item.Height + 10,
-                    Padding = new Thickness(5),
-                    CornerRadius = new CornerRadius(12),
-                    Background = new SolidColorBrush(Color.FromArgb(232, 255, 253, 252)),
-                    BorderBrush = new SolidColorBrush(Color.FromRgb(232, 226, 220)),
-                    BorderThickness = new Thickness(1),
-                    Effect = shadow,
-                    Child = img
-                };
-
-                img.Effect = null;
-                Canvas.SetLeft(insetHost, item.X - 5);
-                Canvas.SetTop(insetHost, item.Y - 5);
-                Canvas.SetZIndex(insetHost, item.ZIndex);
-                RenderCanvas.Children.Add(insetHost);
-                continue;
-            }
 
             Canvas.SetLeft(img, item.X);
             Canvas.SetTop(img, item.Y);
