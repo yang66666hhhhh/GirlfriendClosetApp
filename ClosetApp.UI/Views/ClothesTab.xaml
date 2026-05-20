@@ -16,7 +16,7 @@
 
         <!-- ═══ SEARCH ═══ -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="12"/>
             <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
             <Setter Property="Background" Value="#FFFFFFFF"/>
             <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
@@ -24,20 +24,20 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border x:Name="SearchBorder"
-                                Background="#FFFFFFFF" CornerRadius="12"
-                                Padding="14,9" BorderThickness="1.5"
+                                Background="#FFFFFFFF" CornerRadius="11"
+                                Padding="12,8" BorderThickness="1.5"
                                 BorderBrush="{StaticResource BorderLightBrush}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
-                                <TextBlock Text="🔍" FontSize="14" VerticalAlignment="Center"
+                                <TextBlock Text="🔍" FontSize="13" VerticalAlignment="Center"
                                            Foreground="{StaticResource TextPlaceholderBrush}"
-                                           Grid.Column="0" Margin="0,0,8,0"/>
+                                           Grid.Column="0" Margin="0,0,6,0"/>
                                 <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="Placeholder" Text="搜索衣服..."
-                                           FontSize="14" Foreground="{StaticResource TextPlaceholderBrush}"
+                                           FontSize="12" Foreground="{StaticResource TextPlaceholderBrush}"
                                            VerticalAlignment="Center" Grid.Column="1" Margin="2,0,0,0"
                                            IsHitTestVisible="False" Visibility="Collapsed"/>
                             </Grid>
@@ -65,18 +65,18 @@
             <Setter Property="Background" Value="{StaticResource SurfaceSectionBrush}"/>
             <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="Medium"/>
             <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Height" Value="32"/>
-            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="12,0"/>
             <Setter Property="GroupName" Value="CategoryGroup"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="ChipBg"
                                 Background="{TemplateBinding Background}"
-                                CornerRadius="16"
+                                CornerRadius="15"
                                 Padding="{TemplateBinding Padding}"
                                 Height="{TemplateBinding Height}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -239,7 +239,7 @@
 
         <!-- ═══ HEADER ═══ -->
         <Border Grid.Row="0" Style="{StaticResource PageHeaderBorder}">
-            <Grid Height="64" Margin="64,0">
+            <Grid Height="56" Margin="44,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -256,16 +256,16 @@
                     <Button Content="批量导入"
                             Style="{StaticResource CapsuleButton}"
                             Click="BatchImport_Click"
-                            Padding="14,8"
-                            Margin="0,0,8,0"/>
+                            Padding="10,6"
+                            Margin="0,0,6,0"/>
                     <Button Content="批量清空"
                             Style="{StaticResource DangerButton}"
                             Click="BatchClearWardrobe_Click"
-                            Padding="14,8"
-                            Margin="0,0,8,0"/>
+                            Padding="10,6"
+                            Margin="0,0,6,0"/>
                     <Button Content="+ 添加衣服"
                             Style="{StaticResource PrimaryButton}"
-                            Padding="16,8"
+                            Padding="12,6"
                             Click="AddClothing_Click"/>
                 </StackPanel>
             </Grid>
@@ -276,16 +276,16 @@
                       x:Name="ContentScroller"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
-                      Padding="0,0,0,60">
+                      Padding="0,0,0,48">
 
             <StackPanel x:Name="ContentStack">
 
                 <!-- ═══ SUMMARY ═══ -->
                 <Border x:Name="WardrobeSummary"
-                        Margin="64,12,64,8"
-                        Padding="14,12"
+                        Margin="44,8,44,6"
+                        Padding="10,8"
                         Background="{StaticResource SurfaceCardBrush}"
-                        CornerRadius="18"
+                        CornerRadius="16"
                         BorderBrush="{StaticResource BorderLightBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
@@ -303,20 +303,20 @@
 
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                                 <TextBlock Text="衣柜概览"
-                                           FontSize="15"
+                                           FontSize="14"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBlock Text="快速找到衣服；需要精细筛选时再展开面板。"
-                                           FontSize="11"
+                                <TextBlock Text="快速找到衣服，需要时再展开筛选。"
+                                           FontSize="10"
                                            Foreground="{StaticResource TextSecondaryBrush}"
-                                           Margin="10,1,0,0"/>
+                                           Margin="6,1,0,0"/>
                             </StackPanel>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
                                 <Border Background="{StaticResource SurfaceSectionBrush}"
-                                        CornerRadius="12"
-                                        Padding="10,6"
-                                        Margin="0,0,6,0">
+                                        CornerRadius="11"
+                                        Padding="8,5"
+                                        Margin="0,0,5,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock x:Name="TxtTotalCount"
                                                    Text="{Binding TotalCount, StringFormat={}{0} 件}"
@@ -324,13 +324,13 @@
                                                    FontWeight="SemiBold"/>
                                         <TextBlock Text=" 全部"
                                                    Foreground="{StaticResource TextTertiaryBrush}"
-                                                   FontSize="11"
+                                                   FontSize="10"
                                                    Margin="4,1,0,0"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Background="{StaticResource PrimaryLightBrush}"
-                                        CornerRadius="12"
-                                        Padding="10,6">
+                                        CornerRadius="11"
+                                        Padding="8,5">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock x:Name="TxtFilteredCount"
                                                    Text="{Binding FilteredCount, StringFormat={}{0} 件}"
@@ -338,14 +338,14 @@
                                                    FontWeight="SemiBold"/>
                                         <TextBlock Text=" 当前"
                                                    Foreground="{StaticResource TextSecondaryBrush}"
-                                                   FontSize="11"
+                                                   FontSize="10"
                                                    Margin="4,1,0,0"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
                         </Grid>
 
-                        <Grid Grid.Row="1" Margin="0,10,0,0">
+                        <Grid Grid.Row="1" Margin="0,6,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -354,47 +354,47 @@
                             <TextBox x:Name="InlineSearch"
                                      Grid.Column="0"
                                      Style="{StaticResource SearchBoxStyle}"
-                                     MinWidth="320"
+                                     MinWidth="240"
                                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="12,0,0,0">
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
                                 <Button x:Name="ToggleFilterButton"
                                         Content="{Binding FilterToggleText}"
                                         Style="{StaticResource CapsuleButton}"
-                                        Padding="10,7"
+                                        Padding="8,5"
                                         Click="ToggleFilter_Click"/>
                                 <Button x:Name="ClearFilterButton"
                                         Content="清除"
                                         Style="{StaticResource CapsuleButton}"
-                                        Padding="10,7"
-                                        Margin="6,0,0,0"
+                                        Padding="8,5"
+                                        Margin="5,0,0,0"
                                         Click="ClearFilter_Click"/>
                             </StackPanel>
                         </Grid>
                     </Grid>
                 </Border>
 
-                <Border Margin="64,0,64,10"
-                        Padding="14,10"
+                <Border Margin="44,0,44,6"
+                        Padding="10,8"
                         Background="{StaticResource SurfaceCardBrush}"
-                        CornerRadius="16"
+                        CornerRadius="15"
                         BorderBrush="{StaticResource BorderLightBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <StackPanel>
-                        <Grid Margin="0,0,0,6">
+                        <Grid Margin="0,0,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="待整理"
-                                       FontSize="13"
+                                       FontSize="12"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}"
                                        VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="1"
-                                       Text="导入后优先补齐缺失信息"
+                                       Text="导入后优先补资料"
                                        FontSize="10"
                                        Foreground="{StaticResource TextSecondaryBrush}"
                                        Margin="8,1,0,0"
@@ -402,16 +402,16 @@
                             <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Content="批量补全"
                                         Style="{StaticResource CapsuleButton}"
-                                        Padding="9,5"
-                                        FontSize="11"
+                                        Padding="7,4"
+                                        FontSize="10"
                                         HorizontalAlignment="Left"
                                         Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
                                         Click="BatchCompleteQueue_Click"/>
                                 <Button Content="按分类清空"
                                         Style="{StaticResource DangerButton}"
-                                        Padding="9,5"
-                                        FontSize="11"
-                                        Margin="6,0,0,0"
+                                        Padding="7,4"
+                                        FontSize="10"
+                                        Margin="5,0,0,0"
                                         Click="BatchClearWardrobe_Click"/>
                             </StackPanel>
                         </Grid>
@@ -451,7 +451,7 @@
                                          GroupName="QueueGroup"
                                          IsChecked="{Binding IsQueueRecentlyImportedSelected, Mode=TwoWay}"/>
                         </WrapPanel>
-                        <Grid Margin="0,6,0,0"
+                        <Grid Margin="0,3,0,0"
                               Visibility="{Binding ShowRecentImportSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
@@ -459,57 +459,57 @@
                             </Grid.ColumnDefinitions>
                             <Border Background="{StaticResource SurfaceHeroBrush}"
                                     CornerRadius="12"
-                                    Padding="10,6"
-                                    Margin="0,0,8,0"
+                                    Padding="8,4"
+                                    Margin="0,0,5,0"
                                     VerticalAlignment="Top">
                                 <TextBlock Text="{Binding RecentImportSummaryTitle}"
-                                           FontSize="11"
+                                           FontSize="9"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
                             </Border>
                             <WrapPanel Grid.Column="1">
                                 <Border Background="{StaticResource SurfaceHeroBrush}"
                                         CornerRadius="12"
-                                        Padding="10,6"
-                                        Margin="0,0,6,6">
+                                        Padding="7,4"
+                                        Margin="0,0,5,4">
                                     <TextBlock Text="{Binding RecentlyImportedUnnamedCount, StringFormat=未命名 {0}}"
-                                               FontSize="11"
+                                               FontSize="9"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                                 <Border Background="{StaticResource SurfaceHeroBrush}"
                                         CornerRadius="12"
-                                        Padding="10,6"
-                                        Margin="0,0,6,6">
+                                        Padding="7,4"
+                                        Margin="0,0,5,4">
                                     <TextBlock Text="{Binding RecentlyImportedUncategorizedCount, StringFormat=未分类 {0}}"
-                                               FontSize="11"
+                                               FontSize="9"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                                 <Border Background="{StaticResource SurfaceHeroBrush}"
                                         CornerRadius="12"
-                                        Padding="10,6"
-                                        Margin="0,0,6,6">
+                                        Padding="7,4"
+                                        Margin="0,0,5,4">
                                     <TextBlock Text="{Binding RecentlyImportedUnseasonedCount, StringFormat=未设季节 {0}}"
-                                               FontSize="11"
+                                               FontSize="9"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                                 <Border Background="{StaticResource SurfaceHeroBrush}"
                                         CornerRadius="12"
-                                        Padding="10,6"
-                                        Margin="0,0,6,6">
+                                        Padding="7,4"
+                                        Margin="0,0,5,4">
                                     <TextBlock Text="{Binding RecentlyImportedUntaggedCount, StringFormat=无标签 {0}}"
-                                               FontSize="11"
+                                               FontSize="9"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                                 <Border Background="{StaticResource SurfaceHeroBrush}"
                                         CornerRadius="12"
-                                        Padding="10,6"
-                                        Margin="0,0,0,6">
+                                        Padding="7,4"
+                                        Margin="0,0,0,4">
                                     <TextBlock Text="{Binding RecentlyImportedMissingBrandOrColorCount, StringFormat=无品牌/颜色 {0}}"
-                                               FontSize="11"
+                                               FontSize="9"
                                                Foreground="{StaticResource TextPrimaryBrush}"
                                                FontWeight="SemiBold"/>
                                 </Border>
@@ -521,42 +521,42 @@
                 <!-- ═══ FILTER PANEL ═══ -->
                 <Border x:Name="FilterPanel"
                         Style="{StaticResource LookbookCard}"
-                        Margin="64,0,64,14"
-                        Padding="16,14"
+                        Margin="44,0,44,10"
+                        Padding="12,10"
                         Background="{StaticResource SurfaceCardBrush}"
-                        CornerRadius="16"
+                        CornerRadius="15"
                         BorderBrush="{StaticResource BorderLightBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsFilterExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
-                        <Grid Margin="0,0,0,12">
+                        <Grid Margin="0,0,0,8">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel>
-                                <TextBlock Text="分类筛选"
-                                           FontSize="15"
+                                <TextBlock Text="筛选"
+                                           FontSize="14"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
                                 <TextBlock x:Name="TxtFilterHint"
                                            Text="{Binding FilterHint}"
-                                           FontSize="11"
+                                           FontSize="10"
                                            Foreground="{StaticResource TextSecondaryBrush}"
-                                           Margin="0,4,0,0"/>
+                                           Margin="0,3,0,0"/>
                             </StackPanel>
                             <TextBlock x:Name="TxtCount" Grid.Column="1"
                                        Text="{Binding FilterResultText}"
-                                       FontSize="12"
+                                       FontSize="11"
                                        Foreground="{StaticResource TextTertiaryBrush}"
                                        VerticalAlignment="Center"/>
                         </Grid>
                         <StackPanel>
                             <TextBlock Text="分类"
-                                       FontSize="12"
+                                       FontSize="11"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                       Margin="0,0,0,8"/>
+                                       Margin="0,0,0,5"/>
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                           VerticalScrollBarVisibility="Disabled">
                                 <StackPanel Orientation="Horizontal">
@@ -591,10 +591,10 @@
                             </ScrollViewer>
 
                             <TextBlock Text="季节"
-                                       FontSize="12"
+                                       FontSize="11"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                       Margin="0,14,0,8"/>
+                                       Margin="0,10,0,5"/>
                             <WrapPanel>
                                 <RadioButton x:Name="SeasonAll" Content="四季都看"
                                              Style="{StaticResource ChipStyle}"
@@ -619,10 +619,10 @@
                             </WrapPanel>
 
                             <TextBlock Text="偏好"
-                                       FontSize="12"
+                                       FontSize="11"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                       Margin="0,14,0,8"/>
+                                       Margin="0,10,0,5"/>
                             <CheckBox x:Name="FavoriteOnlyCheckBox"
                                       Content="只看收藏"
                                       Style="{StaticResource FilterCheckStyle}"
@@ -630,13 +630,13 @@
                                       IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"/>
 
                             <TextBlock Text="风格标签"
-                                       FontSize="12"
+                                       FontSize="11"
                                        FontWeight="SemiBold"
                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                       Margin="0,14,0,8"/>
+                                       Margin="0,10,0,5"/>
                             <TextBlock x:Name="TxtTagFilterEmpty"
                                        Text="还没有风格标签，先去标签页加几个会更好筛。"
-                                       FontSize="11"
+                                       FontSize="10"
                                        Foreground="{StaticResource TextTertiaryBrush}"
                                        Margin="0,0,0,8"
                                        Visibility="{Binding HasAvailableTags, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
@@ -659,12 +659,12 @@
 
                 <!-- ═══ MASONRY FLOW ═══ -->
                 <ItemsControl x:Name="ClothesList"
-                              Margin="64,0,64,8"
+                              Margin="44,0,44,8"
                               ItemsSource="{Binding FilteredClothes}"
                               Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <components:MasonryPanel ColumnWidth="280" Spacing="20"/>
+                            <components:MasonryPanel ColumnWidth="248" Spacing="14"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>

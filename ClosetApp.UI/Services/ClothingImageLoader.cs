@@ -10,10 +10,15 @@ namespace ClosetApp.UI.Services;
 public static class ClothingImageLoader
 {
     private const byte TransparentBackgroundThreshold = 12;
-    private const byte LightBackgroundThreshold = 244;
-    private const byte NeutralBackgroundThreshold = 228;
-    private const byte NeutralBackgroundTolerance = 16;
-    private const int TrimSafetyPadding = 4;
+    private const byte LightBackgroundThreshold = 238;
+    private const byte NeutralBackgroundThreshold = 220;
+    private const byte NeutralBackgroundTolerance = 22;
+    private const int TrimSafetyPadding = 10;
+    private const int TrimMinimumComponentArea = 180;
+    private const double TrimMergeAreaRatio = 0.12;
+    private const int TrimMergeGap = 36;
+    private const int TrimEdgeNoiseInset = 18;
+    private const int TrimEdgeNoiseMaxArea = 2400;
 
     private static readonly string ImagesFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -178,6 +183,10 @@ public static class ClothingImageLoader
         var pixels = new byte[stride * source.PixelHeight];
         source.CopyPixels(pixels, stride, 0);
 
+        var subjectBounds = FindLargestSubjectBounds(pixels, stride, source.PixelWidth, source.PixelHeight);
+        if (subjectBounds != null)
+            return subjectBounds;
+
         var left = 0;
         var right = source.PixelWidth - 1;
         var top = 0;
@@ -206,6 +215,193 @@ public static class ClothingImageLoader
             return null;
 
         return new Int32Rect(left, top, width, height);
+    }
+
+    private static Int32Rect? FindLargestSubjectBounds(byte[] pixels, int stride, int width, int height)
+    {
+        var totalPixels = width * height;
+        if (totalPixels <= 0)
+            return null;
+
+        var background = new bool[totalPixels];
+        var queue = new Queue<int>();
+
+        // Flood-fill only the background connected to outer edges.
+        for (var x = 0; x < width; x++)
+        {
+            TryMarkBackground(pixels, stride, width, height, x, 0, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x, height - 1, background, queue);
+        }
+
+        for (var y = 1; y < height - 1; y++)
+        {
+            TryMarkBackground(pixels, stride, width, height, 0, y, background, queue);
+            TryMarkBackground(pixels, stride, width, height, width - 1, y, background, queue);
+        }
+
+        while (queue.Count > 0)
+        {
+            var index = queue.Dequeue();
+            var x = index % width;
+            var y = index / width;
+
+            TryMarkBackground(pixels, stride, width, height, x - 1, y, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x, y - 1, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x, y + 1, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x - 1, y - 1, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y - 1, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x - 1, y + 1, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y + 1, background, queue);
+        }
+
+        var visited = new bool[totalPixels];
+        var componentQueue = new Queue<int>();
+        var components = new List<SubjectComponent>();
+
+        for (var start = 0; start < totalPixels; start++)
+        {
+            if (background[start] || visited[start])
+                continue;
+
+            visited[start] = true;
+            componentQueue.Enqueue(start);
+
+            var area = 0;
+            var left = width;
+            var right = -1;
+            var top = height;
+            var bottom = -1;
+
+            while (componentQueue.Count > 0)
+            {
+                var index = componentQueue.Dequeue();
+                var x = index % width;
+                var y = index / width;
+
+                area++;
+                left = Math.Min(left, x);
+                right = Math.Max(right, x);
+                top = Math.Min(top, y);
+                bottom = Math.Max(bottom, y);
+
+                EnqueueForegroundNeighbor(index - 1, x > 0);
+                EnqueueForegroundNeighbor(index + 1, x < width - 1);
+                EnqueueForegroundNeighbor(index - width, y > 0);
+                EnqueueForegroundNeighbor(index + width, y < height - 1);
+                EnqueueForegroundNeighbor(index - width - 1, x > 0 && y > 0);
+                EnqueueForegroundNeighbor(index - width + 1, x < width - 1 && y > 0);
+                EnqueueForegroundNeighbor(index + width - 1, x > 0 && y < height - 1);
+                EnqueueForegroundNeighbor(index + width + 1, x < width - 1 && y < height - 1);
+            }
+
+            if (area >= TrimMinimumComponentArea)
+                components.Add(new SubjectComponent(left, top, right, bottom, area));
+        }
+
+        if (components.Count == 0)
+            return null;
+
+        var primary = components
+            .OrderByDescending(component => ScoreComponent(component, width, height))
+            .First();
+
+        var merged = primary;
+        foreach (var candidate in components)
+        {
+            if (candidate.Equals(primary))
+                continue;
+
+            if (IsEdgeNoise(candidate, width, height))
+                continue;
+
+            if (candidate.Area >= Math.Max(TrimMinimumComponentArea, primary.Area * TrimMergeAreaRatio) &&
+                IsCloseTo(candidate, merged))
+            {
+                merged = merged.Merge(candidate);
+            }
+        }
+
+        var bestLeft = Math.Max(0, merged.Left - TrimSafetyPadding);
+        var bestTop = Math.Max(0, merged.Top - TrimSafetyPadding);
+        var bestRight = Math.Min(width - 1, merged.Right + TrimSafetyPadding);
+        var bestBottom = Math.Min(height - 1, merged.Bottom + TrimSafetyPadding);
+
+        return new Int32Rect(
+            bestLeft,
+            bestTop,
+            bestRight - bestLeft + 1,
+            bestBottom - bestTop + 1);
+
+        void EnqueueForegroundNeighbor(int neighborIndex, bool withinBounds)
+        {
+            if (!withinBounds || visited[neighborIndex] || background[neighborIndex])
+                return;
+
+            visited[neighborIndex] = true;
+            componentQueue.Enqueue(neighborIndex);
+        }
+    }
+
+    private static bool IsCloseTo(SubjectComponent candidate, SubjectComponent primary)
+    {
+        var horizontalGap = Math.Max(0, Math.Max(primary.Left - candidate.Right, candidate.Left - primary.Right));
+        var verticalGap = Math.Max(0, Math.Max(primary.Top - candidate.Bottom, candidate.Top - primary.Bottom));
+
+        var horizontalOverlap = Math.Min(primary.Right, candidate.Right) - Math.Max(primary.Left, candidate.Left);
+        var verticalOverlap = Math.Min(primary.Bottom, candidate.Bottom) - Math.Max(primary.Top, candidate.Top);
+
+        return (horizontalGap <= TrimMergeGap && verticalOverlap >= -12) ||
+               (verticalGap <= TrimMergeGap && horizontalOverlap >= -12);
+    }
+
+    private static double ScoreComponent(SubjectComponent component, int width, int height)
+    {
+        if (IsEdgeNoise(component, width, height))
+            return component.Area * 0.1;
+
+        var centerX = width / 2.0;
+        var centerY = height / 2.0;
+        var dx = Math.Abs(component.CenterX - centerX) / Math.Max(1.0, width / 2.0);
+        var dy = Math.Abs(component.CenterY - centerY) / Math.Max(1.0, height / 2.0);
+        var centerBias = 1.2 - Math.Min(1.0, (dx * 0.6) + (dy * 0.9));
+
+        return component.Area * Math.Max(0.25, centerBias);
+    }
+
+    private static bool IsEdgeNoise(SubjectComponent component, int width, int height)
+    {
+        if (component.Area > TrimEdgeNoiseMaxArea)
+            return false;
+
+        return component.Left <= TrimEdgeNoiseInset ||
+               component.Top <= TrimEdgeNoiseInset ||
+               component.Right >= width - 1 - TrimEdgeNoiseInset ||
+               component.Bottom >= height - 1 - TrimEdgeNoiseInset;
+    }
+
+    private static void TryMarkBackground(
+        byte[] pixels,
+        int stride,
+        int width,
+        int height,
+        int x,
+        int y,
+        bool[] background,
+        Queue<int> queue)
+    {
+        if (x < 0 || y < 0 || x >= width || y >= height)
+            return;
+
+        var index = (y * width) + x;
+        if (background[index])
+            return;
+
+        if (!IsBackgroundPixel(pixels, (y * stride) + (x * 4)))
+            return;
+
+        background[index] = true;
+        queue.Enqueue(index);
     }
 
     private static bool IsRemovableRow(byte[] pixels, int stride, int width, int row)
@@ -264,5 +460,21 @@ public static class ClothingImageLoader
                 green >= LightBackgroundThreshold &&
                 blue >= LightBackgroundThreshold) ||
                neutralLight;
+    }
+
+    private readonly record struct SubjectComponent(int Left, int Top, int Right, int Bottom, int Area)
+    {
+        public double CenterX => (Left + Right) / 2.0;
+        public double CenterY => (Top + Bottom) / 2.0;
+
+        public SubjectComponent Merge(SubjectComponent other)
+        {
+            return new SubjectComponent(
+                Math.Min(Left, other.Left),
+                Math.Min(Top, other.Top),
+                Math.Max(Right, other.Right),
+                Math.Max(Bottom, other.Bottom),
+                Area + other.Area);
+        }
     }
 }

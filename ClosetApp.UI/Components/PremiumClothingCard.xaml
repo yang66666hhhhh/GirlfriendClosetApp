@@ -26,7 +26,7 @@
             </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="CardShadow"
                              Storyboard.TargetProperty="BlurRadius"
-                             To="24" Duration="0:0:0.2">
+                             To="18" Duration="0:0:0.2">
                 <DoubleAnimation.EasingFunction>
                     <CubicEase EasingMode="EaseOut"/>
                 </DoubleAnimation.EasingFunction>
@@ -60,7 +60,7 @@
             </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="CardShadow"
                              Storyboard.TargetProperty="BlurRadius"
-                             To="16" Duration="0:0:0.2">
+                             To="12" Duration="0:0:0.2">
                 <DoubleAnimation.EasingFunction>
                     <CubicEase EasingMode="EaseOut"/>
                 </DoubleAnimation.EasingFunction>
@@ -127,18 +127,18 @@
           MouseLeftButtonUp="Card_Click">
 
         <!-- Shadow layer -->
-        <Border CornerRadius="24" Margin="4,4,0,0">
+        <Border CornerRadius="18" Margin="2,2,0,0">
             <Border.Effect>
                 <DropShadowEffect x:Name="CardShadow"
-                                  BlurRadius="16" ShadowDepth="4"
-                                  Opacity="0.08" Color="#B0A090" Direction="270"/>
+                                  BlurRadius="12" ShadowDepth="3"
+                                  Opacity="0.06" Color="#B0A090" Direction="270"/>
             </Border.Effect>
         </Border>
 
         <!-- Main Card -->
         <Border x:Name="MainCard"
                 Background="{StaticResource SurfaceCardBrush}"
-                CornerRadius="24"
+                CornerRadius="18"
                 ClipToBounds="True"
                 Cursor="Hand"
                 RenderTransformOrigin="0.5,0.5">
@@ -152,35 +152,50 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="76"/>
+                    <RowDefinition Height="60"/>
                 </Grid.RowDefinitions>
 
                 <!-- ═══ IMAGE AREA ═══ -->
                 <Border Grid.Row="0"
-                        Margin="12,12,12,0"
-                        CornerRadius="20"
+                        Margin="8,8,8,0"
+                        CornerRadius="14"
                         ClipToBounds="True">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#FFFDFBFA" Offset="0"/>
-                            <GradientStop Color="#FFF5EFEC" Offset="1"/>
+                            <GradientStop Color="#FFFAF8F6" Offset="0"/>
+                            <GradientStop Color="#FFF4F0EB" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
                     <Grid>
-                        <Grid.RenderTransform>
-                            <ScaleTransform x:Name="ImageScale" ScaleX="1" ScaleY="1"/>
-                        </Grid.RenderTransform>
+                        <Ellipse x:Name="GarmentShadow"
+                                 Width="112"
+                                 Height="18"
+                                 Fill="#2A7C6759"
+                                 Opacity="0.18"
+                                 VerticalAlignment="Bottom"
+                                 HorizontalAlignment="Center"
+                                 Margin="0,0,0,18">
+                            <Ellipse.Effect>
+                                <BlurEffect Radius="14"/>
+                            </Ellipse.Effect>
+                        </Ellipse>
 
-                        <Border Margin="14"
-                                CornerRadius="16"
-                                Background="#66FFFFFF">
+                        <Grid x:Name="GarmentStage"
+                              Margin="18,22,18,16"
+                              RenderTransformOrigin="0.5,0.5">
+                            <Grid.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform x:Name="ImageBaseScale" ScaleX="1" ScaleY="1"/>
+                                    <ScaleTransform x:Name="ImageScale" ScaleX="1" ScaleY="1"/>
+                                    <TranslateTransform x:Name="ImageTranslate" Y="0"/>
+                                </TransformGroup>
+                            </Grid.RenderTransform>
                             <Image x:Name="CardImage"
-                                   Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}, ConverterParameter=Display:720}"
+                                   Source="{Binding ImagePath, Converter={StaticResource ImagePathConverter}, ConverterParameter=Display:720:trim}"
                                    Stretch="Uniform"
-                                   Margin="14"
                                    HorizontalAlignment="Center"
                                    VerticalAlignment="Center"/>
-                        </Border>
+                        </Grid>
 
                         <!-- Fallback when no image -->
                         <StackPanel x:Name="ImageFallback"
@@ -201,7 +216,7 @@
                                 Orientation="Vertical"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
-                                Margin="0,12,12,0"
+                                Margin="0,8,8,0"
                                 Opacity="0">
 
                         <!-- Favorite -->
@@ -265,11 +280,11 @@
                     <!-- Context menu popup -->
                     <Border x:Name="MoreMenu"
                             Background="{StaticResource SurfaceCardBrush}"
-                            CornerRadius="12"
+                            CornerRadius="10"
                             Padding="6,4"
                             HorizontalAlignment="Right"
                             VerticalAlignment="Top"
-                            Margin="0,56,12,0"
+                            Margin="0,46,8,0"
                             Visibility="Collapsed"
                             Panel.ZIndex="10">
                         <Border.Effect>
@@ -302,37 +317,51 @@
                 <!-- ═══ INFO AREA ═══ -->
                 <Border Grid.Row="1"
                         Background="{StaticResource SurfaceCardBrush}"
-                        Padding="16,10,16,12">
+                        Padding="12,7,12,9">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
                         <TextBlock Text="{Binding Name}"
-                                   FontSize="14"
+                                   FontSize="12"
                                    FontWeight="SemiBold"
                                    Foreground="{StaticResource TextPrimaryBrush}"
                                    TextTrimming="CharacterEllipsis"/>
-                        <StackPanel Grid.Row="1"
+                        <TextBlock x:Name="MetaLineText"
+                                   Grid.Row="1"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Margin="0,2,0,0"
+                                   TextTrimming="CharacterEllipsis"
+                                   Visibility="Collapsed"/>
+                        <StackPanel Grid.Row="2"
                                     Orientation="Horizontal"
                                     VerticalAlignment="Bottom"
-                                    Height="26"
-                                    Margin="0,8,0,0">
-                            <Border Background="{StaticResource SurfaceSectionBrush}"
-                                    CornerRadius="10"
-                                    Padding="8,4"
-                                    Margin="0,0,6,0">
+                                    Height="22"
+                                    Margin="0,5,0,0">
+                            <Border x:Name="CategoryChip"
+                                    Background="#FFF7F3EF"
+                                    BorderBrush="{StaticResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="6,2"
+                                    Margin="0,0,4,0">
                                 <TextBlock Text="{Binding Type, Converter={StaticResource ClothingTypeToName}}"
                                            Foreground="{StaticResource TextSecondaryBrush}"
-                                           FontSize="11"
+                                           FontSize="9"
                                            FontWeight="Medium"/>
                             </Border>
-                            <Border Background="{StaticResource PrimaryLightBrush}"
-                                    CornerRadius="10"
-                                    Padding="8,4">
+                            <Border x:Name="SeasonChip"
+                                    Background="#FFF9F1EE"
+                                    BorderBrush="#FFE8D5CF"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="6,2">
                                 <TextBlock Text="{Binding Season, Converter={StaticResource SeasonToName}}"
-                                           Foreground="{StaticResource PrimaryBrush}"
-                                           FontSize="11"
+                                           Foreground="#FFB9857B"
+                                           FontSize="9"
                                            FontWeight="Medium"/>
                             </Border>
                         </StackPanel>
