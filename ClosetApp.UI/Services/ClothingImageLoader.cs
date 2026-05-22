@@ -10,15 +10,18 @@ namespace ClosetApp.UI.Services;
 public static class ClothingImageLoader
 {
     private const byte TransparentBackgroundThreshold = 12;
-    private const byte LightBackgroundThreshold = 238;
-    private const byte NeutralBackgroundThreshold = 220;
-    private const byte NeutralBackgroundTolerance = 22;
-    private const int TrimSafetyPadding = 10;
-    private const int TrimMinimumComponentArea = 180;
+    private const byte LightBackgroundThreshold = 232;
+    private const byte NeutralBackgroundThreshold = 198;
+    private const byte NeutralBackgroundTolerance = 34;
+    private const byte EdgeSampleBrightnessThreshold = 178;
+    private const int TrimSafetyPadding = 6;
+    private const int TrimMinimumComponentArea = 160;
     private const double TrimMergeAreaRatio = 0.12;
     private const int TrimMergeGap = 36;
     private const int TrimEdgeNoiseInset = 18;
     private const int TrimEdgeNoiseMaxArea = 2400;
+    private const int BackgroundSeedTolerance = 32;
+    private const int BackgroundSeedLuminanceTolerance = 40;
 
     private static readonly string ImagesFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -182,8 +185,9 @@ public static class ClothingImageLoader
         var stride = ((source.PixelWidth * source.Format.BitsPerPixel) + 7) / 8;
         var pixels = new byte[stride * source.PixelHeight];
         source.CopyPixels(pixels, stride, 0);
+        var backgroundSeeds = BuildBackgroundSeeds(pixels, stride, source.PixelWidth, source.PixelHeight);
 
-        var subjectBounds = FindLargestSubjectBounds(pixels, stride, source.PixelWidth, source.PixelHeight);
+        var subjectBounds = FindLargestSubjectBounds(pixels, stride, source.PixelWidth, source.PixelHeight, backgroundSeeds);
         if (subjectBounds != null)
             return subjectBounds;
 
@@ -192,16 +196,16 @@ public static class ClothingImageLoader
         var top = 0;
         var bottom = source.PixelHeight - 1;
 
-        while (top < bottom && IsRemovableRow(pixels, stride, source.PixelWidth, top))
+        while (top < bottom && IsRemovableRow(pixels, stride, source.PixelWidth, top, backgroundSeeds))
             top++;
 
-        while (bottom > top && IsRemovableRow(pixels, stride, source.PixelWidth, bottom))
+        while (bottom > top && IsRemovableRow(pixels, stride, source.PixelWidth, bottom, backgroundSeeds))
             bottom--;
 
-        while (left < right && IsRemovableColumn(pixels, stride, source.PixelWidth, source.PixelHeight, left, top, bottom))
+        while (left < right && IsRemovableColumn(pixels, stride, source.PixelWidth, source.PixelHeight, left, top, bottom, backgroundSeeds))
             left++;
 
-        while (right > left && IsRemovableColumn(pixels, stride, source.PixelWidth, source.PixelHeight, right, top, bottom))
+        while (right > left && IsRemovableColumn(pixels, stride, source.PixelWidth, source.PixelHeight, right, top, bottom, backgroundSeeds))
             right--;
 
         left = Math.Max(0, left - TrimSafetyPadding);
@@ -217,7 +221,12 @@ public static class ClothingImageLoader
         return new Int32Rect(left, top, width, height);
     }
 
-    private static Int32Rect? FindLargestSubjectBounds(byte[] pixels, int stride, int width, int height)
+    private static Int32Rect? FindLargestSubjectBounds(
+        byte[] pixels,
+        int stride,
+        int width,
+        int height,
+        IReadOnlyList<BackgroundSeed> backgroundSeeds)
     {
         var totalPixels = width * height;
         if (totalPixels <= 0)
@@ -229,14 +238,14 @@ public static class ClothingImageLoader
         // Flood-fill only the background connected to outer edges.
         for (var x = 0; x < width; x++)
         {
-            TryMarkBackground(pixels, stride, width, height, x, 0, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x, height - 1, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x, 0, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x, height - 1, background, queue, backgroundSeeds);
         }
 
         for (var y = 1; y < height - 1; y++)
         {
-            TryMarkBackground(pixels, stride, width, height, 0, y, background, queue);
-            TryMarkBackground(pixels, stride, width, height, width - 1, y, background, queue);
+            TryMarkBackground(pixels, stride, width, height, 0, y, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, width - 1, y, background, queue, backgroundSeeds);
         }
 
         while (queue.Count > 0)
@@ -245,14 +254,14 @@ public static class ClothingImageLoader
             var x = index % width;
             var y = index / width;
 
-            TryMarkBackground(pixels, stride, width, height, x - 1, y, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x + 1, y, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x, y - 1, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x, y + 1, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x - 1, y - 1, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x + 1, y - 1, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x - 1, y + 1, background, queue);
-            TryMarkBackground(pixels, stride, width, height, x + 1, y + 1, background, queue);
+            TryMarkBackground(pixels, stride, width, height, x - 1, y, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x, y - 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x, y + 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x - 1, y - 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y - 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x - 1, y + 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y + 1, background, queue, backgroundSeeds);
         }
 
         var visited = new bool[totalPixels];
@@ -388,7 +397,8 @@ public static class ClothingImageLoader
         int x,
         int y,
         bool[] background,
-        Queue<int> queue)
+        Queue<int> queue,
+        IReadOnlyList<BackgroundSeed> backgroundSeeds)
     {
         if (x < 0 || y < 0 || x >= width || y >= height)
             return;
@@ -397,14 +407,14 @@ public static class ClothingImageLoader
         if (background[index])
             return;
 
-        if (!IsBackgroundPixel(pixels, (y * stride) + (x * 4)))
+        if (!IsBackgroundPixel(pixels, (y * stride) + (x * 4), backgroundSeeds))
             return;
 
         background[index] = true;
         queue.Enqueue(index);
     }
 
-    private static bool IsRemovableRow(byte[] pixels, int stride, int width, int row)
+    private static bool IsRemovableRow(byte[] pixels, int stride, int width, int row, IReadOnlyList<BackgroundSeed> backgroundSeeds)
     {
         var allowedContentPixels = Math.Max(2, width / 120);
         var contentCount = 0;
@@ -412,7 +422,7 @@ public static class ClothingImageLoader
 
         for (var x = 0; x < width; x++)
         {
-            if (IsBackgroundPixel(pixels, rowOffset + (x * 4)))
+            if (IsBackgroundPixel(pixels, rowOffset + (x * 4), backgroundSeeds))
                 continue;
 
             contentCount++;
@@ -423,7 +433,15 @@ public static class ClothingImageLoader
         return true;
     }
 
-    private static bool IsRemovableColumn(byte[] pixels, int stride, int width, int height, int column, int top, int bottom)
+    private static bool IsRemovableColumn(
+        byte[] pixels,
+        int stride,
+        int width,
+        int height,
+        int column,
+        int top,
+        int bottom,
+        IReadOnlyList<BackgroundSeed> backgroundSeeds)
     {
         var spanHeight = Math.Max(1, bottom - top + 1);
         var allowedContentPixels = Math.Max(2, spanHeight / 120);
@@ -431,7 +449,7 @@ public static class ClothingImageLoader
 
         for (var y = top; y <= bottom && y < height; y++)
         {
-            if (IsBackgroundPixel(pixels, (y * stride) + (column * 4)))
+            if (IsBackgroundPixel(pixels, (y * stride) + (column * 4), backgroundSeeds))
                 continue;
 
             contentCount++;
@@ -442,7 +460,7 @@ public static class ClothingImageLoader
         return true;
     }
 
-    private static bool IsBackgroundPixel(byte[] pixels, int offset)
+    private static bool IsBackgroundPixel(byte[] pixels, int offset, IReadOnlyList<BackgroundSeed> backgroundSeeds)
     {
         var blue = pixels[offset];
         var green = pixels[offset + 1];
@@ -450,16 +468,96 @@ public static class ClothingImageLoader
         var alpha = pixels[offset + 3];
         var max = Math.Max(red, Math.Max(green, blue));
         var min = Math.Min(red, Math.Min(green, blue));
+        var luminance = (red + green + blue) / 3;
         var neutralLight = red >= NeutralBackgroundThreshold &&
                            green >= NeutralBackgroundThreshold &&
                            blue >= NeutralBackgroundThreshold &&
                            max - min <= NeutralBackgroundTolerance;
 
-        return alpha <= TransparentBackgroundThreshold ||
-               (red >= LightBackgroundThreshold &&
-                green >= LightBackgroundThreshold &&
-                blue >= LightBackgroundThreshold) ||
-               neutralLight;
+        if (alpha <= TransparentBackgroundThreshold)
+            return true;
+
+        if (red >= LightBackgroundThreshold &&
+            green >= LightBackgroundThreshold &&
+            blue >= LightBackgroundThreshold)
+        {
+            return true;
+        }
+
+        if (neutralLight)
+            return true;
+
+        if (luminance < EdgeSampleBrightnessThreshold || backgroundSeeds.Count == 0)
+            return false;
+
+        foreach (var seed in backgroundSeeds)
+        {
+            var dr = Math.Abs(red - seed.Red);
+            var dg = Math.Abs(green - seed.Green);
+            var db = Math.Abs(blue - seed.Blue);
+            var dl = Math.Abs(luminance - seed.Luminance);
+
+            if (dr <= BackgroundSeedTolerance &&
+                dg <= BackgroundSeedTolerance &&
+                db <= BackgroundSeedTolerance &&
+                dl <= BackgroundSeedLuminanceTolerance)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static List<BackgroundSeed> BuildBackgroundSeeds(byte[] pixels, int stride, int width, int height)
+    {
+        var candidates = new (int X, int Y)[]
+        {
+            (0, 0),
+            (width - 1, 0),
+            (0, height - 1),
+            (width - 1, height - 1),
+            (width / 2, 0),
+            (width / 2, height - 1),
+            (0, height / 2),
+            (width - 1, height / 2),
+            (Math.Max(0, width / 4), 0),
+            (Math.Min(width - 1, (width * 3) / 4), 0),
+            (Math.Max(0, width / 4), height - 1),
+            (Math.Min(width - 1, (width * 3) / 4), height - 1)
+        };
+
+        var seeds = new List<BackgroundSeed>();
+        foreach (var (x, y) in candidates)
+        {
+            if (x < 0 || y < 0 || x >= width || y >= height)
+                continue;
+
+            var offset = (y * stride) + (x * 4);
+            var seed = new BackgroundSeed(
+                pixels[offset + 2],
+                pixels[offset + 1],
+                pixels[offset],
+                pixels[offset + 3]);
+
+            if (seed.Alpha <= TransparentBackgroundThreshold)
+            {
+                seeds.Add(seed);
+                continue;
+            }
+
+            var max = Math.Max(seed.Red, Math.Max(seed.Green, seed.Blue));
+            var min = Math.Min(seed.Red, Math.Min(seed.Green, seed.Blue));
+            if (seed.Luminance >= EdgeSampleBrightnessThreshold &&
+                max - min <= NeutralBackgroundTolerance + 8)
+            {
+                seeds.Add(seed);
+            }
+        }
+
+        return seeds
+            .Distinct()
+            .ToList();
     }
 
     private readonly record struct SubjectComponent(int Left, int Top, int Right, int Bottom, int Area)
@@ -476,5 +574,10 @@ public static class ClothingImageLoader
                 Math.Max(Bottom, other.Bottom),
                 Area + other.Area);
         }
+    }
+
+    private readonly record struct BackgroundSeed(byte Red, byte Green, byte Blue, byte Alpha)
+    {
+        public int Luminance => (Red + Green + Blue) / 3;
     }
 }
