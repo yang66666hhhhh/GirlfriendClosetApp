@@ -10,19 +10,19 @@
 
     <Style x:Key="ModalCancelButton" TargetType="Button" BasedOn="{StaticResource ModalFooterButtonBase}">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="BorderThickness" Value="0"/>
     </Style>
 
     <Style x:Key="ModalSaveButton" TargetType="Button" BasedOn="{StaticResource ModalFooterButtonBase}">
-        <Setter Property="Background" Value="{StaticResource PrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="Effect" Value="{StaticResource Shadow.Button}"/>
         <Setter Property="MinWidth" Value="152"/>
     </Style>
 
     <Style x:Key="ModalDangerButton" TargetType="Button" BasedOn="{StaticResource ModalFooterButtonBase}">
-        <Setter Property="Background" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource DangerBrush}"/>
         <Setter Property="Foreground" Value="White"/>
         <Setter Property="Effect" Value="{StaticResource Shadow.Button}"/>
     </Style>

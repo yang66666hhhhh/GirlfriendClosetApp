@@ -28,7 +28,7 @@
                 </Border>
 
                 <Border Grid.Row="1"
-                        Background="{StaticResource SurfaceSectionBrush}"
+                        Background="{DynamicResource SurfaceSectionBrush}"
                         CornerRadius="18"
                         Padding="16"
                         Margin="28,20,28,0">
@@ -39,10 +39,10 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="给这一天补一条穿搭记录"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"/>
                             <TextBlock Text="适合补记昨天、周末或者约会那天穿了什么。"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontSize="12"
                                        Margin="0,4,0,0"/>
                         </StackPanel>
@@ -65,7 +65,7 @@
                 <Grid Grid.Row="2" Margin="28,18,28,22">
                     <TextBlock x:Name="EmptyText"
                                Text="这一天还没有记录。选一套搭配点「添加」，日历就会被点亮。"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                TextWrapping="Wrap"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -74,7 +74,7 @@
                     <ItemsControl x:Name="RecordsList">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Background="{StaticResource SurfaceElevatedBrush}"
+                                <Border Background="{DynamicResource SurfaceElevatedBrush}"
                                         CornerRadius="18"
                                         Padding="16"
                                         Margin="0,0,0,12">
@@ -85,7 +85,7 @@
                                             <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
                                         <Border Width="44" Height="44" CornerRadius="16"
-                                                Background="{StaticResource PrimaryLightBrush}">
+                                                Background="{DynamicResource PrimaryLightBrush}">
                                             <TextBlock Text="👗"
                                                        FontSize="22"
                                                        HorizontalAlignment="Center"
@@ -95,10 +95,10 @@
                                             <TextBlock Text="{Binding OutfitName}"
                                                        FontSize="15"
                                                        FontWeight="SemiBold"
-                                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
                                             <TextBlock Text="{Binding TimeText}"
                                                        FontSize="12"
-                                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                                        Margin="0,4,0,0"/>
                                         </StackPanel>
                                         <Button Grid.Column="2"

@@ -23,12 +23,12 @@
                                        FontFamily="{StaticResource Font.Primary}"
                                        FontSize="26"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <TextBlock x:Name="TxtSubtitle"
                                        Text="只补缺失的信息，不会覆盖已经填好的资料。"
                                        FontFamily="{StaticResource Font.Primary}"
                                        FontSize="12"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="0,4,0,0"/>
                         </StackPanel>
                         <Button x:Name="BtnClose"
@@ -44,7 +44,7 @@
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="32,24,36,28">
-                        <Border Background="{StaticResource SurfaceHeroBrush}"
+                        <Border Background="{DynamicResource SurfaceHeroBrush}"
                                 CornerRadius="18"
                                 Padding="18,16"
                                 Margin="0,0,0,18">
@@ -53,10 +53,10 @@
                                            Text="会对当前结果里的衣服补全缺失资料。"
                                            FontSize="14"
                                            FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 <TextBlock Text="例如：未分类才会补分类，没品牌才会写品牌；标签只会新增，不会删掉已有标签。"
                                            FontSize="12"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            TextWrapping="Wrap"
                                            Margin="0,6,0,0"/>
                             </StackPanel>
@@ -138,7 +138,7 @@
                     <Grid>
                         <TextBlock x:Name="TxtFooterHint"
                                    Text="选好要补的字段后，会只更新当前结果里的缺失资料。"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    VerticalAlignment="Center"/>
                         <Grid MaxWidth="420" HorizontalAlignment="Right">
                             <Grid.ColumnDefinitions>

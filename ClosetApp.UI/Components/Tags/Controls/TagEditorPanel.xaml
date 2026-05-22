@@ -8,11 +8,11 @@
 
         <Style x:Key="NameInput" TargetType="TextBox">
             <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
             <Setter Property="FontSize" Value="15"/>
             <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
@@ -37,18 +37,18 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="Bg" Background="Transparent"
-                                BorderBrush="{StaticResource BorderLightBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
                                 BorderThickness="1" CornerRadius="20"
                                 Padding="16,8">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
-                                <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource SecondaryBackgroundBrush}"/>
+                                <Setter TargetName="Bg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -75,13 +75,13 @@
             </Grid.RowDefinitions>
 
             <!-- Header -->
-            <Border Grid.Row="0" BorderBrush="{StaticResource BorderLightBrush}"
+            <Border Grid.Row="0" BorderBrush="{DynamicResource BorderLightBrush}"
                     BorderThickness="0,0,0,1" Margin="20,0">
                 <Grid>
                     <TextBlock x:Name="TxtTitle" Text="新建标签"
                                FontFamily="{StaticResource Font.Primary}"
                                FontSize="17" FontWeight="SemiBold"
-                               Foreground="{StaticResource TextPrimaryBrush}"
+                               Foreground="{DynamicResource TextPrimaryBrush}"
                                VerticalAlignment="Center"/>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Center"
                             Width="32" Height="32" Background="Transparent" Cursor="Hand"
@@ -90,12 +90,12 @@
                             <ControlTemplate TargetType="Button">
                                 <Border x:Name="Bg" Background="Transparent" CornerRadius="16">
                                     <TextBlock Text="✕" FontSize="13"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bg" Property="Background" Value="{StaticResource SecondaryBackgroundBrush}"/>
+                                        <Setter TargetName="Bg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
@@ -111,7 +111,7 @@
                     <TextBlock Text="标签名称"
                                FontFamily="{StaticResource Font.Primary}"
                                FontSize="12" FontWeight="Medium"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="0,0,0,8"/>
                     <TextBox x:Name="TxtName" Style="{StaticResource NameInput}"
                              Tag="输入标签名称" Margin="0,0,0,20"
@@ -121,7 +121,7 @@
                     <TextBlock Text="标签分类"
                                FontFamily="{StaticResource Font.Primary}"
                                FontSize="12" FontWeight="Medium"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="0,0,0,8"/>
                     <WrapPanel Margin="0,0,0,20">
                         <RadioButton x:Name="RbStyle" Content="风格" GroupName="TagCategory"
@@ -136,7 +136,7 @@
                     <TextBlock Text="标签颜色"
                                FontFamily="{StaticResource Font.Primary}"
                                FontSize="12" FontWeight="Medium"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="0,0,0,10"/>
                     <WrapPanel Margin="0,0,0,20">
                         <RadioButton x:Name="Color1" GroupName="TagColor" Tag="#D8B7A3"
@@ -150,7 +150,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -167,7 +167,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -184,7 +184,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -201,7 +201,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -218,7 +218,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -235,7 +235,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -252,7 +252,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -269,7 +269,7 @@
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsChecked" Value="True">
-                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                            <Setter TargetName="Bg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                         </Trigger>
                                     </ControlTemplate.Triggers>
                                 </ControlTemplate>
@@ -281,7 +281,7 @@
                     <TextBlock Text="预览"
                                FontFamily="{StaticResource Font.Primary}"
                                FontSize="12" FontWeight="Medium"
-                               Foreground="{StaticResource TextSecondaryBrush}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="0,0,0,8"/>
                     <Border x:Name="PreviewChip" HorizontalAlignment="Left"
                             Background="#FFF0EBE6" CornerRadius="20" Padding="14,7">
@@ -290,7 +290,7 @@
                             <TextBlock x:Name="TxtPreview" Text="标签名"
                                        FontFamily="{StaticResource Font.Primary}"
                                        FontSize="13"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
                                        VerticalAlignment="Center" Margin="8,0,0,0"/>
                         </StackPanel>
                     </Border>
@@ -298,7 +298,7 @@
             </ScrollViewer>
 
             <!-- Footer -->
-            <Border Grid.Row="2" BorderBrush="{StaticResource BorderLightBrush}"
+            <Border Grid.Row="2" BorderBrush="{DynamicResource BorderLightBrush}"
                     BorderThickness="0,1,0,0" Margin="20,0,20,0">
                 <Grid VerticalAlignment="Center">
                     <Grid.ColumnDefinitions>
@@ -308,7 +308,7 @@
                     </Grid.ColumnDefinitions>
                     <Button Grid.Column="1" Content="取消"
                             Background="Transparent"
-                            Foreground="{StaticResource TextSecondaryBrush}"
+                            Foreground="{DynamicResource TextSecondaryBrush}"
                             FontFamily="{StaticResource Font.Primary}"
                             FontSize="14" FontWeight="Medium"
                             Cursor="Hand"
@@ -324,14 +324,14 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bg" Property="Background" Value="{StaticResource SecondaryBackgroundBrush}"/>
+                                        <Setter TargetName="Bg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>
                         </Button.Template>
                     </Button>
                     <Button Grid.Column="2" Content="保存"
-                            Background="{StaticResource PrimaryBrush}"
+                            Background="{DynamicResource PrimaryBrush}"
                             Foreground="White"
                             FontFamily="{StaticResource Font.Primary}"
                             FontSize="14" FontWeight="Medium"
@@ -352,7 +352,7 @@
                                 </Border>
                                 <ControlTemplate.Triggers>
                                     <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bg" Property="Background" Value="{StaticResource PrimaryDarkBrush}"/>
+                                        <Setter TargetName="Bg" Property="Background" Value="{DynamicResource PrimaryDarkBrush}"/>
                                     </Trigger>
                                 </ControlTemplate.Triggers>
                             </ControlTemplate>

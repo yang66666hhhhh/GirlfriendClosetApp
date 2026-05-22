@@ -4,7 +4,7 @@
              xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
              xmlns:components="clr-namespace:ClosetApp.UI.Components"
              xmlns:states="clr-namespace:ClosetApp.UI.Components.Shared.States"
-             Background="{StaticResource SurfacePageBrush}">
+             Background="{DynamicResource SurfacePageBrush}">
 
     <UserControl.Resources>
         <conv:ImagePathConverter x:Key="ImagePathConverter"/>
@@ -30,27 +30,27 @@
         <!-- ═══ SEARCH ═══ -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
             <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}"/>
-            <Setter Property="CaretBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="TextBox">
                         <Border x:Name="SearchBorder"
                                 Background="{TemplateBinding Background}" CornerRadius="11"
                                 Padding="12,8" BorderThickness="1.5"
-                                BorderBrush="{StaticResource BorderLightBrush}">
+                                BorderBrush="{DynamicResource BorderLightBrush}">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="🔍" FontSize="13" VerticalAlignment="Center"
-                                           Foreground="{StaticResource TextPlaceholderBrush}"
+                                           Foreground="{DynamicResource TextPlaceholderBrush}"
                                            Grid.Column="0" Margin="0,0,6,0"/>
                                 <ScrollViewer x:Name="PART_ContentHost" Grid.Column="1" VerticalAlignment="Center"/>
                                 <TextBlock x:Name="Placeholder" Text="搜索衣服..."
-                                           FontSize="12" Foreground="{StaticResource TextPlaceholderBrush}"
+                                           FontSize="12" Foreground="{DynamicResource TextPlaceholderBrush}"
                                            VerticalAlignment="Center" Grid.Column="1" Margin="2,0,0,0"
                                            IsHitTestVisible="False" Visibility="Collapsed"/>
                             </Grid>
@@ -60,7 +60,7 @@
                                 <Setter TargetName="Placeholder" Property="Visibility" Value="Visible"/>
                             </Trigger>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter TargetName="SearchBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="SearchBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                 <Setter TargetName="SearchBorder" Property="Effect">
                                     <Setter.Value>
                                         <DropShadowEffect Color="{StaticResource Primary}" BlurRadius="14" ShadowDepth="0" Opacity="0.2"/>
@@ -75,8 +75,8 @@
 
         <!-- ═══ CHIP ═══ -->
         <Style x:Key="ChipStyle" TargetType="RadioButton">
-            <Setter Property="Background" Value="{StaticResource SurfaceSectionBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
             <Setter Property="FontSize" Value="11"/>
             <Setter Property="FontWeight" Value="Medium"/>
@@ -96,10 +96,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ChipBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                                <Setter TargetName="ChipBg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="ChipBg" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="ChipBg" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -109,7 +109,7 @@
         </Style>
 
         <Style x:Key="FilterCheckStyle" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
             <Setter Property="FontSize" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
@@ -117,8 +117,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <Border x:Name="CheckBg"
-                                Background="{StaticResource SurfaceSectionBrush}"
-                                BorderBrush="{StaticResource BorderLightBrush}"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
                                 BorderThickness="1"
                                 CornerRadius="16"
                                 Padding="14,8">
@@ -126,11 +126,11 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="CheckBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                                <Setter TargetName="CheckBg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="CheckBg" Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                                <Setter TargetName="CheckBg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="CheckBg" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="CheckBg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -140,14 +140,14 @@
         </Style>
 
         <Style x:Key="TagChipStyle" TargetType="CheckBox">
-            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
             <Setter Property="FontSize" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Margin" Value="0,0,8,8"/>
             <Setter Property="Padding" Value="12,7"/>
-            <Setter Property="Background" Value="{StaticResource SurfaceSectionBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
@@ -161,7 +161,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ChipBg" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="ChipBg" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="ChipBg" Property="BorderThickness" Value="1.4"/>
@@ -198,7 +198,7 @@
                                 <TextBlock x:Name="TagName"
                                            Text="{Binding Tag.Name}"
                                            FontSize="12"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                            Margin="6,0,0,0"
                                            VerticalAlignment="Center"/>
                                 <TextBlock x:Name="CheckMark"
@@ -281,7 +281,7 @@
                            Text="我的衣柜"
                            FontSize="14"
                            FontWeight="Bold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            VerticalAlignment="Center"/>
 
                 <!-- Right: Add Buttons -->
@@ -315,7 +315,7 @@
                         Style="{StaticResource PageSummaryCard}"
                         Margin="44,8,44,8"
                         Padding="10,7"
-                        Background="{StaticResource SurfaceElevatedBrush}"
+                        Background="{DynamicResource SurfaceElevatedBrush}"
                         BorderBrush="{StaticResource WardrobeSkyBorderBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
@@ -406,12 +406,12 @@
                                 <TextBlock Text="待整理"
                                            FontSize="11"
                                            FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                            VerticalAlignment="Center"/>
                                 <TextBlock Grid.Column="1"
                                            Text="导入后优先补资料"
                                            FontSize="9"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Margin="8,1,0,0"
                                            VerticalAlignment="Center"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -553,14 +553,14 @@
                             <TextBlock x:Name="TxtCount" Grid.Column="1"
                                        Text="{Binding FilterResultText}"
                                        FontSize="11"
-                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
                                        VerticalAlignment="Center"/>
                         </Grid>
                         <StackPanel>
                             <TextBlock Text="分类"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="0,0,0,5"/>
                             <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                                           VerticalScrollBarVisibility="Disabled">
@@ -598,7 +598,7 @@
                             <TextBlock Text="季节"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="0,10,0,5"/>
                             <WrapPanel>
                                 <RadioButton x:Name="SeasonAll" Content="四季都看"
@@ -626,23 +626,23 @@
                             <TextBlock Text="偏好"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="0,10,0,5"/>
                             <CheckBox x:Name="FavoriteOnlyCheckBox"
                                       Content="只看收藏"
                                       Style="{StaticResource FilterCheckStyle}"
-                                      Foreground="{StaticResource TextPrimaryBrush}"
+                                      Foreground="{DynamicResource TextPrimaryBrush}"
                                       IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"/>
 
                             <TextBlock Text="风格标签"
                                        FontSize="11"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="0,10,0,5"/>
                             <TextBlock x:Name="TxtTagFilterEmpty"
                                        Text="还没有风格标签，先去标签页加几个会更好筛。"
                                        FontSize="10"
-                                       Foreground="{StaticResource TextTertiaryBrush}"
+                                       Foreground="{DynamicResource TextTertiaryBrush}"
                                        Margin="0,0,0,8"
                                        Visibility="{Binding HasAvailableTags, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                             <ItemsControl ItemsSource="{Binding TagFilters}">

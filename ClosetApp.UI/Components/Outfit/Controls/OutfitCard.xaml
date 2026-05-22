@@ -28,7 +28,7 @@
     </UserControl.Resources>
 
     <Border x:Name="CardRoot" Width="304"
-            Background="{StaticResource SurfaceCardBrush}"
+            Background="{DynamicResource SurfaceCardBrush}"
             CornerRadius="20"
             Cursor="Hand"
             RenderTransformOrigin="0.5,0.5">
@@ -113,23 +113,23 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
                         <TextBlock x:Name="TxtName" FontSize="15" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                                   Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="TxtMoodLine"
                                    FontSize="11"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,4,0,0"
                                    TextTrimming="CharacterEllipsis"/>
                         <WrapPanel x:Name="MoodChipPanel"
                                    Margin="0,7,0,0"/>
                         <TextBlock x:Name="TxtWearInfo" FontSize="11"
-                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
                                    Margin="0,8,0,0"
                                    TextTrimming="CharacterEllipsis"/>
                     </StackPanel>
                     <Button x:Name="BtnFavorite" Grid.Column="1"
                             Content="♡" FontSize="18" Padding="8"
                             Background="Transparent" BorderThickness="0"
-                            Foreground="{StaticResource PrimaryBrush}" Cursor="Hand"
+                            Foreground="{DynamicResource PrimaryBrush}" Cursor="Hand"
                             VerticalAlignment="Center"/>
                 </Grid>
             </Border>

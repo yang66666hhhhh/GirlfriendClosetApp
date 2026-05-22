@@ -8,8 +8,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="CheckBox">
                         <Border x:Name="ChipBorder"
-                                Background="{StaticResource SurfaceSectionBrush}"
-                                BorderBrush="{StaticResource BorderLightBrush}"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
                                 BorderThickness="1"
                                 CornerRadius="16"
                                 Padding="16,12"
@@ -23,10 +23,10 @@
                                     <TextBlock Text="{Binding Label}"
                                                FontSize="13"
                                                FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextPrimaryBrush}"/>
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
                                     <TextBlock Text="{Binding CountText}"
                                                FontSize="11"
-                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
                                                Margin="0,4,0,0"/>
                                 </StackPanel>
                                 <Border x:Name="CheckMark"
@@ -35,7 +35,7 @@
                                         Height="24"
                                         CornerRadius="12"
                                         Background="Transparent"
-                                        BorderBrush="{StaticResource BorderLightBrush}"
+                                        BorderBrush="{DynamicResource BorderLightBrush}"
                                         BorderThickness="1"
                                         VerticalAlignment="Center">
                                     <TextBlock x:Name="CheckMarkText"
@@ -49,15 +49,15 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ChipBorder" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
-                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="ChipBorder" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="ChipBorder" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
-                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="ChipBorder" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter TargetName="ChipBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                 <Setter TargetName="ChipBorder" Property="BorderThickness" Value="1.5"/>
-                                <Setter TargetName="CheckMark" Property="Background" Value="{StaticResource PrimaryBrush}"/>
-                                <Setter TargetName="CheckMark" Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+                                <Setter TargetName="CheckMark" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="CheckMark" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                 <Setter TargetName="CheckMarkText" Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -86,11 +86,11 @@
                             <TextBlock Text="批量清空衣柜"
                                        FontSize="26"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <TextBlock x:Name="TxtSubtitle"
                                        Text="可以一次清空整个衣柜，也可以只清空选中的分类。"
                                        FontSize="12"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
                                        Margin="0,4,0,0"/>
                         </StackPanel>
                         <Button x:Name="BtnClose"
@@ -106,7 +106,7 @@
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="32,24,36,28">
-                        <Border Background="{StaticResource SurfaceHeroBrush}"
+                        <Border Background="{DynamicResource SurfaceHeroBrush}"
                                 CornerRadius="18"
                                 Padding="18,16"
                                 Margin="0,0,0,18">
@@ -115,10 +115,10 @@
                                            Text="会删除选中分类里的衣服，并一起清掉对应图片。"
                                            FontSize="14"
                                            FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 <TextBlock Text="如果某套搭配删完后已经没有衣服了，也会自动一起清理。"
                                            FontSize="12"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Margin="0,6,0,0"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
@@ -128,13 +128,13 @@
                                   Content="清空整个衣柜"
                                   FontSize="14"
                                   FontWeight="SemiBold"
-                                  Foreground="{StaticResource TextPrimaryBrush}"
+                                  Foreground="{DynamicResource TextPrimaryBrush}"
                                   Checked="SelectAll_Checked"
                                   Unchecked="SelectAll_Checked"/>
                         <TextBlock x:Name="TxtSelectAllHint"
                                    Text="已选择全部分类。"
                                    FontSize="12"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,4,0,14"/>
 
                         <ItemsControl x:Name="CategoryList">
@@ -151,8 +151,8 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
 
-                        <Border Background="{StaticResource SurfaceSectionBrush}"
-                                BorderBrush="{StaticResource BorderLightBrush}"
+                        <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
                                 BorderThickness="1"
                                 CornerRadius="16"
                                 Padding="16"
@@ -161,17 +161,17 @@
                                 <TextBlock Text="最后确认"
                                            FontSize="13"
                                            FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 <CheckBox x:Name="ChkUnderstand"
                                           Content="我知道这个操作不可撤销，会同时删除图片和可能变空的搭配"
                                           Margin="0,10,0,0"
-                                          Foreground="{StaticResource TextSecondaryBrush}"
+                                          Foreground="{DynamicResource TextSecondaryBrush}"
                                           Checked="Acknowledge_Checked"
                                           Unchecked="Acknowledge_Checked"/>
                                 <TextBlock x:Name="TxtValidation"
                                            Visibility="Collapsed"
                                            Margin="0,10,0,0"
-                                           Foreground="{StaticResource DangerBrush}"
+                                           Foreground="{DynamicResource DangerBrush}"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
@@ -184,7 +184,7 @@
                     <Grid>
                         <TextBlock x:Name="TxtFooterHint"
                                    Text="先选要清空的分类，再做最后确认。"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    VerticalAlignment="Center"/>
                         <Grid MaxWidth="430" HorizontalAlignment="Right">
                             <Grid.ColumnDefinitions>

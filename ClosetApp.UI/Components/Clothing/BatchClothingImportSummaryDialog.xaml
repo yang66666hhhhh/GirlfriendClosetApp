@@ -38,17 +38,17 @@
                               VerticalScrollBarVisibility="Auto"
                               HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="28,24,28,28">
-                        <Border Background="{StaticResource SurfaceHeroBrush}"
+                        <Border Background="{DynamicResource SurfaceHeroBrush}"
                                 CornerRadius="18"
                                 Padding="18,16">
                             <StackPanel>
                                 <TextBlock x:Name="SummaryText"
                                            FontSize="15"
                                            FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 <TextBlock x:Name="SummaryDetailText"
                                            FontSize="12"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            Margin="0,6,0,0"
                                            TextWrapping="Wrap"/>
                             </StackPanel>
@@ -57,11 +57,11 @@
                         <StackPanel x:Name="PerfectStatePanel"
                                     Margin="0,18,0,0"
                                     Visibility="Collapsed">
-                            <Border Background="{StaticResource SurfaceSectionBrush}"
+                            <Border Background="{DynamicResource SurfaceSectionBrush}"
                                     CornerRadius="16"
                                     Padding="18,16">
                                 <TextBlock Text="这批资料已经很完整了，直接去刚导入里继续看图和整理就行。"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                            FontSize="13"
                                            TextWrapping="Wrap"/>
                             </Border>
@@ -73,23 +73,23 @@
                             <TextBlock x:Name="UnnamedTitle"
                                        FontSize="14"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <ItemsControl x:Name="UnnamedList"
                                           Margin="0,10,0,0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="{StaticResource SurfaceCardBrush}"
-                                                BorderBrush="{StaticResource BorderLightBrush}"
+                                        <Border Background="{DynamicResource SurfaceCardBrush}"
+                                                BorderBrush="{DynamicResource BorderLightBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="14"
                                                 Padding="14,12"
                                                 Margin="0,0,0,8">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding DisplayName}"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                                            FontWeight="SemiBold"/>
                                                 <TextBlock Text="{Binding SourceFileName, StringFormat=原图：{0}}"
-                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                                            FontSize="11"
                                                            Margin="0,4,0,0"/>
                                             </StackPanel>
@@ -105,23 +105,23 @@
                             <TextBlock x:Name="UncategorizedTitle"
                                        FontSize="14"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <ItemsControl x:Name="UncategorizedList"
                                           Margin="0,10,0,0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="{StaticResource SurfaceCardBrush}"
-                                                BorderBrush="{StaticResource BorderLightBrush}"
+                                        <Border Background="{DynamicResource SurfaceCardBrush}"
+                                                BorderBrush="{DynamicResource BorderLightBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="14"
                                                 Padding="14,12"
                                                 Margin="0,0,0,8">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding DisplayName}"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                                            FontWeight="SemiBold"/>
                                                 <TextBlock Text="{Binding SourceFileName, StringFormat=原图：{0}}"
-                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                                            FontSize="11"
                                                            Margin="0,4,0,0"/>
                                             </StackPanel>
@@ -137,23 +137,23 @@
                             <TextBlock x:Name="UnseasonedTitle"
                                        FontSize="14"
                                        FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <ItemsControl x:Name="UnseasonedList"
                                           Margin="0,10,0,0">
                                 <ItemsControl.ItemTemplate>
                                     <DataTemplate>
-                                        <Border Background="{StaticResource SurfaceCardBrush}"
-                                                BorderBrush="{StaticResource BorderLightBrush}"
+                                        <Border Background="{DynamicResource SurfaceCardBrush}"
+                                                BorderBrush="{DynamicResource BorderLightBrush}"
                                                 BorderThickness="1"
                                                 CornerRadius="14"
                                                 Padding="14,12"
                                                 Margin="0,0,0,8">
                                             <StackPanel>
                                                 <TextBlock Text="{Binding DisplayName}"
-                                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                                            FontWeight="SemiBold"/>
                                                 <TextBlock Text="{Binding SourceFileName, StringFormat=原图：{0}}"
-                                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                                            FontSize="11"
                                                            Margin="0,4,0,0"/>
                                             </StackPanel>

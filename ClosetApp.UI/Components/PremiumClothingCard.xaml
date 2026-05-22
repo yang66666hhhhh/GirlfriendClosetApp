@@ -137,7 +137,7 @@
 
         <!-- Main Card -->
         <Border x:Name="MainCard"
-                Background="{StaticResource SurfaceCardBrush}"
+                Background="{DynamicResource SurfaceCardBrush}"
                 CornerRadius="18"
                 ClipToBounds="True"
                 Cursor="Hand"
@@ -202,8 +202,8 @@
                                     HorizontalAlignment="Center">
                             <Canvas Width="48" Height="56" HorizontalAlignment="Center">
                                 <Ellipse Width="9" Height="9" Canvas.Left="19.5" Canvas.Top="0"
-                                         Fill="{StaticResource TextPlaceholderBrush}" Opacity="0.3"/>
-                                <Path Stroke="{StaticResource TextPlaceholderBrush}" StrokeThickness="1.5"
+                                         Fill="{DynamicResource TextPlaceholderBrush}" Opacity="0.3"/>
+                                <Path Stroke="{DynamicResource TextPlaceholderBrush}" StrokeThickness="1.5"
                                       StrokeStartLineCap="Round" StrokeEndLineCap="Round"
                                       Fill="Transparent" Opacity="0.3"
                                       Data="M24,9 L24,14 M11,19 L22,16 L33,19 M11,19 L7,47 L37,47 L33,19 M14,30 L22,27 L30,30"/>
@@ -278,7 +278,7 @@
 
                     <!-- Context menu popup -->
                     <Border x:Name="MoreMenu"
-                            Background="{StaticResource SurfaceCardBrush}"
+                            Background="{DynamicResource SurfaceCardBrush}"
                             CornerRadius="10"
                             Padding="6,4"
                             HorizontalAlignment="Right"
@@ -292,7 +292,7 @@
                         <StackPanel>
                             <Button Content="✏ 编辑"
                                     FontSize="12" FontWeight="Medium"
-                                    Foreground="{StaticResource TextPrimaryBrush}"
+                                    Foreground="{DynamicResource TextPrimaryBrush}"
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Padding="10,6"
@@ -315,7 +315,7 @@
 
                 <!-- ═══ INFO AREA ═══ -->
                 <Border Grid.Row="1"
-                        Background="{StaticResource SurfaceCardBrush}"
+                        Background="{DynamicResource SurfaceCardBrush}"
                         MinHeight="74"
                         Padding="12,8,12,10">
                     <Grid>
@@ -327,19 +327,19 @@
                         <TextBlock x:Name="TitleText"
                                    FontSize="12"
                                    FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
                                    TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="MetaLineText"
                                    Grid.Row="1"
                                    FontSize="9"
-                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
                                    Margin="0,2,0,0"
                                    TextTrimming="CharacterEllipsis"
                                    Visibility="Collapsed"/>
                         <TextBlock x:Name="CaptionLineText"
                                    Grid.Row="2"
                                    FontSize="9"
-                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Foreground="{DynamicResource TextTertiaryBrush}"
                                    Margin="0,5,0,0"
                                    TextTrimming="CharacterEllipsis"
                                    Visibility="Collapsed"/>

@@ -2,7 +2,7 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="FormCard" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="CornerRadius" Value="20"/>
         <Setter Property="Padding" Value="20"/>
         <Setter Property="Effect" Value="{StaticResource Shadow.Card}"/>
@@ -15,7 +15,7 @@
     <Style x:Key="FormHintText" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
     </Style>
 
 </ResourceDictionary>

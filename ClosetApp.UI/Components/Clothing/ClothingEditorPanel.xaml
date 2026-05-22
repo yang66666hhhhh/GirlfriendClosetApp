@@ -5,8 +5,8 @@
              xmlns:tags="clr-namespace:ClosetApp.UI.Components.Tags.Controls">
 
     <UserControl.Resources>
-        <SolidColorBrush x:Key="InputFocusBrush" Color="#FFD9A299"/>
-        <SolidColorBrush x:Key="InputUnderlineBrush" Color="#FFE8E2DC"/>
+        <SolidColorBrush x:Key="InputFocusBrush" Color="{DynamicResource Primary}"/>
+        <SolidColorBrush x:Key="InputUnderlineBrush" Color="{DynamicResource Border.Light}"/>
 
         <!-- Ghost Icon Button -->
         <Style x:Key="GhostIconBtn" TargetType="Button">
@@ -63,22 +63,22 @@
                         <TextBlock Text="添加一件心动单品"
                                    FontFamily="{StaticResource Font.Primary}"
                                    FontSize="26" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
                         <TextBlock Text="照片、分类和小标签，以后都会成为搭配灵感 ✨"
                                    FontFamily="{StaticResource Font.Primary}"
                                    FontSize="12" FontWeight="Regular"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
                     <StackPanel x:Name="HeaderEdit" VerticalAlignment="Center" Visibility="Collapsed">
                         <TextBlock Text="编辑衣服"
                                    FontFamily="{StaticResource Font.Primary}"
                                    FontSize="26" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
                         <TextBlock Text="更新它的照片、标签和喜欢程度"
                                    FontFamily="{StaticResource Font.Primary}"
                                    FontSize="12" FontWeight="Regular"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Center"
@@ -99,7 +99,7 @@
                 <Grid Grid.Column="0" Margin="28,0,0,0">
                     <!-- 空状态 -->
                     <Border x:Name="EmptyState"
-                            Background="{StaticResource SurfaceHeroBrush}"
+                            Background="{DynamicResource SurfaceHeroBrush}"
                             CornerRadius="22"
                             AllowDrop="True"
                             DragEnter="ImageArea_DragEnter"
@@ -127,7 +127,7 @@
                                 <!-- 中心 Icon -->
                                 <Border Width="72" Height="72"
                                         CornerRadius="36"
-                                        Background="{StaticResource PrimaryLightBrush}"
+                                        Background="{DynamicResource PrimaryLightBrush}"
                                         HorizontalAlignment="Center" Margin="0,0,0,24">
                                     <TextBlock Text="👕" FontSize="32"
                                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
@@ -136,12 +136,12 @@
                                 <TextBlock Text="添加衣服照片"
                                            FontFamily="{StaticResource Font.Primary}"
                                            FontSize="17" FontWeight="Medium"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                            HorizontalAlignment="Center" Margin="0,0,0,8"/>
                                 <TextBlock Text="拖拽图片到这里，或点击选择文件"
                                            FontFamily="{StaticResource Font.Primary}"
                                            FontSize="12" FontWeight="Regular"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                            HorizontalAlignment="Center"/>
                             </StackPanel>
                         </Grid>
@@ -268,7 +268,7 @@
                         <TextBlock x:Name="TxtFavHint" Text="选一个表情吧"
                                    FontFamily="{StaticResource Font.Primary}"
                                    FontSize="11" FontWeight="Regular"
-                                   Foreground="{StaticResource TextPlaceholderBrush}"
+                                   Foreground="{DynamicResource TextPlaceholderBrush}"
                                    HorizontalAlignment="Center" Margin="0,0,0,8"/>
                     </StackPanel>
                 </ScrollViewer>

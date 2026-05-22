@@ -683,8 +683,8 @@ public partial class SettingsTab : UserControl
             ThemeRoseCurrentBadge,
             BtnUseRoseTheme,
             isRose,
-            GetBrushColor("SettingsRoseSurfaceBrush"),
-            GetBrushColor("SettingsRoseBorderBrush"),
+            Color.FromRgb(248, 241, 237),  // Rose surface
+            Color.FromRgb(236, 223, 220),  // Rose border
             "切换到柔粉");
 
         ApplyThemeCardState(
@@ -692,8 +692,8 @@ public partial class SettingsTab : UserControl
             ThemeBlueCurrentBadge,
             BtnUseBlueTheme,
             !isRose,
-            GetBrushColor("SettingsBlueSurfaceBrush"),
-            GetBrushColor("SettingsBlueBorderBrush"),
+            Color.FromRgb(235, 241, 251),  // Blue surface
+            Color.FromRgb(200, 214, 237),  // Blue border
             "切换到清蓝");
 
         ApplyThemeSwatchState(
@@ -714,14 +714,12 @@ public partial class SettingsTab : UserControl
             Color.FromRgb(224, 236, 255),
             Color.FromRgb(235, 241, 251));
 
-        ApplyAppearanceSectionState(
-            isRose,
-            GetBrushColor("SettingsRoseSurfaceBrush"),
-            GetBrushColor("SettingsRoseBorderBrush"),
-            GetBrushColor("SettingsRoseTextBrush"),
-            GetBrushColor("SettingsBlueSurfaceBrush"),
-            GetBrushColor("SettingsBlueBorderBrush"),
-            GetBrushColor("SettingsBlueTextBrush"));
+        // Use unified theme colors for appearance section
+        var primary = GetBrushColor("PrimaryBrush");
+        var primaryLight = GetBrushColor("PrimaryLightBrush");
+        var primaryText = GetBrushColor("PrimaryDarkBrush");
+
+        ApplyAppearanceSectionState(primary, primaryLight, primaryText);
 
         TxtThemeSummary.Text = isRose ? "当前使用柔粉主题" : "当前使用清蓝主题";
         TxtThemeDescription.Text = isRose
@@ -740,15 +738,12 @@ public partial class SettingsTab : UserControl
     {
         var primary = GetBrushColor("PrimaryBrush");
         var primaryLight = GetBrushColor("PrimaryLightBrush");
-        var surfaceElevated = GetBrushColor("SurfaceElevatedBrush");
         var borderLight = GetBrushColor("BorderLightBrush");
         var textSecondary = GetBrushColor("TextSecondaryBrush");
 
         card.BorderThickness = new Thickness(isSelected ? 2.5 : 1.25);
-        card.BorderBrush = new SolidColorBrush(isSelected ? primary : borderLight);
-        card.Background = new SolidColorBrush(isSelected
-            ? previewSurface
-            : surfaceElevated);
+        card.BorderBrush = new SolidColorBrush(isSelected ? primary : previewBorder);
+        card.Background = new SolidColorBrush(previewSurface);
         card.Opacity = 1;
         card.Effect = isSelected
             ? new DropShadowEffect
@@ -766,7 +761,7 @@ public partial class SettingsTab : UserControl
 
         button.Content = isSelected ? "已启用" : idleText;
         button.IsEnabled = !isSelected;
-        button.Background = new SolidColorBrush(isSelected ? surfaceElevated : primaryLight);
+        button.Background = new SolidColorBrush(isSelected ? previewSurface : primaryLight);
         button.BorderBrush = new SolidColorBrush(isSelected ? borderLight : primary);
         button.Foreground = new SolidColorBrush(isSelected ? textSecondary : primary);
     }
@@ -780,58 +775,34 @@ public partial class SettingsTab : UserControl
         Color softColor,
         Color surfaceColor)
     {
-        if (isSelected)
-        {
-            primarySwatch.Background = new SolidColorBrush(primaryColor);
-            softSwatch.Background = new SolidColorBrush(softColor);
-            surfaceSwatch.Background = new SolidColorBrush(surfaceColor);
-            primarySwatch.Opacity = 1;
-            softSwatch.Opacity = 1;
-            surfaceSwatch.Opacity = 1;
-            return;
-        }
-
-        var neutralSurface = GetBrushColor("SurfaceSectionBrush");
-        var neutralSoft = BlendWithWhite(neutralSurface, 0.18);
-        var neutralEdge = GetBrushColor("BorderLightBrush");
-
-        primarySwatch.Background = new SolidColorBrush(neutralEdge);
-        softSwatch.Background = new SolidColorBrush(neutralSoft);
-        surfaceSwatch.Background = new SolidColorBrush(neutralSurface);
+        primarySwatch.Background = new SolidColorBrush(primaryColor);
+        softSwatch.Background = new SolidColorBrush(softColor);
+        surfaceSwatch.Background = new SolidColorBrush(surfaceColor);
         primarySwatch.Opacity = 1;
         softSwatch.Opacity = 1;
         surfaceSwatch.Opacity = 1;
     }
 
     private void ApplyAppearanceSectionState(
-        bool isRose,
-        Color roseSurface,
-        Color roseBorder,
-        Color roseText,
-        Color blueSurface,
-        Color blueBorder,
-        Color blueText)
+        Color primary,
+        Color primaryLight,
+        Color primaryText)
     {
-        var sectionSurface = isRose ? roseSurface : blueSurface;
-        var sectionBorder = isRose ? roseBorder : blueBorder;
-        var sectionText = isRose ? roseText : blueText;
         var surfaceElevated = GetBrushColor("SurfaceElevatedBrush");
-        var primary = GetBrushColor("PrimaryBrush");
-        var primaryLight = GetBrushColor("PrimaryLightBrush");
 
-        AppearanceSectionCard.Background = new SolidColorBrush(sectionSurface);
-        AppearanceSectionCard.BorderBrush = new SolidColorBrush(sectionBorder);
+        AppearanceSectionCard.Background = new SolidColorBrush(surfaceElevated);
+        AppearanceSectionCard.BorderBrush = new SolidColorBrush(primary);
 
-        AppearanceSectionBadge.Background = new SolidColorBrush(BlendWithWhite(sectionSurface, 0.08));
-        AppearanceSectionBadge.BorderBrush = new SolidColorBrush(sectionBorder);
-        AppearanceSectionBadgeText.Foreground = new SolidColorBrush(sectionText);
+        AppearanceSectionBadge.Background = new SolidColorBrush(primaryLight);
+        AppearanceSectionBadge.BorderBrush = new SolidColorBrush(primary);
+        AppearanceSectionBadgeText.Foreground = new SolidColorBrush(primaryText);
 
         ThemeSelectionPanel.Background = new SolidColorBrush(surfaceElevated);
-        ThemeSelectionPanel.BorderBrush = new SolidColorBrush(sectionBorder);
+        ThemeSelectionPanel.BorderBrush = new SolidColorBrush(primary);
         ThemeSelectionPanel.BorderThickness = new Thickness(1);
 
         AppearanceAppInfoCard.Background = new SolidColorBrush(surfaceElevated);
-        AppearanceAppInfoCard.BorderBrush = new SolidColorBrush(sectionBorder);
+        AppearanceAppInfoCard.BorderBrush = new SolidColorBrush(primary);
         AppearanceAppInfoCard.BorderThickness = new Thickness(1);
 
         BtnAppearanceOpenAppDir.Background = new SolidColorBrush(primaryLight);

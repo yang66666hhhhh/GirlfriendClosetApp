@@ -81,7 +81,7 @@
             <Border Grid.Row="0" Style="{StaticResource ModalHeaderHost}">
                 <Grid Margin="24,0">
                     <TextBlock x:Name="TxtHeader" Text="创建搭配" FontSize="18" FontWeight="SemiBold"
-                               VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}"/>
+                               VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
                     <Button HorizontalAlignment="Right" VerticalAlignment="Center"
                             Content="✕"
                             Style="{StaticResource ModalCloseButton}"
@@ -106,8 +106,8 @@
                             </Border.Effect>
                             <StackPanel>
                                 <TextBlock Text="基本信息" FontSize="15" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,14"/>
-                                <TextBlock Text="搭配名称" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14"/>
+                                <TextBlock Text="搭配名称" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
                                 <Border Background="{StaticResource SecondaryBgBrush}" CornerRadius="10" Padding="12">
                                     <TextBox x:Name="TxtName" BorderThickness="0" Background="Transparent" FontSize="14"/>
                                 </Border>
@@ -118,7 +118,7 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
                                     <StackPanel Grid.Column="0">
-                                        <TextBlock Text="场景" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="场景" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
                                         <ComboBox x:Name="CmbScene">
                                             <ComboBoxItem Content="上班" Tag="Work"/>
                                             <ComboBoxItem Content="约会" Tag="Date"/>
@@ -128,7 +128,7 @@
                                         </ComboBox>
                                     </StackPanel>
                                     <StackPanel Grid.Column="2">
-                                        <TextBlock Text="季节" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,0,6"/>
+                                        <TextBlock Text="季节" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
                                         <ComboBox x:Name="CmbSeason">
                                             <ComboBoxItem Content="春" Tag="Spring"/>
                                             <ComboBoxItem Content="夏" Tag="Summer"/>
@@ -138,7 +138,7 @@
                                         </ComboBox>
                                     </StackPanel>
                                 </Grid>
-                                <TextBlock Text="满意度" FontSize="13" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,14,0,6"/>
+                                <TextBlock Text="满意度" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,14,0,6"/>
                                 <hc:Rate x:Name="RatingControl" Count="5" Value="3" Foreground="#fbbf24" FontSize="22"/>
                             </StackPanel>
                         </Border>
@@ -150,7 +150,7 @@
                             </Border.Effect>
                             <StackPanel>
                                 <TextBlock Text="选择衣服" FontSize="15" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,14"/>
+                                           Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14"/>
                                 <Border x:Name="DressSection" Margin="0,0,0,10">
                                     <Expander Header="连衣裙 (与上衣、裤装、半裙互斥，可搭外套)" IsExpanded="True">
                                         <ItemsControl x:Name="DressList" Margin="0,8,0,0"
@@ -232,15 +232,15 @@
                         Padding="16">
                     <StackPanel>
                         <TextBlock Text="穿搭预览" FontSize="15" FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="0,0,0,14"/>
+                                   Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14"/>
                         <TextBlock x:Name="TxtPreviewCount" FontSize="12"
-                                   Foreground="{StaticResource TextTertiaryBrush}" Margin="0,0,0,12"/>
+                                   Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,0,0,12"/>
                         <Border Background="#F8F5F2" CornerRadius="14" Padding="12">
                             <Grid>
                                 <StackPanel x:Name="EmptyPreview" HorizontalAlignment="Center"
                                             VerticalAlignment="Center" MinHeight="360">
                                     <TextBlock Text="选择衣服&#x0a;查看穿搭" FontSize="13"
-                                               Foreground="{StaticResource TextTertiaryBrush}"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
                                                HorizontalAlignment="Center" TextAlignment="Center" TextWrapping="Wrap"/>
                                 </StackPanel>
                                 <outfit:OutfitPreviewCanvas x:Name="LivePreview"

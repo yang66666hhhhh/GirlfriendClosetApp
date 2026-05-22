@@ -20,7 +20,7 @@
         <conv:NullToVisibilityConverter x:Key="NullToVis"/>
     </Window.Resources>
 
-    <Grid Background="#FFF6F3EE">
+    <Grid Background="{DynamicResource SurfacePageBrush}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition x:Name="SidebarColumn" Width="220"/>
             <ColumnDefinition Width="*"/>

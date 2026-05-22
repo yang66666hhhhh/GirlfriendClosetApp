@@ -39,7 +39,7 @@
         </Style>
     </UserControl.Resources>
 
-    <Grid Background="{StaticResource SurfacePageBrush}">
+    <Grid Background="{DynamicResource SurfacePageBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -55,7 +55,7 @@
                            Text="标签管理"
                            FontSize="14"
                            FontWeight="Bold"
-                           Foreground="{StaticResource TextPrimaryBrush}"
+                           Foreground="{DynamicResource TextPrimaryBrush}"
                            VerticalAlignment="Center"/>
                 <Button Grid.Column="1"
                         Content="+ 添加标签"
@@ -71,7 +71,7 @@
             <StackPanel>
                 <Border Style="{StaticResource PageSummaryCard}"
                         Margin="0,0,0,16"
-                        Background="{StaticResource SurfaceElevatedBrush}"
+                        Background="{DynamicResource SurfaceElevatedBrush}"
                         BorderBrush="{StaticResource TagLavenderBorderBrush}"
                         BorderThickness="1">
                     <Grid>
@@ -146,7 +146,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Style="{StaticResource PageItemCard}"
-                                    Background="{StaticResource SurfaceElevatedBrush}"
+                                    Background="{DynamicResource SurfaceElevatedBrush}"
                                     BorderBrush="{StaticResource TagLavenderBorderBrush}"
                                     BorderThickness="1"
                                     Cursor="Hand" Tag="{Binding}">

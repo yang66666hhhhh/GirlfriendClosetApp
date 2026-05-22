@@ -27,7 +27,7 @@
                                          Fill="{Binding BorderBrush}" Opacity="0.9"/>
                                 <TextBlock x:Name="TagName"
                                            Text="{Binding Tag.Name}" FontSize="12"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
                                            Margin="6,0,0,0"
                                            VerticalAlignment="Center"/>
                                 <TextBlock x:Name="CheckMark"

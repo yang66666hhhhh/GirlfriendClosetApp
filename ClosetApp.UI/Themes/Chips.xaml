@@ -8,7 +8,7 @@
 
     <Style x:Key="CategoryChip" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
         <Setter Property="FontSize" Value="13"/>
         <Setter Property="FontWeight" Value="Medium"/>
@@ -32,7 +32,7 @@
                             <Setter TargetName="ChipBg" Property="Background" Value="#1AD9A299"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="ChipBg" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="ChipBg" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
                             <Setter Property="Foreground" Value="White"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
@@ -78,7 +78,7 @@
 
     <Style x:Key="SeasonChip" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="Medium"/>
@@ -102,7 +102,7 @@
                             <Setter TargetName="ChipBg" Property="Background" Value="#1AD9A299"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="ChipBg" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="ChipBg" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
                             <Setter Property="Foreground" Value="White"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -117,8 +117,8 @@
          ═══════════════════════════════════════════ -->
 
     <Style x:Key="EmotionTag" TargetType="ToggleButton">
-        <Setter Property="Background" Value="{StaticResource SurfaceSectionBrush}"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="Medium"/>
@@ -142,7 +142,7 @@
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Setter TargetName="TagBg" Property="Background" Value="#33D9A299"/>
-                            <Setter Property="Foreground" Value="{StaticResource PrimaryDarkBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryDarkBrush}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
                             <Trigger.EnterActions>
@@ -175,7 +175,7 @@
 
     <Style x:Key="LevelBtn" TargetType="RadioButton">
         <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="Cursor" Value="Hand"/>
@@ -191,10 +191,10 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="LvlBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+                            <Setter TargetName="LvlBg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                         </Trigger>
                         <Trigger Property="IsChecked" Value="True">
-                            <Setter TargetName="LvlBg" Property="Background" Value="{StaticResource PrimaryBrush}"/>
+                            <Setter TargetName="LvlBg" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

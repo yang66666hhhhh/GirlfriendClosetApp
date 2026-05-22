@@ -2,40 +2,40 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="PageHeaderBorder" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfacePageBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderDividerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderDividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
     </Style>
 
     <Style x:Key="PageTitleText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="20"/>
         <Setter Property="FontWeight" Value="Bold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="PageSubtitleText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Margin" Value="0,4,0,0"/>
     </Style>
 
     <Style x:Key="EmptyStateTitleText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="22"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="EmptyStateBodyText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
         <Setter Property="Margin" Value="0,8,0,24"/>
     </Style>
 
     <Style x:Key="LookbookCard" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="CornerRadius" Value="24"/>
         <Setter Property="Padding" Value="24"/>
         <Setter Property="Effect" Value="{StaticResource Shadow.Card}"/>
@@ -44,13 +44,13 @@
     <Style x:Key="PageSummaryCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
         <Setter Property="CornerRadius" Value="16"/>
         <Setter Property="Padding" Value="18,14"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Effect" Value="{x:Null}"/>
     </Style>
 
     <Style x:Key="PageSummaryBadge" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceSectionBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
         <Setter Property="CornerRadius" Value="12"/>
         <Setter Property="Padding" Value="12,8"/>
     </Style>
@@ -58,23 +58,23 @@
     <Style x:Key="PageSummaryValueText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
     </Style>
 
     <Style x:Key="PageSummaryHintText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="9"/>
-        <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
     </Style>
 
     <Style x:Key="PageSummaryTitleText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="16"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
     </Style>
 
     <Style x:Key="PageSummaryBodyText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="10"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Margin" Value="0,4,0,0"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
@@ -82,38 +82,38 @@
     <Style x:Key="PageSectionTitleText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="18"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
     </Style>
 
     <Style x:Key="PageSectionBodyText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="13"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Margin" Value="0,6,0,18"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <Style x:Key="PageFieldLabelText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="12"/>
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
     </Style>
 
     <Style x:Key="PageInsetCard" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
         <Setter Property="CornerRadius" Value="14"/>
         <Setter Property="Padding" Value="14,10"/>
     </Style>
 
     <Style x:Key="PageWarningCard" TargetType="Border" BasedOn="{StaticResource PageInsetCard}">
-        <Setter Property="Background" Value="{StaticResource DangerLightBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource DangerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource DangerLightBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="14"/>
         <Setter Property="Padding" Value="12"/>
     </Style>
 
     <Style x:Key="PageItemCard" TargetType="Border">
-        <Setter Property="Background" Value="{StaticResource SurfaceCardBrush}"/>
-        <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="Padding" Value="16,10"/>
@@ -122,12 +122,12 @@
 
     <Style x:Key="PageItemTitleText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="14"/>
-        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="PageMutedBodyText" TargetType="TextBlock">
-        <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
