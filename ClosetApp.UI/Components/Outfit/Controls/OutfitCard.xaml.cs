@@ -142,18 +142,25 @@ public partial class OutfitCard : UserControl
 
     private void OnMouseEnter(object sender, MouseEventArgs e)
     {
-        var sb = (Storyboard)Resources["CardHoverEnter"];
-        sb.Begin();
+        AnimateTranslate(-4);
         CardShadow.BlurRadius = 20;
         ActionOverlay.Visibility = Visibility.Visible;
     }
 
     private void OnMouseLeave(object sender, MouseEventArgs e)
     {
-        var sb = (Storyboard)Resources["CardHoverLeave"];
-        sb.Begin();
+        AnimateTranslate(0);
         CardShadow.BlurRadius = 14;
         ActionOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void AnimateTranslate(double toY)
+    {
+        var anim = new DoubleAnimation(toY, TimeSpan.FromMilliseconds(200))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+        CardTranslate.BeginAnimation(TranslateTransform.YProperty, anim);
     }
 
     private static double ResolvePreviewHeight(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)

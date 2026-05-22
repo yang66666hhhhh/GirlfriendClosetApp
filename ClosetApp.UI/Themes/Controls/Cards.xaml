@@ -1,37 +1,120 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib"
                     xmlns:hc="https://handyorg.github.io/handycontrol">
 
-    <!-- ============================================== -->
-    <!-- PREMIUM CLOTHING CARD STYLES -->
-    <!-- Apple + Pinterest + 小红书风格 -->
-    <!-- ============================================== -->
+    <!-- ═══════════════════════════════════════════════
+         CARD TOKENS
+         卡片设计令牌 — 所有卡片共享的基础数值
+         ═══════════════════════════════════════════════ -->
 
-    <!-- Card Shadow Layer (Ambient) -->
-    <Style x:Key="PremiumCardShadow" TargetType="Border">
-        <Setter Property="CornerRadius" Value="24"/>
-        <Setter Property="Margin" Value="6,6,0,0"/>
-        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect BlurRadius="35" ShadowDepth="8" Opacity="0.12" Color="#80000000" Direction="270"/>
-            </Setter.Value>
-        </Setter>
-    </Style>
+    <CornerRadius x:Key="Card.Radius">20</CornerRadius>
+    <Thickness x:Key="Card.InfoPadding">16,12,16,14</Thickness>
+    <sys:Double x:Key="Card.TitleFontSize">15</sys:Double>
+    <sys:Double x:Key="Card.SubtitleFontSize">11</sys:Double>
+    <sys:Double x:Key="Card.ChipFontSize">10</sys:Double>
+    <sys:Double x:Key="Card.FavoriteFontSize">18</sys:Double>
 
-    <!-- Main Card Style (Base) -->
-    <Style x:Key="PremiumClothingCardBase" TargetType="Border">
-        <Setter Property="CornerRadius" Value="24"/>
-        <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
-        <Setter Property="ClipToBounds" Value="True"/>
+    <!-- ═══════════════════════════════════════════════
+         CARD CONTAINER
+         卡片外壳 — 背景、圆角、阴影、光标
+         ═══════════════════════════════════════════════ -->
+
+    <Style x:Key="Card.Container" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+        <Setter Property="CornerRadius" Value="{StaticResource Card.Radius}"/>
         <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="ClipToBounds" Value="True"/>
     </Style>
 
-    <!-- Heart Favorite Button Style -->
+    <!-- ═══════════════════════════════════════════════
+         CARD PREVIEW AREA
+         预览区外壳 — 上半圆角、主题背景色
+         ═══════════════════════════════════════════════ -->
+
+    <Style x:Key="Card.PreviewArea" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceHeroBrush}"/>
+        <Setter Property="CornerRadius" Value="20,20,0,0"/>
+        <Setter Property="ClipToBounds" Value="True"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════
+         CARD INFO AREA
+         信息区外壳 — 底部背景、内边距
+         ═══════════════════════════════════════════════ -->
+
+    <Style x:Key="Card.InfoArea" TargetType="Border">
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+        <Setter Property="Padding" Value="{StaticResource Card.InfoPadding}"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════
+         CARD TYPOGRAPHY
+         信息区文字层级
+         ═══════════════════════════════════════════════ -->
+
+    <Style x:Key="Card.Title" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Card.TitleFontSize}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <Style x:Key="Card.Subtitle" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Card.SubtitleFontSize}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <Style x:Key="Card.Tertiary" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{StaticResource Card.SubtitleFontSize}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
+        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+    </Style>
+
+    <Style x:Key="Card.ChipPanel" TargetType="WrapPanel">
+        <Setter Property="Margin" Value="0,7,0,0"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════
+         FAVORITE BUTTON BASE
+         收藏按钮基础样式 — 不含 Content/FontSize
+         ═══════════════════════════════════════════════ -->
+
+    <Style x:Key="Card.FavoriteButtonBase" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+        <Setter Property="Padding" Value="8"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════
+         CARD ACTION OVERLAY
+         操作覆盖层 — 半透明底部浮层
+         ═══════════════════════════════════════════════ -->
+
+    <Style x:Key="Card.ActionOverlay" TargetType="Border">
+        <Setter Property="Background" Value="#18000000"/>
+        <Setter Property="CornerRadius" Value="18,18,0,0"/>
+        <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
+
+    <Style x:Key="Card.OverlayCapsuleButton" TargetType="Button" BasedOn="{StaticResource CapsuleButton}">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Padding" Value="12,7"/>
+    </Style>
+
+    <!-- ═══════════════════════════════════════════════
+         LEGACY STYLES (保留兼容)
+         ═══════════════════════════════════════════════ -->
+
+    <!-- Heart Favorite Button (hover overlay 版) -->
     <Style x:Key="HeartFavoriteButton" TargetType="Button">
         <Setter Property="Width" Value="36"/>
         <Setter Property="Height" Value="36"/>
-        <Setter Property="Background" Value="#80FFFFFF"/>
+        <Setter Property="Background" Value="#90FFFFFF"/>
         <Setter Property="BorderThickness" Value="0"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Template">
@@ -44,20 +127,14 @@
                         <Path x:Name="heartIcon"
                               Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
                               Fill="{DynamicResource DangerBrush}"
-                              Width="18" Height="18"
+                              Width="14" Height="14"
                               Stretch="Uniform"
                               HorizontalAlignment="Center"
                               VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="border" Property="Background" Value="#FFFFFF"/>
-                            <Setter TargetName="heartIcon" Property="Width" Value="22"/>
-                            <Setter TargetName="heartIcon" Property="Height" Value="22"/>
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="heartIcon" Property="Width" Value="15"/>
-                            <Setter TargetName="heartIcon" Property="Height" Value="15"/>
+                            <Setter TargetName="border" Property="Background" Value="#FFFFFFFF"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -65,7 +142,7 @@
         </Setter>
     </Style>
 
-    <!-- Star Rating Button Style -->
+    <!-- Star Rating Button -->
     <Style x:Key="StarRatingButton" TargetType="Button">
         <Setter Property="Width" Value="28"/>
         <Setter Property="Height" Value="28"/>
@@ -91,59 +168,6 @@
                 </ControlTemplate>
             </Setter.Value>
         </Setter>
-    </Style>
-
-    <!-- Tag Chip Style (小红书风格) -->
-    <Style x:Key="CardTagChip" TargetType="Border">
-        <Setter Property="CornerRadius" Value="12"/>
-        <Setter Property="Padding" Value="10,5"/>
-        <Setter Property="Margin" Value="0,0,6,0"/>
-        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
-    </Style>
-
-    <!-- Color Dot Style -->
-    <Style x:Key="ColorDot" TargetType="Ellipse">
-        <Setter Property="Width" Value="12"/>
-        <Setter Property="Height" Value="12"/>
-        <Setter Property="Margin" Value="0,0,4,0"/>
-        <Setter Property="Stroke" Value="#FFFFFF"/>
-        <Setter Property="StrokeThickness" Value="1.5"/>
-    </Style>
-
-    <!-- Season Badge Style -->
-    <Style x:Key="SeasonBadge" TargetType="Border">
-        <Setter Property="CornerRadius" Value="10"/>
-        <Setter Property="Padding" Value="10,5"/>
-        <Setter Property="Background" Value="#90FFFFFF"/>
-    </Style>
-
-    <!-- ============================================== -->
-    <!-- DARK THEME CARD VARIANTS -->
-    <!-- ============================================== -->
-
-    <Style x:Key="PremiumCardShadowDark" TargetType="Border">
-        <Setter Property="CornerRadius" Value="24"/>
-        <Setter Property="Margin" Value="6,6,0,0"/>
-        <Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#2A2530" Offset="0"/>
-                    <GradientStop Color="#1E1A22" Offset="1"/>
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
-        <Setter Property="Effect">
-            <Setter.Value>
-                <DropShadowEffect BlurRadius="40" ShadowDepth="10" Opacity="0.4" Color="#000000" Direction="270"/>
-            </Setter.Value>
-        </Setter>
-    </Style>
-
-    <Style x:Key="PremiumClothingCardDark" TargetType="Border">
-        <Setter Property="CornerRadius" Value="24"/>
-        <Setter Property="Background" Value="#1E1A22"/>
-        <Setter Property="ClipToBounds" Value="True"/>
-        <Setter Property="Cursor" Value="Hand"/>
     </Style>
 
 </ResourceDictionary>

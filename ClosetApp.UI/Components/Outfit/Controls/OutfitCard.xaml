@@ -8,49 +8,27 @@
         <conv:OutfitSceneToIconConverter x:Key="SceneToIconConverter"/>
         <conv:SeasonToNameConverter x:Key="SeasonToNameConverter"/>
         <conv:ImagePathConverter x:Key="ImagePathConverter"/>
-
-        <Storyboard x:Key="CardHoverEnter">
-            <DoubleAnimation Storyboard.TargetName="CardRoot"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                             To="1.02" Duration="0:0:0.2"/>
-            <DoubleAnimation Storyboard.TargetName="CardRoot"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                             To="1.02" Duration="0:0:0.2"/>
-        </Storyboard>
-        <Storyboard x:Key="CardHoverLeave">
-            <DoubleAnimation Storyboard.TargetName="CardRoot"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)"
-                             To="1.0" Duration="0:0:0.2"/>
-            <DoubleAnimation Storyboard.TargetName="CardRoot"
-                             Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
-                             To="1.0" Duration="0:0:0.2"/>
-        </Storyboard>
     </UserControl.Resources>
 
     <Border x:Name="CardRoot" Width="304"
-            Background="{DynamicResource SurfaceCardBrush}"
-            CornerRadius="20"
-            Cursor="Hand"
-            RenderTransformOrigin="0.5,0.5">
-        <Border.RenderTransform>
-            <ScaleTransform ScaleX="1" ScaleY="1"/>
-        </Border.RenderTransform>
+            Style="{StaticResource Card.Container}">
         <Border.Effect>
             <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="3"
                               Opacity="0.06" Color="{DynamicResource Shadow.Color}" Direction="270"/>
         </Border.Effect>
+        <Border.RenderTransform>
+            <TranslateTransform x:Name="CardTranslate" Y="0"/>
+        </Border.RenderTransform>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition x:Name="PreviewRow" Height="344"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
-            <!-- Outfit Canvas -->
+            <!-- Preview Area -->
             <Border x:Name="PreviewShell"
                     Grid.Row="0"
-                    Background="{DynamicResource SurfaceHeroBrush}"
-                    CornerRadius="20,20,0,0"
-                    ClipToBounds="True">
+                    Style="{StaticResource Card.PreviewArea}">
                 <Grid>
                     <Border Width="164"
                             HorizontalAlignment="Center"
@@ -84,17 +62,17 @@
                                                 Margin="0,4,0,0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
-                    <Border x:Name="ActionOverlay" Visibility="Collapsed"
-                            Background="#18000000" CornerRadius="18,18,0,0">
+                    <Border x:Name="ActionOverlay"
+                            Style="{StaticResource Card.ActionOverlay}">
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
                                     VerticalAlignment="Bottom" Margin="0,0,0,12">
-                            <Button x:Name="BtnEdit" Content="编辑" Padding="12,7"
-                                    Style="{StaticResource CapsuleButton}"
-                                    FontSize="12" Margin="0,0,10,0"/>
-                            <Button x:Name="BtnDelete" Content="删除" Padding="12,7"
-                                    Style="{StaticResource CapsuleButton}"
-                                    FontSize="12" Foreground="{DynamicResource DangerBrush}"/>
-                            <Button x:Name="BtnWorn" Content="今天穿了" Padding="12,7"
+                            <Button x:Name="BtnEdit" Content="编辑"
+                                    Style="{StaticResource Card.OverlayCapsuleButton}"
+                                    Margin="0,0,10,0"/>
+                            <Button x:Name="BtnDelete" Content="删除"
+                                    Style="{StaticResource Card.OverlayCapsuleButton}"
+                                    Foreground="{DynamicResource DangerBrush}"/>
+                            <Button x:Name="BtnWorn" Content="今天穿了"
                                     Style="{StaticResource PrimaryButton}"
                                     FontSize="12" Margin="10,0,0,0"/>
                         </StackPanel>
@@ -102,35 +80,29 @@
                 </Grid>
             </Border>
 
-            <!-- Bottom Info -->
+            <!-- Info Area -->
             <Border Grid.Row="1"
-                    Background="{DynamicResource SurfaceCardBrush}"
-                    Padding="16,12,16,14">
+                    Style="{StaticResource Card.InfoArea}">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtName" FontSize="15" FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextPrimaryBrush}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock x:Name="TxtName"
+                                   Style="{StaticResource Card.Title}"/>
                         <TextBlock x:Name="TxtMoodLine"
-                                   FontSize="11"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                   Margin="0,4,0,0"
-                                   TextTrimming="CharacterEllipsis"/>
+                                   Style="{StaticResource Card.Subtitle}"
+                                   Margin="0,4,0,0"/>
                         <WrapPanel x:Name="MoodChipPanel"
-                                   Margin="0,7,0,0"/>
-                        <TextBlock x:Name="TxtWearInfo" FontSize="11"
-                                   Foreground="{DynamicResource TextTertiaryBrush}"
-                                   Margin="0,8,0,0"
-                                   TextTrimming="CharacterEllipsis"/>
+                                   Style="{StaticResource Card.ChipPanel}"/>
+                        <TextBlock x:Name="TxtWearInfo"
+                                   Style="{StaticResource Card.Tertiary}"
+                                   Margin="0,8,0,0"/>
                     </StackPanel>
                     <Button x:Name="BtnFavorite" Grid.Column="1"
-                            Content="♡" FontSize="18" Padding="8"
-                            Background="Transparent" BorderThickness="0"
-                            Foreground="{DynamicResource PrimaryBrush}" Cursor="Hand"
-                            VerticalAlignment="Center"/>
+                            Style="{StaticResource Card.FavoriteButtonBase}"
+                            Content="♡" FontSize="{StaticResource Card.FavoriteFontSize}"/>
                 </Grid>
             </Border>
         </Grid>

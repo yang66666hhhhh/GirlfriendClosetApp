@@ -10,14 +10,9 @@
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
         <conv:ClothingTypeToNameConverter x:Key="ClothingTypeToName"/>
 
-        <!-- ═══════════════════════════════════════
-             DESIGN TOKENS
-             ═══════════════════════════════════════ -->
-        <!-- ═══════════════════════════════════════
-             ANIMATIONS
-             ═══════════════════════════════════════ -->
+        <!-- Animations: unified lift + image hover -->
         <Storyboard x:Key="HoverEnterAnim">
-            <DoubleAnimation Storyboard.TargetName="CardFloat"
+            <DoubleAnimation Storyboard.TargetName="CardTranslate"
                              Storyboard.TargetProperty="Y"
                              To="-4" Duration="0:0:0.2">
                 <DoubleAnimation.EasingFunction>
@@ -26,7 +21,7 @@
             </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="CardShadow"
                              Storyboard.TargetProperty="BlurRadius"
-                             To="18" Duration="0:0:0.2">
+                             To="20" Duration="0:0:0.2">
                 <DoubleAnimation.EasingFunction>
                     <CubicEase EasingMode="EaseOut"/>
                 </DoubleAnimation.EasingFunction>
@@ -51,7 +46,7 @@
         </Storyboard>
 
         <Storyboard x:Key="HoverLeaveAnim">
-            <DoubleAnimation Storyboard.TargetName="CardFloat"
+            <DoubleAnimation Storyboard.TargetName="CardTranslate"
                              Storyboard.TargetProperty="Y"
                              To="0" Duration="0:0:0.2">
                 <DoubleAnimation.EasingFunction>
@@ -60,7 +55,7 @@
             </DoubleAnimation>
             <DoubleAnimation Storyboard.TargetName="CardShadow"
                              Storyboard.TargetProperty="BlurRadius"
-                             To="12" Duration="0:0:0.2">
+                             To="16" Duration="0:0:0.2">
                 <DoubleAnimation.EasingFunction>
                     <CubicEase EasingMode="EaseOut"/>
                 </DoubleAnimation.EasingFunction>
@@ -84,23 +79,6 @@
                              To="0" Duration="0:0:0.12"/>
         </Storyboard>
 
-        <Storyboard x:Key="PressAnim">
-            <DoubleAnimation Storyboard.TargetName="CardScaleGroup"
-                             Storyboard.TargetProperty="ScaleX"
-                             To="0.97" Duration="0:0:0.07">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="CardScaleGroup"
-                             Storyboard.TargetProperty="ScaleY"
-                             To="0.97" Duration="0:0:0.07">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-        </Storyboard>
-
         <Storyboard x:Key="CardLoadAnim" Completed="CardLoadAnim_Completed">
             <DoubleAnimation Storyboard.TargetName="CardRoot"
                              Storyboard.TargetProperty="Opacity"
@@ -109,7 +87,7 @@
                     <CubicEase EasingMode="EaseOut"/>
                 </DoubleAnimation.EasingFunction>
             </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="CardFloat"
+            <DoubleAnimation Storyboard.TargetName="CardTranslate"
                              Storyboard.TargetProperty="Y"
                              From="16" To="0" Duration="0:0:0.4">
                 <DoubleAnimation.EasingFunction>
@@ -127,26 +105,20 @@
           MouseLeftButtonUp="Card_Click">
 
         <!-- Shadow layer -->
-        <Border CornerRadius="18" Margin="2,2,0,0">
+        <Border CornerRadius="{StaticResource Card.Radius}" Margin="2,2,0,0">
             <Border.Effect>
                 <DropShadowEffect x:Name="CardShadow"
-                                  BlurRadius="12" ShadowDepth="3"
+                                  BlurRadius="16" ShadowDepth="3"
                                   Opacity="0.06" Color="{DynamicResource Shadow.Color}" Direction="270"/>
             </Border.Effect>
         </Border>
 
         <!-- Main Card -->
         <Border x:Name="MainCard"
-                Background="{DynamicResource SurfaceCardBrush}"
-                CornerRadius="18"
-                ClipToBounds="True"
-                Cursor="Hand"
+                Style="{StaticResource Card.Container}"
                 RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
-                <TransformGroup>
-                    <ScaleTransform x:Name="CardScaleGroup" ScaleX="1" ScaleY="1"/>
-                    <TranslateTransform x:Name="CardFloat" Y="0"/>
-                </TransformGroup>
+                <TranslateTransform x:Name="CardTranslate" Y="0"/>
             </Border.RenderTransform>
 
             <Grid>
@@ -211,114 +183,66 @@
                             </Canvas>
                         </StackPanel>
 
-                    <!-- Hover overlay buttons (top right, frosted glass) -->
-                    <StackPanel x:Name="OverlayActions"
-                                Orientation="Vertical"
+                        <!-- Hover overlay buttons -->
+                        <StackPanel x:Name="OverlayActions"
+                                    Orientation="Vertical"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Margin="0,8,8,0"
+                                    Opacity="0">
+                            <Button x:Name="FavoriteBtn"
+                                    Style="{StaticResource HeartFavoriteButton}"
+                                    Margin="0,0,0,8"
+                                    Click="Favorite_Click"/>
+                            <Button x:Name="MoreBtn"
+                                    Style="{StaticResource HeartFavoriteButton}"
+                                    Click="More_Click">
+                                <TextBlock Text="⋯" FontSize="14"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontWeight="Bold"/>
+                            </Button>
+                        </StackPanel>
+
+                        <!-- Context menu popup -->
+                        <Border x:Name="MoreMenu"
+                                Background="{DynamicResource SurfaceCardBrush}"
+                                CornerRadius="10"
+                                Padding="6,4"
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top"
-                                Margin="0,8,8,0"
-                                Opacity="0">
-
-                        <!-- Favorite -->
-                        <Button x:Name="FavoriteBtn"
-                                Width="32" Height="32"
-                                Margin="0,0,0,8"
-                                Background="#90FFFFFF"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                Click="Favorite_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="FavBorder" Width="32" Height="32"
-                                            CornerRadius="16"
-                                            Background="{TemplateBinding Background}">
-                                        <Path x:Name="HeartIcon"
-                                              Data="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"
-                                              Fill="{Binding IsFavorite, Converter={StaticResource BoolToFavoriteColor}}"
-                                              Width="14" Height="14"
-                                              Stretch="Uniform"
-                                              HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="FavBorder" Property="Background" Value="#FFFFFFFF"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-
-                        <!-- More (...) -->
-                        <Button x:Name="MoreBtn"
-                                Width="32" Height="32"
-                                Background="#90FFFFFF"
-                                BorderThickness="0"
-                                Cursor="Hand"
-                                Click="More_Click">
-                            <Button.Template>
-                                <ControlTemplate TargetType="Button">
-                                    <Border x:Name="MoreBorder" Width="32" Height="32"
-                                            CornerRadius="16"
-                                            Background="{TemplateBinding Background}">
-                                        <TextBlock Text="⋯" FontSize="16"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   HorizontalAlignment="Center"
-                                                   VerticalAlignment="Center"
-                                                   FontWeight="Bold"/>
-                                    </Border>
-                                    <ControlTemplate.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter TargetName="MoreBorder" Property="Background" Value="#FFFFFFFF"/>
-                                        </Trigger>
-                                    </ControlTemplate.Triggers>
-                                </ControlTemplate>
-                            </Button.Template>
-                        </Button>
-                    </StackPanel>
-
-                    <!-- Context menu popup -->
-                    <Border x:Name="MoreMenu"
-                            Background="{DynamicResource SurfaceCardBrush}"
-                            CornerRadius="10"
-                            Padding="6,4"
-                            HorizontalAlignment="Right"
-                            VerticalAlignment="Top"
-                            Margin="0,46,8,0"
-                            Visibility="Collapsed"
-                            Panel.ZIndex="10">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.14" Color="#000000"/>
-                        </Border.Effect>
-                        <StackPanel>
-                            <Button Content="✏ 编辑"
-                                    FontSize="12" FontWeight="Medium"
-                                    Foreground="{DynamicResource TextPrimaryBrush}"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Padding="10,6"
-                                    Cursor="Hand"
-                                    HorizontalContentAlignment="Left"
-                                    Click="MenuEdit_Click"/>
-                            <Button Content="🗑 删除"
-                                    FontSize="12" FontWeight="Medium"
-                                    Foreground="{DynamicResource DangerBrush}"
-                                    Background="Transparent"
-                                    BorderThickness="0"
-                                    Padding="10,6"
-                                    Cursor="Hand"
-                                    HorizontalContentAlignment="Left"
-                                    Click="MenuDelete_Click"/>
-                        </StackPanel>
-                    </Border>
+                                Margin="0,46,8,0"
+                                Visibility="Collapsed"
+                                Panel.ZIndex="10">
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.14" Color="#000000"/>
+                            </Border.Effect>
+                            <StackPanel>
+                                <Button Content="✏ 编辑"
+                                        FontSize="12" FontWeight="Medium"
+                                        Foreground="{DynamicResource TextPrimaryBrush}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="10,6"
+                                        Cursor="Hand"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuEdit_Click"/>
+                                <Button Content="🗑 删除"
+                                        FontSize="12" FontWeight="Medium"
+                                        Foreground="{DynamicResource DangerBrush}"
+                                        Background="Transparent"
+                                        BorderThickness="0"
+                                        Padding="10,6"
+                                        Cursor="Hand"
+                                        HorizontalContentAlignment="Left"
+                                        Click="MenuDelete_Click"/>
+                            </StackPanel>
+                        </Border>
                     </Grid>
                 </Border>
 
                 <!-- ═══ INFO AREA ═══ -->
                 <Border Grid.Row="1"
-                        Background="{DynamicResource SurfaceCardBrush}"
-                        MinHeight="74"
-                        Padding="12,10,12,12">
+                        Style="{StaticResource Card.InfoArea}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -326,24 +250,17 @@
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0" VerticalAlignment="Center">
                             <TextBlock x:Name="TitleText"
-                                       FontSize="13"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                       TextTrimming="CharacterEllipsis"/>
+                                       Style="{StaticResource Card.Title}"/>
                             <TextBlock x:Name="MetaLineText"
-                                       FontSize="10"
-                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                       Margin="0,3,0,0"
-                                       TextTrimming="CharacterEllipsis"
+                                       Style="{StaticResource Card.Subtitle}"
+                                       Margin="0,4,0,0"
                                        Visibility="Collapsed"/>
                             <WrapPanel x:Name="ChipPanel"
-                                       Margin="0,6,0,0"/>
+                                       Style="{StaticResource Card.ChipPanel}"/>
                         </StackPanel>
                         <Button x:Name="BtnFavorite" Grid.Column="1"
-                                Content="♡" FontSize="16" Padding="6"
-                                Background="Transparent" BorderThickness="0"
-                                Foreground="{DynamicResource PrimaryBrush}" Cursor="Hand"
-                                VerticalAlignment="Center"/>
+                                Style="{StaticResource Card.FavoriteButtonBase}"
+                                Content="♡" FontSize="{StaticResource Card.FavoriteFontSize}"/>
                     </Grid>
                 </Border>
             </Grid>

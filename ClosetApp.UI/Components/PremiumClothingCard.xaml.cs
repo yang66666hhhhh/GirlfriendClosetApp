@@ -319,8 +319,6 @@ public partial class PremiumClothingCard : UserControl
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)
     {
         _mouseDownPos = e.GetPosition(this);
-        var anim = (Storyboard)Resources["PressAnim"];
-        anim?.Begin();
     }
 
     private void Card_MouseUp(object sender, MouseButtonEventArgs e)
