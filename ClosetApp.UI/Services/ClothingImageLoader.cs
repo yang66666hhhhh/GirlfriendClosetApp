@@ -10,18 +10,23 @@ namespace ClosetApp.UI.Services;
 public static class ClothingImageLoader
 {
     private const byte TransparentBackgroundThreshold = 12;
-    private const byte LightBackgroundThreshold = 232;
-    private const byte NeutralBackgroundThreshold = 198;
-    private const byte NeutralBackgroundTolerance = 34;
-    private const byte EdgeSampleBrightnessThreshold = 178;
-    private const int TrimSafetyPadding = 6;
+    private const byte LightBackgroundThreshold = 228;
+    private const byte NeutralBackgroundThreshold = 188;
+    private const byte NeutralBackgroundTolerance = 38;
+    private const byte EdgeSampleBrightnessThreshold = 132;
+    private const int TrimSafetyPadding = 4;
     private const int TrimMinimumComponentArea = 160;
     private const double TrimMergeAreaRatio = 0.12;
     private const int TrimMergeGap = 36;
     private const int TrimEdgeNoiseInset = 18;
     private const int TrimEdgeNoiseMaxArea = 2400;
     private const int BackgroundSeedTolerance = 32;
-    private const int BackgroundSeedLuminanceTolerance = 40;
+    private const int BackgroundSeedLuminanceTolerance = 28;
+    private const double TallSilhouetteThreshold = 0.72;
+    private const double VeryTallSilhouetteThreshold = 0.88;
+    private const double TallSilhouetteMinWidthRatio = 0.54;
+    private const double VeryTallSilhouetteMinWidthRatio = 0.48;
+    private const double TallSilhouetteExtraHeightRatio = 0.04;
 
     private static readonly string ImagesFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -208,17 +213,7 @@ public static class ClothingImageLoader
         while (right > left && IsRemovableColumn(pixels, stride, source.PixelWidth, source.PixelHeight, right, top, bottom, backgroundSeeds))
             right--;
 
-        left = Math.Max(0, left - TrimSafetyPadding);
-        top = Math.Max(0, top - TrimSafetyPadding);
-        right = Math.Min(source.PixelWidth - 1, right + TrimSafetyPadding);
-        bottom = Math.Min(source.PixelHeight - 1, bottom + TrimSafetyPadding);
-
-        var width = right - left + 1;
-        var height = bottom - top + 1;
-        if (width <= 0 || height <= 0)
-            return null;
-
-        return new Int32Rect(left, top, width, height);
+        return NormalizeBounds(left, top, right, bottom, source.PixelWidth, source.PixelHeight);
     }
 
     private static Int32Rect? FindLargestSubjectBounds(
@@ -331,16 +326,7 @@ public static class ClothingImageLoader
             }
         }
 
-        var bestLeft = Math.Max(0, merged.Left - TrimSafetyPadding);
-        var bestTop = Math.Max(0, merged.Top - TrimSafetyPadding);
-        var bestRight = Math.Min(width - 1, merged.Right + TrimSafetyPadding);
-        var bestBottom = Math.Min(height - 1, merged.Bottom + TrimSafetyPadding);
-
-        return new Int32Rect(
-            bestLeft,
-            bestTop,
-            bestRight - bestLeft + 1,
-            bestBottom - bestTop + 1);
+        return NormalizeBounds(merged.Left, merged.Top, merged.Right, merged.Bottom, width, height);
 
         void EnqueueForegroundNeighbor(int neighborIndex, bool withinBounds)
         {
@@ -362,6 +348,51 @@ public static class ClothingImageLoader
 
         return (horizontalGap <= TrimMergeGap && verticalOverlap >= -12) ||
                (verticalGap <= TrimMergeGap && horizontalOverlap >= -12);
+    }
+
+    private static Int32Rect? NormalizeBounds(int left, int top, int right, int bottom, int width, int height)
+    {
+        left = Math.Max(0, left - TrimSafetyPadding);
+        top = Math.Max(0, top - TrimSafetyPadding);
+        right = Math.Min(width - 1, right + TrimSafetyPadding);
+        bottom = Math.Min(height - 1, bottom + TrimSafetyPadding);
+
+        var currentWidth = right - left + 1;
+        var currentHeight = bottom - top + 1;
+        if (currentWidth <= 0 || currentHeight <= 0)
+            return null;
+
+        var heightRatio = currentHeight / (double)Math.Max(1, height);
+        var targetMinWidthRatio = heightRatio >= VeryTallSilhouetteThreshold
+            ? VeryTallSilhouetteMinWidthRatio
+            : heightRatio >= TallSilhouetteThreshold
+                ? TallSilhouetteMinWidthRatio
+                : 0;
+
+        if (targetMinWidthRatio > 0)
+        {
+            var targetWidth = (int)Math.Ceiling(width * targetMinWidthRatio);
+            if (currentWidth < targetWidth)
+            {
+                var center = (left + right) / 2.0;
+                left = Math.Max(0, (int)Math.Floor(center - (targetWidth / 2.0)));
+                right = Math.Min(width - 1, left + targetWidth - 1);
+
+                if (right - left + 1 < targetWidth)
+                    left = Math.Max(0, right - targetWidth + 1);
+            }
+
+            var extraHeight = (int)Math.Round(height * TallSilhouetteExtraHeightRatio);
+            top = Math.Max(0, top - extraHeight);
+            bottom = Math.Min(height - 1, bottom + extraHeight);
+        }
+
+        currentWidth = right - left + 1;
+        currentHeight = bottom - top + 1;
+        if (currentWidth <= 0 || currentHeight <= 0)
+            return null;
+
+        return new Int32Rect(left, top, currentWidth, currentHeight);
     }
 
     private static double ScoreComponent(SubjectComponent component, int width, int height)
@@ -487,7 +518,11 @@ public static class ClothingImageLoader
         if (neutralLight)
             return true;
 
-        if (luminance < EdgeSampleBrightnessThreshold || backgroundSeeds.Count == 0)
+        if (backgroundSeeds.Count == 0)
+            return false;
+
+        var neutralEnough = max - min <= NeutralBackgroundTolerance + 10;
+        if (!neutralEnough && luminance < LightBackgroundThreshold)
             return false;
 
         foreach (var seed in backgroundSeeds)
@@ -500,7 +535,8 @@ public static class ClothingImageLoader
             if (dr <= BackgroundSeedTolerance &&
                 dg <= BackgroundSeedTolerance &&
                 db <= BackgroundSeedTolerance &&
-                dl <= BackgroundSeedLuminanceTolerance)
+                dl <= BackgroundSeedLuminanceTolerance &&
+                (neutralEnough || luminance >= EdgeSampleBrightnessThreshold))
             {
                 return true;
             }
@@ -511,24 +547,9 @@ public static class ClothingImageLoader
 
     private static List<BackgroundSeed> BuildBackgroundSeeds(byte[] pixels, int stride, int width, int height)
     {
-        var candidates = new (int X, int Y)[]
-        {
-            (0, 0),
-            (width - 1, 0),
-            (0, height - 1),
-            (width - 1, height - 1),
-            (width / 2, 0),
-            (width / 2, height - 1),
-            (0, height / 2),
-            (width - 1, height / 2),
-            (Math.Max(0, width / 4), 0),
-            (Math.Min(width - 1, (width * 3) / 4), 0),
-            (Math.Max(0, width / 4), height - 1),
-            (Math.Min(width - 1, (width * 3) / 4), height - 1)
-        };
-
         var seeds = new List<BackgroundSeed>();
-        foreach (var (x, y) in candidates)
+
+        foreach (var (x, y) in EnumerateEdgeSamples(width, height))
         {
             if (x < 0 || y < 0 || x >= width || y >= height)
                 continue;
@@ -558,6 +579,45 @@ public static class ClothingImageLoader
         return seeds
             .Distinct()
             .ToList();
+    }
+
+    private static IEnumerable<(int X, int Y)> EnumerateEdgeSamples(int width, int height)
+    {
+        var xStops = new[]
+        {
+            0,
+            Math.Max(0, width / 6),
+            Math.Max(0, width / 3),
+            width / 2,
+            Math.Min(width - 1, (width * 2) / 3),
+            Math.Min(width - 1, (width * 5) / 6),
+            width - 1
+        }
+        .Distinct();
+
+        var yStops = new[]
+        {
+            0,
+            Math.Max(0, height / 6),
+            Math.Max(0, height / 3),
+            height / 2,
+            Math.Min(height - 1, (height * 2) / 3),
+            Math.Min(height - 1, (height * 5) / 6),
+            height - 1
+        }
+        .Distinct();
+
+        foreach (var x in xStops)
+        {
+            yield return (x, 0);
+            yield return (x, height - 1);
+        }
+
+        foreach (var y in yStops)
+        {
+            yield return (0, y);
+            yield return (width - 1, y);
+        }
     }
 
     private readonly record struct SubjectComponent(int Left, int Top, int Right, int Bottom, int Area)

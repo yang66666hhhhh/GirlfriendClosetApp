@@ -14,12 +14,21 @@
                    Style="{StaticResource EmptyStateBodyText}"
                    TextAlignment="Center"
                    TextWrapping="Wrap"/>
-        <Button x:Name="ActionButton"
-                Content="开始创建"
-                Style="{StaticResource PrimaryButton}"
-                HorizontalAlignment="Center"
-                Visibility="{Binding ActionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                IsEnabled="{Binding IsActionEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                Click="ActionButton_Click"/>
+        <WrapPanel HorizontalAlignment="Center">
+            <Button x:Name="SecondaryActionButton"
+                    Content="稍后再说"
+                    Style="{StaticResource CapsuleButton}"
+                    Margin="0,0,10,0"
+                    Visibility="{Binding SecondaryActionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    IsEnabled="{Binding IsSecondaryActionEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Click="SecondaryActionButton_Click"/>
+            <Button x:Name="ActionButton"
+                    Content="开始创建"
+                    Style="{StaticResource PrimaryButton}"
+                    HorizontalAlignment="Center"
+                    Visibility="{Binding ActionVisible, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    IsEnabled="{Binding IsActionEnabled, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    Click="ActionButton_Click"/>
+        </WrapPanel>
     </StackPanel>
 </UserControl>

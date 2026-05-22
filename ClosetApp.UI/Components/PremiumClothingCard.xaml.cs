@@ -4,6 +4,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using ClosetApp.Application.Images;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -65,7 +66,14 @@ public partial class PremiumClothingCard : UserControl
     {
         if (DataContext is not global::ClosetApp.Domain.Entities.Clothing c) return;
 
+        var useTrimmedPresentation = ShouldTrimLightPadding(c);
+
         CardImage.Stretch = Stretch.Uniform;
+        CardImage.Source = ClothingImageLoader.Load(
+            c.ImagePath,
+            ImageVariant.Display,
+            720,
+            useTrimmedPresentation);
         ApplyMeta(c);
         ApplyStagePresentation(c);
         ImageFallback.Visibility = ClothingImageLoader.ResolvePath(c.ImagePath) == null
@@ -118,7 +126,9 @@ public partial class PremiumClothingCard : UserControl
 
         try
         {
-            var imageSize = ClothingImageLoader.GetDisplaySize(path, trimLightPadding: true);
+            var imageSize = ClothingImageLoader.GetDisplaySize(
+                path,
+                trimLightPadding: ShouldTrimLightPadding(c));
             if (imageSize == null || imageSize.Value.Width <= 0)
                 return cardWidth * 1.08;
 
@@ -132,9 +142,23 @@ public partial class PremiumClothingCard : UserControl
         }
     }
 
+    // Tops and outerwear are easy to over-trim into awkward silhouettes, so keep them conservative.
+    private static bool ShouldTrimLightPadding(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        return clothing.Type switch
+        {
+            ClothingType.Top => false,
+            ClothingType.Outerwear => false,
+            ClothingType.Accessory => false,
+            _ => true
+        };
+    }
+
     // Build a lightweight secondary line so the card reads like a finished item card.
     private void ApplyMeta(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
+        var displayName = ResolveDisplayName(clothing);
+        var isUnnamed = displayName == "未命名";
         var parts = new List<string>();
         var styleTags = clothing.ClothingTags
             .Where(x => x.Tag?.Category == TagCategory.Style && !string.IsNullOrWhiteSpace(x.Tag.Name))
@@ -142,45 +166,132 @@ public partial class PremiumClothingCard : UserControl
             .Distinct()
             .Take(3)
             .ToList();
+        var hasStyleTags = styleTags.Count > 0;
+
+        TitleText.Text = displayName;
+        TitleText.Foreground = isUnnamed
+            ? (Brush)FindResource("TextSecondaryBrush")
+            : (Brush)FindResource("TextPrimaryBrush");
+        TitleText.FontWeight = isUnnamed ? FontWeights.Medium : FontWeights.SemiBold;
+
+        CategoryChipText.Text = GetCategoryLabel(clothing.Type);
+        SeasonChipText.Text = GetSeasonLabel(clothing.Season);
+        ApplyChipTone(
+            CategoryChip,
+            CategoryChipText,
+            clothing.Type == ClothingType.Unspecified,
+            "#FFF8F5F2",
+            "#FFF7F3EF",
+            "#FFE7DDD4",
+            "TextTertiaryBrush",
+            "TextSecondaryBrush");
+        ApplyChipTone(
+            SeasonChip,
+            SeasonChipText,
+            clothing.Season == Season.Unspecified,
+            "#FFF8F5F2",
+            "#FFF9F1EE",
+            "#FFE8D5CF",
+            "TextTertiaryBrush",
+            null);
 
         if (styleTags.Count > 0)
         {
             MetaLineText.Text = string.Join(" · ", styleTags);
             MetaLineText.Visibility = Visibility.Visible;
             CategoryChip.Visibility = Visibility.Collapsed;
+            SeasonChip.Visibility = clothing.Season == Season.Unspecified
+                ? Visibility.Collapsed
+                : Visibility.Visible;
             return;
         }
-
-        if (!string.IsNullOrWhiteSpace(clothing.Brand))
-            parts.Add(clothing.Brand.Trim());
 
         if (!string.IsNullOrWhiteSpace(clothing.Color))
             parts.Add(clothing.Color.Trim());
 
+        if (!string.IsNullOrWhiteSpace(clothing.Brand))
+            parts.Add(clothing.Brand.Trim());
+
+        var hasSupportMeta = parts.Count > 0;
+        var showCategoryChip = !hasStyleTags && (clothing.Type != ClothingType.Unspecified || !hasSupportMeta);
+        var showSeasonChip = clothing.Season != Season.Unspecified || (!hasStyleTags && !hasSupportMeta);
+
         MetaLineText.Text = string.Join(" · ", parts);
-        MetaLineText.Visibility = parts.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-        CategoryChip.Visibility = Visibility.Visible;
+        MetaLineText.Visibility = hasSupportMeta ? Visibility.Visible : Visibility.Collapsed;
+        CategoryChip.Visibility = showCategoryChip ? Visibility.Visible : Visibility.Collapsed;
+        SeasonChip.Visibility = showSeasonChip ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private static string ResolveDisplayName(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        var name = clothing.Name?.Trim();
+        return string.IsNullOrWhiteSpace(name) ? "未命名" : name;
+    }
+
+    private static string GetCategoryLabel(ClothingType type) => type switch
+    {
+        ClothingType.Unspecified => "分类待补",
+        ClothingType.Top => "上衣",
+        ClothingType.Bottom => "裤装",
+        ClothingType.Dress => "连衣裙",
+        ClothingType.Skirt => "半裙",
+        ClothingType.Outerwear => "外套",
+        ClothingType.Shoes => "鞋子",
+        ClothingType.Accessory => "配饰",
+        _ => "单品"
+    };
+
+    private static string GetSeasonLabel(Season season) => season switch
+    {
+        Season.Unspecified => "季节待补",
+        Season.Spring => "春",
+        Season.Summer => "夏",
+        Season.Autumn => "秋",
+        Season.Winter => "冬",
+        Season.AllSeason => "四季",
+        _ => "季节"
+    };
+
+    private void ApplyChipTone(
+        Border chip,
+        TextBlock text,
+        bool isMissing,
+        string missingBackground,
+        string filledBackground,
+        string borderColor,
+        string missingTextBrushKey,
+        string? filledTextBrushKey)
+    {
+        chip.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(isMissing ? missingBackground : filledBackground));
+        chip.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(borderColor));
+        text.Foreground = isMissing
+            ? (Brush)FindResource(missingTextBrushKey)
+            : filledTextBrushKey == null
+                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB9857B"))
+                : (Brush)FindResource(filledTextBrushKey);
+        text.FontWeight = isMissing ? FontWeights.Normal : FontWeights.Medium;
     }
 
     private void ApplyStagePresentation(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
         var category = ClothingMappings.TryGetDisplayCategory(clothing);
-        var (scale, offsetY, shadowWidth, shadowOpacity) = category switch
+        var (scale, offsetY, shadowWidth, shadowOpacity, stageMargin) = category switch
         {
-            DisplayCategory.Dress => (0.82, 10.0, 124.0, 0.16),
-            DisplayCategory.Topwear when clothing.Type == ClothingType.Outerwear => (0.84, 6.0, 120.0, 0.15),
-            DisplayCategory.Topwear => (0.76, -8.0, 108.0, 0.14),
-            DisplayCategory.Bottom => (0.86, 8.0, 118.0, 0.15),
-            DisplayCategory.Footwear => (0.66, 20.0, 132.0, 0.22),
-            DisplayCategory.Accessory => (0.62, 2.0, 92.0, 0.12),
-            _ when clothing.Type == ClothingType.Dress => (0.82, 10.0, 124.0, 0.16),
-            _ when clothing.Type == ClothingType.Shoes => (0.66, 20.0, 132.0, 0.22),
-            _ when clothing.Type == ClothingType.Skirt || clothing.Type == ClothingType.Bottom => (0.86, 8.0, 118.0, 0.15),
-            _ when clothing.Type == ClothingType.Outerwear => (0.84, 6.0, 120.0, 0.15),
-            _ when clothing.Type == ClothingType.Accessory => (0.62, 2.0, 92.0, 0.12),
-            _ => (0.76, -8.0, 108.0, 0.14)
+            DisplayCategory.Dress => (0.82, 10.0, 124.0, 0.16, new Thickness(16, 18, 16, 12)),
+            DisplayCategory.Topwear when clothing.Type == ClothingType.Outerwear => (0.92, 4.0, 126.0, 0.16, new Thickness(10, 12, 10, 8)),
+            DisplayCategory.Topwear => (0.79, -4.0, 110.0, 0.14, new Thickness(16, 18, 16, 12)),
+            DisplayCategory.Bottom => (0.86, 8.0, 118.0, 0.15, new Thickness(18, 20, 18, 12)),
+            DisplayCategory.Footwear => (0.72, 18.0, 136.0, 0.22, new Thickness(14, 24, 14, 10)),
+            DisplayCategory.Accessory => (0.64, 2.0, 92.0, 0.12, new Thickness(20, 20, 20, 14)),
+            _ when clothing.Type == ClothingType.Dress => (0.82, 10.0, 124.0, 0.16, new Thickness(16, 18, 16, 12)),
+            _ when clothing.Type == ClothingType.Shoes => (0.72, 18.0, 136.0, 0.22, new Thickness(14, 24, 14, 10)),
+            _ when clothing.Type == ClothingType.Skirt || clothing.Type == ClothingType.Bottom => (0.86, 8.0, 118.0, 0.15, new Thickness(18, 20, 18, 12)),
+            _ when clothing.Type == ClothingType.Outerwear => (0.92, 4.0, 126.0, 0.16, new Thickness(10, 12, 10, 8)),
+            _ when clothing.Type == ClothingType.Accessory => (0.64, 2.0, 92.0, 0.12, new Thickness(20, 20, 20, 14)),
+            _ => (0.79, -4.0, 110.0, 0.14, new Thickness(16, 18, 16, 12))
         };
 
+        GarmentStage.Margin = stageMargin;
         ImageBaseScale.ScaleX = scale;
         ImageBaseScale.ScaleY = scale;
         ImageTranslate.Y = offsetY;

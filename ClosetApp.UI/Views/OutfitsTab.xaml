@@ -2,6 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:outfit="clr-namespace:ClosetApp.UI.Components.Outfit.Controls"
+             xmlns:states="clr-namespace:ClosetApp.UI.Components.Shared.States"
              xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
              Background="{StaticResource SurfacePageBrush}">
 
@@ -87,14 +88,9 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="搭配总览"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                                       Style="{StaticResource PageSummaryTitleText}"/>
                             <TextBlock Text="先看今天适合穿什么，再按需展开记录和日历。"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="10"
-                                       Margin="0,4,0,0"
-                                       TextWrapping="Wrap"/>
+                                       Style="{StaticResource PageSummaryBodyText}"/>
 
                             <WrapPanel Margin="0,7,0,0">
                                 <Border Background="{StaticResource SurfaceSectionBrush}"
@@ -217,12 +213,12 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="最近穿着" FontSize="18" FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="最近穿着"
+                                       Style="{StaticResource PageSectionTitleText}"/>
                             <TextBlock x:Name="TxtHistorySummary"
                                        Text="{Binding HistorySummaryText}"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="13" Margin="0,6,0,16"/>
+                                       Style="{StaticResource PageSectionBodyText}"
+                                       Margin="0,6,0,16"/>
                             <ItemsControl x:Name="RecentWornList"
                                           ItemsSource="{Binding RecentWornRecords}">
                                 <ItemsControl.ItemTemplate>
@@ -257,12 +253,12 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <StackPanel Grid.Column="0">
-                                <TextBlock Text="穿搭日历" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="穿搭日历"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock x:Name="TxtCalendarSummary"
                                            Text="{Binding CalendarSummaryText}"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           FontSize="13" Margin="0,6,0,0"/>
+                                           Style="{StaticResource PageSectionBodyText}"
+                                           Margin="0,6,0,0"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                                 <Button Content="‹" Style="{StaticResource CapsuleButton}"
@@ -357,12 +353,9 @@
                     </Grid.ColumnDefinitions>
                     <StackPanel>
                         <TextBlock Text="全部搭配"
-                                   FontSize="17"
-                                   FontWeight="SemiBold"
-                                   Foreground="{StaticResource TextPrimaryBrush}"/>
+                                   Style="{StaticResource PageSectionTitleText}"/>
                         <TextBlock Text="悬停卡片可编辑、删除或快速记录「今天穿了」。"
-                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                   FontSize="12"
+                                   Style="{StaticResource PageSectionBodyText}"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
@@ -380,19 +373,15 @@
         </ScrollViewer>
 
         <!-- Empty State -->
-        <StackPanel x:Name="TxtEmpty" Grid.Row="1"
-                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <TextBlock Text="👗" FontSize="52" HorizontalAlignment="Center" Opacity="0.55"/>
-            <TextBlock Text="还没有搭配"
-                       Style="{StaticResource EmptyStateTitleText}"
-                       Margin="0,18,0,0"/>
-            <TextBlock Text="今天从一套简单的开始吧"
-                       Style="{StaticResource EmptyStateBodyText}"/>
-            <Button Content="+ 新建今日搭配"
-                    Style="{StaticResource PrimaryButton}"
-                    HorizontalAlignment="Center"
-                    Click="CreateOutfit_Click"/>
-        </StackPanel>
+        <states:EmptyState Grid.Row="1"
+                           x:Name="TxtEmpty"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"
+                           Icon="👗"
+                           Title="还没有搭配"
+                           Body="今天从一套简单的开始吧"
+                           ActionText="+ 新建今日搭配"
+                           ActionClicked="CreateOutfit_Click"/>
     </Grid>
 </UserControl>

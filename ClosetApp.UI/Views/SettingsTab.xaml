@@ -27,11 +27,10 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="设置总览" FontSize="16" FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"/>
+                            <TextBlock Text="设置总览"
+                                       Style="{StaticResource PageSummaryTitleText}"/>
                             <TextBlock Text="把存储路径、缓存和主题信息收在一个稳定入口里。"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="10" Margin="0,4,0,0"/>
+                                       Style="{StaticResource PageSummaryBodyText}"/>
                         </StackPanel>
                         <Border Grid.Column="1"
                                 Style="{StaticResource PageSummaryBadge}"
@@ -58,13 +57,13 @@
                     <StackPanel Grid.Column="0">
                         <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
-                                <TextBlock Text="存储位置" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="存储位置"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock Text="应用数据保存在本机 LocalAppData，图片按原图、主视觉和小预览分层归档。"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
+                                           Style="{StaticResource PageSectionBodyText}"/>
 
-                                <TextBlock Text="数据目录" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
-                                <Border Background="{StaticResource SurfaceElevatedBrush}" CornerRadius="14" Padding="14,10" Margin="0,6,0,12">
+                                <TextBlock Text="数据目录" Style="{StaticResource PageFieldLabelText}"/>
+                                <Border Style="{StaticResource PageInsetCard}" Margin="0,6,0,12">
                                     <TextBlock x:Name="TxtDataDir" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap"/>
                                 </Border>
                                 <WrapPanel Margin="0,0,0,18">
@@ -72,8 +71,8 @@
                                     <Button Content="打开数据库位置" Style="{StaticResource CapsuleButton}" Click="OpenDatabase_Click"/>
                                 </WrapPanel>
 
-                                <TextBlock Text="图片目录" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
-                                <Border Background="{StaticResource SurfaceElevatedBrush}" CornerRadius="14" Padding="14,10" Margin="0,6,0,12">
+                                <TextBlock Text="图片目录" Style="{StaticResource PageFieldLabelText}"/>
+                                <Border Style="{StaticResource PageInsetCard}" Margin="0,6,0,12">
                                     <TextBlock x:Name="TxtImagesDir" Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap"/>
                                 </Border>
                                 <WrapPanel>
@@ -85,10 +84,10 @@
 
                         <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
-                                <TextBlock Text="图片缓存" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="图片缓存"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock Text="清理主视觉和小预览缓存不会删除原图；后续需要时可以重新生成。"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
+                                           Style="{StaticResource PageSectionBodyText}"/>
                                 <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -115,10 +114,10 @@
 
                         <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
-                                <TextBlock Text="图片修复" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="图片修复"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock Text="导入备份后，如果图片文件没有一起恢复，可以从备份目录按文件名自动重连。"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
+                                           Style="{StaticResource PageSectionBodyText}"/>
                                 <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -138,10 +137,10 @@
 
                         <Border Style="{StaticResource LookbookCard}">
                             <StackPanel>
-                                <TextBlock Text="系统日志" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="系统日志"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock Text="日志用于排查启动、图片处理和数据同步问题。默认保留最近 14 天。"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
+                                           Style="{StaticResource PageSectionBodyText}"/>
                                 <Grid Margin="0,0,0,16">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
@@ -166,13 +165,12 @@
                     <StackPanel Grid.Column="2">
                         <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
-                                <TextBlock Text="天气与城市" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="天气与城市"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock Text="默认城市会用于获取实时天气，后面做天气穿搭推荐时也会直接复用这里。"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"
-                                           TextWrapping="Wrap"/>
+                                           Style="{StaticResource PageSectionBodyText}"/>
 
-                                <TextBlock Text="默认城市" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
+                                <TextBlock Text="默认城市" Style="{StaticResource PageFieldLabelText}"/>
                                 <TextBox x:Name="TxtWeatherCity"
                                          Margin="0,6,0,12"
                                          MinHeight="40"
@@ -192,7 +190,7 @@
                                             Margin="0,0,10,10"/>
                                 </WrapPanel>
 
-                                <Border Background="{StaticResource SurfaceElevatedBrush}" CornerRadius="18" Padding="16">
+                                <Border Style="{StaticResource PageInsetCard}" CornerRadius="18" Padding="16">
                                     <StackPanel>
                                         <TextBlock x:Name="TxtWeatherSummary"
                                                    Text="还没有获取天气。"
@@ -207,8 +205,8 @@
                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                    Margin="0,6,0,0"/>
                                         <Border x:Name="WeatherStatusCard"
+                                                Style="{StaticResource PageInsetCard}"
                                                 Background="{StaticResource SurfacePageBrush}"
-                                                CornerRadius="14"
                                                 Padding="12"
                                                 Margin="0,12,0,0"
                                                 Visibility="Collapsed">
@@ -223,21 +221,21 @@
 
                         <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
-                                <TextBlock Text="主题与外观" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="主题与外观"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock Text="当前使用暖粉色设计系统。主题切换会在后续版本开放。"
-                                           Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
+                                           Style="{StaticResource PageSectionBodyText}"/>
                                 <WrapPanel>
                                     <Border Width="42" Height="42" CornerRadius="21" Background="{StaticResource PrimaryBrush}" Margin="0,0,10,10"/>
                                     <Border Width="42" Height="42" CornerRadius="21" Background="{StaticResource DangerBrush}" Margin="0,0,10,10"/>
                                     <Border Width="42" Height="42" CornerRadius="21" Background="{StaticResource SurfaceHeroBrush}" Margin="0,0,10,10"/>
                                     <Border Width="42" Height="42" CornerRadius="21" Background="{StaticResource SurfaceCardBrush}" Margin="0,0,10,10"/>
                                 </WrapPanel>
-                                <Border Background="{StaticResource SurfaceElevatedBrush}" CornerRadius="18" Padding="16" Margin="0,12,0,0">
+                                <Border Style="{StaticResource PageInsetCard}" CornerRadius="18" Padding="16" Margin="0,12,0,0">
                                     <StackPanel>
                                         <TextBlock Text="柔和、温暖、低对比" Foreground="{StaticResource TextPrimaryBrush}" FontWeight="SemiBold"/>
                                         <TextBlock Text="适合长期整理衣橱，不抢照片和衣物本身的视觉重点。"
-                                                   Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                                   Style="{StaticResource PageMutedBodyText}" Margin="0,6,0,0"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
@@ -245,8 +243,8 @@
 
                         <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
                             <StackPanel>
-                                <TextBlock Text="关于应用" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="关于应用"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock x:Name="TxtVersion" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
                                 <TextBlock Text=".NET WPF / SQLite / Clean Architecture"
                                            Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,18"/>
@@ -261,12 +259,12 @@
                                 CornerRadius="24"
                                 Padding="24">
                             <StackPanel>
-                                <TextBlock Text="数据备份与恢复" FontSize="18" FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
+                                <TextBlock Text="数据备份与恢复"
+                                           Style="{StaticResource PageSectionTitleText}"/>
                                 <TextBlock Text="ZIP 备份包会包含 backup.json 和图片文件；旧版 JSON 备份仍可继续导入，但只恢复核心数据。"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           TextWrapping="Wrap" Margin="0,8,0,18"/>
-                                <Border Background="{StaticResource SurfaceElevatedBrush}" CornerRadius="18" Padding="16" Margin="0,0,0,14">
+                                           Style="{StaticResource PageSectionBodyText}"
+                                           Margin="0,8,0,18"/>
+                                <Border Style="{StaticResource PageInsetCard}" CornerRadius="18" Padding="16" Margin="0,0,0,14">
                                     <StackPanel>
                                         <TextBlock Text="导出前校验" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                                         <TextBlock x:Name="TxtBackupValidation"
@@ -286,11 +284,7 @@
                                                    TextWrapping="Wrap"
                                                    Margin="0,6,0,0"/>
                                         <Border x:Name="BackupValidationWarningCard"
-                                                Background="#FFFBE9E7"
-                                                BorderBrush="{StaticResource DangerBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="14"
-                                                Padding="12"
+                                                Style="{StaticResource PageWarningCard}"
                                                 Margin="0,10,0,0"
                                                 Visibility="Collapsed">
                                             <StackPanel>
@@ -315,7 +309,7 @@
                                     <Button Content="刷新备份状态" Style="{StaticResource CapsuleButton}"
                                             Click="RefreshBackupState_Click"/>
                                 </WrapPanel>
-                                <Border Background="{StaticResource SurfaceElevatedBrush}" CornerRadius="18" Padding="16" Margin="0,8,0,14">
+                                <Border Style="{StaticResource PageInsetCard}" CornerRadius="18" Padding="16" Margin="0,8,0,14">
                                     <StackPanel>
                                         <TextBlock Text="最近一次导入" Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"/>
                                         <TextBlock x:Name="TxtLastImportSummary"
@@ -328,11 +322,7 @@
                                                    TextWrapping="Wrap"
                                                    Margin="0,8,0,0"/>
                                         <Border x:Name="LastImportWarningCard"
-                                                Background="#FFFBE9E7"
-                                                BorderBrush="{StaticResource DangerBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="14"
-                                                Padding="12"
+                                                Style="{StaticResource PageWarningCard}"
                                                 Margin="0,10,0,0"
                                                 Visibility="Collapsed">
                                             <StackPanel>
@@ -353,8 +343,8 @@
                                             </StackPanel>
                                         </Border>
                                         <Border x:Name="LastImportMissingCard"
+                                                Style="{StaticResource PageInsetCard}"
                                                 Background="{StaticResource SurfacePageBrush}"
-                                                CornerRadius="14"
                                                 Padding="12"
                                                 Margin="0,10,0,0"
                                                 Visibility="Collapsed">
