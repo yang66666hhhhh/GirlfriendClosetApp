@@ -156,7 +156,8 @@
                 </Grid.RowDefinitions>
 
                 <!-- ═══ IMAGE AREA ═══ -->
-                <Border Grid.Row="0"
+                <Border x:Name="ImageAreaBorder"
+                        Grid.Row="0"
                         Margin="8,8,8,0"
                         CornerRadius="14"
                         ClipToBounds="True">

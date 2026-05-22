@@ -8,6 +8,7 @@ using ClosetApp.Application.Images;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components;
@@ -76,6 +77,7 @@ public partial class PremiumClothingCard : UserControl
             useTrimmedPresentation);
         ApplyMeta(c);
         ApplyStagePresentation(c);
+        ApplyImageBackdrop(c);
         ImageFallback.Visibility = ClothingImageLoader.ResolvePath(c.ImagePath) == null
             ? Visibility.Visible
             : Visibility.Collapsed;
@@ -140,6 +142,19 @@ public partial class PremiumClothingCard : UserControl
         {
             return cardWidth * 1.08;
         }
+    }
+
+    private void ApplyImageBackdrop(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        if (string.IsNullOrWhiteSpace(clothing.Color)) return;
+
+        var baseColor = ThemeColorHelper.GetThemeColor("SurfaceHeroBrush", Color.FromRgb(244, 239, 233));
+        var imageColor = ThemeColorHelper.GetThemeColor("Surface.ImageArea", Color.FromRgb(248, 241, 236));
+        var tint = ThemeColorHelper.ResolveClothingBackdrop(clothing.Color);
+        var blended = ThemeColorHelper.Blend(baseColor, tint, 0.5);
+
+        var gradientBrush = new LinearGradientBrush(imageColor, blended, new Point(0, 0), new Point(1, 1));
+        ImageAreaBorder.Background = gradientBrush;
     }
 
     // Tops and outerwear are easy to over-trim into awkward silhouettes, so keep them conservative.
