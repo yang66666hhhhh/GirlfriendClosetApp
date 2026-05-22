@@ -3,10 +3,12 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
+using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
@@ -18,6 +20,7 @@ public partial class SettingsTab : UserControl
     private readonly IImageMaintenanceService _imageMaintenanceService;
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
+    private readonly ThemeService _themeService;
     private bool _isRefreshingWeather;
 
     public SettingsTab()
@@ -26,6 +29,7 @@ public partial class SettingsTab : UserControl
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
         _weatherService = App.Services.GetRequiredService<IWeatherService>();
         _weatherPreferencesService = App.Services.GetRequiredService<IWeatherPreferencesService>();
+        _themeService = App.Services.GetRequiredService<ThemeService>();
         InitializeComponent();
         Loaded += async (_, _) => await LoadSettingsAsync();
     }
@@ -37,6 +41,7 @@ public partial class SettingsTab : UserControl
         TxtLogDir.Text = AppPaths.LogsDir;
         TxtVersion.Text = $"版本 {GetVersion()}";
         await LoadWeatherPreferencesAsync();
+        ApplyThemeSelectionState(_themeService.CurrentTheme);
         await RefreshStatsAsync();
         await RefreshBackupStateAsync();
         await RefreshWeatherAsync(showStatus: false);
@@ -172,6 +177,18 @@ public partial class SettingsTab : UserControl
         });
 
         ShowWeatherStatus($"默认城市已保存为 {city}。");
+    }
+
+    private async void UseRoseTheme_Click(object sender, RoutedEventArgs e)
+    {
+        await _themeService.ApplyThemeAsync(AppThemeKind.Rose);
+        ApplyThemeSelectionState(AppThemeKind.Rose);
+    }
+
+    private async void UseBlueTheme_Click(object sender, RoutedEventArgs e)
+    {
+        await _themeService.ApplyThemeAsync(AppThemeKind.Blue);
+        ApplyThemeSelectionState(AppThemeKind.Blue);
     }
 
     private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
@@ -654,5 +671,30 @@ public partial class SettingsTab : UserControl
     {
         WeatherStatusCard.Visibility = Visibility.Collapsed;
         TxtWeatherStatus.Text = string.Empty;
+    }
+
+    private void ApplyThemeSelectionState(AppThemeKind theme)
+    {
+        bool isRose = theme == AppThemeKind.Rose;
+
+        ThemeRoseCard.BorderThickness = new Thickness(isRose ? 2 : 1.5);
+        ThemeBlueCard.BorderThickness = new Thickness(isRose ? 1.5 : 2);
+
+        ThemeRoseCard.Background = new SolidColorBrush(isRose
+            ? Color.FromRgb(251, 239, 236)
+            : Color.FromRgb(253, 245, 243));
+        ThemeBlueCard.Background = new SolidColorBrush(isRose
+            ? Color.FromRgb(247, 250, 254)
+            : Color.FromRgb(238, 244, 255));
+
+        BtnUseRoseTheme.Content = isRose ? "当前使用" : "启用柔粉";
+        BtnUseBlueTheme.Content = isRose ? "启用清蓝" : "当前使用";
+        BtnUseRoseTheme.IsEnabled = !isRose;
+        BtnUseBlueTheme.IsEnabled = isRose;
+
+        TxtThemeSummary.Text = isRose ? "当前使用柔粉主题" : "当前使用清蓝主题";
+        TxtThemeDescription.Text = isRose
+            ? "柔粉更温和、亲近，适合保留现在这套偏生活感的衣橱气质。"
+            : "清蓝更克制、清爽，页面会更冷静，也更偏中性工具感。";
     }
 }

@@ -47,17 +47,18 @@ public static class ClothingImageLoader
         string? path,
         ImageVariant variant,
         int decodePixelWidth = 400,
-        bool trimLightPadding = false)
+        bool trimLightPadding = false,
+        bool extractForeground = false)
     {
         var resolved = ResolvePath(path, variant);
         if (resolved == null)
             return null;
 
-        var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding);
+        var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding, extractForeground);
         if (ImageCache.TryGetValue(key, out var cached))
             return cached;
 
-        var image = LoadCore(resolved, decodePixelWidth, trimLightPadding);
+        var image = LoadCore(resolved, decodePixelWidth, trimLightPadding, extractForeground);
         if (image != null)
             ImageCache.TryAdd(key, image);
 
@@ -70,10 +71,10 @@ public static class ClothingImageLoader
         if (resolved == null)
             return null;
 
-        var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding);
+        var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding, extractForeground: false);
         return SizeCache.GetOrAdd(key, _ =>
         {
-            var image = LoadCore(resolved, decodePixelWidth, trimLightPadding);
+            var image = LoadCore(resolved, decodePixelWidth, trimLightPadding, extractForeground: false);
             return image == null ? null : new Size(image.Width, image.Height);
         });
     }
@@ -107,7 +108,7 @@ public static class ClothingImageLoader
         };
     }
 
-    private static ImageSource? LoadCore(string path, int decodePixelWidth, bool trimLightPadding)
+    private static ImageSource? LoadCore(string path, int decodePixelWidth, bool trimLightPadding, bool extractForeground)
     {
         try
         {
@@ -119,10 +120,12 @@ public static class ClothingImageLoader
             bitmap.EndInit();
             bitmap.Freeze();
 
-            if (!trimLightPadding)
+            if (!trimLightPadding && !extractForeground)
                 return bitmap;
 
-            return TryTrimLightPadding(bitmap);
+            return extractForeground
+                ? TryExtractForeground(bitmap, trimLightPadding)
+                : TryTrimLightPadding(bitmap);
         }
         catch
         {
@@ -130,10 +133,10 @@ public static class ClothingImageLoader
         }
     }
 
-    private static string BuildCacheKey(string path, int decodePixelWidth, bool trimLightPadding)
+    private static string BuildCacheKey(string path, int decodePixelWidth, bool trimLightPadding, bool extractForeground)
     {
         var ticks = File.GetLastWriteTimeUtc(path).Ticks;
-        return $"{path}|{ticks}|{decodePixelWidth}|trim:{trimLightPadding}";
+        return $"{path}|{ticks}|{decodePixelWidth}|trim:{trimLightPadding}|fg:{extractForeground}";
     }
 
     private static string BuildThumbnailPath(string thumbnailFolder, string relativePath)
@@ -182,6 +185,85 @@ public static class ClothingImageLoader
         }
     }
 
+    private static ImageSource TryExtractForeground(BitmapSource source, bool trimLightPadding)
+    {
+        try
+        {
+            var normalized = source.Format == PixelFormats.Bgra32
+                ? source
+                : new FormatConvertedBitmap(source, PixelFormats.Bgra32, null, 0);
+
+            if (normalized.CanFreeze && !normalized.IsFrozen)
+                normalized.Freeze();
+
+            var width = normalized.PixelWidth;
+            var height = normalized.PixelHeight;
+            if (width <= 0 || height <= 0)
+                return source;
+
+            var stride = ((width * normalized.Format.BitsPerPixel) + 7) / 8;
+            var pixels = new byte[stride * height];
+            normalized.CopyPixels(pixels, stride, 0);
+
+            var backgroundSeeds = BuildBackgroundSeeds(pixels, stride, width, height);
+            var backgroundMask = BuildConnectedBackgroundMask(pixels, stride, width, height, backgroundSeeds);
+            var bounds = FindLargestSubjectBounds(pixels, stride, width, height, backgroundSeeds, backgroundMask)
+                         ?? (trimLightPadding ? FindLightPaddingBounds(normalized) : null);
+
+            var mutated = false;
+            for (var y = 0; y < height; y++)
+            {
+                for (var x = 0; x < width; x++)
+                {
+                    if (!backgroundMask[(y * width) + x])
+                        continue;
+
+                    var offset = (y * stride) + (x * 4);
+                    if (pixels[offset + 3] == 0)
+                        continue;
+
+                    pixels[offset + 3] = 0;
+                    mutated = true;
+                }
+            }
+
+            BitmapSource result;
+            if (mutated)
+            {
+                var isolated = BitmapSource.Create(
+                    width,
+                    height,
+                    normalized.DpiX,
+                    normalized.DpiY,
+                    PixelFormats.Bgra32,
+                    null,
+                    pixels,
+                    stride);
+                isolated.Freeze();
+                result = isolated;
+            }
+            else
+            {
+                result = normalized;
+            }
+
+            if (bounds == null)
+                return result;
+
+            var rect = bounds.Value;
+            if (rect.X == 0 && rect.Y == 0 && rect.Width == width && rect.Height == height)
+                return result;
+
+            var cropped = new CroppedBitmap(result, rect);
+            cropped.Freeze();
+            return cropped;
+        }
+        catch
+        {
+            return trimLightPadding ? TryTrimLightPadding(source) : source;
+        }
+    }
+
     private static Int32Rect? FindLightPaddingBounds(BitmapSource source)
     {
         if (source.PixelWidth <= 0 || source.PixelHeight <= 0)
@@ -221,43 +303,14 @@ public static class ClothingImageLoader
         int stride,
         int width,
         int height,
-        IReadOnlyList<BackgroundSeed> backgroundSeeds)
+        IReadOnlyList<BackgroundSeed> backgroundSeeds,
+        bool[]? backgroundMask = null)
     {
         var totalPixels = width * height;
         if (totalPixels <= 0)
             return null;
 
-        var background = new bool[totalPixels];
-        var queue = new Queue<int>();
-
-        // Flood-fill only the background connected to outer edges.
-        for (var x = 0; x < width; x++)
-        {
-            TryMarkBackground(pixels, stride, width, height, x, 0, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x, height - 1, background, queue, backgroundSeeds);
-        }
-
-        for (var y = 1; y < height - 1; y++)
-        {
-            TryMarkBackground(pixels, stride, width, height, 0, y, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, width - 1, y, background, queue, backgroundSeeds);
-        }
-
-        while (queue.Count > 0)
-        {
-            var index = queue.Dequeue();
-            var x = index % width;
-            var y = index / width;
-
-            TryMarkBackground(pixels, stride, width, height, x - 1, y, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x + 1, y, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x, y - 1, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x, y + 1, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x - 1, y - 1, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x + 1, y - 1, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x - 1, y + 1, background, queue, backgroundSeeds);
-            TryMarkBackground(pixels, stride, width, height, x + 1, y + 1, background, queue, backgroundSeeds);
-        }
+        var background = backgroundMask ?? BuildConnectedBackgroundMask(pixels, stride, width, height, backgroundSeeds);
 
         var visited = new bool[totalPixels];
         var componentQueue = new Queue<int>();
@@ -336,6 +389,47 @@ public static class ClothingImageLoader
             visited[neighborIndex] = true;
             componentQueue.Enqueue(neighborIndex);
         }
+    }
+
+    private static bool[] BuildConnectedBackgroundMask(
+        byte[] pixels,
+        int stride,
+        int width,
+        int height,
+        IReadOnlyList<BackgroundSeed> backgroundSeeds)
+    {
+        var background = new bool[width * height];
+        var queue = new Queue<int>();
+
+        for (var x = 0; x < width; x++)
+        {
+            TryMarkBackground(pixels, stride, width, height, x, 0, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x, height - 1, background, queue, backgroundSeeds);
+        }
+
+        for (var y = 1; y < height - 1; y++)
+        {
+            TryMarkBackground(pixels, stride, width, height, 0, y, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, width - 1, y, background, queue, backgroundSeeds);
+        }
+
+        while (queue.Count > 0)
+        {
+            var index = queue.Dequeue();
+            var x = index % width;
+            var y = index / width;
+
+            TryMarkBackground(pixels, stride, width, height, x - 1, y, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x, y - 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x, y + 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x - 1, y - 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y - 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x - 1, y + 1, background, queue, backgroundSeeds);
+            TryMarkBackground(pixels, stride, width, height, x + 1, y + 1, background, queue, backgroundSeeds);
+        }
+
+        return background;
     }
 
     private static bool IsCloseTo(SubjectComponent candidate, SubjectComponent primary)

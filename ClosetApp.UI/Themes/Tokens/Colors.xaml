@@ -46,6 +46,46 @@
     <Color x:Key="Border.Divider">#FFF0ECE7</Color>
     <SolidColorBrush x:Key="BorderDividerBrush" Color="{StaticResource Border.Divider}"/>
 
+    <Color x:Key="Sidebar.Background">#FFFAF8F5</Color>
+    <SolidColorBrush x:Key="SidebarBgBrush" Color="{StaticResource Sidebar.Background}"/>
+    <Color x:Key="Sidebar.Border">#FFF0EBE6</Color>
+    <SolidColorBrush x:Key="SidebarBorderBrush" Color="{StaticResource Sidebar.Border}"/>
+
+    <Color x:Key="Theme.Sky.Surface">#FFEEF4FF</Color>
+    <SolidColorBrush x:Key="ThemeSkySurfaceBrush" Color="{StaticResource Theme.Sky.Surface}"/>
+    <Color x:Key="Theme.Sky.Border">#FFCBD9F4</Color>
+    <SolidColorBrush x:Key="ThemeSkyBorderBrush" Color="{StaticResource Theme.Sky.Border}"/>
+    <Color x:Key="Theme.Sky.Text">#FF5F79AD</Color>
+    <SolidColorBrush x:Key="ThemeSkyTextBrush" Color="{StaticResource Theme.Sky.Text}"/>
+
+    <Color x:Key="Theme.Mint.Surface">#FFEEF7F1</Color>
+    <SolidColorBrush x:Key="ThemeMintSurfaceBrush" Color="{StaticResource Theme.Mint.Surface}"/>
+    <Color x:Key="Theme.Mint.Border">#FFC9E0CF</Color>
+    <SolidColorBrush x:Key="ThemeMintBorderBrush" Color="{StaticResource Theme.Mint.Border}"/>
+    <Color x:Key="Theme.Mint.Text">#FF5E8A67</Color>
+    <SolidColorBrush x:Key="ThemeMintTextBrush" Color="{StaticResource Theme.Mint.Text}"/>
+
+    <Color x:Key="Theme.Rose.Surface">#FFFCEDEF</Color>
+    <SolidColorBrush x:Key="ThemeRoseSurfaceBrush" Color="{StaticResource Theme.Rose.Surface}"/>
+    <Color x:Key="Theme.Rose.Border">#FFEEC6CC</Color>
+    <SolidColorBrush x:Key="ThemeRoseBorderBrush" Color="{StaticResource Theme.Rose.Border}"/>
+    <Color x:Key="Theme.Rose.Text">#FFB06F7D</Color>
+    <SolidColorBrush x:Key="ThemeRoseTextBrush" Color="{StaticResource Theme.Rose.Text}"/>
+
+    <Color x:Key="Theme.Amber.Surface">#FFFCF3E8</Color>
+    <SolidColorBrush x:Key="ThemeAmberSurfaceBrush" Color="{StaticResource Theme.Amber.Surface}"/>
+    <Color x:Key="Theme.Amber.Border">#FFEBD6BA</Color>
+    <SolidColorBrush x:Key="ThemeAmberBorderBrush" Color="{StaticResource Theme.Amber.Border}"/>
+    <Color x:Key="Theme.Amber.Text">#FFA67942</Color>
+    <SolidColorBrush x:Key="ThemeAmberTextBrush" Color="{StaticResource Theme.Amber.Text}"/>
+
+    <Color x:Key="Theme.Lavender.Surface">#FFF2EFFB</Color>
+    <SolidColorBrush x:Key="ThemeLavenderSurfaceBrush" Color="{StaticResource Theme.Lavender.Surface}"/>
+    <Color x:Key="Theme.Lavender.Border">#FFD7CFEF</Color>
+    <SolidColorBrush x:Key="ThemeLavenderBorderBrush" Color="{StaticResource Theme.Lavender.Border}"/>
+    <Color x:Key="Theme.Lavender.Text">#FF7F6AAE</Color>
+    <SolidColorBrush x:Key="ThemeLavenderTextBrush" Color="{StaticResource Theme.Lavender.Text}"/>
+
     <SolidColorBrush x:Key="SecondaryBrush" Color="{StaticResource Primary.Dark}"/>
     <SolidColorBrush x:Key="BackgroundBrush" Color="{StaticResource Surface.Page}"/>
     <SolidColorBrush x:Key="CardBackgroundBrush" Color="{StaticResource Surface.Card}"/>

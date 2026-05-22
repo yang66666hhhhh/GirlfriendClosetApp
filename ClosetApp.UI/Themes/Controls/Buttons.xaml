@@ -151,7 +151,7 @@
          ═══════════════════════════════════════════════════════ -->
 
     <Style x:Key="CapsuleButton" TargetType="Button" BasedOn="{StaticResource AppButtonBase}">
-        <Setter Property="Background" Value="White"/>
+        <Setter Property="Background" Value="{StaticResource SurfaceElevatedBrush}"/>
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>

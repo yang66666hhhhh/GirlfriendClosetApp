@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using OutfitScene = ClosetApp.Domain.Enums.OutfitScene;
 using Season = ClosetApp.Domain.Enums.Season;
+using ClosetApp.UI.Components.Outfit.Engine;
 using ClosetApp.UI.Components.Outfit.Editor;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
@@ -15,6 +16,8 @@ using OutfitEntity = global::ClosetApp.Domain.Entities.Outfit;
 
 public partial class OutfitCard : UserControl
 {
+    private static readonly OutfitCompositionEngine PreviewEngine = new();
+
     public static readonly RoutedEvent EditClickedEvent =
         EventManager.RegisterRoutedEvent("EditClicked", RoutingStrategy.Bubble,
             typeof(RoutedEventHandler), typeof(OutfitCard));
@@ -101,19 +104,25 @@ public partial class OutfitCard : UserControl
         {
             var clothes = outfit.OutfitClothes?.Select(oc => oc.Clothing).ToList();
             var chips = BuildMoodChips(outfit, clothes);
-            var supportLine = BuildSupportLine(clothes);
             card.TxtName.Text = BuildDisplayName(outfit, clothes);
-            card.TxtMoodLine.Text = supportLine;
-            card.TxtMoodLine.Visibility = !string.IsNullOrWhiteSpace(supportLine)
-                ? Visibility.Visible
-                : Visibility.Collapsed;
+            card.TxtMoodLine.Text = string.Empty;
+            card.TxtMoodLine.Visibility = Visibility.Collapsed;
             card.TxtWearInfo.Text = outfit.WearCount > 0
                 ? $"穿过 {outfit.WearCount} 次 · 最近 {FormatWornDate(outfit.WornDate)}"
                 : "还没记录穿着";
             card.PreviewCanvas.Clothes = clothes;
+            card.ApplyPreviewHeight(clothes);
             card.ApplyPreviewBackdrop(outfit, clothes);
             card.RenderMoodChips(chips);
         }
+    }
+
+    private void ApplyPreviewHeight(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    {
+        double height = ResolvePreviewHeight(clothes);
+        PreviewRow.Height = new GridLength(height);
+        PreviewCanvas.Height = Math.Max(240, height - 10);
+        PreviewCanvas.MinHeight = Math.Max(240, height - 10);
     }
 
     private static string FormatWornDate(DateTime? wornDate)
@@ -144,6 +153,27 @@ public partial class OutfitCard : UserControl
         sb.Begin();
         CardShadow.BlurRadius = 14;
         ActionOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private static double ResolvePreviewHeight(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    {
+        if (clothes == null || clothes.Count == 0)
+            return 312;
+
+        bool hasOuter = clothes.Any(c => IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Outerwear, "coat", "jacket", "cardigan"));
+        bool hasShoes = clothes.Any(c => IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Shoes, "shoe", "heels", "sneaker"));
+        bool hasBottom = clothes.Any(c =>
+            IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Bottom, "pants", "trouser") ||
+            IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Skirt, "skirt"));
+
+        var mode = PreviewEngine.DetermineMode(clothes);
+        return mode switch
+        {
+            CompositionMode.Dress => hasOuter ? 370 : hasShoes ? 338 : 316,
+            CompositionMode.TopBottom => hasOuter ? 388 : 356,
+            CompositionMode.Mixed => hasBottom ? 376 : 336,
+            _ => hasShoes ? 296 : 320
+        };
     }
 
     private static string BuildDisplayName(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
@@ -209,32 +239,6 @@ public partial class OutfitCard : UserControl
         MoodChipPanel.Visibility = MoodChipPanel.Children.Count > 0
             ? Visibility.Visible
             : Visibility.Collapsed;
-    }
-
-    private static string BuildSupportLine(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
-    {
-        var parts = new List<string>();
-
-        var colors = clothes?
-            .Select(c => c.Color?.Trim())
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct()
-            .Take(1)
-            .ToList();
-        var brands = clothes?
-            .Select(c => c.Brand?.Trim())
-            .Where(x => !string.IsNullOrWhiteSpace(x))
-            .Distinct()
-            .Take(1)
-            .ToList();
-
-        if (colors is { Count: > 0 })
-            parts.AddRange(colors!);
-
-        if (brands is { Count: > 0 })
-            parts.AddRange(brands!);
-
-        return parts.Count > 0 ? string.Join(" · ", parts) : string.Empty;
     }
 
     private static (Color Background, Color Border, Color Foreground) ResolveChipPalette(string chip)

@@ -6,6 +6,37 @@
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <SolidColorBrush x:Key="TagSkySurfaceBrush" Color="{DynamicResource Theme.Sky.Surface}"/>
+        <SolidColorBrush x:Key="TagSkyBorderBrush" Color="{DynamicResource Theme.Sky.Border}"/>
+        <SolidColorBrush x:Key="TagSkyTextBrush" Color="{DynamicResource Theme.Sky.Text}"/>
+        <SolidColorBrush x:Key="TagRoseSurfaceBrush" Color="{DynamicResource Theme.Rose.Surface}"/>
+        <SolidColorBrush x:Key="TagRoseBorderBrush" Color="{DynamicResource Theme.Rose.Border}"/>
+        <SolidColorBrush x:Key="TagRoseTextBrush" Color="{DynamicResource Theme.Rose.Text}"/>
+        <SolidColorBrush x:Key="TagLavenderSurfaceBrush" Color="{DynamicResource Theme.Lavender.Surface}"/>
+        <SolidColorBrush x:Key="TagLavenderBorderBrush" Color="{DynamicResource Theme.Lavender.Border}"/>
+        <SolidColorBrush x:Key="TagLavenderTextBrush" Color="{DynamicResource Theme.Lavender.Text}"/>
+
+        <Style x:Key="TagSkyButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Background" Value="{StaticResource TagSkySurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource TagSkyBorderBrush}"/>
+            <Setter Property="Foreground" Value="{StaticResource TagSkyTextBrush}"/>
+        </Style>
+
+        <Style x:Key="TagEyebrowBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+            <Setter Property="Background" Value="{StaticResource TagLavenderSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource TagLavenderBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="TagEyebrowBadgeText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TagLavenderTextBrush}"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid Background="{StaticResource SurfacePageBrush}">
@@ -38,13 +69,21 @@
                       Padding="44,12,44,60"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
-                <Border Style="{StaticResource PageSummaryCard}" Margin="0,0,0,16">
+                <Border Style="{StaticResource PageSummaryCard}"
+                        Margin="0,0,0,16"
+                        Background="{StaticResource SurfaceElevatedBrush}"
+                        BorderBrush="{StaticResource TagLavenderBorderBrush}"
+                        BorderThickness="1">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
+                            <Border Style="{StaticResource TagEyebrowBadge}">
+                                <TextBlock Text="标签体系"
+                                           Style="{StaticResource TagEyebrowBadgeText}"/>
+                            </Border>
                             <TextBlock Text="标签总览"
                                        Style="{StaticResource PageSummaryTitleText}"/>
                             <TextBlock Text="{Binding CategorySummaryText}"
@@ -52,6 +91,9 @@
                         </StackPanel>
                         <Border Grid.Column="1"
                                 Style="{StaticResource PageSummaryBadge}"
+                                Background="{StaticResource TagSkySurfaceBrush}"
+                                BorderBrush="{StaticResource TagSkyBorderBrush}"
+                                BorderThickness="1"
                                 Margin="20,0,0,0"
                                 VerticalAlignment="Center">
                             <StackPanel>
@@ -71,6 +113,10 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
+                        <Border Style="{StaticResource TagEyebrowBadge}">
+                            <TextBlock Text="风格词库"
+                                       Style="{StaticResource TagEyebrowBadgeText}"/>
+                        </Border>
                         <TextBlock Text="全部标签"
                                    Style="{StaticResource PageSectionTitleText}"/>
                         <TextBlock Text="优先整理风格词，其次再补场景和季节。"
@@ -79,6 +125,9 @@
                     </StackPanel>
                     <Border Grid.Column="1"
                             Style="{StaticResource PageSummaryBadge}"
+                            Background="{StaticResource TagRoseSurfaceBrush}"
+                            BorderBrush="{StaticResource TagRoseBorderBrush}"
+                            BorderThickness="1"
                             VerticalAlignment="Center"
                             Padding="9,6"
                             Margin="12,0,0,0">
@@ -97,6 +146,9 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <Border Style="{StaticResource PageItemCard}"
+                                    Background="{StaticResource SurfaceElevatedBrush}"
+                                    BorderBrush="{StaticResource TagLavenderBorderBrush}"
+                                    BorderThickness="1"
                                     Cursor="Hand" Tag="{Binding}">
                                 <Border.ContextMenu>
                                     <ContextMenu>
@@ -105,7 +157,13 @@
                                     </ContextMenu>
                                 </Border.ContextMenu>
                                 <StackPanel Orientation="Horizontal">
-                                    <Ellipse Width="12" Height="12" Fill="{Binding Color}"/>
+                                    <Border Background="{StaticResource TagRoseSurfaceBrush}"
+                                            BorderBrush="{StaticResource TagRoseBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="6,4">
+                                        <Ellipse Width="10" Height="10" Fill="{Binding Color}"/>
+                                    </Border>
                                     <TextBlock Text="{Binding Name}"
                                                Style="{StaticResource PageItemTitleText}"
                                                VerticalAlignment="Center" Margin="8,0,0,0"/>

@@ -62,6 +62,7 @@ public partial class App : System.Windows.Application
         };
 
         ConfigureServices();
+        Services.GetRequiredService<ThemeService>().InitializeAsync().GetAwaiter().GetResult();
 
         var dbContext = Services.GetRequiredService<ClosetDbContext>();
         Log.Information("Ensuring database is created");
@@ -130,6 +131,8 @@ public partial class App : System.Windows.Application
         });
         services.AddSingleton<ToastService>();
         services.AddSingleton<ModalService>();
+        services.AddSingleton<ThemePreferencesService>();
+        services.AddSingleton<ThemeService>();
 
         services.AddTransient<ViewModels.MainViewModel>();
         services.AddTransient<ViewModels.WardrobeViewModel>();

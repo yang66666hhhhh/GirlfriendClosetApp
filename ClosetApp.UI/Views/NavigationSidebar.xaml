@@ -8,28 +8,6 @@
              NAVIGATION DESIGN TOKENS
              ═══════════════════════════════════════ -->
 
-        <!-- Sidebar Surface -->
-        <Color x:Key="SidebarBg">#FFFAF8F5</Color>
-        <SolidColorBrush x:Key="SidebarBgBrush" Color="{StaticResource SidebarBg}"/>
-        <Color x:Key="SidebarBorder">#FFF0EBE6</Color>
-        <SolidColorBrush x:Key="SidebarBorderBrush" Color="{StaticResource SidebarBorder}"/>
-
-        <!-- Accent (Primary) -->
-        <Color x:Key="Accent">#FFD9A299</Color>
-        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource Accent}"/>
-        <Color x:Key="AccentLight">#FFF5EDE9</Color>
-        <SolidColorBrush x:Key="AccentLightBrush" Color="{StaticResource AccentLight}"/>
-        <Color x:Key="AccentDark">#FFC48B81</Color>
-        <SolidColorBrush x:Key="AccentDarkBrush" Color="{StaticResource AccentDark}"/>
-
-        <!-- Text -->
-        <Color x:Key="TextPrimary">#FF2D2926</Color>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimary}"/>
-        <Color x:Key="TextSecondary">#FF9E958D</Color>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondary}"/>
-        <Color x:Key="TextPlaceholder">#FFC8C0B8</Color>
-        <SolidColorBrush x:Key="TextPlaceholderBrush" Color="{StaticResource TextPlaceholder}"/>
-
         <!-- Layout Tokens -->
         <sys:Double x:Key="NavIconSize">22</sys:Double>
         <Thickness x:Key="NavItemPadding">16,14</Thickness>
@@ -76,10 +54,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="NavBg" Property="Background" Value="{StaticResource AccentLightBrush}"/>
+                                <Setter TargetName="NavBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="NavBg" Property="Background" Value="{StaticResource AccentBrush}"/>
+                                <Setter TargetName="NavBg" Property="Background" Value="{StaticResource PrimaryBrush}"/>
                                 <Setter Property="Foreground" Value="White"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
@@ -103,7 +81,7 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BtnBg" Property="Background" Value="{StaticResource AccentLightBrush}"/>
+                                <Setter TargetName="BtnBg" Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -129,7 +107,7 @@
                     <Border Width="34"
                             Height="34"
                             CornerRadius="17"
-                            Background="{StaticResource AccentLightBrush}">
+                            Background="{StaticResource PrimaryLightBrush}">
                         <Image Source="/ClosetApp.UI;component/Assets/Icons/app-avatar.png"
                                Width="24"
                                Height="24"

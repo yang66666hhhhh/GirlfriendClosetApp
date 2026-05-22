@@ -108,7 +108,8 @@ public partial class OutfitPreviewCanvas : UserControl
                     item.Clothing.ImagePath,
                     ImageVariant.Display,
                     (int)Math.Clamp(Math.Ceiling(item.Width * 1.4), 160, 360),
-                    trimLightPadding: true)
+                    trimLightPadding: true,
+                    extractForeground: true)
             };
 
             Canvas.SetLeft(img, item.X);
