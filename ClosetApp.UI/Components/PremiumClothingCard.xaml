@@ -152,7 +152,7 @@
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
 
                 <!-- ═══ IMAGE AREA ═══ -->
@@ -316,12 +316,13 @@
                 <!-- ═══ INFO AREA ═══ -->
                 <Border Grid.Row="1"
                         Background="{StaticResource SurfaceCardBrush}"
-                        Padding="12,7,12,9">
+                        MinHeight="74"
+                        Padding="12,8,12,10">
                     <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock x:Name="TitleText"
                                    FontSize="12"
@@ -335,35 +336,13 @@
                                    Margin="0,2,0,0"
                                    TextTrimming="CharacterEllipsis"
                                    Visibility="Collapsed"/>
-                        <StackPanel Grid.Row="2"
-                                    Orientation="Horizontal"
-                                    VerticalAlignment="Bottom"
-                                    Height="22"
-                                    Margin="0,5,0,0">
-                            <Border x:Name="CategoryChip"
-                                    Background="#FFF7F3EF"
-                                    BorderBrush="{StaticResource BorderLightBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="6,2"
-                                    Margin="0,0,4,0">
-                                <TextBlock x:Name="CategoryChipText"
-                                           Foreground="{StaticResource TextSecondaryBrush}"
-                                           FontSize="9"
-                                           FontWeight="Medium"/>
-                            </Border>
-                            <Border x:Name="SeasonChip"
-                                    Background="#FFF9F1EE"
-                                    BorderBrush="#FFE8D5CF"
-                                    BorderThickness="1"
-                                    CornerRadius="8"
-                                    Padding="6,2">
-                                <TextBlock x:Name="SeasonChipText"
-                                           Foreground="#FFB9857B"
-                                           FontSize="9"
-                                           FontWeight="Medium"/>
-                            </Border>
-                        </StackPanel>
+                        <TextBlock x:Name="CaptionLineText"
+                                   Grid.Row="2"
+                                   FontSize="9"
+                                   Foreground="{StaticResource TextTertiaryBrush}"
+                                   Margin="0,5,0,0"
+                                   TextTrimming="CharacterEllipsis"
+                                   Visibility="Collapsed"/>
                     </Grid>
                 </Border>
             </Grid>

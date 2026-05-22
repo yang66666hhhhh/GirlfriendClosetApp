@@ -15,7 +15,7 @@ namespace ClosetApp.UI.Components;
 public partial class PremiumClothingCard : UserControl
 {
     private const double ImageStageChromeHeight = 48;
-    private const double InfoAreaHeight = 68;
+    private const double InfoAreaHeight = 76;
 
     public static readonly RoutedEvent CardClickedEvent = EventManager.RegisterRoutedEvent(
         "CardClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PremiumClothingCard));
@@ -159,7 +159,8 @@ public partial class PremiumClothingCard : UserControl
     {
         var displayName = ResolveDisplayName(clothing);
         var isUnnamed = displayName == "未命名";
-        var parts = new List<string>();
+        var supportParts = new List<string>();
+        var captionParts = new List<string>();
         var styleTags = clothing.ClothingTags
             .Where(x => x.Tag?.Category == TagCategory.Style && !string.IsNullOrWhiteSpace(x.Tag.Name))
             .Select(x => x.Tag.Name.Trim())
@@ -174,52 +175,34 @@ public partial class PremiumClothingCard : UserControl
             : (Brush)FindResource("TextPrimaryBrush");
         TitleText.FontWeight = isUnnamed ? FontWeights.Medium : FontWeights.SemiBold;
 
-        CategoryChipText.Text = GetCategoryLabel(clothing.Type);
-        SeasonChipText.Text = GetSeasonLabel(clothing.Season);
-        ApplyChipTone(
-            CategoryChip,
-            CategoryChipText,
-            clothing.Type == ClothingType.Unspecified,
-            "#FFF8F5F2",
-            "#FFF7F3EF",
-            "#FFE7DDD4",
-            "TextTertiaryBrush",
-            "TextSecondaryBrush");
-        ApplyChipTone(
-            SeasonChip,
-            SeasonChipText,
-            clothing.Season == Season.Unspecified,
-            "#FFF8F5F2",
-            "#FFF9F1EE",
-            "#FFE8D5CF",
-            "TextTertiaryBrush",
-            null);
-
-        if (styleTags.Count > 0)
-        {
-            MetaLineText.Text = string.Join(" · ", styleTags);
-            MetaLineText.Visibility = Visibility.Visible;
-            CategoryChip.Visibility = Visibility.Collapsed;
-            SeasonChip.Visibility = clothing.Season == Season.Unspecified
-                ? Visibility.Collapsed
-                : Visibility.Visible;
-            return;
-        }
-
         if (!string.IsNullOrWhiteSpace(clothing.Color))
-            parts.Add(clothing.Color.Trim());
+            supportParts.Add(clothing.Color.Trim());
 
         if (!string.IsNullOrWhiteSpace(clothing.Brand))
-            parts.Add(clothing.Brand.Trim());
+            supportParts.Add(clothing.Brand.Trim());
 
-        var hasSupportMeta = parts.Count > 0;
-        var showCategoryChip = !hasStyleTags && (clothing.Type != ClothingType.Unspecified || !hasSupportMeta);
-        var showSeasonChip = clothing.Season != Season.Unspecified || (!hasStyleTags && !hasSupportMeta);
+        MetaLineText.Text = hasStyleTags
+            ? string.Join(" · ", styleTags)
+            : string.Join(" · ", supportParts);
+        MetaLineText.Visibility = !string.IsNullOrWhiteSpace(MetaLineText.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
 
-        MetaLineText.Text = string.Join(" · ", parts);
-        MetaLineText.Visibility = hasSupportMeta ? Visibility.Visible : Visibility.Collapsed;
-        CategoryChip.Visibility = showCategoryChip ? Visibility.Visible : Visibility.Collapsed;
-        SeasonChip.Visibility = showSeasonChip ? Visibility.Visible : Visibility.Collapsed;
+        captionParts.AddRange(hasStyleTags ? supportParts : styleTags);
+
+        if (clothing.Season != Season.Unspecified)
+            captionParts.Add(GetSeasonLabel(clothing.Season));
+
+        if (clothing.Type != ClothingType.Unspecified)
+            captionParts.Add(GetCategoryLabel(clothing.Type));
+
+        if (captionParts.Count == 0 && (clothing.Type == ClothingType.Unspecified || clothing.Season == Season.Unspecified))
+            captionParts.Add("资料待补");
+
+        CaptionLineText.Text = string.Join(" · ", captionParts.Distinct().Take(4));
+        CaptionLineText.Visibility = !string.IsNullOrWhiteSpace(CaptionLineText.Text)
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private static string ResolveDisplayName(global::ClosetApp.Domain.Entities.Clothing clothing)
@@ -251,26 +234,6 @@ public partial class PremiumClothingCard : UserControl
         Season.AllSeason => "四季",
         _ => "季节"
     };
-
-    private void ApplyChipTone(
-        Border chip,
-        TextBlock text,
-        bool isMissing,
-        string missingBackground,
-        string filledBackground,
-        string borderColor,
-        string missingTextBrushKey,
-        string? filledTextBrushKey)
-    {
-        chip.Background = new SolidColorBrush((Color)ColorConverter.ConvertFromString(isMissing ? missingBackground : filledBackground));
-        chip.BorderBrush = new SolidColorBrush((Color)ColorConverter.ConvertFromString(borderColor));
-        text.Foreground = isMissing
-            ? (Brush)FindResource(missingTextBrushKey)
-            : filledTextBrushKey == null
-                ? new SolidColorBrush((Color)ColorConverter.ConvertFromString("#FFB9857B"))
-                : (Brush)FindResource(filledTextBrushKey);
-        text.FontWeight = isMissing ? FontWeights.Normal : FontWeights.Medium;
-    }
 
     private void ApplyStagePresentation(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
