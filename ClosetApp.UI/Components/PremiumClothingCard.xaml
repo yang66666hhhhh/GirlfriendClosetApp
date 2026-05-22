@@ -10,75 +10,6 @@
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
         <conv:ClothingTypeToNameConverter x:Key="ClothingTypeToName"/>
 
-        <!-- Animations: unified lift + image hover -->
-        <Storyboard x:Key="HoverEnterAnim">
-            <DoubleAnimation Storyboard.TargetName="CardTranslate"
-                             Storyboard.TargetProperty="Y"
-                             To="-4" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="CardShadow"
-                             Storyboard.TargetProperty="BlurRadius"
-                             To="20" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="ImageScale"
-                             Storyboard.TargetProperty="ScaleX"
-                             To="1.04" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="ImageScale"
-                             Storyboard.TargetProperty="ScaleY"
-                             To="1.04" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="OverlayActions"
-                             Storyboard.TargetProperty="Opacity"
-                             To="1" Duration="0:0:0.16"/>
-        </Storyboard>
-
-        <Storyboard x:Key="HoverLeaveAnim">
-            <DoubleAnimation Storyboard.TargetName="CardTranslate"
-                             Storyboard.TargetProperty="Y"
-                             To="0" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="CardShadow"
-                             Storyboard.TargetProperty="BlurRadius"
-                             To="16" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="ImageScale"
-                             Storyboard.TargetProperty="ScaleX"
-                             To="1" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="ImageScale"
-                             Storyboard.TargetProperty="ScaleY"
-                             To="1" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                    <CubicEase EasingMode="EaseOut"/>
-                </DoubleAnimation.EasingFunction>
-            </DoubleAnimation>
-            <DoubleAnimation Storyboard.TargetName="OverlayActions"
-                             Storyboard.TargetProperty="Opacity"
-                             To="0" Duration="0:0:0.12"/>
-        </Storyboard>
-
         <Storyboard x:Key="CardLoadAnim" Completed="CardLoadAnim_Completed">
             <DoubleAnimation Storyboard.TargetName="CardRoot"
                              Storyboard.TargetProperty="Opacity"
@@ -97,7 +28,6 @@
         </Storyboard>
     </UserControl.Resources>
 
-    <!-- Root: dynamic height via code-behind -->
     <Grid x:Name="CardRoot" Opacity="0"
           MouseEnter="Card_MouseEnter"
           MouseLeave="Card_MouseLeave"
@@ -159,7 +89,6 @@
                             <Grid.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform x:Name="ImageBaseScale" ScaleX="1" ScaleY="1"/>
-                                    <ScaleTransform x:Name="ImageScale" ScaleX="1" ScaleY="1"/>
                                     <TranslateTransform x:Name="ImageTranslate" Y="0"/>
                                 </TransformGroup>
                             </Grid.RenderTransform>
@@ -183,57 +112,18 @@
                             </Canvas>
                         </StackPanel>
 
-                        <!-- Hover overlay buttons -->
-                        <StackPanel x:Name="OverlayActions"
-                                    Orientation="Vertical"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Top"
-                                    Margin="0,8,8,0"
-                                    Opacity="0">
-                            <Button x:Name="FavoriteBtn"
-                                    Style="{StaticResource HeartFavoriteButton}"
-                                    Margin="0,0,0,8"
-                                    Click="Favorite_Click"/>
-                            <Button x:Name="MoreBtn"
-                                    Style="{StaticResource HeartFavoriteButton}"
-                                    Click="More_Click">
-                                <TextBlock Text="⋯" FontSize="14"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                           FontWeight="Bold"/>
-                            </Button>
-                        </StackPanel>
-
-                        <!-- Context menu popup -->
-                        <Border x:Name="MoreMenu"
-                                Background="{DynamicResource SurfaceCardBrush}"
-                                CornerRadius="10"
-                                Padding="6,4"
-                                HorizontalAlignment="Right"
-                                VerticalAlignment="Top"
-                                Margin="0,46,8,0"
-                                Visibility="Collapsed"
-                                Panel.ZIndex="10">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="16" ShadowDepth="3" Opacity="0.14" Color="#000000"/>
-                            </Border.Effect>
-                            <StackPanel>
-                                <Button Content="✏ 编辑"
-                                        FontSize="12" FontWeight="Medium"
-                                        Foreground="{DynamicResource TextPrimaryBrush}"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Padding="10,6"
-                                        Cursor="Hand"
-                                        HorizontalContentAlignment="Left"
-                                        Click="MenuEdit_Click"/>
-                                <Button Content="🗑 删除"
-                                        FontSize="12" FontWeight="Medium"
+                        <!-- Bottom action overlay (same as OutfitCard) -->
+                        <Border x:Name="ActionOverlay"
+                                Style="{StaticResource Card.ActionOverlay}">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
+                                        VerticalAlignment="Bottom" Margin="0,0,0,12">
+                                <Button x:Name="BtnEdit" Content="编辑"
+                                        Style="{StaticResource Card.OverlayCapsuleButton}"
+                                        Click="MenuEdit_Click"
+                                        Margin="0,0,10,0"/>
+                                <Button x:Name="BtnDelete" Content="删除"
+                                        Style="{StaticResource Card.OverlayCapsuleButton}"
                                         Foreground="{DynamicResource DangerBrush}"
-                                        Background="Transparent"
-                                        BorderThickness="0"
-                                        Padding="10,6"
-                                        Cursor="Hand"
-                                        HorizontalContentAlignment="Left"
                                         Click="MenuDelete_Click"/>
                             </StackPanel>
                         </Border>

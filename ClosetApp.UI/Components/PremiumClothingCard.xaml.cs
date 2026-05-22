@@ -16,7 +16,8 @@ namespace ClosetApp.UI.Components;
 public partial class PremiumClothingCard : UserControl
 {
     private const double ImageStageChromeHeight = 48;
-    private const double InfoAreaHeight = 76;
+    private const double InfoAreaMinHeight = 80;
+    private const double InfoAreaPerChipHeight = 26;
 
     public static readonly RoutedEvent CardClickedEvent = EventManager.RegisterRoutedEvent(
         "CardClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PremiumClothingCard));
@@ -45,7 +46,6 @@ public partial class PremiumClothingCard : UserControl
         remove => RemoveHandler(DeleteClickedEvent, value);
     }
 
-    private bool _isMenuOpen;
     private Point _mouseDownPos;
     private bool _heightApplied;
 
@@ -86,7 +86,8 @@ public partial class PremiumClothingCard : UserControl
         {
             double imgH = CalcImageHeight(c, colWidth);
             CardImage.Height = imgH;
-            Height = imgH + ImageStageChromeHeight + InfoAreaHeight;
+            double infoH = CalcInfoAreaHeight(c);
+            Height = imgH + ImageStageChromeHeight + infoH;
             _heightApplied = true;
         }
     }
@@ -100,7 +101,8 @@ public partial class PremiumClothingCard : UserControl
             {
                 double imgH = CalcImageHeight(c, colWidth);
                 CardImage.Height = imgH;
-                Height = imgH + ImageStageChromeHeight + InfoAreaHeight;
+                double infoH = CalcInfoAreaHeight(c);
+                Height = imgH + ImageStageChromeHeight + infoH;
                 _heightApplied = true;
             }
         }
@@ -143,6 +145,27 @@ public partial class PremiumClothingCard : UserControl
         }
     }
 
+    private double CalcInfoAreaHeight(global::ClosetApp.Domain.Entities.Clothing c)
+    {
+        double height = InfoAreaMinHeight;
+
+        var chipCount = 0;
+        if (c.Season != Season.Unspecified) chipCount++;
+        if (c.Type != ClothingType.Unspecified) chipCount++;
+        if (!string.IsNullOrWhiteSpace(c.Color)) chipCount++;
+        chipCount += c.ClothingTags
+            .Count(x => x.Tag?.Category == TagCategory.Style && !string.IsNullOrWhiteSpace(x.Tag.Name));
+        chipCount = Math.Min(chipCount, 4);
+
+        if (chipCount > 0)
+            height += InfoAreaPerChipHeight;
+
+        if (!string.IsNullOrWhiteSpace(c.Brand?.Trim()))
+            height += 16;
+
+        return height;
+    }
+
     private void ApplyImageBackdrop(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
         if (string.IsNullOrWhiteSpace(clothing.Color)) return;
@@ -156,7 +179,6 @@ public partial class PremiumClothingCard : UserControl
         ImageAreaBorder.Background = gradientBrush;
     }
 
-    // Build chips matching outfit card style.
     private void ApplyMeta(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
         var displayName = ResolveDisplayName(clothing);
@@ -305,15 +327,25 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_MouseEnter(object sender, MouseEventArgs e)
     {
-        var anim = (Storyboard)Resources["HoverEnterAnim"];
-        anim?.Begin();
+        AnimateTranslate(-4);
+        CardShadow.BlurRadius = 20;
+        ActionOverlay.Visibility = Visibility.Visible;
     }
 
     private void Card_MouseLeave(object sender, MouseEventArgs e)
     {
-        var anim = (Storyboard)Resources["HoverLeaveAnim"];
-        anim?.Begin();
-        HideMoreMenu();
+        AnimateTranslate(0);
+        CardShadow.BlurRadius = 16;
+        ActionOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void AnimateTranslate(double toY)
+    {
+        var anim = new DoubleAnimation(toY, TimeSpan.FromMilliseconds(200))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+        };
+        CardTranslate.BeginAnimation(TranslateTransform.YProperty, anim);
     }
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)
@@ -323,11 +355,6 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_MouseUp(object sender, MouseButtonEventArgs e)
     {
-        if (_isMenuOpen)
-        {
-            e.Handled = true;
-            return;
-        }
         var pos = e.GetPosition(this);
         if (Math.Abs(pos.X - _mouseDownPos.X) < 5 && Math.Abs(pos.Y - _mouseDownPos.Y) < 5)
         {
@@ -337,65 +364,17 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_Click(object sender, MouseButtonEventArgs e)
     {
-        if (_isMenuOpen) return;
         RaiseEvent(new RoutedEventArgs(CardClickedEvent, this));
-    }
-
-    private void Favorite_Click(object sender, RoutedEventArgs e)
-    {
-        if (DataContext is not global::ClosetApp.Domain.Entities.Clothing) return;
-
-        var heart = FavoriteBtn.Template.FindName("HeartIcon", FavoriteBtn) as FrameworkElement;
-        if (heart == null) return;
-
-        var expand = new DoubleAnimation(20, TimeSpan.FromMilliseconds(120))
-        { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-        var shrink = new DoubleAnimation(14, TimeSpan.FromMilliseconds(180))
-        { EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut } };
-
-        expand.Completed += (s, args) =>
-        {
-            heart.BeginAnimation(WidthProperty, shrink);
-            heart.BeginAnimation(HeightProperty, shrink);
-        };
-
-        heart.BeginAnimation(WidthProperty, expand);
-        heart.BeginAnimation(HeightProperty, expand);
-
-        e.Handled = true;
-    }
-
-    private void More_Click(object sender, RoutedEventArgs e)
-    {
-        if (_isMenuOpen)
-            HideMoreMenu();
-        else
-            ShowMoreMenu();
-        e.Handled = true;
-    }
-
-    private void ShowMoreMenu()
-    {
-        MoreMenu.Visibility = Visibility.Visible;
-        _isMenuOpen = true;
-    }
-
-    private void HideMoreMenu()
-    {
-        MoreMenu.Visibility = Visibility.Collapsed;
-        _isMenuOpen = false;
     }
 
     private void MenuEdit_Click(object sender, RoutedEventArgs e)
     {
-        HideMoreMenu();
         RaiseEvent(new RoutedEventArgs(EditClickedEvent, this));
         e.Handled = true;
     }
 
     private void MenuDelete_Click(object sender, RoutedEventArgs e)
     {
-        HideMoreMenu();
         RaiseEvent(new RoutedEventArgs(DeleteClickedEvent, this));
         e.Handled = true;
     }

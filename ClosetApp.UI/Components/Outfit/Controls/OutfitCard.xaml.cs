@@ -150,7 +150,7 @@ public partial class OutfitCard : UserControl
     private void OnMouseLeave(object sender, MouseEventArgs e)
     {
         AnimateTranslate(0);
-        CardShadow.BlurRadius = 14;
+        CardShadow.BlurRadius = 16;
         ActionOverlay.Visibility = Visibility.Collapsed;
     }
 

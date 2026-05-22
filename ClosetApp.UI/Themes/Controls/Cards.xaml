@@ -24,7 +24,6 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="CornerRadius" Value="{StaticResource Card.Radius}"/>
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="ClipToBounds" Value="True"/>
     </Style>
 
     <!-- ═══════════════════════════════════════════════
