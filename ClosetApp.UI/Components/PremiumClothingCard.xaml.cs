@@ -156,20 +156,11 @@ public partial class PremiumClothingCard : UserControl
         ImageAreaBorder.Background = gradientBrush;
     }
 
-    // Build a lightweight secondary line so the card reads like a finished item card.
+    // Build chips matching outfit card style.
     private void ApplyMeta(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
         var displayName = ResolveDisplayName(clothing);
         var isUnnamed = displayName == "未命名";
-        var supportParts = new List<string>();
-        var captionParts = new List<string>();
-        var styleTags = clothing.ClothingTags
-            .Where(x => x.Tag?.Category == TagCategory.Style && !string.IsNullOrWhiteSpace(x.Tag.Name))
-            .Select(x => x.Tag.Name.Trim())
-            .Distinct()
-            .Take(3)
-            .ToList();
-        var hasStyleTags = styleTags.Count > 0;
 
         TitleText.Text = displayName;
         TitleText.Foreground = isUnnamed
@@ -177,34 +168,74 @@ public partial class PremiumClothingCard : UserControl
             : (Brush)FindResource("TextPrimaryBrush");
         TitleText.FontWeight = isUnnamed ? FontWeights.Medium : FontWeights.SemiBold;
 
-        if (!string.IsNullOrWhiteSpace(clothing.Color))
-            supportParts.Add(clothing.Color.Trim());
+        var brand = clothing.Brand?.Trim();
+        MetaLineText.Text = !string.IsNullOrWhiteSpace(brand) ? brand : null;
+        MetaLineText.Visibility = string.IsNullOrWhiteSpace(brand)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
 
-        if (!string.IsNullOrWhiteSpace(clothing.Brand))
-            supportParts.Add(clothing.Brand.Trim());
+        RenderChips(clothing);
+    }
 
-        MetaLineText.Text = hasStyleTags
-            ? string.Join(" · ", styleTags)
-            : string.Join(" · ", supportParts);
-        MetaLineText.Visibility = !string.IsNullOrWhiteSpace(MetaLineText.Text)
+    private void RenderChips(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        ChipPanel.Children.Clear();
+
+        var chips = BuildChipLabels(clothing);
+        foreach (var chip in chips.Take(4))
+        {
+            var palette = ResolveChipPalette(chip);
+            var border = new Border
+            {
+                Background = new SolidColorBrush(palette.Background),
+                BorderBrush = new SolidColorBrush(palette.Border),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(8, 3, 8, 3),
+                Margin = new Thickness(0, 0, 5, 4)
+            };
+
+            border.Child = new TextBlock
+            {
+                Text = chip,
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(palette.Foreground)
+            };
+
+            ChipPanel.Children.Add(border);
+        }
+
+        ChipPanel.Visibility = ChipPanel.Children.Count > 0
             ? Visibility.Visible
             : Visibility.Collapsed;
+    }
 
-        captionParts.AddRange(hasStyleTags ? supportParts : styleTags);
+    private static List<string> BuildChipLabels(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        var chips = new List<string>();
 
         if (clothing.Season != Season.Unspecified)
-            captionParts.Add(GetSeasonLabel(clothing.Season));
+            chips.Add(GetSeasonLabel(clothing.Season));
 
         if (clothing.Type != ClothingType.Unspecified)
-            captionParts.Add(GetCategoryLabel(clothing.Type));
+            chips.Add(GetCategoryLabel(clothing.Type));
 
-        if (captionParts.Count == 0 && (clothing.Type == ClothingType.Unspecified || clothing.Season == Season.Unspecified))
-            captionParts.Add("资料待补");
+        if (!string.IsNullOrWhiteSpace(clothing.Color))
+            chips.Add(clothing.Color.Trim());
 
-        CaptionLineText.Text = string.Join(" · ", captionParts.Distinct().Take(4));
-        CaptionLineText.Visibility = !string.IsNullOrWhiteSpace(CaptionLineText.Text)
-            ? Visibility.Visible
-            : Visibility.Collapsed;
+        var styleTags = clothing.ClothingTags
+            .Where(x => x.Tag?.Category == TagCategory.Style && !string.IsNullOrWhiteSpace(x.Tag.Name))
+            .Select(x => x.Tag.Name.Trim())
+            .Distinct();
+        chips.AddRange(styleTags);
+
+        return chips.Distinct().Take(4).ToList();
+    }
+
+    private static (Color Background, Color Border, Color Foreground) ResolveChipPalette(string chip)
+    {
+        return ThemeColorHelper.ResolveChipPalette(chip);
     }
 
     private static string ResolveDisplayName(global::ClosetApp.Domain.Entities.Clothing clothing)

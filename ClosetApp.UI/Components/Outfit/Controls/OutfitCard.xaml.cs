@@ -244,24 +244,7 @@ public partial class OutfitCard : UserControl
 
     private static (Color Background, Color Border, Color Foreground) ResolveChipPalette(string chip)
     {
-        var baseBg = ThemeColorHelper.GetThemeColor("PrimaryLightBrush", Color.FromRgb(250, 232, 237));
-        var baseBorder = ThemeColorHelper.GetThemeColor("BorderLightBrush", Color.FromRgb(240, 228, 224));
-        var baseFg = ThemeColorHelper.GetThemeColor("PrimaryBrush", Color.FromRgb(218, 148, 165));
-
-        return chip switch
-        {
-            "春" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(255, 235, 230), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(240, 200, 195), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(188, 121, 110), 0.4)),
-            "夏" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(230, 248, 245), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(185, 225, 218), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(92, 145, 136), 0.4)),
-            "秋" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(252, 240, 225), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(235, 208, 178), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(176, 122, 79), 0.4)),
-            "冬" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(235, 238, 248), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(200, 208, 228), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(110, 121, 153), 0.4)),
-            "四季" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(240, 236, 250), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(212, 202, 235), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(126, 108, 170), 0.4)),
-            "通勤" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(248, 240, 230), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(225, 208, 188), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(135, 112, 95), 0.4)),
-            "约会" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(255, 232, 240), 0.4), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(242, 195, 212), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(181, 108, 134), 0.3)),
-            "出游" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(232, 248, 230), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(195, 225, 185), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(104, 145, 92), 0.4)),
-            "派对" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(245, 232, 248), 0.4), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(218, 195, 228), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(126, 98, 152), 0.4)),
-            "休闲" => (ThemeColorHelper.Blend(baseBg, Color.FromRgb(250, 242, 228), 0.5), ThemeColorHelper.Blend(baseBorder, Color.FromRgb(230, 215, 185), 0.3), ThemeColorHelper.Blend(baseFg, Color.FromRgb(150, 120, 88), 0.4)),
-            _ => (baseBg, baseBorder, baseFg)
-        };
+        return ThemeColorHelper.ResolveChipPalette(chip);
     }
 
     private static Color ResolveBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)

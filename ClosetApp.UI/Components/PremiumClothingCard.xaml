@@ -318,32 +318,32 @@
                 <Border Grid.Row="1"
                         Background="{DynamicResource SurfaceCardBrush}"
                         MinHeight="74"
-                        Padding="12,8,12,10">
+                        Padding="12,10,12,12">
                     <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
-                        </Grid.RowDefinitions>
-                        <TextBlock x:Name="TitleText"
-                                   FontSize="12"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                   TextTrimming="CharacterEllipsis"/>
-                        <TextBlock x:Name="MetaLineText"
-                                   Grid.Row="1"
-                                   FontSize="9"
-                                   Foreground="{DynamicResource TextTertiaryBrush}"
-                                   Margin="0,2,0,0"
-                                   TextTrimming="CharacterEllipsis"
-                                   Visibility="Collapsed"/>
-                        <TextBlock x:Name="CaptionLineText"
-                                   Grid.Row="2"
-                                   FontSize="9"
-                                   Foreground="{DynamicResource TextTertiaryBrush}"
-                                   Margin="0,5,0,0"
-                                   TextTrimming="CharacterEllipsis"
-                                   Visibility="Collapsed"/>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Name="TitleText"
+                                       FontSize="13"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="MetaLineText"
+                                       FontSize="10"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       Margin="0,3,0,0"
+                                       TextTrimming="CharacterEllipsis"
+                                       Visibility="Collapsed"/>
+                            <WrapPanel x:Name="ChipPanel"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <Button x:Name="BtnFavorite" Grid.Column="1"
+                                Content="♡" FontSize="16" Padding="6"
+                                Background="Transparent" BorderThickness="0"
+                                Foreground="{DynamicResource PrimaryBrush}" Cursor="Hand"
+                                VerticalAlignment="Center"/>
                     </Grid>
                 </Border>
             </Grid>
