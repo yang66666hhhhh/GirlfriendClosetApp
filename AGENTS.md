@@ -369,7 +369,7 @@ ModalService (Singleton)
 
 ## Known Issues / Notes
 
-- `WeatherService` 是 stub 实现（固定返回 22°C 晴天）
+- `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - ViewModels 目前未被 Views 使用（Views 直接调用 Services）
 - 命名空间歧义：文件目录 `Components/Outfit/` 和 `Components/Clothing/` 被编译器视为 namespace，与 `Domain.Entities.Outfit/Clothing` 冲突。使用 `global::ClosetApp.Domain.Entities.Outfit/Clothing` 显式引用实体类型
 - `Components/_Archive/` 保留旧版 `AddClothingPanel` 备份

@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media.Animation;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Views;
 using Serilog;
 
@@ -72,42 +73,5 @@ public partial class MainWindow : Window
         OutfitsTabContent.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         TagsTabContent.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
         SettingsTabContent.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
-    }
-}
-
-public class GridLengthAnimation : AnimationTimeline
-{
-    public static readonly DependencyProperty FromProperty =
-        DependencyProperty.Register("From", typeof(GridLength), typeof(GridLengthAnimation));
-
-    public static readonly DependencyProperty ToProperty =
-        DependencyProperty.Register("To", typeof(GridLength), typeof(GridLengthAnimation));
-
-    public GridLength From
-    {
-        get => (GridLength)GetValue(FromProperty);
-        set => SetValue(FromProperty, value);
-    }
-
-    public GridLength To
-    {
-        get => (GridLength)GetValue(ToProperty);
-        set => SetValue(ToProperty, value);
-    }
-
-    public IEasingFunction? EasingFunction { get; set; }
-
-    public override Type TargetPropertyType => typeof(GridLength);
-
-    protected override Freezable CreateInstanceCore() => new GridLengthAnimation();
-
-    public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, AnimationClock animationClock)
-    {
-        var progress = animationClock.CurrentProgress ?? 0;
-        var easedProgress = EasingFunction != null ? EasingFunction.Ease(progress) : progress;
-        var fromVal = From.Value;
-        var toVal = To.Value;
-        var current = fromVal + (toVal - fromVal) * easedProgress;
-        return new GridLength(current, GridUnitType.Pixel);
     }
 }

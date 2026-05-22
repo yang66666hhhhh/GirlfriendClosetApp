@@ -13,6 +13,16 @@ public enum WardrobeQueueFilter
     RecentlyImported
 }
 
+public enum WardrobeSortBy
+{
+    Newest,
+    Oldest,
+    Name,
+    Brand,
+    Type,
+    FavoriteLevel
+}
+
 public sealed class ClothesTabState
 {
     private List<Clothing> _allClothes = new();
@@ -23,6 +33,7 @@ public sealed class ClothesTabState
     private WardrobeQueueFilter? _activeQueueFilter;
     private bool? _favoriteOnly;
     private string _searchText = string.Empty;
+    private WardrobeSortBy _sortBy = WardrobeSortBy.Newest;
 
     public IReadOnlyList<Clothing> AllClothes => _allClothes;
     public IReadOnlyList<Clothing> FilteredClothes { get; private set; } = [];
@@ -34,6 +45,7 @@ public sealed class ClothesTabState
     public IReadOnlyCollection<Guid> SelectedTagIds => _selectedTagIds;
     public WardrobeQueueFilter? ActiveQueueFilter => _activeQueueFilter;
     public bool FavoriteOnly => _favoriteOnly == true;
+    public WardrobeSortBy SortBy => _sortBy;
     public bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_searchText) ||
         _selectedType.HasValue ||
@@ -106,6 +118,12 @@ public sealed class ClothesTabState
         ApplyFilter();
     }
 
+    public void SetSortBy(WardrobeSortBy sortBy)
+    {
+        _sortBy = sortBy;
+        ApplyFilter();
+    }
+
     public void SetQueueFilter(WardrobeQueueFilter? queueFilter)
     {
         _activeQueueFilter = queueFilter;
@@ -171,7 +189,21 @@ public sealed class ClothesTabState
                 c.ClothingTags.Any(ct => ct.Tag.Name.Contains(_searchText, StringComparison.OrdinalIgnoreCase)));
         }
 
-        FilteredClothes = filtered.ToList();
+        FilteredClothes = ApplySorting(filtered).ToList();
+    }
+
+    private IEnumerable<Clothing> ApplySorting(IEnumerable<Clothing> items)
+    {
+        return _sortBy switch
+        {
+            WardrobeSortBy.Newest => items.OrderByDescending(c => c.CreatedAt),
+            WardrobeSortBy.Oldest => items.OrderBy(c => c.CreatedAt),
+            WardrobeSortBy.Name => items.OrderBy(c => c.Name ?? string.Empty),
+            WardrobeSortBy.Brand => items.OrderBy(c => c.Brand ?? string.Empty),
+            WardrobeSortBy.Type => items.OrderBy(c => c.Type),
+            WardrobeSortBy.FavoriteLevel => items.OrderByDescending(c => c.FavoriteLevel),
+            _ => items.OrderByDescending(c => c.CreatedAt)
+        };
     }
 
     private bool MatchesQueueFilter(Clothing clothing, WardrobeQueueFilter queueFilter)

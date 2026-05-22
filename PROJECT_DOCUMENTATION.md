@@ -520,7 +520,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 ### 14.1 当前保留项
 
-- `WeatherService` 仍为 stub，暂不接真实 API
+- `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - `ViewModels` 仍存在，但不是当前页面交互的唯一主轴
 - 仓库里保留 `_Archive` / `_Deprecated` 目录作为历史备份
 

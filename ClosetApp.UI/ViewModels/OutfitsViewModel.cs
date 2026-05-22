@@ -52,6 +52,33 @@ public partial class OutfitsViewModel : ObservableObject
     public bool IsEmpty => _state.IsEmpty;
     public int OutfitCount => _state.OutfitCount;
     public string OutfitCountText => $"{OutfitCount} 套搭配";
+
+    public IReadOnlyList<OutfitSortBy> SortOptions { get; } = Enum.GetValues<OutfitSortBy>();
+
+    public OutfitSortBy SortBy
+    {
+        get => _state.SortBy;
+        set
+        {
+            if (_state.SortBy == value)
+                return;
+
+            _state.SetSortBy(value);
+            NotifyStateChanged();
+        }
+    }
+
+    public string GetSortLabel(OutfitSortBy sort) => sort switch
+    {
+        OutfitSortBy.Newest => "最新创建",
+        OutfitSortBy.Oldest => "最早创建",
+        OutfitSortBy.Name => "名称",
+        OutfitSortBy.Rating => "评分",
+        OutfitSortBy.WearCount => "穿着次数",
+        OutfitSortBy.LastWorn => "最近穿着",
+        _ => sort.ToString()
+    };
+
     public string HistoryQuickText => _state.HistoryQuickText;
     public string HistorySummaryText => _state.HistorySummaryText;
     public bool IsHistoryExpanded => _state.IsHistoryExpanded;

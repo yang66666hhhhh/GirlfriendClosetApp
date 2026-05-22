@@ -14,18 +14,7 @@
         <conv:ClothingTypeToNameConverter x:Key="ClothingTypeToName"/>
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
         <conv:BoolToFavoriteColorConverter x:Key="BoolToFavoriteColor"/>
-        <SolidColorBrush x:Key="WardrobeSkySurfaceBrush" Color="{DynamicResource Theme.Sky.Surface}"/>
-        <SolidColorBrush x:Key="WardrobeSkyBorderBrush" Color="{DynamicResource Theme.Sky.Border}"/>
-        <SolidColorBrush x:Key="WardrobeSkyTextBrush" Color="{DynamicResource Theme.Sky.Text}"/>
-        <SolidColorBrush x:Key="WardrobeMintSurfaceBrush" Color="{DynamicResource Theme.Mint.Surface}"/>
-        <SolidColorBrush x:Key="WardrobeMintBorderBrush" Color="{DynamicResource Theme.Mint.Border}"/>
-        <SolidColorBrush x:Key="WardrobeMintTextBrush" Color="{DynamicResource Theme.Mint.Text}"/>
-        <SolidColorBrush x:Key="WardrobeRoseSurfaceBrush" Color="{DynamicResource Theme.Rose.Surface}"/>
-        <SolidColorBrush x:Key="WardrobeRoseBorderBrush" Color="{DynamicResource Theme.Rose.Border}"/>
-        <SolidColorBrush x:Key="WardrobeRoseTextBrush" Color="{DynamicResource Theme.Rose.Text}"/>
-        <SolidColorBrush x:Key="WardrobeAmberSurfaceBrush" Color="{DynamicResource Theme.Amber.Surface}"/>
-        <SolidColorBrush x:Key="WardrobeAmberBorderBrush" Color="{DynamicResource Theme.Amber.Border}"/>
-        <SolidColorBrush x:Key="WardrobeAmberTextBrush" Color="{DynamicResource Theme.Amber.Text}"/>
+        <conv:SortByLabelConverter x:Key="SortByLabelConverter"/>
 
         <!-- ═══ SEARCH ═══ -->
         <Style x:Key="SearchBoxStyle" TargetType="TextBox">
@@ -240,22 +229,10 @@
             </Setter>
         </Style>
 
-        <Style x:Key="WardrobeSkyButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="Background" Value="{StaticResource WardrobeSkySurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource WardrobeSkyBorderBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource WardrobeSkyTextBrush}"/>
-        </Style>
-
-        <Style x:Key="WardrobeMintButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="Background" Value="{StaticResource WardrobeMintSurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource WardrobeMintBorderBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource WardrobeMintTextBrush}"/>
-        </Style>
-
-        <Style x:Key="WardrobeAmberButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="Background" Value="{StaticResource WardrobeAmberSurfaceBrush}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource WardrobeAmberBorderBrush}"/>
-            <Setter Property="Foreground" Value="{StaticResource WardrobeAmberTextBrush}"/>
+        <Style x:Key="WardrobeButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
         </Style>
     </UserControl.Resources>
 
@@ -287,7 +264,7 @@
                 <!-- Right: Add Buttons -->
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
                     <Button Content="批量导入"
-                            Style="{StaticResource WardrobeSkyButton}"
+                            Style="{StaticResource WardrobeButton}"
                             Click="BatchImport_Click"
                             Margin="0,0,5,0"/>
                     <Button Content="批量清空"
@@ -316,7 +293,7 @@
                         Margin="44,8,44,8"
                         Padding="10,7"
                         Background="{DynamicResource SurfaceElevatedBrush}"
-                        BorderBrush="{StaticResource WardrobeSkyBorderBrush}"
+                        BorderBrush="{StaticResource PrimaryBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <Grid>
@@ -343,7 +320,7 @@
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
                                 <Border Style="{StaticResource PageSummaryBadge}"
-                                        Background="{StaticResource WardrobeSkySurfaceBrush}"
+                                        Background="{StaticResource PrimaryLightBrush}"
                                         Padding="7,4"
                                         Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal">
@@ -356,12 +333,12 @@
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource PageSummaryBadge}"
-                                        Background="{StaticResource WardrobeMintSurfaceBrush}"
+                                        Background="{StaticResource PrimaryLightBrush}"
                                         Padding="7,4">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock x:Name="TxtFilteredCount"
                                                    Text="{Binding FilteredCount, StringFormat={}{0} 件}"
-                                                   Foreground="{StaticResource WardrobeMintTextBrush}"
+                                                   Foreground="{StaticResource PrimaryBrush}"
                                                    FontWeight="SemiBold"/>
                                         <TextBlock Text=" 当前"
                                                    Style="{StaticResource PageSummaryHintText}"
@@ -384,13 +361,23 @@
                                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
+                                <ComboBox x:Name="SortComboBox"
+                                          MinWidth="90"
+                                          SelectedItem="{Binding SortBy, Mode=TwoWay}"
+                                          Margin="0,0,4,0">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Converter={StaticResource SortByLabelConverter}}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                                 <Button x:Name="ToggleFilterButton"
                                         Content="{Binding FilterToggleText}"
-                                        Style="{StaticResource WardrobeAmberButton}"
+                                        Style="{StaticResource WardrobeButton}"
                                         Click="ToggleFilter_Click"/>
                                 <Button x:Name="ClearFilterButton"
                                         Content="清除"
-                                        Style="{StaticResource WardrobeMintButton}"
+                                        Style="{StaticResource WardrobeButton}"
                                         Margin="4,0,0,0"
                                         Click="ClearFilter_Click"/>
                             </StackPanel>
@@ -416,7 +403,7 @@
                                            VerticalAlignment="Center"/>
                                 <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
                                     <Button Content="批量补全"
-                                            Style="{StaticResource WardrobeMintButton}"
+                                            Style="{StaticResource WardrobeButton}"
                                             HorizontalAlignment="Left"
                                             Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
                                             Click="BatchCompleteQueue_Click"/>
@@ -471,7 +458,7 @@
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
                                 <Border Style="{StaticResource PageSummaryBadge}"
-                                        Background="{StaticResource WardrobeRoseSurfaceBrush}"
+                                        Background="{StaticResource PrimaryLightBrush}"
                                         Padding="8,4"
                                         Margin="0,0,5,0"
                                         VerticalAlignment="Top">
@@ -481,7 +468,7 @@
                                 </Border>
                                 <WrapPanel Grid.Column="1">
                                     <Border Style="{StaticResource PageSummaryBadge}"
-                                            Background="{StaticResource WardrobeRoseSurfaceBrush}"
+                                            Background="{StaticResource PrimaryLightBrush}"
                                             Padding="7,4"
                                             Margin="0,0,5,4">
                                         <TextBlock Text="{Binding RecentlyImportedUnnamedCount, StringFormat=未命名 {0}}"
@@ -489,7 +476,7 @@
                                                    FontSize="9"/>
                                     </Border>
                                     <Border Style="{StaticResource PageSummaryBadge}"
-                                            Background="{StaticResource WardrobeRoseSurfaceBrush}"
+                                            Background="{StaticResource PrimaryLightBrush}"
                                             Padding="7,4"
                                             Margin="0,0,5,4">
                                         <TextBlock Text="{Binding RecentlyImportedUncategorizedCount, StringFormat=未分类 {0}}"
@@ -497,7 +484,7 @@
                                                    FontSize="9"/>
                                     </Border>
                                     <Border Style="{StaticResource PageSummaryBadge}"
-                                            Background="{StaticResource WardrobeRoseSurfaceBrush}"
+                                            Background="{StaticResource PrimaryLightBrush}"
                                             Padding="7,4"
                                             Margin="0,0,5,4">
                                         <TextBlock Text="{Binding RecentlyImportedUnseasonedCount, StringFormat=未设季节 {0}}"
@@ -505,7 +492,7 @@
                                                    FontSize="9"/>
                                     </Border>
                                     <Border Style="{StaticResource PageSummaryBadge}"
-                                            Background="{StaticResource WardrobeRoseSurfaceBrush}"
+                                            Background="{StaticResource PrimaryLightBrush}"
                                             Padding="7,4"
                                             Margin="0,0,5,4">
                                         <TextBlock Text="{Binding RecentlyImportedUntaggedCount, StringFormat=无标签 {0}}"
@@ -513,7 +500,7 @@
                                                    FontSize="9"/>
                                     </Border>
                                     <Border Style="{StaticResource PageSummaryBadge}"
-                                            Background="{StaticResource WardrobeRoseSurfaceBrush}"
+                                            Background="{StaticResource PrimaryLightBrush}"
                                             Padding="7,4"
                                             Margin="0,0,0,4">
                                         <TextBlock Text="{Binding RecentlyImportedMissingBrandOrColorCount, StringFormat=无品牌/颜色 {0}}"
@@ -531,8 +518,8 @@
                         Style="{StaticResource PageSummaryCard}"
                         Margin="44,0,44,10"
                         Padding="12,10"
-                        Background="{StaticResource WardrobeAmberSurfaceBrush}"
-                        BorderBrush="{StaticResource WardrobeAmberBorderBrush}"
+                        Background="{StaticResource PrimaryLightBrush}"
+                        BorderBrush="{StaticResource PrimaryBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsFilterExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>

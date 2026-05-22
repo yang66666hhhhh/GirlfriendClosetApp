@@ -14,6 +14,7 @@
         <conv:InverseNullToVisibilityConverter x:Key="InverseNullToVisibilityConverter"/>
         <conv:OutfitSceneToIconConverter x:Key="SceneToIconConverter"/>
         <conv:SeasonToNameConverter x:Key="SeasonToName"/>
+        <conv:OutfitSortByLabelConverter x:Key="OutfitSortByLabelConverter"/>
         <SolidColorBrush x:Key="OutfitSkySurfaceBrush" Color="{DynamicResource Theme.Sky.Surface}"/>
         <SolidColorBrush x:Key="OutfitSkyBorderBrush" Color="{DynamicResource Theme.Sky.Border}"/>
         <SolidColorBrush x:Key="OutfitSkyTextBrush" Color="{DynamicResource Theme.Sky.Text}"/>
@@ -95,9 +96,21 @@
                            FontWeight="Bold"
                            Foreground="{DynamicResource TextPrimaryBrush}"
                            VerticalAlignment="Center"/>
-                <Button Grid.Column="1" Content="+ 新建今日搭配"
-                        Style="{StaticResource PageToolbarPrimaryButton}"
-                        Click="CreateOutfit_Click"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <ComboBox x:Name="SortComboBox"
+                              MinWidth="90"
+                              SelectedItem="{Binding SortBy, Mode=TwoWay}"
+                              Margin="0,0,8,0">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Converter={StaticResource OutfitSortByLabelConverter}}"/>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="+ 新建今日搭配"
+                            Style="{StaticResource PageToolbarPrimaryButton}"
+                            Click="CreateOutfit_Click"/>
+                </StackPanel>
             </Grid>
         </Border>
 

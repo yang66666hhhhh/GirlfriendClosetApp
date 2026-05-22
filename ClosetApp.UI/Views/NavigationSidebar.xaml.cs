@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using ClosetApp.UI.Components.Shared;
 
 namespace ClosetApp.UI.Views;
 
@@ -90,41 +91,5 @@ namespace ClosetApp.UI.Views;
     {
         if (!_isCollapsed)
             ToggleCollapse();
-    }
-}
-
-public class GridLengthAnimation : AnimationTimeline
-{
-    public static readonly DependencyProperty FromProperty =
-        DependencyProperty.Register("From", typeof(GridLength), typeof(GridLengthAnimation));
-
-    public static readonly DependencyProperty ToProperty =
-        DependencyProperty.Register("To", typeof(GridLength), typeof(GridLengthAnimation));
-
-    public GridLength From
-    {
-        get => (GridLength)GetValue(FromProperty);
-        set => SetValue(FromProperty, value);
-    }
-
-    public GridLength To
-    {
-        get => (GridLength)GetValue(ToProperty);
-        set => SetValue(ToProperty, value);
-    }
-
-    public IEasingFunction? EasingFunction { get; set; }
-
-    public override Type TargetPropertyType => typeof(GridLength);
-
-    protected override Freezable CreateInstanceCore() => new GridLengthAnimation();
-
-    public override object GetCurrentValue(object defaultOriginValue, object defaultDestinationValue, AnimationClock animationClock)
-    {
-        var progress = animationClock.CurrentProgress ?? 0;
-        var eased = EasingFunction != null ? EasingFunction.Ease(progress) : progress;
-        var fromVal = From.Value;
-        var toVal = To.Value;
-        return new GridLength(fromVal + (toVal - fromVal) * eased, GridUnitType.Pixel);
     }
 }

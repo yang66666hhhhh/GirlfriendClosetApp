@@ -2,6 +2,16 @@ using ClosetApp.Domain.Entities;
 
 namespace ClosetApp.UI.States;
 
+public enum OutfitSortBy
+{
+    Newest,
+    Oldest,
+    Name,
+    Rating,
+    WearCount,
+    LastWorn
+}
+
 public sealed class OutfitsTabState
 {
     private List<Outfit> _outfits = new();
@@ -9,6 +19,7 @@ public sealed class OutfitsTabState
     private List<CalendarDayItem> _calendarDays = [];
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     private bool _isHistoryExpanded;
+    private OutfitSortBy _sortBy = OutfitSortBy.Newest;
 
     public IReadOnlyList<Outfit> Outfits => _outfits;
     public IReadOnlyList<RecentWornListItem> RecentWornRecords => _recentWornRecords;
@@ -16,6 +27,7 @@ public sealed class OutfitsTabState
     public bool IsLoading { get; private set; }
     public bool IsEmpty => _outfits.Count == 0;
     public int OutfitCount => _outfits.Count;
+    public OutfitSortBy SortBy => _sortBy;
     public DateTime CalendarMonth => _calendarMonth;
     public string CalendarMonthText => _calendarMonth.ToString("yyyy年 M月");
     public bool IsHistoryExpanded => _isHistoryExpanded;
@@ -32,8 +44,28 @@ public sealed class OutfitsTabState
 
     public void SetOutfits(IEnumerable<Outfit> outfits)
     {
-        _outfits = outfits.ToList();
+        _outfits = ApplySorting(outfits).ToList();
         IsLoading = false;
+    }
+
+    public void SetSortBy(OutfitSortBy sortBy)
+    {
+        _sortBy = sortBy;
+        _outfits = ApplySorting(_outfits).ToList();
+    }
+
+    private IEnumerable<Outfit> ApplySorting(IEnumerable<Outfit> items)
+    {
+        return _sortBy switch
+        {
+            OutfitSortBy.Newest => items.OrderByDescending(o => o.CreatedAt),
+            OutfitSortBy.Oldest => items.OrderBy(o => o.CreatedAt),
+            OutfitSortBy.Name => items.OrderBy(o => o.Name ?? string.Empty),
+            OutfitSortBy.Rating => items.OrderByDescending(o => o.Rating),
+            OutfitSortBy.WearCount => items.OrderByDescending(o => o.WearCount),
+            OutfitSortBy.LastWorn => items.OrderByDescending(o => o.WornDate ?? o.CreatedAt),
+            _ => items.OrderByDescending(o => o.CreatedAt)
+        };
     }
 
     public void ToggleHistoryExpanded() => _isHistoryExpanded = !_isHistoryExpanded;

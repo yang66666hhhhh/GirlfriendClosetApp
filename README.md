@@ -152,7 +152,7 @@ rtk pwsh -Command "Get-ChildItem -Force"
 
 ## 当前已知说明
 
-- `WeatherService` 仍是本地 stub，实现上不接真实天气 API
+- `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - `ViewModels/` 仍存在，但当前页面主要由 View + Service / UseCase / State 驱动
 - `Themes/Colors.xaml` 是兼容转发层，新设计 token 位于 `Themes/Tokens` 与 `Themes/Controls`
 

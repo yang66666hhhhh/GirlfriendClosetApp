@@ -40,6 +40,19 @@ public partial class WardrobeViewModel : ObservableObject
     public int FilteredCount => _state.FilteredCount;
     public ClothingType? SelectedType => _state.SelectedType;
     public WardrobeQueueFilter? ActiveQueueFilter => _state.ActiveQueueFilter;
+
+    public IReadOnlyList<WardrobeSortBy> SortOptions { get; } = Enum.GetValues<WardrobeSortBy>();
+
+    public string GetSortLabel(WardrobeSortBy sort) => sort switch
+    {
+        WardrobeSortBy.Newest => "最新添加",
+        WardrobeSortBy.Oldest => "最早添加",
+        WardrobeSortBy.Name => "名称",
+        WardrobeSortBy.Brand => "品牌",
+        WardrobeSortBy.Type => "分类",
+        WardrobeSortBy.FavoriteLevel => "收藏度",
+        _ => sort.ToString()
+    };
     public string FilterSummary => _state.FilterSummary;
     public string FilterResultText => $"{FilterSummary} · {FilteredCount} 件结果";
     public bool HasActiveFilters => _state.HasActiveFilters;
@@ -57,6 +70,20 @@ public partial class WardrobeViewModel : ObservableObject
             NotifyStateChanged();
         }
     }
+
+    public WardrobeSortBy SortBy
+    {
+        get => _state.SortBy;
+        set
+        {
+            if (_state.SortBy == value)
+                return;
+
+            _state.SetSortBy(value);
+            NotifyStateChanged();
+        }
+    }
+
     public string SearchText
     {
         get => _searchText;

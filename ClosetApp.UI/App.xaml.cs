@@ -66,6 +66,8 @@ public partial class App : System.Windows.Application
 
         var dbContext = Services.GetRequiredService<ClosetDbContext>();
         Log.Information("Ensuring database is created");
+        // TODO: Switch to Migrate() once a proper initial migration snapshot exists.
+        // Current migrations only add columns; EnsureCreated handles full schema creation.
         dbContext.Database.EnsureCreated();
         Log.Information("Application startup completed");
     }
@@ -136,9 +138,9 @@ public partial class App : System.Windows.Application
 
         services.AddTransient<ViewModels.MainViewModel>();
         services.AddTransient<ViewModels.WardrobeViewModel>();
-        services.AddTransient<ViewModels.HomeViewModel>();
         services.AddTransient<ViewModels.OutfitsViewModel>();
         services.AddTransient<ViewModels.TagsViewModel>();
+        services.AddTransient<ViewModels.SettingsViewModel>();
 
         Services = services.BuildServiceProvider();
     }
