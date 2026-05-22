@@ -42,12 +42,15 @@ ClosetApp.slnx
     │   │   ├── Engine/        # OutfitCompositionEngine（布局算法）
     │   │   ├── Controls/      # OutfitPreviewCanvas, OutfitCard
     │   │   └── Editor/        # OutfitEditorPanel（统一编辑器）
-    │   └── Clothing/          # PremiumClothingCard
+    │   ├── Clothing/          # PremiumClothingCard
+    │   └── Shared/            # ThemeColorHelper, Modal, Form, States
     ├── Converters/            # 值转换器
     │   └── _Archive/          # 废弃 Converter（已归档）
     ├── ViewModels/            # MVVM ViewModel
-    ├── Services/              # ModalService, ToastService
+    ├── Services/              # ThemeService, ModalService, ToastService
     └── Themes/                # 设计 Token 和样式
+        ├── Tokens/            # Colors, Spacing, Radius, Shadows, Motion, Typography, Sizes
+        └── Controls/          # Buttons, Cards, Chips, Inputs, Pages
 ```
 
 ## Architecture
@@ -69,6 +72,7 @@ View (XAML + code-behind)
 - 仓储 — Scoped (`IClothingRepository`, `IOutfitRepository`, `ITagRepository`...)
 - 服务 — Scoped (`IClothingService`, `IOutfitService`...)
 - `IImageStorageService` — Singleton
+- `ThemeService` — Singleton
 - `ModalService`, `ToastService` — Singleton
 
 使用方式：`App.Services.GetRequiredService<T>()`
@@ -90,6 +94,7 @@ View (XAML + code-behind)
 - `ClothingType`: Top, Bottom, Outerwear, Dress, Skirt, Shoes, Accessory
 - `Season`: Spring, Summer, Autumn, Winter, AllSeason
 - `OutfitScene`: Work, Date, Travel, Party, Casual
+- `AppThemeKind`: Rose, Blue
 
 ### ID Type
 
@@ -101,7 +106,7 @@ View (XAML + code-behind)
 
 MainWindow 2 列布局：
 - 左侧 `NavigationSidebar`（220px，可折叠到 72px）
-- 右侧内容区：`ClothesTab`（默认）/ `OutfitsTab` / `TagsTab`
+- 右侧内容区：`ClothesTab`（默认）/ `OutfitsTab` / `TagsTab` / `SettingsTab`
 
 ### Tab Pages
 
@@ -110,6 +115,136 @@ MainWindow 2 列布局：
 | 衣柜 | `ClothesTab.xaml` | Masonry 瀑布流 + 搜索 + 分类筛选 |
 | 搭配 | `OutfitsTab.xaml` | 搭配卡片列表 + 创建/编辑/删除 |
 | 标签 | `TagsTab.xaml` | 标签管理 |
+| 设置 | `SettingsTab.xaml` | 主题切换 + 天气 + 备份 + 维护 |
+
+## Design System
+
+### Theme System
+
+双主题（柔粉 / 清蓝），通过 `ThemeService` 全局切换。
+
+```
+ThemeService (Singleton)
+  → ThemePalette.Create(AppThemeKind) → 返回完整调色板
+  → ApplyPalette() → 更新 Application.Resources 中所有 Color/Brush
+```
+
+所有 UI 组件使用 `{DynamicResource ...}` 绑定主题资源，切换时自动刷新。
+
+### Color Tokens (`Themes/Tokens/Colors.xaml`)
+
+| Token | Rose | Blue | Usage |
+|-------|------|------|-------|
+| Primary | #DA94A5 | #5881D6 | 主色调 |
+| Primary.Dark | #B96C80 | #375AAA | 深色强调 |
+| Primary.Light | #FAE8ED | #E0ECFF | 浅色背景 |
+| Primary.Glow | 60%透明 | 60%透明 | 发光/标签 |
+| Surface.Page | #FCF8F5 | #F0F5FC | 页面背景 |
+| Surface.Card | #FFFFFF | #FFFFFF | 卡片背景 |
+| Surface.Hero | #FAF0EC | #E6EEFA | 预览区背景 |
+| Surface.Section | #FDF7F3 | #EAF1FC | 区域背景 |
+| Surface.ImageArea | #F8F1EC | #EEF4FC | 图片区背景 |
+| Border.Light | #F0E4E0 | #CDDAF0 | 边框 |
+| Shadow.Color | #30A0826E | #303C5078 | 阴影 |
+| Theme.Rose.* | 粉色系 | 蓝灰色系 | 主题辅助色 |
+| Theme.Sky.* | 粉色系 | 蓝色系 | 主题辅助色 |
+
+### Card Design System (`Themes/Controls/Cards.xaml`)
+
+统一卡片设计语言，OutfitCard 和 PremiumClothingCard 共用。
+
+#### Tokens
+
+```xml
+Card.Radius = 20
+Card.InfoPadding = 16,12,16,14
+Card.TitleFontSize = 15
+Card.SubtitleFontSize = 11
+Card.ChipFontSize = 10
+Card.FavoriteFontSize = 18
+```
+
+#### Motion Tokens — Soft Elevation
+
+```xml
+Card.HoverTranslateY = -4
+Card.HoverScale = 1.01
+Card.HoverShadowBlur = 28
+Card.HoverShadowOpacity = 0.12
+Card.HoverImageScale = 1.02    <!-- 仅衣服卡片 -->
+Card.HoverDurationMs = 220
+Card.IdleShadowBlur = 16
+Card.IdleShadowOpacity = 0.06
+```
+
+#### Shared Styles
+
+| Style | Target | Usage |
+|-------|--------|-------|
+| `Card.Container` | Border | 卡片外壳（背景、圆角、光标） |
+| `Card.PreviewArea` | Border | 预览区（上半圆角、主题背景） |
+| `Card.InfoArea` | Border | 信息区（底部背景、内边距） |
+| `Card.Title` | TextBlock | 标题（15px SemiBold） |
+| `Card.Subtitle` | TextBlock | 副标题（11px Secondary） |
+| `Card.Tertiary` | TextBlock | 三级文字（11px Tertiary） |
+| `Card.ChipPanel` | WrapPanel | 标签面板 |
+| `Card.FavoriteButtonBase` | Button | 收藏按钮基础 |
+| `Card.ActionOverlay` | Border | 操作覆盖层 |
+| `Card.OverlayCapsuleButton` | Button | 覆盖层按钮 |
+
+#### Chip Palette (`ThemeColorHelper.ResolveChipPalette`)
+
+标签芯片配色，主题感知，支持季节/场景/分类标签：
+- 春/夏/秋/冬/四季 — 暖色系
+- 通勤/约会/出游/派对/休闲 — 场景色系
+- 上衣/裤装/连衣裙/半裙/外套/鞋子/配饰 — 分类色系
+
+### Card Hover — Soft Elevation
+
+统一悬停效果，模拟"柔和空间抬升"：
+
+```
+Idle:   TranslateY=0, Scale=1.0, Shadow.Blur=16, Shadow.Opacity=0.06
+Hover:  TranslateY=-4, Scale=1.01, Shadow.Blur=28, Shadow.Opacity=0.12
+```
+
+衣服卡片额外效果：`ImageScale=1.02`（像被"拿起来"）
+
+动画方式：代码直接动画（`AnimateTranslate`/`AnimateScale`/`AnimateShadow`），不依赖 Storyboard Key。
+
+### Button Styles (`Themes/Controls/Buttons.xaml`)
+
+基于 `AppButtonBase` 共享模板（hover scale + press scale 动画）：
+- `PrimaryButton` — 主题色填充 + 阴影
+- `CapsuleButton` — 白底 + 边框 + CornerRadius 12
+- `SecondaryButton` — 灰色填充
+- `DangerButton` — 红色填充
+- `GhostButton` — 透明 + 白色边框
+- `IconButton` — 圆形 36px
+
+### Resource Loading Order (`App.xaml`)
+
+```
+HandyControl (SkinDefault + Theme)
+→ Tokens/Colors.xaml
+→ Tokens/Typography.xaml
+→ Tokens/Spacing.xaml
+→ Tokens/Radius.xaml
+→ Tokens/Shadows.xaml
+→ Tokens/Motion.xaml
+→ Tokens/Sizes.xaml
+→ Controls/LegacyStyles.xaml
+→ Controls/Buttons.xaml
+→ Controls/Inputs.xaml
+→ Controls/Chips.xaml
+→ Controls/Cards.xaml
+→ Controls/Pages.xaml
+→ Shared/Modal/ModalCardStyles.xaml
+→ Shared/Modal/ModalFooterStyles.xaml
+→ Shared/Form/FormStyles.xaml
+```
+
+## Key Components
 
 ### Outfit Engine（穿搭视觉引擎）
 
@@ -123,71 +258,28 @@ OutfitRenderMetrics (渲染参数)
 OutfitPreviewCanvas (WPF 渲染) ← 用于 OutfitCard + OutfitEditorPanel
 ```
 
-### Clothing Editor（衣服编辑器）
+### Image Processing
 
-统一 `ClothingEditorPanel`（UserControl + Modal）同时服务 Create 和 Edit：
+#### 前景提取 (`ClothingImageLoader`)
 
+自动抠除图片边缘连通的浅色背景：
+- 从图片四边采样背景种子色
+- Flood-fill 标记连通的背景像素
+- 前景保护：中性衣物色（亮度 60-220、饱和度 ≤35）不被误删
+- 裁边：找最大前景连通域，收紧边界
+
+参数：
 ```
-Components/Clothing/
-├── ClothingEditorResult.cs    # record + enum（Saved/Deleted/Cancelled）
-├── ClothingEditorPanel.xaml   # 统一 UI（Add+Edit 共用）
-└── ClothingEditorPanel.xaml.cs
-```
-
-#### 使用方式
-
-```csharp
-// Add 模式
-var panel = new ClothingEditorPanel();
-panel.EditorCompleted += async (_, result) =>
-{
-    if (result.Type == ClothingEditorResultType.Saved)
-        await _clothingService.AddClothingAsync(result.Clothing!);
-    ModalService.Instance.Hide();
-    await LoadClothesAsync();
-};
-ModalService.Instance.Show(panel);
-
-// Edit 模式
-var panel = new ClothingEditorPanel(clothing);
-panel.EditorCompleted += async (_, result) =>
-{
-    if (result.Type == ClothingEditorResultType.Saved)
-        await _clothingService.UpdateClothingAsync(result.Clothing!);
-    else if (result.Type == ClothingEditorResultType.Deleted)
-        await _clothingService.DeleteClothingAsync(clothing.Id);
-    ModalService.Instance.Hide();
-    await LoadClothesAsync();
-};
-ModalService.Instance.Show(panel);
+LightBackgroundThreshold = 240
+NeutralBackgroundThreshold = 232
+BackgroundSeedTolerance = 10
+ForegroundProtectionLuminanceGap = 55
+NeutralClothingMin = 60, Max = 220, SatMax = 35
 ```
 
-#### 关键设计
+#### 衣物颜色背景
 
-- `ClothingEditorResult` 是 `sealed record`，语义清晰（Saved/Deleted/Cancelled）
-- `_imageChanged` 标记避免重复 SaveImageAsync
-- `IsDirty` 字段预留 dirty-check 未来扩展
-- Edit 模式显示删除按钮（点击直接触发 `Deleted` 结果）
-- 分类选项完整（含 Skirt）
-- 情绪标签保留
-- Notes 备注字段（Edit 模式可见）
-- 图片支持拖拽上传、更换、移除
-
-#### Engine 层 — `Components/Outfit/Engine/`
-
-- `OutfitCompositionEngine.cs` — 4 种布局模式自动切换（Solo/Dress/TopBottom/Mixed），高度预算分配制
-- `OutfitRenderMetrics.cs` — 渲染参数配置（StandardHeight/MaxItems/Spacing 等），消灭 magic numbers
-- `CompositionMode.cs` — 枚举（Solo/Dress/TopBottom/Mixed）
-- `OutfitLayoutItem.cs` — 布局数据模型（LayoutType/Item/Height/Y）
-
-#### Controls 层 — `Components/Outfit/Controls/`
-
-- `OutfitPreviewCanvas.xaml/.cs` — WPF Canvas，依赖属性 `Clothes` 驱动渲染，`MeasureCanvasWidth()`/`MeasureCanvasHeight()` 向上探测父级可用空间，`Loaded` + `SizeChanged` 双重触发渲染
-- `OutfitCard.xaml/.cs` — 展示卡片，`Outfit` 依赖属性，`EditClicked`/`DeleteClicked` 路由事件，hover 放大动画
-
-#### Editor 层 — `Components/Outfit/Editor/`
-
-- `OutfitEditorPanel.xaml/.cs` — 统一编辑器（Create + Edit），Modal 弹出，`SelectableClothing` 包装类（IsSelected/IsEnabled），`OnLoadedForEdit` 修复 Edit 模式加载时序
+`ThemeColorHelper.ResolveClothingBackdrop(colorField)` — 根据衣物颜色字段计算主题感知背景色，与主题基础色混合（45% 衣物色 + 55% 主题色）。
 
 ### Modal System
 
@@ -196,17 +288,6 @@ ModalService (Singleton)
   → fires ModalShowRequested event
     → ModalContainer (overlay with fade animation)
       → shows UserControl as modal content
-```
-
-使用方式（穿搭编辑器）：
-```csharp
-var panel = new OutfitEditorPanel(); // Create 模式
-panel.SaveCompleted += async () => await LoadData();
-panel.CloseRequested += () => ModalService.Instance.Hide();
-ModalService.Instance.Show(panel);
-
-// 或 Edit 模式
-var panel = new OutfitEditorPanel(existingOutfit);
 ```
 
 ### MasonryPanel
@@ -219,13 +300,21 @@ var panel = new OutfitEditorPanel(existingOutfit);
 
 ### PremiumClothingCard
 
-卡片组件：
 - 图片高度由图片宽高比动态计算（`CalcImageHeight`）
+- 信息区高度动态计算（`CalcInfoAreaHeight`）：基础 80px + 标签 26px + 品牌 16px
 - `Stretch="Uniform"` 不裁切
-- Hover 动画：TranslateY -4, ImageScale 1.04, Shadow Blur 16→24 (200ms)
-- 悬停显示 ⋯ + ♥ 按钮（毛玻璃圆形）
-- ⋯ 菜单：编辑 / 删除 → 触发 `EditClicked` / `DeleteClicked` 路由事件
-- ♥ 动画：通过 `Template.FindName` 跨 namescope 访问 ControlTemplate 内的 HeartIcon
+- 前景提取：`extractForeground: true` 自动抠除白底/浅灰底
+- 悬停：Soft Elevation（TranslateY -4, Scale 1.01, Shadow 16→28, ImageScale 1.02）
+- 底部横条覆盖层：编辑 / 删除
+- 信息区：标题 + 品牌 + 标签芯片 + 收藏按钮
+
+### OutfitCard
+
+- 预览区：`OutfitPreviewCanvas` 渲染穿搭组合
+- 背景色：根据衣物颜色/季节动态计算（`ThemeColorHelper.ResolveOutfitBackdrop`）
+- 悬停：Soft Elevation（TranslateY -4, Scale 1.01, Shadow 16→28）
+- 底部横条覆盖层：编辑 / 删除 / 今天穿了
+- 信息区：标题 + 氛围描述 + 标签芯片 + 穿着信息 + 收藏按钮
 
 ### Image Path Resolution
 
@@ -234,54 +323,22 @@ var panel = new OutfitEditorPanel(existingOutfit);
 2. 相对路径 `AppDomain.BaseDirectory + path`
 3. LocalAppData `%LocalAppData%\ClosetApp\images\ + path`
 
-图片存储：`AddClothingPanel` 通过 `IImageStorageService.SaveImageAsync()` 复制到 LocalAppData，数据库存 GUID 文件名。
+`ImagePathConverter` 支持参数：`Variant:Width:trim:fg`（如 `Thumbnail:160:fg`）
 
-## Design System
-
-### Color Tokens (`ButtonTokens.xaml`)
-
-| Token | Value | Usage |
-|-------|-------|-------|
-| Primary | #D9A299 | 主色调（暖粉） |
-| Danger | #E88D8D | 删除/警告 |
-| Text.Primary | #2D2A26 | 标题文字 |
-| Text.Secondary | #9E958D | 副标题 |
-| Text.Placeholder | #C8C0B8 | 占位文字 |
-| Surface.Card | #FDFC | 卡片背景 |
-| Surface.Page | #F6F3EE | 页面背景 |
-
-### Button Styles (`ButtonStyles.xaml`)
-
-基于 `AppButtonBase` 共享模板（hover scale + press scale 动画）：
-- `PrimaryButton` — 粉色填充 + 阴影
-- `CapsuleButton` — 白底 + 边框 + CornerRadius 12
-- `SecondaryButton` — 灰色填充
-- `DangerButton` — 红色填充
-- `GhostButton` — 透明 + 白色边框
-- `IconButton` — 圆形 36px
-
-### Resource Loading Order (`App.xaml`)
-
-```
-HandyControl (SkinDefault + Theme)
-→ ButtonTokens.xaml
-→ Colors.xaml
-→ Styles.xaml
-→ ButtonStyles.xaml
-→ PremiumCardStyles.xaml
-```
+图片存储：通过 `IImageStorageService.SaveImageAsync()` 复制到 LocalAppData，数据库存 GUID 文件名。
 
 ## Key Patterns
 
 ### XAML Resources
 
 - 全局资源在 `App.xaml` merged dictionaries 中定义
-- 页面级资源在 `UserControl.Resources` 中定义（颜色、DataTemplate、Converter）
-- 避免 `DynamicResource` 引用全局资源（可能解析失败），优先用 `StaticResource` + 本地定义
+- 页面级资源在 `UserControl.Resources` 中定义
+- 主题相关绑定使用 `{DynamicResource ...}`（确保主题切换时刷新）
+- 非主题绑定可使用 `{StaticResource ...}`
 
 ### Converter Usage
 
-- `ImagePathConverter` — 图片路径解析（支持三级路径）
+- `ImagePathConverter` — 图片路径解析（支持三级路径 + `fg` 前景提取参数）
 - `InverseNullToVisibilityConverter` — null 时显示（用于图片 fallback）
 - `BoolToFavoriteColorConverter` — 收藏状态颜色
 - `SeasonToNameConverter` — Season 枚举转中文
@@ -289,7 +346,7 @@ HandyControl (SkinDefault + Theme)
 
 ### Event Handling
 
-- `PremiumClothingCard` 使用 WPF 路由事件（`CardClicked`, `EditClicked`, `DeleteClicked`）
+- `PremiumClothingCard` 和 `OutfitCard` 使用 WPF 路由事件（`CardClicked`, `EditClicked`, `DeleteClicked`）
 - 在 DataTemplate 中绑定：`<components:PremiumClothingCard EditClicked="Handler"/>`
 - 不要用 `Border.MouseLeftButtonDown` 包裹卡片（会被卡片内部事件消费）
 
@@ -304,7 +361,7 @@ HandyControl (SkinDefault + Theme)
 - 配饰 (Accessory) — 可多选
 - 待分类 (Unspecified) — 不参与搭配选择
 
-预览画布按“人体区域 + 穿搭层级”表达，不按分类简单堆叠：
+预览画布按"人体区域 + 穿搭层级"表达，不按分类简单堆叠：
 - 上半身区域：外套为外层主图，上衣/中层作为内层露出
 - 下半身区域：裤装或半裙
 - 脚部区域：鞋子
@@ -314,8 +371,7 @@ HandyControl (SkinDefault + Theme)
 
 - `WeatherService` 是 stub 实现（固定返回 22°C 晴天）
 - ViewModels 目前未被 Views 使用（Views 直接调用 Services）
-- `Colors.xaml` 定义了蓝色 `PrimaryBrush` (#667eea)，与 `ButtonTokens.xaml` 的粉色 `PrimaryBrush` (#D9A299) 冲突，但 Colors.xaml 加载在前会被覆盖
 - 命名空间歧义：文件目录 `Components/Outfit/` 和 `Components/Clothing/` 被编译器视为 namespace，与 `Domain.Entities.Outfit/Clothing` 冲突。使用 `global::ClosetApp.Domain.Entities.Outfit/Clothing` 显式引用实体类型
 - `Components/_Archive/` 保留旧版 `AddClothingPanel` 备份
-- `Views/_Deprecated/` 保留旧版 `EditClothingDialog`、`EditOutfitDialog`、`RecordOutfitDialog`、`DeleteConfirmDialog`、`ModernDialog` 备份
-- `Converters/_Archive/` 保留废弃 Converter 备份（WPF 不允许删除被 XAML 引用的资源）
+- `Views/_Deprecated/` 保留旧版 Dialog 备份
+- `Converters/_Archive/` 保留废弃 Converter 备份
