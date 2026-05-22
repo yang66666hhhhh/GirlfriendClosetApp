@@ -9,28 +9,9 @@
         <conv:ImagePathConverter x:Key="ImagePathConverter"/>
         <conv:BooleanToVisibilityConverter x:Key="BoolToVis"/>
 
-        <Color x:Key="PageBgC">#FFF8F6F2</Color>
-        <SolidColorBrush x:Key="PageBgBrush" Color="{StaticResource PageBgC}"/>
-        <Color x:Key="CardBgC">#FFFFFDFC</Color>
-        <SolidColorBrush x:Key="CardBgBrush" Color="{StaticResource CardBgC}"/>
-        <Color x:Key="SecondaryBgC">#FFF5F3EE</Color>
-        <SolidColorBrush x:Key="SecondaryBgBrush" Color="{StaticResource SecondaryBgC}"/>
-        <Color x:Key="BorderC">#FFE8E2DC</Color>
-        <SolidColorBrush x:Key="BorderBrush" Color="{StaticResource BorderC}"/>
-        <Color x:Key="TextPrimaryC">#FF2D2A26</Color>
-        <SolidColorBrush x:Key="TextPrimaryBrush" Color="{StaticResource TextPrimaryC}"/>
-        <Color x:Key="TextSecondaryC">#FF5E5A56</Color>
-        <SolidColorBrush x:Key="TextSecondaryBrush" Color="{StaticResource TextSecondaryC}"/>
-        <Color x:Key="TextTertiaryC">#FFA39B95</Color>
-        <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource TextTertiaryC}"/>
-        <Color x:Key="AccentC">#FFD9A299</Color>
-        <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentC}"/>
-        <Color x:Key="AccentLightC">#FFF5EDE9</Color>
-        <SolidColorBrush x:Key="AccentLightBrush" Color="{StaticResource AccentLightC}"/>
-
         <DataTemplate x:Key="ClothSelectTemplate">
             <Border Width="100" Height="120" Margin="6"
-                    Background="{StaticResource SecondaryBgBrush}"
+                    Background="{DynamicResource SurfaceSectionBrush}"
                     CornerRadius="12" Cursor="Hand"
                     BorderThickness="2" BorderBrush="Transparent"
                     MouseLeftButtonDown="ClothItem_Click">
@@ -38,8 +19,8 @@
                     <Style TargetType="Border">
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                <Setter Property="BorderBrush" Value="{StaticResource AccentBrush}"/>
-                                <Setter Property="Background" Value="{StaticResource AccentLightBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -50,7 +31,7 @@
                                Stretch="Uniform"/>
                     </Border>
                     <Border Width="20" Height="20" CornerRadius="10"
-                            Background="{StaticResource AccentBrush}"
+                            Background="{DynamicResource PrimaryBrush}"
                             HorizontalAlignment="Right" VerticalAlignment="Top"
                             Margin="0,4,4,0"
                             Visibility="{Binding IsSelected, Converter={StaticResource BoolToVis}}">
@@ -99,7 +80,7 @@
                 <!-- Left: Form -->
                 <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="24,16">
                     <StackPanel>
-                        <Border Background="{StaticResource CardBgBrush}" CornerRadius="14"
+                        <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14"
                                 Padding="20" Margin="0,0,0,16">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000" Direction="270"/>
@@ -108,7 +89,7 @@
                                 <TextBlock Text="基本信息" FontSize="15" FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14"/>
                                 <TextBlock Text="搭配名称" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,0,0,6"/>
-                                <Border Background="{StaticResource SecondaryBgBrush}" CornerRadius="10" Padding="12">
+                                <Border Background="{DynamicResource SurfaceSectionBrush}" CornerRadius="10" Padding="12">
                                     <TextBox x:Name="TxtName" BorderThickness="0" Background="Transparent" FontSize="14"/>
                                 </Border>
                                 <Grid Margin="0,14,0,0">
@@ -139,12 +120,12 @@
                                     </StackPanel>
                                 </Grid>
                                 <TextBlock Text="满意度" FontSize="13" Foreground="{DynamicResource TextSecondaryBrush}" Margin="0,14,0,6"/>
-                                <hc:Rate x:Name="RatingControl" Count="5" Value="3" Foreground="#fbbf24" FontSize="22"/>
+                                <hc:Rate x:Name="RatingControl" Count="5" Value="3" Foreground="{DynamicResource RatingStarBrush}" FontSize="22"/>
                             </StackPanel>
                         </Border>
 
                         <!-- Select Clothes -->
-                        <Border Background="{StaticResource CardBgBrush}" CornerRadius="14" Padding="20">
+                        <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14" Padding="20">
                             <Border.Effect>
                                 <DropShadowEffect BlurRadius="12" ShadowDepth="2" Opacity="0.06" Color="#000" Direction="270"/>
                             </Border.Effect>
@@ -227,15 +208,15 @@
                 </ScrollViewer>
 
                 <!-- Right: Live Preview -->
-                <Border Grid.Column="1" Background="{StaticResource CardBgBrush}"
-                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"
+                <Border Grid.Column="1" Background="{DynamicResource SurfaceCardBrush}"
+                        BorderBrush="{DynamicResource BorderLightBrush}" BorderThickness="1,0,0,0"
                         Padding="16">
                     <StackPanel>
                         <TextBlock Text="穿搭预览" FontSize="15" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimaryBrush}" Margin="0,0,0,14"/>
                         <TextBlock x:Name="TxtPreviewCount" FontSize="12"
                                    Foreground="{DynamicResource TextTertiaryBrush}" Margin="0,0,0,12"/>
-                        <Border Background="#F8F5F2" CornerRadius="14" Padding="12">
+                        <Border Background="{DynamicResource SurfaceSectionBrush}" CornerRadius="14" Padding="12">
                             <Grid>
                                 <StackPanel x:Name="EmptyPreview" HorizontalAlignment="Center"
                                             VerticalAlignment="Center" MinHeight="360">

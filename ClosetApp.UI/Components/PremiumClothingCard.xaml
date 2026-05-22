@@ -131,7 +131,7 @@
             <Border.Effect>
                 <DropShadowEffect x:Name="CardShadow"
                                   BlurRadius="12" ShadowDepth="3"
-                                  Opacity="0.06" Color="#B0A090" Direction="270"/>
+                                  Opacity="0.06" Color="{DynamicResource Shadow.Color}" Direction="270"/>
             </Border.Effect>
         </Border>
 
@@ -162,15 +162,15 @@
                         ClipToBounds="True">
                     <Border.Background>
                         <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                            <GradientStop Color="#FFFAF8F6" Offset="0"/>
-                            <GradientStop Color="#FFF4F0EB" Offset="1"/>
+                            <GradientStop Color="{DynamicResource Surface.ImageArea}" Offset="0"/>
+                            <GradientStop Color="{DynamicResource Surface.Hero}" Offset="1"/>
                         </LinearGradientBrush>
                     </Border.Background>
                     <Grid>
                         <Ellipse x:Name="GarmentShadow"
                                  Width="112"
                                  Height="18"
-                                 Fill="#2A7C6759"
+                                 Fill="{DynamicResource ShadowColorBrush}"
                                  Opacity="0.18"
                                  VerticalAlignment="Bottom"
                                  HorizontalAlignment="Center"
@@ -261,7 +261,7 @@
                                             CornerRadius="16"
                                             Background="{TemplateBinding Background}">
                                         <TextBlock Text="⋯" FontSize="16"
-                                                   Foreground="#666666"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
                                                    HorizontalAlignment="Center"
                                                    VerticalAlignment="Center"
                                                    FontWeight="Bold"/>
@@ -301,7 +301,7 @@
                                     Click="MenuEdit_Click"/>
                             <Button Content="🗑 删除"
                                     FontSize="12" FontWeight="Medium"
-                                    Foreground="#E88D8D"
+                                    Foreground="{DynamicResource DangerBrush}"
                                     Background="Transparent"
                                     BorderThickness="0"
                                     Padding="10,6"

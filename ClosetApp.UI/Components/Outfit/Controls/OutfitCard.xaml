@@ -37,7 +37,7 @@
         </Border.RenderTransform>
         <Border.Effect>
             <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="3"
-                              Opacity="0.06" Color="#60000000" Direction="270"/>
+                              Opacity="0.06" Color="{DynamicResource Shadow.Color}" Direction="270"/>
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
@@ -48,7 +48,7 @@
             <!-- Outfit Canvas -->
             <Border x:Name="PreviewShell"
                     Grid.Row="0"
-                    Background="#F5EFE8"
+                    Background="{DynamicResource SurfaceHeroBrush}"
                     CornerRadius="20,20,0,0"
                     ClipToBounds="True">
                 <Grid>
@@ -93,7 +93,7 @@
                                     FontSize="12" Margin="0,0,10,0"/>
                             <Button x:Name="BtnDelete" Content="删除" Padding="12,7"
                                     Style="{StaticResource CapsuleButton}"
-                                    FontSize="12" Foreground="#E88D8D"/>
+                                    FontSize="12" Foreground="{DynamicResource DangerBrush}"/>
                             <Button x:Name="BtnWorn" Content="今天穿了" Padding="12,7"
                                     Style="{StaticResource PrimaryButton}"
                                     FontSize="12" Margin="10,0,0,0"/>
@@ -104,7 +104,7 @@
 
             <!-- Bottom Info -->
             <Border Grid.Row="1"
-                    Background="#FFFCFAF8"
+                    Background="{DynamicResource SurfaceCardBrush}"
                     Padding="16,12,16,14">
                 <Grid>
                     <Grid.ColumnDefinitions>

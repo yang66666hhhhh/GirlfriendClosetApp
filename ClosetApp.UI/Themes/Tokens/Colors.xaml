@@ -41,6 +41,9 @@
     <Color x:Key="Surface.Elevated">#FFFFFFFF</Color>
     <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="{StaticResource Surface.Elevated}"/>
 
+    <Color x:Key="Surface.ImageArea">#FFF8F1EC</Color>
+    <SolidColorBrush x:Key="SurfaceImageAreaBrush" Color="{StaticResource Surface.ImageArea}"/>
+
     <Color x:Key="Border.Light">#FFE8E2DC</Color>
     <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource Border.Light}"/>
     <Color x:Key="Border.Divider">#FFF0ECE7</Color>
@@ -97,5 +100,8 @@
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Danger}"/>
     <SolidColorBrush x:Key="OverlayBrush" Color="#40000000"/>
     <SolidColorBrush x:Key="RatingStarBrush" Color="#FBBF24"/>
+
+    <Color x:Key="Shadow.Color">#30A0826E</Color>
+    <SolidColorBrush x:Key="ShadowColorBrush" Color="{StaticResource Shadow.Color}"/>
 
 </ResourceDictionary>

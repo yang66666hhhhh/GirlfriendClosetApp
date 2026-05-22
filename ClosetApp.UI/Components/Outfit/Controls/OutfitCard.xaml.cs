@@ -241,66 +241,77 @@ public partial class OutfitCard : UserControl
             : Visibility.Collapsed;
     }
 
-    private static (Color Background, Color Border, Color Foreground) ResolveChipPalette(string chip)
+    private (Color Background, Color Border, Color Foreground) ResolveChipPalette(string chip)
     {
+        var baseBg = GetThemeColor("PrimaryLightBrush", Color.FromRgb(250, 232, 237));
+        var baseBorder = GetThemeColor("BorderLightBrush", Color.FromRgb(240, 228, 224));
+        var baseFg = GetThemeColor("PrimaryBrush", Color.FromRgb(218, 148, 165));
+
         return chip switch
         {
-            "春" => (Color.FromRgb(252, 237, 235), Color.FromRgb(238, 204, 198), Color.FromRgb(188, 121, 110)),
-            "夏" => (Color.FromRgb(236, 245, 244), Color.FromRgb(190, 222, 216), Color.FromRgb(92, 145, 136)),
-            "秋" => (Color.FromRgb(249, 238, 228), Color.FromRgb(233, 206, 181), Color.FromRgb(176, 122, 79)),
-            "冬" => (Color.FromRgb(238, 240, 245), Color.FromRgb(202, 209, 226), Color.FromRgb(110, 121, 153)),
-            "四季" => (Color.FromRgb(242, 239, 247), Color.FromRgb(214, 205, 233), Color.FromRgb(126, 108, 170)),
-            "通勤" => (Color.FromRgb(244, 238, 232), Color.FromRgb(222, 204, 189), Color.FromRgb(135, 112, 95)),
-            "约会" => (Color.FromRgb(251, 235, 240), Color.FromRgb(238, 198, 211), Color.FromRgb(181, 108, 134)),
-            "出游" => (Color.FromRgb(237, 245, 233), Color.FromRgb(198, 223, 188), Color.FromRgb(104, 145, 92)),
-            "派对" => (Color.FromRgb(242, 235, 245), Color.FromRgb(214, 196, 224), Color.FromRgb(126, 98, 152)),
-            "休闲" => (Color.FromRgb(246, 239, 230), Color.FromRgb(228, 210, 188), Color.FromRgb(150, 120, 88)),
-            "连衣裙" => (Color.FromRgb(252, 241, 239), Color.FromRgb(240, 211, 206), Color.FromRgb(190, 128, 118)),
-            "叠穿" => (Color.FromRgb(239, 241, 246), Color.FromRgb(205, 211, 226), Color.FromRgb(106, 118, 149)),
-            "裙装" => (Color.FromRgb(250, 239, 244), Color.FromRgb(234, 205, 217), Color.FromRgb(176, 112, 140)),
-            "轻搭" => (Color.FromRgb(244, 240, 236), Color.FromRgb(224, 213, 203), Color.FromRgb(140, 125, 110)),
-            "奶油粉" => (Color.FromRgb(251, 233, 239), Color.FromRgb(239, 198, 210), Color.FromRgb(191, 111, 138)),
-            "奶油白" => (Color.FromRgb(250, 247, 239), Color.FromRgb(233, 225, 204), Color.FromRgb(158, 143, 104)),
-            "雾蓝" => (Color.FromRgb(235, 241, 249), Color.FromRgb(198, 211, 233), Color.FromRgb(104, 129, 171)),
-            "柔绿" => (Color.FromRgb(237, 245, 238), Color.FromRgb(196, 220, 200), Color.FromRgb(96, 143, 104)),
-            "奶油黄" => (Color.FromRgb(251, 245, 224), Color.FromRgb(237, 224, 177), Color.FromRgb(171, 146, 70)),
-            "可可棕" => (Color.FromRgb(244, 235, 229), Color.FromRgb(224, 203, 192), Color.FromRgb(145, 109, 92)),
-            "灰调" => (Color.FromRgb(239, 239, 242), Color.FromRgb(209, 210, 219), Color.FromRgb(116, 118, 133)),
-            _ => (Color.FromRgb(246, 239, 236), Color.FromRgb(228, 212, 204), Color.FromRgb(146, 120, 108))
+            "春" => (BlendColors(baseBg, Color.FromRgb(255, 235, 230), 0.5), BlendColors(baseBorder, Color.FromRgb(240, 200, 195), 0.3), BlendColors(baseFg, Color.FromRgb(188, 121, 110), 0.4)),
+            "夏" => (BlendColors(baseBg, Color.FromRgb(230, 248, 245), 0.5), BlendColors(baseBorder, Color.FromRgb(185, 225, 218), 0.3), BlendColors(baseFg, Color.FromRgb(92, 145, 136), 0.4)),
+            "秋" => (BlendColors(baseBg, Color.FromRgb(252, 240, 225), 0.5), BlendColors(baseBorder, Color.FromRgb(235, 208, 178), 0.3), BlendColors(baseFg, Color.FromRgb(176, 122, 79), 0.4)),
+            "冬" => (BlendColors(baseBg, Color.FromRgb(235, 238, 248), 0.5), BlendColors(baseBorder, Color.FromRgb(200, 208, 228), 0.3), BlendColors(baseFg, Color.FromRgb(110, 121, 153), 0.4)),
+            "四季" => (BlendColors(baseBg, Color.FromRgb(240, 236, 250), 0.5), BlendColors(baseBorder, Color.FromRgb(212, 202, 235), 0.3), BlendColors(baseFg, Color.FromRgb(126, 108, 170), 0.4)),
+            "通勤" => (BlendColors(baseBg, Color.FromRgb(248, 240, 230), 0.5), BlendColors(baseBorder, Color.FromRgb(225, 208, 188), 0.3), BlendColors(baseFg, Color.FromRgb(135, 112, 95), 0.4)),
+            "约会" => (BlendColors(baseBg, Color.FromRgb(255, 232, 240), 0.4), BlendColors(baseBorder, Color.FromRgb(242, 195, 212), 0.3), BlendColors(baseFg, Color.FromRgb(181, 108, 134), 0.3)),
+            "出游" => (BlendColors(baseBg, Color.FromRgb(232, 248, 230), 0.5), BlendColors(baseBorder, Color.FromRgb(195, 225, 185), 0.3), BlendColors(baseFg, Color.FromRgb(104, 145, 92), 0.4)),
+            "派对" => (BlendColors(baseBg, Color.FromRgb(245, 232, 248), 0.4), BlendColors(baseBorder, Color.FromRgb(218, 195, 228), 0.3), BlendColors(baseFg, Color.FromRgb(126, 98, 152), 0.4)),
+            "休闲" => (BlendColors(baseBg, Color.FromRgb(250, 242, 228), 0.5), BlendColors(baseBorder, Color.FromRgb(230, 215, 185), 0.3), BlendColors(baseFg, Color.FromRgb(150, 120, 88), 0.4)),
+            _ => (baseBg, baseBorder, baseFg)
         };
     }
 
     private static Color ResolveBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
     {
+        var baseColor = GetThemeColor("SurfaceHeroBrush", Color.FromRgb(244, 239, 233));
+
         var colorTokens = clothes?
             .Select(c => c.Color?.ToLowerInvariant())
             .Where(c => !string.IsNullOrWhiteSpace(c))
             .ToList();
 
-        if (colorTokens != null)
+        if (colorTokens != null && colorTokens.Count > 0)
         {
-            if (colorTokens.Any(c => c!.Contains("pink") || c.Contains("粉")))
-                return Color.FromRgb(246, 229, 231);
-            if (colorTokens.Any(c => c!.Contains("white") || c.Contains("cream") || c.Contains("白") || c.Contains("米")))
-                return Color.FromRgb(246, 241, 233);
-            if (colorTokens.Any(c => c!.Contains("blue") || c.Contains("蓝")))
-                return Color.FromRgb(232, 238, 245);
-            if (colorTokens.Any(c => c!.Contains("green") || c.Contains("绿")))
-                return Color.FromRgb(234, 241, 233);
-            if (colorTokens.Any(c => c!.Contains("yellow") || c.Contains("黄")))
-                return Color.FromRgb(250, 241, 220);
-            if (colorTokens.Any(c => c!.Contains("black") || c.Contains("黑") || c.Contains("gray") || c.Contains("grey") || c.Contains("灰")))
-                return Color.FromRgb(239, 235, 230);
+            var tint = colorTokens.First() switch
+            {
+                var c when c!.Contains("pink") || c.Contains("粉") => Color.FromRgb(255, 225, 232),
+                var c when c!.Contains("white") || c.Contains("cream") || c.Contains("白") || c.Contains("米") => Color.FromRgb(252, 250, 244),
+                var c when c!.Contains("blue") || c.Contains("蓝") => Color.FromRgb(220, 235, 252),
+                var c when c!.Contains("green") || c.Contains("绿") => Color.FromRgb(225, 245, 230),
+                var c when c!.Contains("yellow") || c.Contains("黄") => Color.FromRgb(252, 248, 220),
+                var c when c!.Contains("red") || c.Contains("红") => Color.FromRgb(255, 230, 228),
+                var c when c!.Contains("black") || c.Contains("黑") || c.Contains("gray") || c.Contains("grey") || c.Contains("灰") => Color.FromRgb(235, 235, 238),
+                var c when c!.Contains("purple") || c.Contains("紫") => Color.FromRgb(240, 232, 248),
+                var c when c!.Contains("orange") || c.Contains("橙") || c.Contains("棕") || c.Contains("brown") => Color.FromRgb(250, 238, 225),
+                _ => baseColor
+            };
+            return BlendColors(baseColor, tint, 0.45);
         }
 
-        return outfit.Season switch
+        var seasonTint = outfit.Season switch
         {
-            Season.Spring => Color.FromRgb(245, 236, 231),
-            Season.Summer => Color.FromRgb(237, 242, 244),
-            Season.Autumn => Color.FromRgb(243, 235, 225),
-            Season.Winter => Color.FromRgb(236, 236, 238),
-            _ => Color.FromRgb(244, 239, 233)
+            Season.Spring => Color.FromRgb(255, 242, 235),
+            Season.Summer => Color.FromRgb(228, 240, 250),
+            Season.Autumn => Color.FromRgb(250, 240, 225),
+            Season.Winter => Color.FromRgb(232, 235, 245),
+            _ => baseColor
         };
+        return BlendColors(baseColor, seasonTint, 0.4);
+    }
+
+    private static Color GetThemeColor(string key, Color fallback)
+    {
+        if (global::System.Windows.Application.Current?.TryFindResource(key) is SolidColorBrush brush)
+            return brush.Color;
+        return fallback;
+    }
+
+    private static Color BlendColors(Color a, Color b, double amount)
+    {
+        byte Lerp(byte x, byte y) => (byte)(x + (y - x) * amount);
+        return Color.FromArgb(a.A, Lerp(a.R, b.R), Lerp(a.G, b.G), Lerp(a.B, b.B));
     }
 
     private static IReadOnlyList<string> BuildMoodChips(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)

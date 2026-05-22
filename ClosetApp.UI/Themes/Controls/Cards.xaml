@@ -11,17 +11,10 @@
     <Style x:Key="PremiumCardShadow" TargetType="Border">
         <Setter Property="CornerRadius" Value="24"/>
         <Setter Property="Margin" Value="6,6,0,0"/>
-        <Setter Property="Background">
-            <Setter.Value>
-                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                    <GradientStop Color="#E0D5CC" Offset="0"/>
-                    <GradientStop Color="#D5C8BE" Offset="1"/>
-                </LinearGradientBrush>
-            </Setter.Value>
-        </Setter>
+        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
         <Setter Property="Effect">
             <Setter.Value>
-                <DropShadowEffect BlurRadius="35" ShadowDepth="8" Opacity="0.12" Color="#B0A090" Direction="270"/>
+                <DropShadowEffect BlurRadius="35" ShadowDepth="8" Opacity="0.12" Color="#80000000" Direction="270"/>
             </Setter.Value>
         </Setter>
     </Style>
