@@ -101,8 +101,12 @@ public partial class OutfitCard : UserControl
         {
             var clothes = outfit.OutfitClothes?.Select(oc => oc.Clothing).ToList();
             var chips = BuildMoodChips(outfit, clothes);
+            var supportLine = BuildSupportLine(clothes);
             card.TxtName.Text = BuildDisplayName(outfit, clothes);
-            card.TxtMoodLine.Text = chips.Count > 0 ? string.Join(" · ", chips.Take(2)) : "今日搭配";
+            card.TxtMoodLine.Text = supportLine;
+            card.TxtMoodLine.Visibility = !string.IsNullOrWhiteSpace(supportLine)
+                ? Visibility.Visible
+                : Visibility.Collapsed;
             card.TxtWearInfo.Text = outfit.WearCount > 0
                 ? $"穿过 {outfit.WearCount} 次 · 最近 {FormatWornDate(outfit.WornDate)}"
                 : "还没记录穿着";
@@ -168,18 +172,25 @@ public partial class OutfitCard : UserControl
         return "今日穿搭";
     }
 
+    private void ApplyPreviewBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    {
+        var backdrop = ResolveBackdrop(outfit, clothes);
+        PreviewShell.Background = new SolidColorBrush(backdrop);
+    }
+
     private void RenderMoodChips(IReadOnlyList<string> chips)
     {
         MoodChipPanel.Children.Clear();
 
-        foreach (var chip in chips.Take(3))
+        foreach (var chip in chips.Take(4))
         {
+            var palette = ResolveChipPalette(chip);
             var border = new Border
             {
-                Background = new SolidColorBrush(Color.FromArgb(28, 217, 162, 153)),
-                BorderBrush = new SolidColorBrush(Color.FromArgb(36, 217, 162, 153)),
+                Background = new SolidColorBrush(palette.Background),
+                BorderBrush = new SolidColorBrush(palette.Border),
                 BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(9),
+                CornerRadius = new CornerRadius(10),
                 Padding = new Thickness(8, 3, 8, 3),
                 Margin = new Thickness(0, 0, 6, 6)
             };
@@ -189,7 +200,7 @@ public partial class OutfitCard : UserControl
                 Text = chip,
                 FontSize = 10,
                 FontWeight = FontWeights.SemiBold,
-                Foreground = global::System.Windows.Application.Current?.TryFindResource("PrimaryBrush") as Brush ?? Brushes.Black
+                Foreground = new SolidColorBrush(palette.Foreground)
             };
 
             MoodChipPanel.Children.Add(border);
@@ -200,10 +211,59 @@ public partial class OutfitCard : UserControl
             : Visibility.Collapsed;
     }
 
-    private void ApplyPreviewBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private static string BuildSupportLine(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
     {
-        var backdrop = ResolveBackdrop(outfit, clothes);
-        PreviewShell.Background = new SolidColorBrush(backdrop);
+        var parts = new List<string>();
+
+        var colors = clothes?
+            .Select(c => c.Color?.Trim())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct()
+            .Take(1)
+            .ToList();
+        var brands = clothes?
+            .Select(c => c.Brand?.Trim())
+            .Where(x => !string.IsNullOrWhiteSpace(x))
+            .Distinct()
+            .Take(1)
+            .ToList();
+
+        if (colors is { Count: > 0 })
+            parts.AddRange(colors!);
+
+        if (brands is { Count: > 0 })
+            parts.AddRange(brands!);
+
+        return parts.Count > 0 ? string.Join(" · ", parts) : string.Empty;
+    }
+
+    private static (Color Background, Color Border, Color Foreground) ResolveChipPalette(string chip)
+    {
+        return chip switch
+        {
+            "春" => (Color.FromRgb(252, 237, 235), Color.FromRgb(238, 204, 198), Color.FromRgb(188, 121, 110)),
+            "夏" => (Color.FromRgb(236, 245, 244), Color.FromRgb(190, 222, 216), Color.FromRgb(92, 145, 136)),
+            "秋" => (Color.FromRgb(249, 238, 228), Color.FromRgb(233, 206, 181), Color.FromRgb(176, 122, 79)),
+            "冬" => (Color.FromRgb(238, 240, 245), Color.FromRgb(202, 209, 226), Color.FromRgb(110, 121, 153)),
+            "四季" => (Color.FromRgb(242, 239, 247), Color.FromRgb(214, 205, 233), Color.FromRgb(126, 108, 170)),
+            "通勤" => (Color.FromRgb(244, 238, 232), Color.FromRgb(222, 204, 189), Color.FromRgb(135, 112, 95)),
+            "约会" => (Color.FromRgb(251, 235, 240), Color.FromRgb(238, 198, 211), Color.FromRgb(181, 108, 134)),
+            "出游" => (Color.FromRgb(237, 245, 233), Color.FromRgb(198, 223, 188), Color.FromRgb(104, 145, 92)),
+            "派对" => (Color.FromRgb(242, 235, 245), Color.FromRgb(214, 196, 224), Color.FromRgb(126, 98, 152)),
+            "休闲" => (Color.FromRgb(246, 239, 230), Color.FromRgb(228, 210, 188), Color.FromRgb(150, 120, 88)),
+            "连衣裙" => (Color.FromRgb(252, 241, 239), Color.FromRgb(240, 211, 206), Color.FromRgb(190, 128, 118)),
+            "叠穿" => (Color.FromRgb(239, 241, 246), Color.FromRgb(205, 211, 226), Color.FromRgb(106, 118, 149)),
+            "裙装" => (Color.FromRgb(250, 239, 244), Color.FromRgb(234, 205, 217), Color.FromRgb(176, 112, 140)),
+            "轻搭" => (Color.FromRgb(244, 240, 236), Color.FromRgb(224, 213, 203), Color.FromRgb(140, 125, 110)),
+            "奶油粉" => (Color.FromRgb(251, 233, 239), Color.FromRgb(239, 198, 210), Color.FromRgb(191, 111, 138)),
+            "奶油白" => (Color.FromRgb(250, 247, 239), Color.FromRgb(233, 225, 204), Color.FromRgb(158, 143, 104)),
+            "雾蓝" => (Color.FromRgb(235, 241, 249), Color.FromRgb(198, 211, 233), Color.FromRgb(104, 129, 171)),
+            "柔绿" => (Color.FromRgb(237, 245, 238), Color.FromRgb(196, 220, 200), Color.FromRgb(96, 143, 104)),
+            "奶油黄" => (Color.FromRgb(251, 245, 224), Color.FromRgb(237, 224, 177), Color.FromRgb(171, 146, 70)),
+            "可可棕" => (Color.FromRgb(244, 235, 229), Color.FromRgb(224, 203, 192), Color.FromRgb(145, 109, 92)),
+            "灰调" => (Color.FromRgb(239, 239, 242), Color.FromRgb(209, 210, 219), Color.FromRgb(116, 118, 133)),
+            _ => (Color.FromRgb(246, 239, 236), Color.FromRgb(228, 212, 204), Color.FromRgb(146, 120, 108))
+        };
     }
 
     private static Color ResolveBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)

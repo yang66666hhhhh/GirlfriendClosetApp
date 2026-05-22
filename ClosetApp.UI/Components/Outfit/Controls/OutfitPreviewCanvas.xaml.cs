@@ -91,9 +91,9 @@ public partial class OutfitPreviewCanvas : UserControl
             var shadow = new DropShadowEffect
             {
                 Color = Colors.Black,
-                BlurRadius = item.IsInset ? 6 : 8,
-                ShadowDepth = 2,
-                Opacity = item.IsInset ? 0.05 : 0.07,
+                BlurRadius = item.IsInset ? 5 : 7,
+                ShadowDepth = item.IsInset ? 1 : 2,
+                Opacity = item.IsInset ? 0.035 : 0.055,
                 Direction = 270
             };
 
@@ -107,7 +107,8 @@ public partial class OutfitPreviewCanvas : UserControl
                 Source = ClothingImageLoader.Load(
                     item.Clothing.ImagePath,
                     ImageVariant.Display,
-                    (int)Math.Clamp(Math.Ceiling(item.Width * 1.4), 160, 360))
+                    (int)Math.Clamp(Math.Ceiling(item.Width * 1.4), 160, 360),
+                    trimLightPadding: true)
             };
 
             Canvas.SetLeft(img, item.X);

@@ -27,21 +27,21 @@
         </Storyboard>
     </UserControl.Resources>
 
-    <Border x:Name="CardRoot" Width="320"
+    <Border x:Name="CardRoot" Width="304"
             Background="{StaticResource SurfaceCardBrush}"
-            CornerRadius="18"
+            CornerRadius="20"
             Cursor="Hand"
             RenderTransformOrigin="0.5,0.5">
         <Border.RenderTransform>
             <ScaleTransform ScaleX="1" ScaleY="1"/>
         </Border.RenderTransform>
         <Border.Effect>
-            <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="4"
-                              Opacity="0.07" Color="#60000000" Direction="270"/>
+            <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="3"
+                              Opacity="0.06" Color="#60000000" Direction="270"/>
         </Border.Effect>
         <Grid>
             <Grid.RowDefinitions>
-                <RowDefinition Height="324"/>
+                <RowDefinition Height="332"/>
                 <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
@@ -49,15 +49,15 @@
             <Border x:Name="PreviewShell"
                     Grid.Row="0"
                     Background="#F5EFE8"
-                    CornerRadius="18,18,0,0"
+                    CornerRadius="20,20,0,0"
                     ClipToBounds="True">
                 <Grid>
-                    <Border Width="192"
+                    <Border Width="176"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Stretch"
-                            Margin="0,8,0,14"
+                            Margin="0,12,0,20"
                             CornerRadius="88"
-                            Opacity="0.62">
+                            Opacity="0.42">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
                                 <GradientStop Color="#30FFFFFF" Offset="0"/>
@@ -67,11 +67,11 @@
                         </Border.Background>
                     </Border>
                     <Ellipse Width="132"
-                             Height="16"
+                             Height="14"
                              HorizontalAlignment="Center"
                              VerticalAlignment="Bottom"
-                             Margin="0,0,0,34"
-                             Opacity="0.28"
+                             Margin="0,0,0,28"
+                             Opacity="0.22"
                              IsHitTestVisible="False">
                         <Ellipse.Fill>
                             <RadialGradientBrush RadiusX="0.76" RadiusY="0.84">
@@ -81,7 +81,7 @@
                         </Ellipse.Fill>
                     </Ellipse>
                     <outfit:OutfitPreviewCanvas x:Name="PreviewCanvas"
-                                                Margin="6,4,6,0"
+                                                Margin="2,6,2,0"
                                                 HorizontalAlignment="Stretch"
                                                 VerticalAlignment="Stretch"/>
                     <Border x:Name="ActionOverlay" Visibility="Collapsed"
@@ -103,7 +103,9 @@
             </Border>
 
             <!-- Bottom Info -->
-            <Border Grid.Row="1" Padding="18,16,18,18">
+            <Border Grid.Row="1"
+                    Background="#FFFCFAF8"
+                    Padding="18,14,18,16">
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
