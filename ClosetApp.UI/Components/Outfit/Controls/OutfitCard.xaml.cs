@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Media.Effects;
 using OutfitScene = ClosetApp.Domain.Enums.OutfitScene;
 using Season = ClosetApp.Domain.Enums.Season;
 using ClosetApp.UI.Components.Outfit.Engine;
@@ -143,24 +144,46 @@ public partial class OutfitCard : UserControl
     private void OnMouseEnter(object sender, MouseEventArgs e)
     {
         AnimateTranslate(-4);
-        CardShadow.BlurRadius = 20;
+        AnimateScale(1.01);
+        AnimateShadow(28, 0.12);
         ActionOverlay.Visibility = Visibility.Visible;
     }
 
     private void OnMouseLeave(object sender, MouseEventArgs e)
     {
         AnimateTranslate(0);
-        CardShadow.BlurRadius = 16;
+        AnimateScale(1.0);
+        AnimateShadow(16, 0.06);
         ActionOverlay.Visibility = Visibility.Collapsed;
     }
 
     private void AnimateTranslate(double toY)
     {
-        var anim = new DoubleAnimation(toY, TimeSpan.FromMilliseconds(200))
+        var anim = new DoubleAnimation(toY, TimeSpan.FromMilliseconds(220))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
         CardTranslate.BeginAnimation(TranslateTransform.YProperty, anim);
+    }
+
+    private void AnimateScale(double to)
+    {
+        var duration = TimeSpan.FromMilliseconds(220);
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var animX = new DoubleAnimation(to, duration) { EasingFunction = ease };
+        var animY = new DoubleAnimation(to, duration) { EasingFunction = ease };
+        CardScale.BeginAnimation(ScaleTransform.ScaleXProperty, animX);
+        CardScale.BeginAnimation(ScaleTransform.ScaleYProperty, animY);
+    }
+
+    private void AnimateShadow(double blur, double opacity)
+    {
+        var duration = TimeSpan.FromMilliseconds(220);
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var blurAnim = new DoubleAnimation(blur, duration) { EasingFunction = ease };
+        var opacityAnim = new DoubleAnimation(opacity, duration) { EasingFunction = ease };
+        CardShadow.BeginAnimation(DropShadowEffect.BlurRadiusProperty, blurAnim);
+        CardShadow.BeginAnimation(DropShadowEffect.OpacityProperty, opacityAnim);
     }
 
     private static double ResolvePreviewHeight(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)

@@ -38,7 +38,7 @@
         <Border CornerRadius="{StaticResource Card.Radius}" Margin="2,2,0,0">
             <Border.Effect>
                 <DropShadowEffect x:Name="CardShadow"
-                                  BlurRadius="16" ShadowDepth="3"
+                                  BlurRadius="16" ShadowDepth="4"
                                   Opacity="0.06" Color="{DynamicResource Shadow.Color}" Direction="270"/>
             </Border.Effect>
         </Border>
@@ -48,7 +48,10 @@
                 Style="{StaticResource Card.Container}"
                 RenderTransformOrigin="0.5,0.5">
             <Border.RenderTransform>
-                <TranslateTransform x:Name="CardTranslate" Y="0"/>
+                <TransformGroup>
+                    <ScaleTransform x:Name="CardScale" ScaleX="1" ScaleY="1"/>
+                    <TranslateTransform x:Name="CardTranslate" Y="0"/>
+                </TransformGroup>
             </Border.RenderTransform>
 
             <Grid>
@@ -89,6 +92,7 @@
                             <Grid.RenderTransform>
                                 <TransformGroup>
                                     <ScaleTransform x:Name="ImageBaseScale" ScaleX="1" ScaleY="1"/>
+                                    <ScaleTransform x:Name="ImageScale" ScaleX="1" ScaleY="1"/>
                                     <TranslateTransform x:Name="ImageTranslate" Y="0"/>
                                 </TransformGroup>
                             </Grid.RenderTransform>

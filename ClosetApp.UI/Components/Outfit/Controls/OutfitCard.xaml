@@ -13,11 +13,14 @@
     <Border x:Name="CardRoot" Width="304"
             Style="{StaticResource Card.Container}">
         <Border.Effect>
-            <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="3"
+            <DropShadowEffect x:Name="CardShadow" BlurRadius="16" ShadowDepth="4"
                               Opacity="0.06" Color="{DynamicResource Shadow.Color}" Direction="270"/>
         </Border.Effect>
         <Border.RenderTransform>
-            <TranslateTransform x:Name="CardTranslate" Y="0"/>
+            <TransformGroup>
+                <ScaleTransform x:Name="CardScale" ScaleX="1" ScaleY="1"/>
+                <TranslateTransform x:Name="CardTranslate" Y="0"/>
+            </TransformGroup>
         </Border.RenderTransform>
         <Grid>
             <Grid.RowDefinitions>

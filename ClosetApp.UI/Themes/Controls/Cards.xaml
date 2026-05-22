@@ -15,6 +15,16 @@
     <sys:Double x:Key="Card.ChipFontSize">10</sys:Double>
     <sys:Double x:Key="Card.FavoriteFontSize">18</sys:Double>
 
+    <!-- Card Motion Tokens — Soft Elevation -->
+    <sys:Double x:Key="Card.HoverTranslateY">-4</sys:Double>
+    <sys:Double x:Key="Card.HoverScale">1.01</sys:Double>
+    <sys:Double x:Key="Card.HoverShadowBlur">28</sys:Double>
+    <sys:Double x:Key="Card.HoverShadowOpacity">0.12</sys:Double>
+    <sys:Double x:Key="Card.HoverImageScale">1.02</sys:Double>
+    <sys:Double x:Key="Card.HoverDurationMs">220</sys:Double>
+    <sys:Double x:Key="Card.IdleShadowBlur">16</sys:Double>
+    <sys:Double x:Key="Card.IdleShadowOpacity">0.06</sys:Double>
+
     <!-- ═══════════════════════════════════════════════
          CARD CONTAINER
          卡片外壳 — 背景、圆角、阴影、光标
