@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
@@ -677,24 +678,182 @@ public partial class SettingsTab : UserControl
     {
         bool isRose = theme == AppThemeKind.Rose;
 
-        ThemeRoseCard.BorderThickness = new Thickness(isRose ? 2 : 1.5);
-        ThemeBlueCard.BorderThickness = new Thickness(isRose ? 1.5 : 2);
+        ApplyThemeCardState(
+            ThemeRoseCard,
+            ThemeRoseCurrentBadge,
+            BtnUseRoseTheme,
+            isRose,
+            GetBrushColor("SettingsRoseSurfaceBrush"),
+            GetBrushColor("SettingsRoseBorderBrush"),
+            "切换到柔粉");
 
-        ThemeRoseCard.Background = new SolidColorBrush(isRose
-            ? Color.FromRgb(251, 239, 236)
-            : Color.FromRgb(253, 245, 243));
-        ThemeBlueCard.Background = new SolidColorBrush(isRose
-            ? Color.FromRgb(247, 250, 254)
-            : Color.FromRgb(238, 244, 255));
+        ApplyThemeCardState(
+            ThemeBlueCard,
+            ThemeBlueCurrentBadge,
+            BtnUseBlueTheme,
+            !isRose,
+            GetBrushColor("SettingsBlueSurfaceBrush"),
+            GetBrushColor("SettingsBlueBorderBrush"),
+            "切换到清蓝");
 
-        BtnUseRoseTheme.Content = isRose ? "当前使用" : "启用柔粉";
-        BtnUseBlueTheme.Content = isRose ? "启用清蓝" : "当前使用";
-        BtnUseRoseTheme.IsEnabled = !isRose;
-        BtnUseBlueTheme.IsEnabled = isRose;
+        ApplyThemeSwatchState(
+            isRose,
+            ThemeRoseSwatchPrimary,
+            ThemeRoseSwatchSoft,
+            ThemeRoseSwatchSurface,
+            Color.FromRgb(218, 148, 165),
+            Color.FromRgb(247, 227, 232),
+            Color.FromRgb(248, 241, 237));
+
+        ApplyThemeSwatchState(
+            !isRose,
+            ThemeBlueSwatchPrimary,
+            ThemeBlueSwatchSoft,
+            ThemeBlueSwatchSurface,
+            Color.FromRgb(88, 129, 214),
+            Color.FromRgb(224, 236, 255),
+            Color.FromRgb(235, 241, 251));
+
+        ApplyAppearanceSectionState(
+            isRose,
+            GetBrushColor("SettingsRoseSurfaceBrush"),
+            GetBrushColor("SettingsRoseBorderBrush"),
+            GetBrushColor("SettingsRoseTextBrush"),
+            GetBrushColor("SettingsBlueSurfaceBrush"),
+            GetBrushColor("SettingsBlueBorderBrush"),
+            GetBrushColor("SettingsBlueTextBrush"));
 
         TxtThemeSummary.Text = isRose ? "当前使用柔粉主题" : "当前使用清蓝主题";
         TxtThemeDescription.Text = isRose
             ? "柔粉更温和、亲近，适合保留现在这套偏生活感的衣橱气质。"
             : "清蓝更克制、清爽，页面会更冷静，也更偏中性工具感。";
+    }
+
+    private void ApplyThemeCardState(
+        Border card,
+        Border badge,
+        Button button,
+        bool isSelected,
+        Color previewSurface,
+        Color previewBorder,
+        string idleText)
+    {
+        var primary = GetBrushColor("PrimaryBrush");
+        var primaryLight = GetBrushColor("PrimaryLightBrush");
+        var surfaceElevated = GetBrushColor("SurfaceElevatedBrush");
+        var borderLight = GetBrushColor("BorderLightBrush");
+        var textSecondary = GetBrushColor("TextSecondaryBrush");
+
+        card.BorderThickness = new Thickness(isSelected ? 2.5 : 1.25);
+        card.BorderBrush = new SolidColorBrush(isSelected ? primary : borderLight);
+        card.Background = new SolidColorBrush(isSelected
+            ? previewSurface
+            : surfaceElevated);
+        card.Opacity = 1;
+        card.Effect = isSelected
+            ? new DropShadowEffect
+            {
+                Color = primary,
+                BlurRadius = 20,
+                ShadowDepth = 0,
+                Opacity = 0.18
+            }
+            : null;
+
+        badge.Visibility = isSelected ? Visibility.Visible : Visibility.Collapsed;
+        badge.Background = new SolidColorBrush(primaryLight);
+        badge.BorderBrush = new SolidColorBrush(primary);
+
+        button.Content = isSelected ? "已启用" : idleText;
+        button.IsEnabled = !isSelected;
+        button.Background = new SolidColorBrush(isSelected ? surfaceElevated : primaryLight);
+        button.BorderBrush = new SolidColorBrush(isSelected ? borderLight : primary);
+        button.Foreground = new SolidColorBrush(isSelected ? textSecondary : primary);
+    }
+
+    private void ApplyThemeSwatchState(
+        bool isSelected,
+        Border primarySwatch,
+        Border softSwatch,
+        Border surfaceSwatch,
+        Color primaryColor,
+        Color softColor,
+        Color surfaceColor)
+    {
+        if (isSelected)
+        {
+            primarySwatch.Background = new SolidColorBrush(primaryColor);
+            softSwatch.Background = new SolidColorBrush(softColor);
+            surfaceSwatch.Background = new SolidColorBrush(surfaceColor);
+            primarySwatch.Opacity = 1;
+            softSwatch.Opacity = 1;
+            surfaceSwatch.Opacity = 1;
+            return;
+        }
+
+        var neutralSurface = GetBrushColor("SurfaceSectionBrush");
+        var neutralSoft = BlendWithWhite(neutralSurface, 0.18);
+        var neutralEdge = GetBrushColor("BorderLightBrush");
+
+        primarySwatch.Background = new SolidColorBrush(neutralEdge);
+        softSwatch.Background = new SolidColorBrush(neutralSoft);
+        surfaceSwatch.Background = new SolidColorBrush(neutralSurface);
+        primarySwatch.Opacity = 1;
+        softSwatch.Opacity = 1;
+        surfaceSwatch.Opacity = 1;
+    }
+
+    private void ApplyAppearanceSectionState(
+        bool isRose,
+        Color roseSurface,
+        Color roseBorder,
+        Color roseText,
+        Color blueSurface,
+        Color blueBorder,
+        Color blueText)
+    {
+        var sectionSurface = isRose ? roseSurface : blueSurface;
+        var sectionBorder = isRose ? roseBorder : blueBorder;
+        var sectionText = isRose ? roseText : blueText;
+        var surfaceElevated = GetBrushColor("SurfaceElevatedBrush");
+        var primary = GetBrushColor("PrimaryBrush");
+        var primaryLight = GetBrushColor("PrimaryLightBrush");
+
+        AppearanceSectionCard.Background = new SolidColorBrush(sectionSurface);
+        AppearanceSectionCard.BorderBrush = new SolidColorBrush(sectionBorder);
+
+        AppearanceSectionBadge.Background = new SolidColorBrush(BlendWithWhite(sectionSurface, 0.08));
+        AppearanceSectionBadge.BorderBrush = new SolidColorBrush(sectionBorder);
+        AppearanceSectionBadgeText.Foreground = new SolidColorBrush(sectionText);
+
+        ThemeSelectionPanel.Background = new SolidColorBrush(surfaceElevated);
+        ThemeSelectionPanel.BorderBrush = new SolidColorBrush(sectionBorder);
+        ThemeSelectionPanel.BorderThickness = new Thickness(1);
+
+        AppearanceAppInfoCard.Background = new SolidColorBrush(surfaceElevated);
+        AppearanceAppInfoCard.BorderBrush = new SolidColorBrush(sectionBorder);
+        AppearanceAppInfoCard.BorderThickness = new Thickness(1);
+
+        BtnAppearanceOpenAppDir.Background = new SolidColorBrush(primaryLight);
+        BtnAppearanceOpenAppDir.BorderBrush = new SolidColorBrush(primary);
+        BtnAppearanceOpenAppDir.Foreground = new SolidColorBrush(primary);
+    }
+
+    private Color GetBrushColor(string key)
+    {
+        return FindResource(key) is SolidColorBrush brush
+            ? brush.Color
+            : Colors.Transparent;
+    }
+
+    private static Color BlendWithWhite(Color color, double amount)
+    {
+        byte Blend(byte channel) => (byte)(channel + (255 - channel) * amount);
+
+        return Color.FromArgb(
+            color.A,
+            Blend(color.R),
+            Blend(color.G),
+            Blend(color.B));
     }
 }

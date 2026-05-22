@@ -70,6 +70,23 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
+        <Style x:Key="ThemeCurrentBadge" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource PrimaryLightBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+
+        <Style x:Key="ThemeCurrentBadgeText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource PrimaryBrush}"/>
+        </Style>
+
         <Style x:Key="SettingsStatCard" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource SurfacePageBrush}"/>
             <Setter Property="BorderBrush" Value="{StaticResource BorderLightBrush}"/>
@@ -584,13 +601,16 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource SettingsLavenderSectionCard}">
+                        <Border x:Name="AppearanceSectionCard"
+                                Style="{StaticResource SettingsLavenderSectionCard}">
                             <StackPanel>
-                                <Border Style="{StaticResource SettingsEyebrowBadge}"
+                                <Border x:Name="AppearanceSectionBadge"
+                                        Style="{StaticResource SettingsEyebrowBadge}"
                                         Background="{StaticResource SettingsLavenderSurfaceBrush}"
                                         BorderBrush="{StaticResource SettingsLavenderBorderBrush}"
                                         BorderThickness="1">
-                                    <TextBlock Text="外观"
+                                    <TextBlock x:Name="AppearanceSectionBadgeText"
+                                               Text="外观"
                                                Style="{StaticResource SettingsEyebrowBadgeText}"
                                                Foreground="{StaticResource SettingsLavenderTextBrush}"/>
                                 </Border>
@@ -606,7 +626,9 @@
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
 
-                                    <Border Grid.Column="0" Style="{StaticResource SettingsLavenderInsetCard}">
+                                    <Border x:Name="ThemeSelectionPanel"
+                                            Grid.Column="0"
+                                            Style="{StaticResource SettingsLavenderInsetCard}">
                                         <StackPanel>
                                             <TextBlock Text="系统配色"
                                                        Style="{StaticResource PageFieldLabelText}"/>
@@ -624,27 +646,48 @@
                                                         BorderThickness="1.5"
                                                         CornerRadius="14"
                                                         Padding="12">
-                                                    <StackPanel>
-                                                        <TextBlock Text="柔粉"
-                                                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                                                   FontWeight="SemiBold"/>
-                                                        <WrapPanel Margin="0,8,0,0">
-                                                            <Border Width="22" Height="22" CornerRadius="11" Background="#FFD9A299" Margin="0,0,6,6"/>
-                                                            <Border Width="22" Height="22" CornerRadius="11" Background="#FFF2E6E3" Margin="0,0,6,6"/>
-                                                            <Border Width="22" Height="22" CornerRadius="11" Background="#FFF6F3EE" Margin="0,0,6,6"/>
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="柔粉"
+                                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                                       FontWeight="SemiBold"
+                                                                       VerticalAlignment="Center"/>
+                                                            <Border x:Name="ThemeRoseCurrentBadge"
+                                                                    Grid.Column="1"
+                                                                    Style="{StaticResource ThemeCurrentBadge}">
+                                                                <TextBlock Text="当前使用"
+                                                                           Style="{StaticResource ThemeCurrentBadgeText}"/>
+                                                            </Border>
+                                                        </Grid>
+                                                        <WrapPanel Grid.Row="1" Margin="0,8,0,0">
+                                                            <Border x:Name="ThemeRoseSwatchPrimary" Width="22" Height="22" CornerRadius="11" Background="#FFDA94A5" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchSoft" Width="22" Height="22" CornerRadius="11" Background="#FFF7E3E8" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchSurface" Width="22" Height="22" CornerRadius="11" Background="#FFF8F1ED" Margin="0,0,6,6"/>
                                                         </WrapPanel>
-                                                        <TextBlock Text="温柔、亲近、暖一点。"
+                                                        <TextBlock Grid.Row="2"
+                                                                   Text="温柔、亲近、暖一点。"
                                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                                    FontSize="11"
                                                                    Margin="0,4,0,0"
                                                                    TextWrapping="Wrap"/>
                                                         <Button x:Name="BtnUseRoseTheme"
+                                                                Grid.Row="3"
                                                                 Content="启用柔粉"
-                                                                Style="{StaticResource SettingsRoseButton}"
+                                                                Style="{StaticResource PageToolbarCapsuleButton}"
                                                                 HorizontalAlignment="Left"
                                                                 Margin="0,10,0,0"
                                                                 Click="UseRoseTheme_Click"/>
-                                                    </StackPanel>
+                                                    </Grid>
                                                 </Border>
 
                                                 <Border x:Name="ThemeBlueCard"
@@ -654,27 +697,48 @@
                                                         BorderThickness="1.5"
                                                         CornerRadius="14"
                                                         Padding="12">
-                                                    <StackPanel>
-                                                        <TextBlock Text="清蓝"
-                                                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                                                   FontWeight="SemiBold"/>
-                                                        <WrapPanel Margin="0,8,0,0">
-                                                            <Border Width="22" Height="22" CornerRadius="11" Background="#FF7D9FD3" Margin="0,0,6,6"/>
-                                                            <Border Width="22" Height="22" CornerRadius="11" Background="#FFE7EFFB" Margin="0,0,6,6"/>
-                                                            <Border Width="22" Height="22" CornerRadius="11" Background="#FFF2F6FC" Margin="0,0,6,6"/>
+                                                    <Grid>
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
+                                                        <Grid>
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="*"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <TextBlock Text="清蓝"
+                                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                                       FontWeight="SemiBold"
+                                                                       VerticalAlignment="Center"/>
+                                                            <Border x:Name="ThemeBlueCurrentBadge"
+                                                                    Grid.Column="1"
+                                                                    Style="{StaticResource ThemeCurrentBadge}">
+                                                                <TextBlock Text="当前使用"
+                                                                           Style="{StaticResource ThemeCurrentBadgeText}"/>
+                                                            </Border>
+                                                        </Grid>
+                                                        <WrapPanel Grid.Row="1" Margin="0,8,0,0">
+                                                            <Border x:Name="ThemeBlueSwatchPrimary" Width="22" Height="22" CornerRadius="11" Background="#FF5881D6" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeBlueSwatchSoft" Width="22" Height="22" CornerRadius="11" Background="#FFE0ECFF" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeBlueSwatchSurface" Width="22" Height="22" CornerRadius="11" Background="#FFEBF1FB" Margin="0,0,6,6"/>
                                                         </WrapPanel>
-                                                        <TextBlock Text="克制、清爽、冷一点。"
+                                                        <TextBlock Grid.Row="2"
+                                                                   Text="克制、清爽、冷一点。"
                                                                    Foreground="{StaticResource TextSecondaryBrush}"
                                                                    FontSize="11"
                                                                    Margin="0,4,0,0"
                                                                    TextWrapping="Wrap"/>
                                                         <Button x:Name="BtnUseBlueTheme"
+                                                                Grid.Row="3"
                                                                 Content="启用清蓝"
-                                                                Style="{StaticResource SettingsBlueButton}"
+                                                                Style="{StaticResource PageToolbarCapsuleButton}"
                                                                 HorizontalAlignment="Left"
                                                                 Margin="0,10,0,0"
                                                                 Click="UseBlueTheme_Click"/>
-                                                    </StackPanel>
+                                                    </Grid>
                                                 </Border>
                                             </Grid>
                                             <TextBlock x:Name="TxtThemeSummary"
@@ -689,7 +753,9 @@
                                         </StackPanel>
                                     </Border>
 
-                                    <Border Grid.Column="2" Style="{StaticResource SettingsLavenderInsetCard}">
+                                    <Border x:Name="AppearanceAppInfoCard"
+                                            Grid.Column="2"
+                                            Style="{StaticResource SettingsLavenderInsetCard}">
                                         <StackPanel>
                                             <TextBlock Text="应用信息"
                                                        Style="{StaticResource PageFieldLabelText}"/>
@@ -701,8 +767,9 @@
                                                        Foreground="{StaticResource TextSecondaryBrush}"
                                                        TextWrapping="Wrap"
                                                        Margin="0,6,0,0"/>
-                                            <Button Content="打开应用目录"
-                                                    Style="{StaticResource SettingsLavenderButton}"
+                                            <Button x:Name="BtnAppearanceOpenAppDir"
+                                                    Content="打开应用目录"
+                                                    Style="{StaticResource PageToolbarCapsuleButton}"
                                                     HorizontalAlignment="Left"
                                                     Margin="0,14,0,0"
                                                     Click="OpenAppDir_Click"/>
