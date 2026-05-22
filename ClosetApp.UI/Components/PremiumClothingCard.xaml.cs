@@ -67,14 +67,13 @@ public partial class PremiumClothingCard : UserControl
     {
         if (DataContext is not global::ClosetApp.Domain.Entities.Clothing c) return;
 
-        var useTrimmedPresentation = ShouldTrimLightPadding(c);
-
         CardImage.Stretch = Stretch.Uniform;
         CardImage.Source = ClothingImageLoader.Load(
             c.ImagePath,
             ImageVariant.Display,
             720,
-            useTrimmedPresentation);
+            trimLightPadding: true,
+            extractForeground: true);
         ApplyMeta(c);
         ApplyStagePresentation(c);
         ApplyImageBackdrop(c);
@@ -130,7 +129,7 @@ public partial class PremiumClothingCard : UserControl
         {
             var imageSize = ClothingImageLoader.GetDisplaySize(
                 path,
-                trimLightPadding: ShouldTrimLightPadding(c));
+                trimLightPadding: true);
             if (imageSize == null || imageSize.Value.Width <= 0)
                 return cardWidth * 1.08;
 
@@ -155,18 +154,6 @@ public partial class PremiumClothingCard : UserControl
 
         var gradientBrush = new LinearGradientBrush(imageColor, blended, new Point(0, 0), new Point(1, 1));
         ImageAreaBorder.Background = gradientBrush;
-    }
-
-    // Tops and outerwear are easy to over-trim into awkward silhouettes, so keep them conservative.
-    private static bool ShouldTrimLightPadding(global::ClosetApp.Domain.Entities.Clothing clothing)
-    {
-        return clothing.Type switch
-        {
-            ClothingType.Top => false,
-            ClothingType.Outerwear => false,
-            ClothingType.Accessory => false,
-            _ => true
-        };
     }
 
     // Build a lightweight secondary line so the card reads like a finished item card.

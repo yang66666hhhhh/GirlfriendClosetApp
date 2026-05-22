@@ -10,18 +10,23 @@ namespace ClosetApp.UI.Services;
 public static class ClothingImageLoader
 {
     private const byte TransparentBackgroundThreshold = 12;
-    private const byte LightBackgroundThreshold = 228;
-    private const byte NeutralBackgroundThreshold = 188;
-    private const byte NeutralBackgroundTolerance = 38;
-    private const byte EdgeSampleBrightnessThreshold = 132;
-    private const int TrimSafetyPadding = 4;
-    private const int TrimMinimumComponentArea = 160;
-    private const double TrimMergeAreaRatio = 0.12;
-    private const int TrimMergeGap = 36;
-    private const int TrimEdgeNoiseInset = 18;
-    private const int TrimEdgeNoiseMaxArea = 2400;
-    private const int BackgroundSeedTolerance = 32;
-    private const int BackgroundSeedLuminanceTolerance = 28;
+    private const byte LightBackgroundThreshold = 240;
+    private const byte NeutralBackgroundThreshold = 232;
+    private const byte NeutralBackgroundTolerance = 15;
+    private const byte EdgeSampleBrightnessThreshold = 150;
+    private const int TrimSafetyPadding = 8;
+    private const int TrimMinimumComponentArea = 250;
+    private const double TrimMergeAreaRatio = 0.18;
+    private const int TrimMergeGap = 24;
+    private const int TrimEdgeNoiseInset = 12;
+    private const int TrimEdgeNoiseMaxArea = 1400;
+    private const int BackgroundSeedTolerance = 10;
+    private const int BackgroundSeedLuminanceTolerance = 10;
+    private const int ForegroundProtectionLuminanceGap = 55;
+    private const byte NeutralClothingMin = 60;
+    private const byte NeutralClothingMax = 220;
+    private const byte NeutralClothingSatMax = 35;
+    private const int NeutralClothingSeedTight = 6;
     private const double TallSilhouetteThreshold = 0.72;
     private const double VeryTallSilhouetteThreshold = 0.88;
     private const double TallSilhouetteMinWidthRatio = 0.54;
@@ -593,11 +598,12 @@ public static class ClothingImageLoader
         var alpha = pixels[offset + 3];
         var max = Math.Max(red, Math.Max(green, blue));
         var min = Math.Min(red, Math.Min(green, blue));
+        var saturation = max - min;
         var luminance = (red + green + blue) / 3;
         var neutralLight = red >= NeutralBackgroundThreshold &&
                            green >= NeutralBackgroundThreshold &&
                            blue >= NeutralBackgroundThreshold &&
-                           max - min <= NeutralBackgroundTolerance;
+                           saturation <= NeutralBackgroundTolerance;
 
         if (alpha <= TransparentBackgroundThreshold)
             return true;
@@ -612,10 +618,44 @@ public static class ClothingImageLoader
         if (neutralLight)
             return true;
 
+        if (luminance >= NeutralClothingMin &&
+            luminance <= NeutralClothingMax &&
+            saturation <= NeutralClothingSatMax)
+        {
+            if (backgroundSeeds.Count > 0)
+            {
+                var avgSeedLum = (int)backgroundSeeds.Average(s => s.Luminance);
+                if (Math.Abs(luminance - avgSeedLum) > ForegroundProtectionLuminanceGap)
+                    return false;
+
+                var tightMatch = true;
+                foreach (var seed in backgroundSeeds)
+                {
+                    if (Math.Abs(red - seed.Red) > NeutralClothingSeedTight ||
+                        Math.Abs(green - seed.Green) > NeutralClothingSeedTight ||
+                        Math.Abs(blue - seed.Blue) > NeutralClothingSeedTight)
+                    {
+                        tightMatch = false;
+                        break;
+                    }
+                }
+                if (!tightMatch)
+                    return false;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
         if (backgroundSeeds.Count == 0)
             return false;
 
-        var neutralEnough = max - min <= NeutralBackgroundTolerance + 10;
+        var avgSeedLuminance = (int)backgroundSeeds.Average(s => s.Luminance);
+        if (luminance < avgSeedLuminance - ForegroundProtectionLuminanceGap)
+            return false;
+
+        var neutralEnough = saturation <= NeutralBackgroundTolerance + 6;
         if (!neutralEnough && luminance < LightBackgroundThreshold)
             return false;
 
@@ -664,7 +704,7 @@ public static class ClothingImageLoader
             var max = Math.Max(seed.Red, Math.Max(seed.Green, seed.Blue));
             var min = Math.Min(seed.Red, Math.Min(seed.Green, seed.Blue));
             if (seed.Luminance >= EdgeSampleBrightnessThreshold &&
-                max - min <= NeutralBackgroundTolerance + 8)
+                max - min <= NeutralBackgroundTolerance)
             {
                 seeds.Add(seed);
             }
