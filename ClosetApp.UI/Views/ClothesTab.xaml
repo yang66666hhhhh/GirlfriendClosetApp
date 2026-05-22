@@ -239,33 +239,32 @@
 
         <!-- ═══ HEADER ═══ -->
         <Border Grid.Row="0" Style="{StaticResource PageHeaderBorder}">
-            <Grid Height="56" Margin="44,0">
+            <Grid Height="48" Margin="44,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <!-- Left: Title -->
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="我的衣柜" Style="{StaticResource PageTitleText}"/>
-                    <TextBlock Text="收藏每一件心动单品" Style="{StaticResource PageSubtitleText}"/>
-                </StackPanel>
+                <TextBlock Grid.Column="0"
+                           Text="我的衣柜"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
 
                 <!-- Right: Add Buttons -->
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="24,0,0,0">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="18,0,0,0">
                     <Button Content="批量导入"
-                            Style="{StaticResource CapsuleButton}"
+                            Style="{StaticResource PageToolbarCapsuleButton}"
                             Click="BatchImport_Click"
-                            Padding="10,6"
-                            Margin="0,0,6,0"/>
+                            Margin="0,0,5,0"/>
                     <Button Content="批量清空"
-                            Style="{StaticResource DangerButton}"
+                            Style="{StaticResource PageToolbarDangerButton}"
                             Click="BatchClearWardrobe_Click"
-                            Padding="10,6"
-                            Margin="0,0,6,0"/>
+                            Margin="0,0,5,0"/>
                     <Button Content="+ 添加衣服"
-                            Style="{StaticResource PrimaryButton}"
-                            Padding="12,6"
+                            Style="{StaticResource PageToolbarPrimaryButton}"
                             Click="AddClothing_Click"/>
                 </StackPanel>
             </Grid>
@@ -280,17 +279,15 @@
 
             <StackPanel x:Name="ContentStack">
 
-                <!-- ═══ SUMMARY ═══ -->
+                <!-- ═══ TOP TOOLBELT ═══ -->
                 <Border x:Name="WardrobeSummary"
-                        Margin="44,8,44,6"
-                        Padding="10,8"
-                        Background="{StaticResource SurfaceCardBrush}"
-                        CornerRadius="16"
-                        BorderBrush="{StaticResource BorderLightBrush}"
-                        BorderThickness="1"
+                        Style="{StaticResource PageSummaryCard}"
+                        Margin="44,8,44,8"
+                        Padding="10,7"
                         Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <Grid>
                         <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
@@ -302,50 +299,46 @@
                             </Grid.ColumnDefinitions>
 
                             <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                                <TextBlock Text="衣柜概览"
-                                           FontSize="14"
+                                <TextBlock Text="衣柜"
+                                           FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{StaticResource TextPrimaryBrush}"/>
-                                <TextBlock Text="快速找到衣服，需要时再展开筛选。"
-                                           FontSize="10"
+                                <TextBlock Text="搜索、筛选、待整理都在这里。"
+                                           FontSize="9"
                                            Foreground="{StaticResource TextSecondaryBrush}"
                                            Margin="6,1,0,0"/>
                             </StackPanel>
 
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
-                                <Border Background="{StaticResource SurfaceSectionBrush}"
-                                        CornerRadius="11"
-                                        Padding="8,5"
-                                        Margin="0,0,5,0">
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
+                                <Border Style="{StaticResource PageSummaryBadge}"
+                                        Padding="7,4"
+                                        Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock x:Name="TxtTotalCount"
                                                    Text="{Binding TotalCount, StringFormat={}{0} 件}"
-                                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                                   FontWeight="SemiBold"/>
+                                                   Style="{StaticResource PageSummaryValueText}"/>
                                         <TextBlock Text=" 全部"
-                                                   Foreground="{StaticResource TextTertiaryBrush}"
-                                                   FontSize="10"
+                                                   Style="{StaticResource PageSummaryHintText}"
                                                    Margin="4,1,0,0"/>
                                     </StackPanel>
                                 </Border>
-                                <Border Background="{StaticResource PrimaryLightBrush}"
-                                        CornerRadius="11"
-                                        Padding="8,5">
+                                <Border Style="{StaticResource PageSummaryBadge}"
+                                        Background="{StaticResource PrimaryLightBrush}"
+                                        Padding="7,4">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock x:Name="TxtFilteredCount"
                                                    Text="{Binding FilteredCount, StringFormat={}{0} 件}"
                                                    Foreground="{StaticResource PrimaryBrush}"
                                                    FontWeight="SemiBold"/>
                                         <TextBlock Text=" 当前"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                                   FontSize="10"
+                                                   Style="{StaticResource PageSummaryHintText}"
                                                    Margin="4,1,0,0"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>
                         </Grid>
 
-                        <Grid Grid.Row="1" Margin="0,6,0,0">
+                        <Grid Grid.Row="1" Margin="0,5,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -360,173 +353,151 @@
                             <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
                                 <Button x:Name="ToggleFilterButton"
                                         Content="{Binding FilterToggleText}"
-                                        Style="{StaticResource CapsuleButton}"
-                                        Padding="8,5"
+                                        Style="{StaticResource PageToolbarCapsuleButton}"
                                         Click="ToggleFilter_Click"/>
                                 <Button x:Name="ClearFilterButton"
                                         Content="清除"
-                                        Style="{StaticResource CapsuleButton}"
-                                        Padding="8,5"
-                                        Margin="5,0,0,0"
+                                        Style="{StaticResource PageToolbarCapsuleButton}"
+                                        Margin="4,0,0,0"
                                         Click="ClearFilter_Click"/>
                             </StackPanel>
                         </Grid>
-                    </Grid>
-                </Border>
 
-                <Border Margin="44,0,44,6"
-                        Padding="10,8"
-                        Background="{StaticResource SurfaceCardBrush}"
-                        CornerRadius="15"
-                        BorderBrush="{StaticResource BorderLightBrush}"
-                        BorderThickness="1"
-                        Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,4">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <TextBlock Text="待整理"
-                                       FontSize="12"
-                                       FontWeight="SemiBold"
-                                       Foreground="{StaticResource TextPrimaryBrush}"
-                                       VerticalAlignment="Center"/>
-                            <TextBlock Grid.Column="1"
-                                       Text="导入后优先补资料"
-                                       FontSize="10"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       Margin="8,1,0,0"
-                                       VerticalAlignment="Center"/>
-                            <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                                <Button Content="批量补全"
-                                        Style="{StaticResource CapsuleButton}"
-                                        Padding="7,4"
-                                        FontSize="10"
-                                        HorizontalAlignment="Left"
-                                        Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                        Click="BatchCompleteQueue_Click"/>
-                                <Button Content="按分类清空"
-                                        Style="{StaticResource DangerButton}"
-                                        Padding="7,4"
-                                        FontSize="10"
-                                        Margin="5,0,0,0"
-                                        Click="BatchClearWardrobe_Click"/>
-                            </StackPanel>
-                        </Grid>
-                        <WrapPanel>
-                            <RadioButton Content="{Binding QueueAllText}"
-                                         Style="{StaticResource ChipStyle}"
-                                         GroupName="QueueGroup"
-                                         IsChecked="{Binding IsQueueAllSelected, Mode=TwoWay}"/>
-                            <RadioButton Content="{Binding QueueUnnamedText}"
-                                         Style="{StaticResource ChipStyle}"
-                                         Margin="8,0,0,8"
-                                         GroupName="QueueGroup"
-                                         IsChecked="{Binding IsQueueUnnamedSelected, Mode=TwoWay}"/>
-                            <RadioButton Content="{Binding QueueUncategorizedText}"
-                                         Style="{StaticResource ChipStyle}"
-                                         Margin="8,0,0,8"
-                                         GroupName="QueueGroup"
-                                         IsChecked="{Binding IsQueueUncategorizedSelected, Mode=TwoWay}"/>
-                            <RadioButton Content="{Binding QueueUnseasonedText}"
-                                         Style="{StaticResource ChipStyle}"
-                                         Margin="8,0,0,8"
-                                         GroupName="QueueGroup"
-                                         IsChecked="{Binding IsQueueUnseasonedSelected, Mode=TwoWay}"/>
-                            <RadioButton Content="{Binding QueueUntaggedText}"
-                                         Style="{StaticResource ChipStyle}"
-                                         Margin="8,0,0,8"
-                                         GroupName="QueueGroup"
-                                         IsChecked="{Binding IsQueueUntaggedSelected, Mode=TwoWay}"/>
-                            <RadioButton Content="{Binding QueueMissingBrandOrColorText}"
-                                         Style="{StaticResource ChipStyle}"
-                                         Margin="8,0,0,8"
-                                         GroupName="QueueGroup"
-                                         IsChecked="{Binding IsQueueMissingBrandOrColorSelected, Mode=TwoWay}"/>
-                            <RadioButton Content="{Binding QueueRecentlyImportedText}"
-                                         Style="{StaticResource ChipStyle}"
-                                         Margin="8,0,0,8"
-                                         GroupName="QueueGroup"
-                                         IsChecked="{Binding IsQueueRecentlyImportedSelected, Mode=TwoWay}"/>
-                        </WrapPanel>
-                        <Grid Margin="0,3,0,0"
-                              Visibility="{Binding ShowRecentImportSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <Border Background="{StaticResource SurfaceHeroBrush}"
-                                    CornerRadius="12"
-                                    Padding="8,4"
-                                    Margin="0,0,5,0"
-                                    VerticalAlignment="Top">
-                                <TextBlock Text="{Binding RecentImportSummaryTitle}"
-                                           FontSize="9"
+                        <StackPanel Grid.Row="2" Margin="0,6,0,0">
+                            <Grid Margin="0,0,0,4">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="待整理"
+                                           FontSize="11"
                                            FontWeight="SemiBold"
-                                           Foreground="{StaticResource TextPrimaryBrush}"/>
-                            </Border>
-                            <WrapPanel Grid.Column="1">
-                                <Border Background="{StaticResource SurfaceHeroBrush}"
-                                        CornerRadius="12"
-                                        Padding="7,4"
-                                        Margin="0,0,5,4">
-                                    <TextBlock Text="{Binding RecentlyImportedUnnamedCount, StringFormat=未命名 {0}}"
-                                               FontSize="9"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               FontWeight="SemiBold"/>
-                                </Border>
-                                <Border Background="{StaticResource SurfaceHeroBrush}"
-                                        CornerRadius="12"
-                                        Padding="7,4"
-                                        Margin="0,0,5,4">
-                                    <TextBlock Text="{Binding RecentlyImportedUncategorizedCount, StringFormat=未分类 {0}}"
-                                               FontSize="9"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               FontWeight="SemiBold"/>
-                                </Border>
-                                <Border Background="{StaticResource SurfaceHeroBrush}"
-                                        CornerRadius="12"
-                                        Padding="7,4"
-                                        Margin="0,0,5,4">
-                                    <TextBlock Text="{Binding RecentlyImportedUnseasonedCount, StringFormat=未设季节 {0}}"
-                                               FontSize="9"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               FontWeight="SemiBold"/>
-                                </Border>
-                                <Border Background="{StaticResource SurfaceHeroBrush}"
-                                        CornerRadius="12"
-                                        Padding="7,4"
-                                        Margin="0,0,5,4">
-                                    <TextBlock Text="{Binding RecentlyImportedUntaggedCount, StringFormat=无标签 {0}}"
-                                               FontSize="9"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               FontWeight="SemiBold"/>
-                                </Border>
-                                <Border Background="{StaticResource SurfaceHeroBrush}"
-                                        CornerRadius="12"
-                                        Padding="7,4"
-                                        Margin="0,0,0,4">
-                                    <TextBlock Text="{Binding RecentlyImportedMissingBrandOrColorCount, StringFormat=无品牌/颜色 {0}}"
-                                               FontSize="9"
-                                               Foreground="{StaticResource TextPrimaryBrush}"
-                                               FontWeight="SemiBold"/>
-                                </Border>
+                                           Foreground="{StaticResource TextPrimaryBrush}"
+                                           VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1"
+                                           Text="导入后优先补资料"
+                                           FontSize="9"
+                                           Foreground="{StaticResource TextSecondaryBrush}"
+                                           Margin="8,1,0,0"
+                                           VerticalAlignment="Center"/>
+                                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                                    <Button Content="批量补全"
+                                            Style="{StaticResource PageToolbarCapsuleButton}"
+                                            HorizontalAlignment="Left"
+                                            Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            Click="BatchCompleteQueue_Click"/>
+                                    <Button Content="按分类清空"
+                                            Style="{StaticResource PageToolbarDangerButton}"
+                                            Margin="4,0,0,0"
+                                            Click="BatchClearWardrobe_Click"/>
+                                </StackPanel>
+                            </Grid>
+
+                            <WrapPanel>
+                                <RadioButton Content="{Binding QueueAllText}"
+                                             Style="{StaticResource ChipStyle}"
+                                             GroupName="QueueGroup"
+                                             IsChecked="{Binding IsQueueAllSelected, Mode=TwoWay}"/>
+                                <RadioButton Content="{Binding QueueUnnamedText}"
+                                             Style="{StaticResource ChipStyle}"
+                                             Margin="8,0,0,8"
+                                             GroupName="QueueGroup"
+                                             IsChecked="{Binding IsQueueUnnamedSelected, Mode=TwoWay}"/>
+                                <RadioButton Content="{Binding QueueUncategorizedText}"
+                                             Style="{StaticResource ChipStyle}"
+                                             Margin="8,0,0,8"
+                                             GroupName="QueueGroup"
+                                             IsChecked="{Binding IsQueueUncategorizedSelected, Mode=TwoWay}"/>
+                                <RadioButton Content="{Binding QueueUnseasonedText}"
+                                             Style="{StaticResource ChipStyle}"
+                                             Margin="8,0,0,8"
+                                             GroupName="QueueGroup"
+                                             IsChecked="{Binding IsQueueUnseasonedSelected, Mode=TwoWay}"/>
+                                <RadioButton Content="{Binding QueueUntaggedText}"
+                                             Style="{StaticResource ChipStyle}"
+                                             Margin="8,0,0,8"
+                                             GroupName="QueueGroup"
+                                             IsChecked="{Binding IsQueueUntaggedSelected, Mode=TwoWay}"/>
+                                <RadioButton Content="{Binding QueueMissingBrandOrColorText}"
+                                             Style="{StaticResource ChipStyle}"
+                                             Margin="8,0,0,8"
+                                             GroupName="QueueGroup"
+                                             IsChecked="{Binding IsQueueMissingBrandOrColorSelected, Mode=TwoWay}"/>
+                                <RadioButton Content="{Binding QueueRecentlyImportedText}"
+                                             Style="{StaticResource ChipStyle}"
+                                             Margin="8,0,0,8"
+                                             GroupName="QueueGroup"
+                                             IsChecked="{Binding IsQueueRecentlyImportedSelected, Mode=TwoWay}"/>
                             </WrapPanel>
-                        </Grid>
-                    </StackPanel>
+
+                            <Grid Margin="0,-2,0,0"
+                                  Visibility="{Binding ShowRecentImportSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <Border Style="{StaticResource PageSummaryBadge}"
+                                        Background="{StaticResource SurfaceHeroBrush}"
+                                        Padding="8,4"
+                                        Margin="0,0,5,0"
+                                        VerticalAlignment="Top">
+                                    <TextBlock Text="{Binding RecentImportSummaryTitle}"
+                                               Style="{StaticResource PageSummaryValueText}"
+                                               FontSize="9"/>
+                                </Border>
+                                <WrapPanel Grid.Column="1">
+                                    <Border Style="{StaticResource PageSummaryBadge}"
+                                            Background="{StaticResource SurfaceHeroBrush}"
+                                            Padding="7,4"
+                                            Margin="0,0,5,4">
+                                        <TextBlock Text="{Binding RecentlyImportedUnnamedCount, StringFormat=未命名 {0}}"
+                                                   Style="{StaticResource PageSummaryValueText}"
+                                                   FontSize="9"/>
+                                    </Border>
+                                    <Border Style="{StaticResource PageSummaryBadge}"
+                                            Background="{StaticResource SurfaceHeroBrush}"
+                                            Padding="7,4"
+                                            Margin="0,0,5,4">
+                                        <TextBlock Text="{Binding RecentlyImportedUncategorizedCount, StringFormat=未分类 {0}}"
+                                                   Style="{StaticResource PageSummaryValueText}"
+                                                   FontSize="9"/>
+                                    </Border>
+                                    <Border Style="{StaticResource PageSummaryBadge}"
+                                            Background="{StaticResource SurfaceHeroBrush}"
+                                            Padding="7,4"
+                                            Margin="0,0,5,4">
+                                        <TextBlock Text="{Binding RecentlyImportedUnseasonedCount, StringFormat=未设季节 {0}}"
+                                                   Style="{StaticResource PageSummaryValueText}"
+                                                   FontSize="9"/>
+                                    </Border>
+                                    <Border Style="{StaticResource PageSummaryBadge}"
+                                            Background="{StaticResource SurfaceHeroBrush}"
+                                            Padding="7,4"
+                                            Margin="0,0,5,4">
+                                        <TextBlock Text="{Binding RecentlyImportedUntaggedCount, StringFormat=无标签 {0}}"
+                                                   Style="{StaticResource PageSummaryValueText}"
+                                                   FontSize="9"/>
+                                    </Border>
+                                    <Border Style="{StaticResource PageSummaryBadge}"
+                                            Background="{StaticResource SurfaceHeroBrush}"
+                                            Padding="7,4"
+                                            Margin="0,0,0,4">
+                                        <TextBlock Text="{Binding RecentlyImportedMissingBrandOrColorCount, StringFormat=无品牌/颜色 {0}}"
+                                                   Style="{StaticResource PageSummaryValueText}"
+                                                   FontSize="9"/>
+                                    </Border>
+                                </WrapPanel>
+                            </Grid>
+                        </StackPanel>
+                    </Grid>
                 </Border>
 
                 <!-- ═══ FILTER PANEL ═══ -->
                 <Border x:Name="FilterPanel"
-                        Style="{StaticResource LookbookCard}"
+                        Style="{StaticResource PageSummaryCard}"
                         Margin="44,0,44,10"
                         Padding="12,10"
-                        Background="{StaticResource SurfaceCardBrush}"
-                        CornerRadius="15"
-                        BorderBrush="{StaticResource BorderLightBrush}"
-                        BorderThickness="1"
                         Visibility="{Binding IsFilterExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <Grid Margin="0,0,0,8">

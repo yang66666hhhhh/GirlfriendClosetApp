@@ -52,17 +52,19 @@
 
         <!-- Header -->
         <Border Grid.Row="0" Style="{StaticResource PageHeaderBorder}">
-            <Grid Height="72" Margin="64,0">
+            <Grid Height="48" Margin="44,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="我的搭配" Style="{StaticResource PageTitleText}"/>
-                    <TextBlock Text="像翻 Lookbook 一样整理日常穿搭" Style="{StaticResource PageSubtitleText}"/>
-                </StackPanel>
+                <TextBlock Grid.Column="0"
+                           Text="我的搭配"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
                 <Button Grid.Column="1" Content="+ 新建今日搭配"
-                        Style="{StaticResource PrimaryButton}" Padding="16,10"
+                        Style="{StaticResource PageToolbarPrimaryButton}"
                         Click="CreateOutfit_Click"/>
             </Grid>
         </Border>
@@ -70,12 +72,12 @@
         <!-- Content -->
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="64,20,64,48"
+                      Padding="44,12,44,48"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
-                <Border Style="{StaticResource LookbookCard}"
+                <Border Style="{StaticResource PageSummaryCard}"
                         Margin="0,0,0,12"
-                        Padding="20,16">
+                        Padding="18,14">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="1.65*"/>
@@ -86,34 +88,31 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="搭配总览"
                                        FontSize="16"
-                                       FontWeight="Bold"
+                                       FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Text="先看今天适合穿什么，再按需展开记录和日历。"
                                        Foreground="{StaticResource TextSecondaryBrush}"
                                        FontSize="10"
-                                       Margin="0,3,0,0"
+                                       Margin="0,4,0,0"
                                        TextWrapping="Wrap"/>
 
-                            <WrapPanel Margin="0,8,0,0">
+                            <WrapPanel Margin="0,7,0,0">
                                 <Border Background="{StaticResource SurfaceSectionBrush}"
-                                        CornerRadius="12"
-                                        Padding="10,6"
+                                        Style="{StaticResource PageSummaryBadge}"
+                                        Padding="9,6"
                                         Margin="0,0,6,4">
                                     <StackPanel>
                                         <TextBlock x:Name="TxtOutfitCount"
                                                    Text="{Binding OutfitCountText}"
-                                                   Foreground="{StaticResource TextPrimaryBrush}"
-                                                   FontWeight="SemiBold"
-                                                   FontSize="12"/>
+                                                   Style="{StaticResource PageSummaryValueText}"/>
                                         <TextBlock Text="当前收藏"
-                                                   Foreground="{StaticResource TextTertiaryBrush}"
-                                                   FontSize="9"
+                                                   Style="{StaticResource PageSummaryHintText}"
                                                    Margin="0,1,0,0"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Background="{StaticResource PrimaryLightBrush}"
-                                        CornerRadius="12"
-                                        Padding="10,6"
+                                        Style="{StaticResource PageSummaryBadge}"
+                                        Padding="9,6"
                                         Margin="0,0,6,4">
                                     <StackPanel>
                                         <TextBlock x:Name="TxtHistoryQuick"
@@ -122,39 +121,35 @@
                                                    FontWeight="SemiBold"
                                                    FontSize="12"/>
                                         <TextBlock Text="穿着时间线"
-                                                   Foreground="{StaticResource TextSecondaryBrush}"
-                                                   FontSize="9"
+                                                   Style="{StaticResource PageSummaryHintText}"
                                                    Margin="0,1,0,0"/>
                                     </StackPanel>
                                 </Border>
                             </WrapPanel>
 
-                            <WrapPanel Margin="0,6,0,0">
+                            <WrapPanel Margin="0,5,0,0">
                                 <Button Content="刷新天气推荐"
-                                        Style="{StaticResource CapsuleButton}"
+                                        Style="{StaticResource PageToolbarCapsuleButton}"
                                         Click="RefreshWeatherRecommendations_Click"
-                                        Padding="10,6"
                                         Margin="0,0,6,0"
-                                        FontSize="12"/>
+                                        />
                                 <Button x:Name="ToggleHistoryButton"
                                         Content="{Binding HistoryToggleText}"
-                                        Style="{StaticResource CapsuleButton}"
+                                        Style="{StaticResource PageToolbarCapsuleButton}"
                                         Click="ToggleHistory_Click"
-                                        Padding="10,6"
                                         Margin="0,0,6,0"
-                                        FontSize="12"/>
+                                        />
                                 <Button Content="去设置城市"
-                                        Style="{StaticResource CapsuleButton}"
+                                        Style="{StaticResource PageToolbarCapsuleButton}"
                                         Click="OpenSettings_Click"
-                                        Padding="10,6"
-                                        FontSize="12"/>
+                                        />
                             </WrapPanel>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
                             <Border Background="{StaticResource SurfaceSectionBrush}"
                                     CornerRadius="12"
-                                    Padding="12,10">
+                                    Padding="11,9">
                                 <StackPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions>

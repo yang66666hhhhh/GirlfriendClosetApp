@@ -14,51 +14,52 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Style="{StaticResource PageHeaderBorder}">
-            <Grid Height="72" Margin="64,0">
+            <Grid Height="48" Margin="44,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                    <TextBlock Text="标签管理" Style="{StaticResource PageTitleText}"/>
-                    <TextBlock Text="把风格、场景和季节整理成可复用灵感" Style="{StaticResource PageSubtitleText}"/>
-                </StackPanel>
-                <Button Grid.Column="1" Content="+ 添加标签" Style="{StaticResource PrimaryButton}" Padding="16,10" Click="AddTag_Click"/>
+                <TextBlock Grid.Column="0"
+                           Text="标签管理"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
+                <Button Grid.Column="1"
+                        Content="+ 添加标签"
+                        Style="{StaticResource PageToolbarPrimaryButton}"
+                        Click="AddTag_Click"/>
             </Grid>
         </Border>
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="64,28,64,60"
+                      Padding="44,12,44,60"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
-                <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
+                <Border Style="{StaticResource PageSummaryCard}" Margin="0,0,0,16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="你的衣橱标签库" FontSize="24" FontWeight="Bold"
+                            <TextBlock Text="标签总览" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Text="{Binding CategorySummaryText}"
                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="14" Margin="0,8,0,0"/>
+                                       FontSize="10" Margin="0,4,0,0"/>
                         </StackPanel>
                         <Border Grid.Column="1"
-                                Background="{StaticResource SurfaceSectionBrush}"
-                                CornerRadius="18"
-                                Padding="18,11"
-                                Margin="32,0,0,0"
+                                Style="{StaticResource PageSummaryBadge}"
+                                Margin="20,0,0,0"
                                 VerticalAlignment="Center">
                             <StackPanel>
                                 <TextBlock Text="{Binding TagCountText}"
-                                           Foreground="{StaticResource TextPrimaryBrush}"
-                                           FontWeight="SemiBold"/>
+                                           Style="{StaticResource PageSummaryValueText}"/>
                                 <TextBlock Text="当前标签库"
-                                           Foreground="{StaticResource TextTertiaryBrush}"
-                                           FontSize="11"
-                                           Margin="0,3,0,0"/>
+                                           Style="{StaticResource PageSummaryHintText}"
+                                           Margin="0,2,0,0"/>
                             </StackPanel>
                         </Border>
                     </Grid>

@@ -9,32 +9,41 @@
         </Grid.RowDefinitions>
 
         <Border Grid.Row="0" Style="{StaticResource PageHeaderBorder}">
-            <Grid Height="72" Margin="64,0">
-                <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="设置" Style="{StaticResource PageTitleText}"/>
-                    <TextBlock Text="管理数据、图片缓存和应用偏好" Style="{StaticResource PageSubtitleText}"/>
-                </StackPanel>
+            <Grid Height="48" Margin="44,0">
+                <TextBlock Text="设置"
+                           FontSize="14"
+                           FontWeight="Bold"
+                           Foreground="{StaticResource TextPrimaryBrush}"
+                           VerticalAlignment="Center"/>
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="64,28,64,60">
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="44,12,44,60">
             <StackPanel>
-                <Border Style="{StaticResource LookbookCard}" Margin="0,0,0,24">
+                <Border Style="{StaticResource PageSummaryCard}" Margin="0,0,0,16">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <TextBlock Text="私人衣橱设置中心" FontSize="24" FontWeight="Bold"
+                            <TextBlock Text="设置总览" FontSize="16" FontWeight="SemiBold"
                                        Foreground="{StaticResource TextPrimaryBrush}"/>
                             <TextBlock Text="把存储路径、缓存和主题信息收在一个稳定入口里。"
                                        Foreground="{StaticResource TextSecondaryBrush}"
-                                       FontSize="14" Margin="0,8,0,0"/>
+                                       FontSize="10" Margin="0,4,0,0"/>
                         </StackPanel>
-                        <Border Grid.Column="1" Width="76" Height="76" CornerRadius="24"
-                                Background="{StaticResource PrimaryLightBrush}" Margin="40,0,0,0">
-                            <TextBlock Text="⚙" FontSize="34" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <Border Grid.Column="1"
+                                Style="{StaticResource PageSummaryBadge}"
+                                Margin="20,0,0,0"
+                                VerticalAlignment="Center">
+                            <StackPanel>
+                                <TextBlock Text="模块"
+                                           Style="{StaticResource PageSummaryHintText}"/>
+                                <TextBlock Text="数据 · 缓存 · 天气"
+                                           Style="{StaticResource PageSummaryValueText}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
                         </Border>
                     </Grid>
                 </Border>
