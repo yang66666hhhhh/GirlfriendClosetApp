@@ -19,6 +19,7 @@ public partial class PremiumClothingCard : UserControl
     private const double ImageStageChromeHeight = 48;
     private const double InfoAreaMinHeight = 80;
     private const double InfoAreaPerChipHeight = 26;
+    private const double HoverPopupWidth = 208;
 
     public static readonly RoutedEvent CardClickedEvent = EventManager.RegisterRoutedEvent(
         "CardClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PremiumClothingCard));
@@ -210,6 +211,7 @@ public partial class PremiumClothingCard : UserControl
 
         ApplyFavoriteVisual(clothing);
         RenderChips(clothing);
+        ApplyHoverInfo(clothing);
     }
 
     private void RenderChips(global::ClosetApp.Domain.Entities.Clothing clothing)
@@ -350,7 +352,17 @@ public partial class PremiumClothingCard : UserControl
         AnimateScale(1.01);
         AnimateShadow(28, 0.12);
         AnimateImageScale(1.02);
-        ActionOverlay.Visibility = Visibility.Visible;
+        BtnMore.Visibility = Visibility.Visible;
+        HoverInfoPopup.IsOpen = true;
+        PositionHoverPopup(e.GetPosition(CardRoot));
+    }
+
+    private void Card_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (!HoverInfoPopup.IsOpen)
+            HoverInfoPopup.IsOpen = true;
+
+        PositionHoverPopup(e.GetPosition(CardRoot));
     }
 
     private void Card_MouseLeave(object sender, MouseEventArgs e)
@@ -359,7 +371,8 @@ public partial class PremiumClothingCard : UserControl
         AnimateScale(1.0);
         AnimateShadow(16, 0.06);
         AnimateImageScale(1.0);
-        ActionOverlay.Visibility = Visibility.Collapsed;
+        BtnMore.Visibility = Visibility.Collapsed;
+        HoverInfoPopup.IsOpen = false;
     }
 
     private void AnimateTranslate(double toY)
@@ -449,6 +462,16 @@ public partial class PremiumClothingCard : UserControl
         e.Handled = true;
     }
 
+    private void MoreButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (BtnMore.ContextMenu == null)
+            return;
+
+        BtnMore.ContextMenu.PlacementTarget = BtnMore;
+        BtnMore.ContextMenu.IsOpen = true;
+        e.Handled = true;
+    }
+
     private void MenuDelete_Click(object sender, RoutedEventArgs e)
     {
         RaiseEvent(new RoutedEventArgs(DeleteClickedEvent, this));
@@ -468,6 +491,69 @@ public partial class PremiumClothingCard : UserControl
         BtnFavorite.BorderBrush = isFavorite
             ? (Brush)FindResource("DangerBrush")
             : (Brush)FindResource("BorderLightBrush");
+    }
+
+    private void ApplyHoverInfo(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        HoverInfoDetailText.Text = BuildHoverDetail(clothing);
+        HoverInfoFavoriteText.Text = BuildFavoriteText(clothing.FavoriteLevel);
+        HoverInfoCreatedText.Text = clothing.CreatedAt.ToString("MM-dd");
+
+        var notes = clothing.Notes?.Trim();
+        HoverInfoNotesText.Text = string.IsNullOrWhiteSpace(notes) ? string.Empty : notes;
+        HoverInfoNotesCard.Visibility = string.IsNullOrWhiteSpace(notes)
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+    }
+
+    private void PositionHoverPopup(Point point)
+    {
+        var horizontalOffset = point.X + 18;
+        if (horizontalOffset + HoverPopupWidth > CardRoot.ActualWidth - 8)
+            horizontalOffset = Math.Max(8, point.X - HoverPopupWidth - 18);
+
+        var verticalOffset = Math.Max(10, point.Y - 10);
+        HoverInfoPopup.HorizontalOffset = horizontalOffset;
+        HoverInfoPopup.VerticalOffset = verticalOffset;
+    }
+
+    private static string BuildFavoriteText(int favoriteLevel)
+    {
+        var level = Math.Clamp(favoriteLevel, 0, 5);
+        return level switch
+        {
+            5 => "5 / 5 很喜欢",
+            4 => "4 / 5 已收藏",
+            3 => "3 / 5 挺喜欢",
+            2 => "2 / 5 还不错",
+            1 => "1 / 5 先留着",
+            _ => "0 / 5 待判断"
+        };
+    }
+
+    private static string BuildHoverDetail(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        var details = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(clothing.Brand))
+            details.Add("还没补品牌");
+
+        if (string.IsNullOrWhiteSpace(clothing.Color))
+            details.Add("还没补颜色");
+
+        if (clothing.Season == Season.Unspecified)
+            details.Add("季节待补");
+
+        if (clothing.Type == ClothingType.Unspecified)
+            details.Add("分类待补");
+
+        if (clothing.ClothingTags.Count == 0)
+            details.Add("还没有风格标签");
+
+        if (details.Count == 0)
+            return "资料已经比较完整，可以直接参与筛选和搭配。";
+
+        return string.Join(" · ", details);
     }
 
     private bool IsInsideFavoriteButton(DependencyObject source)

@@ -144,23 +144,43 @@
         <Setter Property="Padding" Value="12,7"/>
     </Style>
 
-    <Style x:Key="WardrobeCard.ActionOverlay" TargetType="Border">
-        <Setter Property="Background" Value="#12000000"/>
-        <Setter Property="CornerRadius" Value="16"/>
-        <Setter Property="HorizontalAlignment" Value="Center"/>
-        <Setter Property="VerticalAlignment" Value="Bottom"/>
-        <Setter Property="Margin" Value="0,0,0,12"/>
-        <Setter Property="Padding" Value="8"/>
+    <Style x:Key="WardrobeCard.MoreButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
+        <Setter Property="Width" Value="30"/>
+        <Setter Property="MinHeight" Value="30"/>
+        <Setter Property="Background" Value="#F8FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#D8E2F0"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Visibility" Value="Collapsed"/>
     </Style>
 
-    <Style x:Key="WardrobeCard.OverlayActionButton" TargetType="Button" BasedOn="{StaticResource CapsuleButton}">
-        <Setter Property="MinWidth" Value="0"/>
-        <Setter Property="Padding" Value="10,5"/>
+    <Style x:Key="WardrobeCard.HoverInfoPopup" TargetType="Border">
+        <Setter Property="Width" Value="208"/>
+        <Setter Property="Padding" Value="12"/>
+        <Setter Property="CornerRadius" Value="16"/>
+        <Setter Property="Background" Value="#FCFFFFFF"/>
+        <Setter Property="BorderBrush" Value="#E6DDE9"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <Style x:Key="WardrobeCard.HoverInfoLabel" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="9"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="WardrobeCard.HoverInfoValue" TargetType="TextBlock">
         <Setter Property="FontSize" Value="11"/>
-        <Setter Property="Background" Value="#F8FCFF"/>
-        <Setter Property="BorderBrush" Value="#D8E2F0"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="WardrobeCard.HoverInfoBody" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>
 
     <!-- ═══════════════════════════════════════════════
