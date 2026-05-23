@@ -47,6 +47,15 @@ public partial class PremiumClothingCard : UserControl
         remove => RemoveHandler(DeleteClickedEvent, value);
     }
 
+    public static readonly RoutedEvent FavoriteToggledEvent = EventManager.RegisterRoutedEvent(
+        "FavoriteToggled", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PremiumClothingCard));
+
+    public event RoutedEventHandler FavoriteToggled
+    {
+        add => AddHandler(FavoriteToggledEvent, value);
+        remove => RemoveHandler(FavoriteToggledEvent, value);
+    }
+
     private Point _mouseDownPos;
     private bool _heightApplied;
 
@@ -197,6 +206,7 @@ public partial class PremiumClothingCard : UserControl
             ? Visibility.Collapsed
             : Visibility.Visible;
 
+        ApplyFavoriteVisual(clothing);
         RenderChips(clothing);
     }
 
@@ -324,6 +334,12 @@ public partial class PremiumClothingCard : UserControl
         anim?.Begin();
     }
 
+    public void RefreshFavoriteVisual()
+    {
+        if (DataContext is global::ClosetApp.Domain.Entities.Clothing clothing)
+            ApplyFavoriteVisual(clothing);
+    }
+
     private void CardLoadAnim_Completed(object? sender, EventArgs e) { }
 
     private void Card_MouseEnter(object sender, MouseEventArgs e)
@@ -385,11 +401,17 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)
     {
+        if (e.OriginalSource is DependencyObject source && IsInsideFavoriteButton(source))
+            return;
+
         _mouseDownPos = e.GetPosition(this);
     }
 
     private void Card_MouseUp(object sender, MouseButtonEventArgs e)
     {
+        if (e.OriginalSource is DependencyObject source && IsInsideFavoriteButton(source))
+            return;
+
         var pos = e.GetPosition(this);
         if (Math.Abs(pos.X - _mouseDownPos.X) < 5 && Math.Abs(pos.Y - _mouseDownPos.Y) < 5)
         {
@@ -399,7 +421,31 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_Click(object sender, MouseButtonEventArgs e)
     {
+        if (e.OriginalSource is DependencyObject source && IsInsideFavoriteButton(source))
+            return;
+
         RaiseEvent(new RoutedEventArgs(CardClickedEvent, this));
+    }
+
+    private void Favorite_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        e.Handled = true;
+    }
+
+    private void Favorite_Click(object sender, RoutedEventArgs e)
+    {
+        if (DataContext is not global::ClosetApp.Domain.Entities.Clothing clothing)
+            return;
+
+        clothing.IsFavorite = !clothing.IsFavorite;
+        if (!clothing.IsFavorite && clothing.FavoriteLevel >= 4)
+            clothing.FavoriteLevel = 3;
+        else if (clothing.IsFavorite && clothing.FavoriteLevel < 4)
+            clothing.FavoriteLevel = 4;
+
+        ApplyFavoriteVisual(clothing);
+        RaiseEvent(new RoutedEventArgs(FavoriteToggledEvent, this));
+        e.Handled = true;
     }
 
     private void MenuEdit_Click(object sender, RoutedEventArgs e)
@@ -412,5 +458,34 @@ public partial class PremiumClothingCard : UserControl
     {
         RaiseEvent(new RoutedEventArgs(DeleteClickedEvent, this));
         e.Handled = true;
+    }
+
+    private void ApplyFavoriteVisual(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        var isFavorite = clothing.IsFavorite || clothing.FavoriteLevel >= 4;
+        BtnFavorite.Content = isFavorite ? "♥" : "♡";
+        BtnFavorite.Foreground = isFavorite
+            ? (Brush)FindResource("DangerBrush")
+            : (Brush)FindResource("TextPlaceholderBrush");
+        BtnFavorite.Background = isFavorite
+            ? new SolidColorBrush(Color.FromRgb(255, 243, 246))
+            : new SolidColorBrush(Color.FromRgb(247, 251, 255));
+        BtnFavorite.BorderBrush = isFavorite
+            ? (Brush)FindResource("DangerBrush")
+            : (Brush)FindResource("BorderLightBrush");
+    }
+
+    private bool IsInsideFavoriteButton(DependencyObject source)
+    {
+        DependencyObject? current = source;
+        while (current != null)
+        {
+            if (ReferenceEquals(current, BtnFavorite))
+                return true;
+
+            current = VisualTreeHelper.GetParent(current);
+        }
+
+        return false;
     }
 }

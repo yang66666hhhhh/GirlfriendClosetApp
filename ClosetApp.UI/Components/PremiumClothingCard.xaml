@@ -154,7 +154,10 @@
                         </StackPanel>
                         <Button x:Name="BtnFavorite" Grid.Column="1"
                                 Style="{StaticResource Card.FavoriteButtonBase}"
-                                Content="♡" FontSize="{StaticResource Card.FavoriteFontSize}"/>
+                                Content="♡"
+                                FontSize="{StaticResource Card.FavoriteFontSize}"
+                                Click="Favorite_Click"
+                                PreviewMouseLeftButtonDown="Favorite_PreviewMouseLeftButtonDown"/>
                     </Grid>
                 </Border>
             </Grid>

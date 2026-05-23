@@ -680,6 +680,7 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
                             <components:PremiumClothingCard
+                                FavoriteToggled="ClothingCard_FavoriteToggled"
                                 EditClicked="ClothingCard_Edit"
                                 DeleteClicked="ClothingCard_Delete"/>
                         </DataTemplate>

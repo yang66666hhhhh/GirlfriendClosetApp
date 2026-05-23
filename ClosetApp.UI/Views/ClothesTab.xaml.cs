@@ -188,6 +188,31 @@ public partial class ClothesTab : UserControl
         });
     }
 
+    private async void ClothingCard_FavoriteToggled(object sender, RoutedEventArgs e)
+    {
+        if (sender is not PremiumClothingCard card || card.DataContext is not Clothing clothing)
+            return;
+
+        try
+        {
+            await _viewModel.UpdateClothingAsync(clothing, clothing.ImagePath);
+            ToastService.Instance.ShowSuccess(
+                clothing.IsFavorite ? $"已收藏「{clothing.Name}」" : $"已取消收藏「{clothing.Name}」");
+        }
+        catch (Exception ex)
+        {
+            var reverted = !clothing.IsFavorite;
+            clothing.IsFavorite = reverted;
+            if (!clothing.IsFavorite && clothing.FavoriteLevel >= 4)
+                clothing.FavoriteLevel = 3;
+            else if (clothing.IsFavorite && clothing.FavoriteLevel < 4)
+                clothing.FavoriteLevel = 4;
+
+            card.RefreshFavoriteVisual();
+            ToastService.Instance.ShowError("更新收藏失败", ex.Message);
+        }
+    }
+
     private async void ClothingCard_Delete(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;
