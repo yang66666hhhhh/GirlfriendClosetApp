@@ -25,10 +25,11 @@ public class OutfitRecommendationService : IOutfitRecommendationService
     public async Task<IEnumerable<RecommendedOutfitDto>> GetRecommendationsByRuleAsync(int temperature, OutfitScene? scene = null)
     {
         var outfits = await _outfitRepository.GetAllAsync();
+        var wardrobeProfile = BuildWardrobeProfile(outfits);
 
         return outfits
             .Where(outfit => outfit.OutfitClothes.Count > 0)
-            .Select(outfit => BuildRecommendation(outfit, temperature, scene))
+            .Select(outfit => BuildRecommendation(outfit, temperature, scene, wardrobeProfile))
             .OrderByDescending(recommendation => recommendation.Score)
             .ThenBy(recommendation => recommendation.WornDate ?? DateTime.MinValue)
             .ThenByDescending(recommendation => recommendation.Rating)
@@ -48,7 +49,11 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         return outfits.Where(o => o.WearCount == 0);
     }
 
-    private static RecommendedOutfitDto BuildRecommendation(Outfit outfit, int temperature, OutfitScene? scene)
+    private static RecommendedOutfitDto BuildRecommendation(
+        Outfit outfit,
+        int temperature,
+        OutfitScene? scene,
+        WardrobePreferenceProfile wardrobeProfile)
     {
         // Keep the scoring rule-based and explainable so the UI can show clear recommendation reasons.
         var score = outfit.Rating * 12;
@@ -58,6 +63,7 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         score += ScoreFavorite(outfit, reasons);
         score += ScoreRecentWear(outfit, reasons);
         score += ScoreWearCount(outfit, reasons);
+        score += ScorePreference(outfit, wardrobeProfile, reasons);
 
         if (scene.HasValue)
             score += ScoreScene(outfit, scene.Value, reasons);
@@ -69,7 +75,8 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             outfit,
             score,
             reasons[0],
-            reasons.Count > 1 ? reasons[1] : null);
+            reasons.Count > 1 ? reasons[1] : null,
+            reasons);
     }
 
     private static int ScoreSeason(Season season, int temperature, List<string> reasons)
@@ -162,4 +169,101 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         reasons.Add("场景也刚好对得上，省得再临时换搭配。");
         return 18;
     }
+
+    private static int ScorePreference(Outfit outfit, WardrobePreferenceProfile profile, List<string> reasons)
+    {
+        if (profile.TotalPreferenceWeight <= 0)
+            return 0;
+
+        var score = 0;
+
+        if (profile.SceneWeights.TryGetValue(outfit.Scene, out var sceneWeight) && sceneWeight >= 3)
+        {
+            score += 8;
+            reasons.Add("它贴近你最近常穿/收藏的场景。");
+        }
+
+        var tagNames = outfit.OutfitClothes
+            .SelectMany(link => link.Clothing.ClothingTags)
+            .Select(link => link.Tag.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (tagNames.Any(tag => profile.TagWeights.TryGetValue(tag, out var weight) && weight >= 2))
+        {
+            score += 7;
+            reasons.Add("风格标签也比较贴近你的常用偏好。");
+        }
+
+        var colors = outfit.OutfitClothes
+            .Select(link => NormalizeColor(link.Clothing.Color))
+            .Where(color => color != null)
+            .Select(color => color!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (colors.Any(color => profile.ColorWeights.TryGetValue(color, out var weight) && weight >= 2))
+        {
+            score += 5;
+            reasons.Add("颜色也接近你常选的那一类。");
+        }
+
+        return score;
+    }
+
+    private static WardrobePreferenceProfile BuildWardrobeProfile(IEnumerable<Outfit> outfits)
+    {
+        var sceneWeights = new Dictionary<OutfitScene, int>();
+        var tagWeights = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var colorWeights = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+        var totalWeight = 0;
+
+        foreach (var outfit in outfits)
+        {
+            var weight = outfit.WearCount + outfit.Favorites.Count * 3;
+            if (weight <= 0)
+                continue;
+
+            totalWeight += weight;
+            AddWeight(sceneWeights, outfit.Scene, weight);
+
+            foreach (var tagName in outfit.OutfitClothes
+                .SelectMany(link => link.Clothing.ClothingTags)
+                .Select(link => link.Tag.Name)
+                .Where(name => !string.IsNullOrWhiteSpace(name))
+                .Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                AddWeight(tagWeights, tagName, weight);
+            }
+
+            foreach (var color in outfit.OutfitClothes
+                .Select(link => NormalizeColor(link.Clothing.Color))
+                .Where(color => color != null)
+                .Select(color => color!)
+                .Distinct(StringComparer.OrdinalIgnoreCase))
+            {
+                AddWeight(colorWeights, color, weight);
+            }
+        }
+
+        return new WardrobePreferenceProfile(sceneWeights, tagWeights, colorWeights, totalWeight);
+    }
+
+    private static string? NormalizeColor(string? color)
+    {
+        return string.IsNullOrWhiteSpace(color) ? null : color.Trim();
+    }
+
+    private static void AddWeight<TKey>(Dictionary<TKey, int> weights, TKey key, int weight)
+        where TKey : notnull
+    {
+        weights[key] = weights.TryGetValue(key, out var current)
+            ? current + weight
+            : weight;
+    }
+
+    private sealed record WardrobePreferenceProfile(
+        IReadOnlyDictionary<OutfitScene, int> SceneWeights,
+        IReadOnlyDictionary<string, int> TagWeights,
+        IReadOnlyDictionary<string, int> ColorWeights,
+        int TotalPreferenceWeight);
 }

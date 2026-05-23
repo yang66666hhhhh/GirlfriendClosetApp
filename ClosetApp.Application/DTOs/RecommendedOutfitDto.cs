@@ -8,7 +8,8 @@ public sealed record RecommendedOutfitDto(
     Outfit Outfit,
     int Score,
     string PrimaryReason,
-    string? SecondaryReason)
+    string? SecondaryReason,
+    IReadOnlyList<string> Reasons)
 {
     public string Name => Outfit.Name;
     public Season Season => Outfit.Season;
