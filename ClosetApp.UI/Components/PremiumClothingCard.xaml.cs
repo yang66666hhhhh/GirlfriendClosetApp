@@ -20,6 +20,7 @@ public partial class PremiumClothingCard : UserControl
     private const double InfoAreaMinHeight = 80;
     private const double InfoAreaPerChipHeight = 26;
     private const double HoverPopupWidth = 208;
+    private static PremiumClothingCard? _activeHoverCard;
 
     public static readonly RoutedEvent CardClickedEvent = EventManager.RegisterRoutedEvent(
         "CardClicked", RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(PremiumClothingCard));
@@ -73,6 +74,13 @@ public partial class PremiumClothingCard : UserControl
                 ApplyCard();
                 StartLoadAnimation();
             }
+        };
+        Unloaded += (_, _) =>
+        {
+            if (ReferenceEquals(_activeHoverCard, this))
+                _activeHoverCard = null;
+
+            CloseHoverUi();
         };
     }
 
@@ -348,6 +356,7 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_MouseEnter(object sender, MouseEventArgs e)
     {
+        ActivateHoverCard();
         AnimateTranslate(-4);
         AnimateScale(1.01);
         AnimateShadow(28, 0.12);
@@ -359,6 +368,8 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_MouseMove(object sender, MouseEventArgs e)
     {
+        ActivateHoverCard();
+
         if (!HoverInfoPopup.IsOpen)
             HoverInfoPopup.IsOpen = true;
 
@@ -371,8 +382,7 @@ public partial class PremiumClothingCard : UserControl
         AnimateScale(1.0);
         AnimateShadow(16, 0.06);
         AnimateImageScale(1.0);
-        BtnMore.Visibility = Visibility.Collapsed;
-        HoverInfoPopup.IsOpen = false;
+        CloseHoverUi();
     }
 
     private void AnimateTranslate(double toY)
@@ -516,6 +526,23 @@ public partial class PremiumClothingCard : UserControl
         var verticalOffset = Math.Max(10, point.Y - 10);
         HoverInfoPopup.HorizontalOffset = horizontalOffset;
         HoverInfoPopup.VerticalOffset = verticalOffset;
+    }
+
+    private void ActivateHoverCard()
+    {
+        if (_activeHoverCard != null && !ReferenceEquals(_activeHoverCard, this))
+            _activeHoverCard.CloseHoverUi();
+
+        _activeHoverCard = this;
+    }
+
+    private void CloseHoverUi()
+    {
+        BtnMore.Visibility = Visibility.Collapsed;
+        HoverInfoPopup.IsOpen = false;
+
+        if (ReferenceEquals(_activeHoverCard, this))
+            _activeHoverCard = null;
     }
 
     private static string BuildStatusText(global::ClosetApp.Domain.Entities.Clothing clothing)
