@@ -52,9 +52,10 @@
 
         <DataTemplate x:Key="WeatherRecommendationTemplate">
             <Border Background="{DynamicResource SurfaceElevatedBrush}"
-                    CornerRadius="12"
-                    Padding="12,10"
-                    Margin="0,0,0,6">
+                    CornerRadius="10"
+                    Padding="10,8"
+                    Margin="0,0,6,6"
+                    MinWidth="188">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
@@ -82,21 +83,21 @@
                         <Button Grid.Column="1"
                                 Content="穿了"
                                 Style="{StaticResource OutfitMintButton}"
-                                Padding="9,6"
-                                Margin="10,0,0,0"
+                                Padding="8,5"
+                                Margin="8,0,0,0"
                                 VerticalAlignment="Top"
                                 Click="RecommendedOutfitWorn_Click"/>
                     </Grid>
                     <TextBlock Text="{Binding PrimaryReason}"
                                Foreground="{DynamicResource TextPrimaryBrush}"
-                               FontSize="11"
-                               TextWrapping="Wrap"
-                               Margin="0,8,0,0"/>
-                    <TextBlock Text="{Binding SecondaryReason}"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
                                FontSize="10"
                                TextWrapping="Wrap"
-                               Margin="0,4,0,0"
+                               Margin="0,6,0,0"/>
+                    <TextBlock Text="{Binding SecondaryReason}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="9"
+                               TextWrapping="Wrap"
+                               Margin="0,3,0,0"
                                Visibility="{Binding SecondaryReason, Converter={StaticResource NullToVisibilityConverter}}"/>
                 </StackPanel>
             </Border>
@@ -125,6 +126,7 @@
                 <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
                     <ComboBox x:Name="SortComboBox"
                               MinWidth="90"
+                              ItemsSource="{Binding SortOptions}"
                               SelectedItem="{Binding SortBy, Mode=TwoWay}"
                               Margin="0,0,8,0">
                         <ComboBox.ItemTemplate>
@@ -154,9 +156,9 @@
                         BorderThickness="1">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.65*"/>
-                            <ColumnDefinition Width="16"/>
-                            <ColumnDefinition Width="0.45*"/>
+                            <ColumnDefinition Width="*" MinWidth="420"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="1.2*" MinWidth="520"/>
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
@@ -218,6 +220,18 @@
                                         Click="OpenSettings_Click"
                                         />
                             </WrapPanel>
+
+                            <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                    BorderBrush="{StaticResource OutfitSkyBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="12,9"
+                                    Margin="0,12,0,0">
+                                <TextBlock Text="{Binding RecommendationReadinessDetail}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           TextWrapping="Wrap"/>
+                            </Border>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">
@@ -225,7 +239,7 @@
                                     BorderBrush="{StaticResource OutfitMintBorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="12"
-                                    Padding="11,9">
+                                    Padding="14,12">
                                 <StackPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -272,35 +286,36 @@
                                                Foreground="{DynamicResource TextPrimaryBrush}"
                                                FontSize="10"
                                                TextWrapping="Wrap"
-                                               Margin="0,8,0,0"/>
+                                               Margin="0,6,0,0"/>
                                     <TextBlock Text="{Binding WeatherStatusText}"
                                                Foreground="{DynamicResource TextTertiaryBrush}"
                                                FontSize="9"
                                                TextWrapping="Wrap"
-                                               Margin="0,4,0,0"/>
+                                               Margin="0,3,0,0"/>
                                     <Border Background="{StaticResource OutfitSkySurfaceBrush}"
                                             BorderBrush="{StaticResource OutfitSkyBorderBrush}"
                                             BorderThickness="1"
                                             CornerRadius="10"
-                                            Padding="9,7"
-                                            Margin="0,8,0,0"
+                                            Padding="10,7"
+                                            Margin="0,7,0,0"
                                             Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <StackPanel>
                                             <TextBlock Text="{Binding RecommendationReadinessTitle}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        FontSize="10"
                                                        FontWeight="SemiBold"/>
-                                            <TextBlock Text="{Binding RecommendationReadinessDetail}"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       FontSize="9"
-                                                       TextWrapping="Wrap"
-                                                       Margin="0,3,0,0"/>
                                         </StackPanel>
                                     </Border>
                                     <ItemsControl ItemsSource="{Binding WeatherRecommendations}"
                                                   Margin="0,8,0,0"
                                                   ItemTemplate="{StaticResource WeatherRecommendationTemplate}"
-                                                  Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                  Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                    </ItemsControl>
                                     <TextBlock Text="按当前天气暂时没有更合适的搭配。"
                                                Foreground="{DynamicResource TextPlaceholderBrush}"
                                                FontSize="9"
