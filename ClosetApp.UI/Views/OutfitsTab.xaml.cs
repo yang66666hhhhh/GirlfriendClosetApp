@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Components.Outfit.Controls;
 using ClosetApp.UI.Components.Outfit.Editor;
@@ -118,6 +119,23 @@ public partial class OutfitsTab : UserControl
         catch (Exception ex)
         {
             var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, outfit.Name);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
+    private async void RecommendedOutfitWorn_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: RecommendedOutfitDto recommendation })
+            return;
+
+        try
+        {
+            await _viewModel.RecordWornDateAsync(recommendation.Outfit, DateTime.Now);
+            ToastService.Instance.ShowSuccess($"已记录穿过「{recommendation.Name}」", "今日推荐已经同步到穿着记录。");
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, recommendation.Name);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
     }

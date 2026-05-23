@@ -56,22 +56,48 @@
                     Padding="12,10"
                     Margin="0,0,0,6">
                 <StackPanel>
-                    <TextBlock Text="{Binding Name}"
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <TextBlock Text="{Binding Name}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                                <TextBlock Text="{Binding Season, Converter={StaticResource SeasonToName}}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"/>
+                                <TextBlock Text=" · "
+                                           Foreground="{DynamicResource TextPlaceholderBrush}"
+                                           FontSize="11"/>
+                                <TextBlock Text="{Binding WearCount, StringFormat=已穿 {0} 次}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="今天穿了"
+                                Style="{StaticResource OutfitMintButton}"
+                                Padding="10,6"
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Top"
+                                Click="RecommendedOutfitWorn_Click"/>
+                    </Grid>
+                    <TextBlock Text="{Binding PrimaryReason}"
                                Foreground="{DynamicResource TextPrimaryBrush}"
-                               FontWeight="SemiBold"
-                               FontSize="13"
-                               TextTrimming="CharacterEllipsis"/>
-                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
-                        <TextBlock Text="{Binding Season, Converter={StaticResource SeasonToName}}"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                   FontSize="11"/>
-                        <TextBlock Text=" · "
-                                   Foreground="{DynamicResource TextPlaceholderBrush}"
-                                   FontSize="11"/>
-                        <TextBlock Text="{Binding WearCount, StringFormat=已穿 {0} 次}"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                   FontSize="11"/>
-                    </StackPanel>
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0,8,0,0"/>
+                    <TextBlock Text="{Binding SecondaryReason}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="10"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,0"
+                               Visibility="{Binding SecondaryReason, Converter={StaticResource NullToVisibilityConverter}}"/>
                 </StackPanel>
             </Border>
         </DataTemplate>
@@ -241,15 +267,25 @@
                                         </Border>
                                     </Grid>
 
-                                    <ContentControl Content="{Binding PrimaryWeatherRecommendation}"
-                                                    ContentTemplate="{StaticResource WeatherRecommendationTemplate}"
-                                                    Margin="0,8,0,0"
-                                                    Visibility="{Binding PrimaryWeatherRecommendation, Converter={StaticResource NullToVisibilityConverter}}"/>
+                                    <TextBlock Text="{Binding WeatherRecommendationHintText}"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               FontSize="10"
+                                               TextWrapping="Wrap"
+                                               Margin="0,8,0,0"/>
+                                    <TextBlock Text="{Binding WeatherStatusText}"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               FontSize="9"
+                                               TextWrapping="Wrap"
+                                               Margin="0,4,0,0"/>
+                                    <ItemsControl ItemsSource="{Binding WeatherRecommendations}"
+                                                  Margin="0,8,0,0"
+                                                  ItemTemplate="{StaticResource WeatherRecommendationTemplate}"
+                                                  Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     <TextBlock Text="按当前天气暂时没有更合适的搭配。"
                                                Foreground="{DynamicResource TextPlaceholderBrush}"
                                                FontSize="9"
                                                Margin="0,6,0,0"
-                                               Visibility="{Binding PrimaryWeatherRecommendation, Converter={StaticResource InverseNullToVisibilityConverter}}"/>
+                                               Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
                                 </StackPanel>
                             </Border>
                         </StackPanel>

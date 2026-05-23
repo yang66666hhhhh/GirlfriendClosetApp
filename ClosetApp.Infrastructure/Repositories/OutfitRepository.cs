@@ -21,6 +21,7 @@ public class OutfitRepository : IOutfitRepository
             .AsNoTracking()
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
+            .Include(o => o.Favorites)
             .Include(o => o.WornRecords)
             .ToListAsync();
     }
@@ -31,6 +32,7 @@ public class OutfitRepository : IOutfitRepository
             .AsNoTracking()
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
+            .Include(o => o.Favorites)
             .Include(o => o.WornRecords)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
@@ -111,6 +113,7 @@ public class OutfitRepository : IOutfitRepository
             .Where(o => o.Scene == scene)
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
+            .Include(o => o.Favorites)
             .ToListAsync();
     }
 
@@ -121,6 +124,7 @@ public class OutfitRepository : IOutfitRepository
             .Where(o => o.Season == season)
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
+            .Include(o => o.Favorites)
             .ToListAsync();
     }
 
@@ -133,6 +137,7 @@ public class OutfitRepository : IOutfitRepository
             .Take(count)
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
+            .Include(o => o.Favorites)
             .ToListAsync();
     }
 }

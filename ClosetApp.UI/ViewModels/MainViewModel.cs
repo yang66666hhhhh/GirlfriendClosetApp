@@ -1,5 +1,6 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -27,7 +28,7 @@ public partial class MainViewModel : ObservableObject
     private ObservableCollection<Tag> _tags = new();
 
     [ObservableProperty]
-    private ObservableCollection<Outfit> _recommendations = new();
+    private ObservableCollection<RecommendedOutfitDto> _recommendations = new();
 
     [ObservableProperty]
     private string _searchText = string.Empty;
@@ -77,7 +78,7 @@ public partial class MainViewModel : ObservableObject
     {
         var temperature = 22;
         var recommendations = await _recommendationService.GetRecommendationsByRuleAsync(temperature, null);
-        Recommendations = new ObservableCollection<Outfit>(recommendations);
+        Recommendations = new ObservableCollection<RecommendedOutfitDto>(recommendations);
     }
 
     [RelayCommand]
