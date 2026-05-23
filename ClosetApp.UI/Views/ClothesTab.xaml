@@ -653,6 +653,20 @@
                     </StackPanel>
                 </Border>
 
+                <Grid Margin="44,4,44,8"
+                      Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="{Binding CollectionSectionTitle}"
+                                   Style="{StaticResource PageSectionTitleText}"/>
+                        <TextBlock Text="{Binding CollectionSectionBody}"
+                                   Style="{StaticResource PageSectionBodyText}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+
                 <!-- ═══ MASONRY FLOW ═══ -->
                 <ItemsControl x:Name="ClothesList"
                               Margin="44,0,44,8"

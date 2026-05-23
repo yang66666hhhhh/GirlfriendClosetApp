@@ -56,6 +56,10 @@ public partial class WardrobeViewModel : ObservableObject
     public string FilterSummary => _state.FilterSummary;
     public string FilterResultText => $"{FilterSummary} · {FilteredCount} 件结果";
     public bool HasActiveFilters => _state.HasActiveFilters;
+    public string CollectionSectionTitle => HasActiveFilters ? "当前结果" : "全部衣服";
+    public string CollectionSectionBody => HasActiveFilters
+        ? $"{FilterSummary}，现在一共筛出 {FilteredCount} 件。"
+        : "悬停卡片可编辑、删除，或继续补齐待整理资料。";
     public Season? SelectedSeason => _state.SelectedSeason;
     public IReadOnlyCollection<Guid> SelectedTagIds => _state.SelectedTagIds;
     public bool FavoriteOnly
@@ -505,6 +509,8 @@ public partial class WardrobeViewModel : ObservableObject
         OnPropertyChanged(nameof(FilterSummary));
         OnPropertyChanged(nameof(FilterResultText));
         OnPropertyChanged(nameof(HasActiveFilters));
+        OnPropertyChanged(nameof(CollectionSectionTitle));
+        OnPropertyChanged(nameof(CollectionSectionBody));
         OnPropertyChanged(nameof(SelectedSeason));
         OnPropertyChanged(nameof(SelectedTagIds));
         OnPropertyChanged(nameof(FavoriteOnly));
