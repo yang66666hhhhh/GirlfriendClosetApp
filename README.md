@@ -2,13 +2,13 @@
 
 私人数字衣橱桌面应用，面向个人衣物整理、搭配管理和本地数据治理场景。项目使用 WPF + SQLite，采用 Domain / Application / Infrastructure / UI 四层结构。
 
-> 更新时间：2026-05-19
+> 更新时间：2026-05-23
 > 当前运行时：.NET 10 / WPF
 
 ## 当前能力
 
-- 衣柜管理：新增、编辑、删除衣物，支持图片、季节、品牌、备注、收藏状态和批量导入
-- 搭配管理：创建和编辑搭配，按“人体区域 + 穿搭层级”生成预览，支持穿着记录
+- 衣柜管理：新增、编辑、删除衣物，支持图片、季节、品牌、备注、收藏状态和批量导入；批量导入会提示同名/同尺寸图片风险并支持一键移除
+- 搭配管理：创建和编辑搭配，按“人体区域 + 穿搭层级”生成预览，支持穿着记录和天气驱动的今日推荐
 - 标签管理：标签维护与选择复用组件
 - 设置中心：数据目录、日志、图片缓存、备份、导入恢复、缺失图片修复
 - 本地数据治理：
@@ -94,6 +94,7 @@ GirlfriendClosetApp/
 - `GetWardrobeOverview`
 - `GetOutfitHistorySummary`
 - `RecordOutfitWorn`
+- `GetRecommendationReadinessSummary`
 - `GetTagsForSelection`
 
 ### 5. 搭配预览模型

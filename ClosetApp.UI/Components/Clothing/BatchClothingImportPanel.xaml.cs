@@ -161,7 +161,7 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
                 foreach (var item in _previewItems.Where(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath)))
                 {
                     item.IsDuplicateRisk = true;
-                    item.DuplicateReason = "可疑重复";
+                    item.DuplicateReason = duplicateCheck.GetRiskReason(item.FilePath) ?? "可疑重复";
                 }
             }
 
@@ -179,7 +179,7 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
                 ? Visibility.Visible
                 : Visibility.Collapsed;
             TxtDuplicateWarning.Text = duplicateCheck?.HasAnyDuplicateRisk == true
-                ? $"{duplicateCheck.Summary}；建议先移除 {duplicateCheck.RiskItemCount} 项可疑重复。"
+                ? $"{duplicateCheck.Summary}；已标出 {duplicateCheck.RiskItemCount} 项，建议先移除或逐项确认。"
                 : string.Empty;
             BtnRemoveDuplicateItems.Visibility = duplicateCheck?.HasAnyDuplicateRisk == true
                 ? Visibility.Visible
@@ -355,6 +355,9 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
             _previewItems.RemoveAll(item => duplicateCheck.RiskFilePaths.Contains(item.FilePath));
             RefreshSelectedFiles();
+            TxtImportHint.Text = _previewItems.Count == 0
+                ? "可疑重复项已移除完，当前没有待导入图片。"
+                : $"已移除 {duplicateCheck.RiskItemCount} 项可疑重复，还剩 {_previewItems.Count} 件可导入。";
         }
         catch (Exception ex)
         {

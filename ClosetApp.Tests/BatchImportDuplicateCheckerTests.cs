@@ -43,6 +43,8 @@ public class BatchImportDuplicateCheckerTests
         Assert.Equal(2, result.RiskItemCount);
         Assert.Contains(@"C:\import\IMG_1001-copy.jpg", result.RiskFilePaths);
         Assert.Contains(@"C:\import\IMG_2002.jpg", result.RiskFilePaths);
+        Assert.Equal("本批里有同文件名；本批里有同尺寸/大小", result.GetRiskReason(@"C:\import\IMG_1001-copy.jpg"));
+        Assert.Equal("衣柜已有同文件名；衣柜已有同尺寸/大小", result.GetRiskReason(@"C:\import\IMG_2002.jpg"));
     }
 
     [Fact]
@@ -72,5 +74,6 @@ public class BatchImportDuplicateCheckerTests
 
         Assert.False(result.HasAnyDuplicateRisk);
         Assert.Empty(result.RiskFilePaths);
+        Assert.Empty(result.RiskReasons);
     }
 }

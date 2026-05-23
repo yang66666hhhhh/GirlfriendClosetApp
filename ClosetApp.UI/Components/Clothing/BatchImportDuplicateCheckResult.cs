@@ -5,7 +5,8 @@ public sealed record BatchImportDuplicateCheckResult(
     bool HasDuplicateSignatureInSelection,
     bool HasExistingFileNameMatch,
     bool HasExistingSignatureMatch,
-    IReadOnlySet<string> RiskFilePaths)
+    IReadOnlySet<string> RiskFilePaths,
+    IReadOnlyDictionary<string, string> RiskReasons)
 {
     public bool HasAnyDuplicateRisk =>
         HasDuplicateFileNameInSelection ||
@@ -34,4 +35,11 @@ public sealed record BatchImportDuplicateCheckResult(
     }
 
     public int RiskItemCount => RiskFilePaths.Count;
+
+    public string? GetRiskReason(string filePath)
+    {
+        return RiskReasons.TryGetValue(filePath, out var reason)
+            ? reason
+            : null;
+    }
 }

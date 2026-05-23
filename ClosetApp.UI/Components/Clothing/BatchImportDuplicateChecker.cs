@@ -58,30 +58,52 @@ public static class BatchImportDuplicateChecker
         var existingSignatureMatch = selectionSignatures.Any(existingSignatures.Contains);
 
         var riskFilePaths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var riskReasons = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var group in duplicateNameGroups)
         {
             foreach (var item in group.Skip(1))
-                riskFilePaths.Add(item.FilePath);
+                AddRisk(item.FilePath, "本批里有同文件名", riskFilePaths, riskReasons);
         }
 
         foreach (var group in duplicateSignatureGroups)
         {
             foreach (var item in group.Skip(1))
-                riskFilePaths.Add(item.Item.FilePath);
+                AddRisk(item.Item.FilePath, "本批里有同尺寸/大小", riskFilePaths, riskReasons);
         }
 
         foreach (var item in selectedItems.Where(item => existingFileNameSet.Contains(item.FileName)))
-            riskFilePaths.Add(item.FilePath);
+            AddRisk(item.FilePath, "衣柜已有同文件名", riskFilePaths, riskReasons);
 
         foreach (var item in itemMetadata.Where(item => item.Signature.HasValue && existingSignatures.Contains(item.Signature.Value)))
-            riskFilePaths.Add(item.Item.FilePath);
+            AddRisk(item.Item.FilePath, "衣柜已有同尺寸/大小", riskFilePaths, riskReasons);
 
         return new BatchImportDuplicateCheckResult(
             duplicateFileNameInSelection,
             duplicateSignatureInSelection,
             existingFileNameMatch,
             existingSignatureMatch,
-            riskFilePaths);
+            riskFilePaths,
+            riskReasons.ToDictionary(
+                pair => pair.Key,
+                pair => string.Join("；", pair.Value),
+                StringComparer.OrdinalIgnoreCase));
+    }
+
+    private static void AddRisk(
+        string filePath,
+        string reason,
+        HashSet<string> riskFilePaths,
+        Dictionary<string, List<string>> riskReasons)
+    {
+        riskFilePaths.Add(filePath);
+        if (!riskReasons.TryGetValue(filePath, out var reasons))
+        {
+            reasons = [];
+            riskReasons[filePath] = reasons;
+        }
+
+        if (!reasons.Contains(reason))
+            reasons.Add(reason);
     }
 }

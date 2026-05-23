@@ -1,7 +1,7 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-05-19
-> 当前状态：主流程可用，近期重点已转向衣柜批量导入、搭配结构化预览与本地数据治理体验
+> 最后更新时间：2026-05-23
+> 当前状态：主流程可用，近期重点已转向天气驱动的今日穿搭助手、衣柜批量导入治理与本地数据安全体验
 
 ---
 
@@ -146,6 +146,7 @@ GirlfriendClosetApp/
 - 瀑布流展示衣物
 - 搜索与分类筛选
 - 打开衣物编辑器
+- 批量导入图片并在导入前提示同名/同尺寸图片风险
 - 依赖 `ClothesTabState` 维护页面状态
 
 #### OutfitsTab
@@ -153,6 +154,8 @@ GirlfriendClosetApp/
 - 展示搭配列表
 - 创建 / 编辑 / 删除搭配
 - 记录穿着行为
+- 根据天气、季节、收藏、最近穿着和穿着频次给出今日推荐
+- 推荐不足时提示缺少的季节或搭配整理缺口
 - 使用 `OutfitEditorPanel` 与 `OutfitsTabState`
 
 #### TagsTab
@@ -260,6 +263,7 @@ GirlfriendClosetApp/
 
 - `Clothing/GetWardrobeOverview`
 - `Insights/GetOutfitHistorySummary`
+- `Outfits/GetRecommendationReadinessSummary`
 - `Outfits/RecordOutfitWorn`
 - `Tags/GetTagsForSelection`
 
@@ -528,8 +532,8 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 - SixLabors.ImageSharp 版本告警仍需后续评估
 - 继续减少 code-behind 里的非 UI 逻辑
-- 导入导出能力已经可用，后续可补更细粒度的冲突策略或预览能力
-- 批量导入当前按“未设置就留空/待整理”的策略落库，后续可补失败回滚或导入预览
+- 批量导入已具备导入前重复风险提示，后续可补失败回滚的更细粒度 UI 展示
+- 推荐逻辑保持规则制和可解释，后续可继续引入场景偏好与标签偏好权重
 
 ---
 
@@ -537,6 +541,8 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 ### 2026-05 中旬
 
+- 增加天气驱动的今日穿搭推荐，支持推荐理由、准备度诊断和一键记录“穿了”
+- 批量导入增加同名/同尺寸图片风险原因提示，并支持一键移除可疑重复项
 - 完成 `SettingsTab` 数据治理体验增强
 - 增加衣柜批量导入，默认名称为“未命名”，未设置字段保持空值或待整理状态
 - 衣柜分类补齐半裙，并将外套、半裙从上衣/裤装大类中拆出精确筛选
