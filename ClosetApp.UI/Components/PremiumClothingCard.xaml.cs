@@ -416,7 +416,7 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is DependencyObject source && IsInsideFavoriteButton(source))
+        if (e.OriginalSource is DependencyObject source && IsInsideCardAction(source))
             return;
 
         _mouseDownPos = e.GetPosition(this);
@@ -424,7 +424,7 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_MouseUp(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is DependencyObject source && IsInsideFavoriteButton(source))
+        if (e.OriginalSource is DependencyObject source && IsInsideCardAction(source))
             return;
 
         var pos = e.GetPosition(this);
@@ -436,7 +436,7 @@ public partial class PremiumClothingCard : UserControl
 
     private void Card_Click(object sender, MouseButtonEventArgs e)
     {
-        if (e.OriginalSource is DependencyObject source && IsInsideFavoriteButton(source))
+        if (e.OriginalSource is DependencyObject source && IsInsideCardAction(source))
             return;
 
         RaiseEvent(new RoutedEventArgs(CardClickedEvent, this));
@@ -495,8 +495,9 @@ public partial class PremiumClothingCard : UserControl
 
     private void ApplyHoverInfo(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
+        HoverInfoTitleText.Text = BuildHoverTitle(clothing);
         HoverInfoDetailText.Text = BuildHoverDetail(clothing);
-        HoverInfoFavoriteText.Text = BuildFavoriteText(clothing.FavoriteLevel);
+        HoverInfoStatusText.Text = BuildStatusText(clothing);
         HoverInfoCreatedText.Text = clothing.CreatedAt.ToString("MM-dd");
 
         var notes = clothing.Notes?.Trim();
@@ -517,51 +518,77 @@ public partial class PremiumClothingCard : UserControl
         HoverInfoPopup.VerticalOffset = verticalOffset;
     }
 
-    private static string BuildFavoriteText(int favoriteLevel)
+    private static string BuildStatusText(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
-        var level = Math.Clamp(favoriteLevel, 0, 5);
+        var level = Math.Clamp(clothing.FavoriteLevel, 0, 5);
         return level switch
         {
-            5 => "5 / 5 很喜欢",
-            4 => "4 / 5 已收藏",
-            3 => "3 / 5 挺喜欢",
-            2 => "2 / 5 还不错",
-            1 => "1 / 5 先留着",
-            _ => "0 / 5 待判断"
+            5 => "已收藏 · 非常喜欢",
+            4 => "已收藏 · 常用候选",
+            3 => "挺喜欢 · 可以多穿",
+            2 => "还不错 · 继续观察",
+            1 => "低频保留",
+            _ => HasMissingMetadata(clothing) ? "待整理" : "资料完整"
         };
     }
 
     private static string BuildHoverDetail(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
-        var details = new List<string>();
-
-        if (string.IsNullOrWhiteSpace(clothing.Brand))
-            details.Add("还没补品牌");
-
-        if (string.IsNullOrWhiteSpace(clothing.Color))
-            details.Add("还没补颜色");
-
-        if (clothing.Season == Season.Unspecified)
-            details.Add("季节待补");
-
-        if (clothing.Type == ClothingType.Unspecified)
-            details.Add("分类待补");
-
-        if (clothing.ClothingTags.Count == 0)
-            details.Add("还没有风格标签");
-
-        if (details.Count == 0)
+        var missing = BuildMissingMetadataParts(clothing);
+        if (missing.Count == 0)
             return "资料已经比较完整，可以直接参与筛选和搭配。";
 
-        return string.Join(" · ", details);
+        if (clothing.FavoriteLevel >= 4)
+            return $"你已经很喜欢它了，建议优先补 {string.Join("、", missing.Take(2))}。";
+
+        return $"还差 {string.Join("、", missing.Take(3))}，补完后会更好筛选和搭配。";
     }
 
-    private bool IsInsideFavoriteButton(DependencyObject source)
+    private static string BuildHoverTitle(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        var missingCount = BuildMissingMetadataParts(clothing).Count;
+        return missingCount switch
+        {
+            0 => "这件已经整理好了",
+            1 => "再补一项就很完整",
+            <= 3 => "还有几项资料待补",
+            _ => "这件还在待整理状态"
+        };
+    }
+
+    private static bool HasMissingMetadata(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        return BuildMissingMetadataParts(clothing).Count > 0;
+    }
+
+    private static List<string> BuildMissingMetadataParts(global::ClosetApp.Domain.Entities.Clothing clothing)
+    {
+        var missing = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(clothing.Brand))
+            missing.Add("品牌");
+
+        if (string.IsNullOrWhiteSpace(clothing.Color))
+            missing.Add("颜色");
+
+        if (clothing.Season == Season.Unspecified)
+            missing.Add("季节");
+
+        if (clothing.Type == ClothingType.Unspecified)
+            missing.Add("分类");
+
+        if (clothing.ClothingTags.Count == 0)
+            missing.Add("风格标签");
+
+        return missing;
+    }
+
+    private bool IsInsideCardAction(DependencyObject source)
     {
         DependencyObject? current = source;
         while (current != null)
         {
-            if (ReferenceEquals(current, BtnFavorite))
+            if (ReferenceEquals(current, BtnFavorite) || ReferenceEquals(current, BtnMore))
                 return true;
 
             current = VisualTreeHelper.GetParent(current);
