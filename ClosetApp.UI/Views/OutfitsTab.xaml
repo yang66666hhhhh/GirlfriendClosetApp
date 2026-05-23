@@ -80,9 +80,9 @@
                             </StackPanel>
                         </StackPanel>
                         <Button Grid.Column="1"
-                                Content="今天穿了"
+                                Content="穿了"
                                 Style="{StaticResource OutfitMintButton}"
-                                Padding="10,6"
+                                Padding="9,6"
                                 Margin="10,0,0,0"
                                 VerticalAlignment="Top"
                                 Click="RecommendedOutfitWorn_Click"/>
@@ -201,9 +201,10 @@
                             </WrapPanel>
 
                             <WrapPanel Margin="0,5,0,0">
-                                <Button Content="刷新天气推荐"
+                                <Button Content="{Binding RefreshWeatherButtonText}"
                                         Style="{StaticResource OutfitMintButton}"
                                         Click="RefreshWeatherRecommendations_Click"
+                                        IsEnabled="{Binding CanRefreshWeatherRecommendations}"
                                         Margin="0,0,6,0"
                                         />
                                 <Button x:Name="ToggleHistoryButton"
@@ -277,6 +278,25 @@
                                                FontSize="9"
                                                TextWrapping="Wrap"
                                                Margin="0,4,0,0"/>
+                                    <Border Background="{StaticResource OutfitSkySurfaceBrush}"
+                                            BorderBrush="{StaticResource OutfitSkyBorderBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="9,7"
+                                            Margin="0,8,0,0"
+                                            Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding RecommendationReadinessTitle}"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding RecommendationReadinessDetail}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       FontSize="9"
+                                                       TextWrapping="Wrap"
+                                                       Margin="0,3,0,0"/>
+                                        </StackPanel>
+                                    </Border>
                                     <ItemsControl ItemsSource="{Binding WeatherRecommendations}"
                                                   Margin="0,8,0,0"
                                                   ItemTemplate="{StaticResource WeatherRecommendationTemplate}"

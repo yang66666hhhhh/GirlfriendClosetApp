@@ -1,6 +1,7 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.States;
@@ -14,6 +15,7 @@ public partial class OutfitsViewModel : ObservableObject
     private readonly IOutfitRecommendationService _recommendationService;
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
+    private readonly GetRecommendationReadinessSummary _getRecommendationReadinessSummary;
     private readonly OutfitsTabState _state = new();
 
     [ObservableProperty]
@@ -34,16 +36,21 @@ public partial class OutfitsViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<RecommendedOutfitDto> _weatherRecommendations = [];
 
+    [ObservableProperty]
+    private RecommendationReadinessSummaryDto? _recommendationReadiness;
+
     public OutfitsViewModel(
         IOutfitService outfitService,
         IOutfitRecommendationService recommendationService,
         IWeatherService weatherService,
-        IWeatherPreferencesService weatherPreferencesService)
+        IWeatherPreferencesService weatherPreferencesService,
+        GetRecommendationReadinessSummary getRecommendationReadinessSummary)
     {
         _outfitService = outfitService;
         _recommendationService = recommendationService;
         _weatherService = weatherService;
         _weatherPreferencesService = weatherPreferencesService;
+        _getRecommendationReadinessSummary = getRecommendationReadinessSummary;
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
@@ -92,8 +99,13 @@ public partial class OutfitsViewModel : ObservableObject
     public bool HasWeatherRecommendations => WeatherRecommendations.Count > 0;
     public string WeatherRecommendationCountText => HasWeatherRecommendations ? $"{WeatherRecommendations.Count} 套" : "暂无";
     public RecommendedOutfitDto? PrimaryWeatherRecommendation => WeatherRecommendations.FirstOrDefault();
+    public bool CanRefreshWeatherRecommendations => !IsWeatherLoading;
+    public string RefreshWeatherButtonText => IsWeatherLoading ? "刷新中..." : "刷新天气推荐";
+    public bool HasRecommendationReadiness => RecommendationReadiness != null;
+    public string RecommendationReadinessTitle => RecommendationReadiness?.Title ?? "推荐准备度";
+    public string RecommendationReadinessDetail => RecommendationReadiness?.Detail ?? "刷新天气后会整理当前搭配是否够用。";
     public string WeatherRecommendationHintText => WeatherRecommendations.Count == 0
-        ? BuildNoRecommendationHint()
+        ? RecommendationReadinessDetail
         : $"{PrimaryWeatherRecommendation!.PrimaryReason}";
 
     public async Task LoadOutfitsAsync()
@@ -156,6 +168,7 @@ public partial class OutfitsViewModel : ObservableObject
             WeatherRecommendations = (await _recommendationService.GetRecommendationsByRuleAsync(WeatherTemperature, null))
                 .Take(3)
                 .ToList();
+            RecommendationReadiness = await _getRecommendationReadinessSummary.ExecuteAsync(WeatherTemperature);
 
             if (WeatherRecommendations.Count > 0 && weather != null)
                 WeatherStatusText = "已按当前天气刷新推荐。";
@@ -229,8 +242,14 @@ public partial class OutfitsViewModel : ObservableObject
         OnPropertyChanged(nameof(WeatherTemperature));
         OnPropertyChanged(nameof(WeatherCondition));
         OnPropertyChanged(nameof(IsWeatherLoading));
+        OnPropertyChanged(nameof(CanRefreshWeatherRecommendations));
+        OnPropertyChanged(nameof(RefreshWeatherButtonText));
         OnPropertyChanged(nameof(WeatherStatusText));
         OnPropertyChanged(nameof(WeatherRecommendations));
+        OnPropertyChanged(nameof(RecommendationReadiness));
+        OnPropertyChanged(nameof(HasRecommendationReadiness));
+        OnPropertyChanged(nameof(RecommendationReadinessTitle));
+        OnPropertyChanged(nameof(RecommendationReadinessDetail));
         OnPropertyChanged(nameof(HasWeatherRecommendations));
         OnPropertyChanged(nameof(WeatherHeadlineText));
         OnPropertyChanged(nameof(WeatherCityCompactText));
@@ -253,21 +272,6 @@ public partial class OutfitsViewModel : ObservableObject
         return parts.Length == 0 ? city : string.Join(" · ", parts);
     }
 
-    private string BuildNoRecommendationHint()
-    {
-        if (Outfits.Count == 0)
-            return "还没有搭配，先建 2-3 套常穿组合，推荐就会马上有感觉。";
-
-        if (Outfits.All(outfit => outfit.Season == Domain.Enums.Season.Unspecified))
-            return "搭配还没补季节，先把常穿那几套标清楚，推荐会准很多。";
-
-        var suggestedSeason = ResolveSuggestedSeason(WeatherTemperature);
-        if (!Outfits.Any(outfit => outfit.Season is Domain.Enums.Season.AllSeason || outfit.Season == suggestedSeason))
-            return $"现在这类温度还缺少 {GetSeasonName(suggestedSeason)} 搭配，补几套会更好用。";
-
-        return "现有搭配里暂时没有特别突出的那套，先从最近没穿过的开始挑。";
-    }
-
     private static int ResolveFallbackTemperature(DateTime now)
     {
         return now.Month switch
@@ -276,30 +280,6 @@ public partial class OutfitsViewModel : ObservableObject
             3 or 4 or 11 => 16,
             5 or 10 => 22,
             _ => 28
-        };
-    }
-
-    private static Domain.Enums.Season ResolveSuggestedSeason(int temperature)
-    {
-        return temperature switch
-        {
-            >= 26 => Domain.Enums.Season.Summer,
-            >= 16 => Domain.Enums.Season.Spring,
-            >= 10 => Domain.Enums.Season.Autumn,
-            _ => Domain.Enums.Season.Winter
-        };
-    }
-
-    private static string GetSeasonName(Domain.Enums.Season season)
-    {
-        return season switch
-        {
-            Domain.Enums.Season.Spring => "春季",
-            Domain.Enums.Season.Summer => "夏季",
-            Domain.Enums.Season.Autumn => "秋季",
-            Domain.Enums.Season.Winter => "冬季",
-            Domain.Enums.Season.AllSeason => "四季",
-            _ => "当前"
         };
     }
 }
