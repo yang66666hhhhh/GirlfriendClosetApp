@@ -126,9 +126,35 @@
                                 ToolTip="更多操作"
                                 Click="MoreButton_Click">
                             <Button.ContextMenu>
-                                <ContextMenu x:Name="MoreMenu">
-                                    <MenuItem Header="编辑" Click="MenuEdit_Click"/>
-                                    <MenuItem Header="删除" Click="MenuDelete_Click"/>
+                                <ContextMenu x:Name="MoreMenu"
+                                             Style="{StaticResource WardrobeCard.MoreMenu}"
+                                             ItemContainerStyle="{StaticResource WardrobeCard.MoreMenuItem}"
+                                             Placement="Bottom"
+                                             HorizontalOffset="-6"
+                                             VerticalOffset="6">
+                                    <MenuItem Header="编辑"
+                                              Click="MenuEdit_Click">
+                                        <MenuItem.Icon>
+                                            <Viewbox Width="12" Height="12">
+                                                <Canvas Width="16" Height="16">
+                                                    <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                          Data="M12.6,1.4 C13.4,0.6 14.6,0.6 15.4,1.4 C16.2,2.2 16.2,3.4 15.4,4.2 L5.1,14.5 L1,15 L1.5,10.9 z"/>
+                                                </Canvas>
+                                            </Viewbox>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
+                                    <MenuItem Header="删除"
+                                              Click="MenuDelete_Click"
+                                              Tag="Danger">
+                                        <MenuItem.Icon>
+                                            <Viewbox Width="12" Height="12">
+                                                <Canvas Width="16" Height="16">
+                                                    <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                          Data="M6,1 L10,1 L11,2.2 L14.5,2.2 L14.5,3.6 L1.5,3.6 L1.5,2.2 L5,2.2 z M3,4.6 L13,4.6 L12.3,15 L3.7,15 z"/>
+                                                </Canvas>
+                                            </Viewbox>
+                                        </MenuItem.Icon>
+                                    </MenuItem>
                                 </ContextMenu>
                             </Button.ContextMenu>
                         </Button>
@@ -170,7 +196,8 @@
                StaysOpen="True"
                IsOpen="False"
                IsHitTestVisible="False">
-            <Border Style="{StaticResource WardrobeCard.HoverInfoPopup}">
+            <Border x:Name="HoverInfoPopupRoot"
+                    Style="{StaticResource WardrobeCard.HoverInfoPopup}">
                 <StackPanel>
                     <TextBlock x:Name="HoverInfoTitleText"
                                Style="{StaticResource WardrobeCard.HoverInfoTitle}"/>

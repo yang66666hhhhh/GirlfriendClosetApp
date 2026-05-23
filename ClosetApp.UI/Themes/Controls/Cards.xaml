@@ -145,28 +145,117 @@
     </Style>
 
     <Style x:Key="WardrobeCard.MoreButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
-        <Setter Property="Width" Value="30"/>
-        <Setter Property="MinHeight" Value="30"/>
-        <Setter Property="Background" Value="#F8FFFFFF"/>
-        <Setter Property="BorderBrush" Value="#D8E2F0"/>
+        <Setter Property="Width" Value="28"/>
+        <Setter Property="MinHeight" Value="28"/>
+        <Setter Property="Background" Value="#F6FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#D7E0EC"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-        <Setter Property="FontSize" Value="16"/>
+        <Setter Property="FontSize" Value="15"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Visibility" Value="Collapsed"/>
     </Style>
 
-    <Style x:Key="WardrobeCard.HoverInfoPopup" TargetType="Border">
-        <Setter Property="Width" Value="208"/>
-        <Setter Property="Padding" Value="12"/>
-        <Setter Property="CornerRadius" Value="16"/>
-        <Setter Property="Background" Value="#FCFFFFFF"/>
+    <Style x:Key="WardrobeCard.MoreMenu" TargetType="ContextMenu">
+        <Setter Property="Background" Value="#FEFFFFFF"/>
         <Setter Property="BorderBrush" Value="#E6DDE9"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="HasDropShadow" Value="False"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ContextMenu">
+                    <Border Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="14"
+                            Padding="{TemplateBinding Padding}">
+                        <Border.Effect>
+                            <DropShadowEffect BlurRadius="22"
+                                              ShadowDepth="5"
+                                              Opacity="0.14"
+                                              Color="#5E4D61"/>
+                        </Border.Effect>
+                        <StackPanel IsItemsHost="True"
+                                    KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WardrobeCard.MoreMenuItem" TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Padding" Value="10,8,12,8"/>
+        <Setter Property="Margin" Value="0,1,0,1"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="MenuItem">
+                    <Border x:Name="MenuItemBorder"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="10"
+                            Padding="{TemplateBinding Padding}">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="14"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <ContentPresenter ContentSource="Icon"
+                                              VerticalAlignment="Center"
+                                              HorizontalAlignment="Center"/>
+                            <ContentPresenter Grid.Column="2"
+                                              ContentSource="Header"
+                                              RecognizesAccessKey="True"
+                                              VerticalAlignment="Center"/>
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="MenuItemBorder" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryDarkBrush}"/>
+                        </Trigger>
+                        <Trigger Property="Tag" Value="Danger">
+                            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                        </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="Tag" Value="Danger"/>
+                                <Condition Property="IsHighlighted" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="MenuItemBorder" Property="Background" Value="#FFF4F6"/>
+                            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+                        </MultiTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="WardrobeCard.HoverInfoPopup" TargetType="Border">
+        <Setter Property="Width" Value="196"/>
+        <Setter Property="Padding" Value="11"/>
+        <Setter Property="CornerRadius" Value="15"/>
+        <Setter Property="Background" Value="#FEFFFFFF"/>
+        <Setter Property="BorderBrush" Value="#E7DEE9"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="Effect">
+            <Setter.Value>
+                <DropShadowEffect BlurRadius="22"
+                                  ShadowDepth="6"
+                                  Opacity="0.13"
+                                  Color="#5A4C62"/>
+            </Setter.Value>
+        </Setter>
     </Style>
 
     <Style x:Key="WardrobeCard.HoverInfoTitle" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="11.5"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
@@ -187,7 +276,7 @@
     </Style>
 
     <Style x:Key="WardrobeCard.HoverInfoBody" TargetType="TextBlock">
-        <Setter Property="FontSize" Value="10"/>
+        <Setter Property="FontSize" Value="9.5"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="TextWrapping" Value="Wrap"/>
     </Style>

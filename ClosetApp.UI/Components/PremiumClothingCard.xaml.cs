@@ -19,7 +19,8 @@ public partial class PremiumClothingCard : UserControl
     private const double ImageStageChromeHeight = 48;
     private const double InfoAreaMinHeight = 80;
     private const double InfoAreaPerChipHeight = 26;
-    private const double HoverPopupWidth = 208;
+    private const double HoverPopupWidth = 196;
+    private const double HoverPopupEdgeGap = 2;
     private static PremiumClothingCard? _activeHoverCard;
 
     public static readonly RoutedEvent CardClickedEvent = EventManager.RegisterRoutedEvent(
@@ -519,11 +520,21 @@ public partial class PremiumClothingCard : UserControl
 
     private void PositionHoverPopup(Point point)
     {
-        var horizontalOffset = point.X + 18;
-        if (horizontalOffset + HoverPopupWidth > CardRoot.ActualWidth - 8)
-            horizontalOffset = Math.Max(8, point.X - HoverPopupWidth - 18);
+        var showOnRight = point.X < CardRoot.ActualWidth * 0.5;
+        var horizontalOffset = showOnRight
+            ? CardRoot.ActualWidth + HoverPopupEdgeGap
+            : -HoverPopupWidth - HoverPopupEdgeGap;
 
-        var verticalOffset = Math.Max(10, point.Y - 10);
+        var popupHeight = HoverInfoPopupRoot.ActualHeight;
+        if (popupHeight <= 0)
+        {
+            HoverInfoPopupRoot.Measure(new Size(HoverPopupWidth, double.PositiveInfinity));
+            popupHeight = HoverInfoPopupRoot.DesiredSize.Height;
+        }
+
+        var maxVertical = Math.Max(14, CardRoot.ActualHeight - popupHeight - 14);
+        var verticalOffset = Math.Clamp(point.Y - 10, 14, maxVertical);
+
         HoverInfoPopup.HorizontalOffset = horizontalOffset;
         HoverInfoPopup.VerticalOffset = verticalOffset;
     }
@@ -563,17 +574,34 @@ public partial class PremiumClothingCard : UserControl
     {
         var missing = BuildMissingMetadataParts(clothing);
         if (missing.Count == 0)
-            return "资料已经比较完整，可以直接参与筛选和搭配。";
+        {
+            return clothing.FavoriteLevel >= 4
+                ? "资料已经完整，又是高偏好单品，后面筛选和搭配会很省心。"
+                : "资料已经比较完整，可以直接参与筛选和搭配。";
+        }
+
+        var primary = missing.Where(item => item.Priority >= 80).Select(item => item.Label).ToList();
+        var secondary = missing.Where(item => item.Priority < 80).Select(item => item.Label).ToList();
+
+        if (primary.Count > 0 && secondary.Count > 0)
+            return $"先补 {string.Join("、", primary.Take(2))}，再补 {string.Join("、", secondary.Take(2))} 会更完整。";
+
+        if (primary.Count > 0)
+            return $"先补 {string.Join("、", primary.Take(2))}，这会直接影响筛选和搭配准确度。";
 
         if (clothing.FavoriteLevel >= 4)
-            return $"你已经很喜欢它了，建议优先补 {string.Join("、", missing.Take(2))}。";
+            return $"你已经很喜欢它了，顺手补 {string.Join("、", secondary.Take(2))}，以后回看会更顺手。";
 
-        return $"还差 {string.Join("、", missing.Take(3))}，补完后会更好筛选和搭配。";
+        return $"还差 {string.Join("、", secondary.Take(3))}，补完后会更好筛选和搭配。";
     }
 
     private static string BuildHoverTitle(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
-        var missingCount = BuildMissingMetadataParts(clothing).Count;
+        var missing = BuildMissingMetadataParts(clothing);
+        var missingCount = missing.Count;
+        if (missing.Any(item => item.Priority >= 90))
+            return "先补基础资料，后面会省很多事";
+
         return missingCount switch
         {
             0 => "这件已经整理好了",
@@ -588,26 +616,31 @@ public partial class PremiumClothingCard : UserControl
         return BuildMissingMetadataParts(clothing).Count > 0;
     }
 
-    private static List<string> BuildMissingMetadataParts(global::ClosetApp.Domain.Entities.Clothing clothing)
+    private static List<(string Label, int Priority)> BuildMissingMetadataParts(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
-        var missing = new List<string>();
-
-        if (string.IsNullOrWhiteSpace(clothing.Brand))
-            missing.Add("品牌");
-
-        if (string.IsNullOrWhiteSpace(clothing.Color))
-            missing.Add("颜色");
-
-        if (clothing.Season == Season.Unspecified)
-            missing.Add("季节");
+        var missing = new List<(string Label, int Priority)>();
+        var hasStyleTag = clothing.ClothingTags.Any(x =>
+            x.Tag?.Category == TagCategory.Style &&
+            !string.IsNullOrWhiteSpace(x.Tag.Name));
 
         if (clothing.Type == ClothingType.Unspecified)
-            missing.Add("分类");
+            missing.Add(("分类", 100));
 
-        if (clothing.ClothingTags.Count == 0)
-            missing.Add("风格标签");
+        if (clothing.Season == Season.Unspecified)
+            missing.Add(("季节", 90));
 
-        return missing;
+        if (!hasStyleTag)
+            missing.Add(("风格标签", 70));
+
+        if (string.IsNullOrWhiteSpace(clothing.Color))
+            missing.Add(("颜色", 50));
+
+        if (string.IsNullOrWhiteSpace(clothing.Brand))
+            missing.Add(("品牌", 40));
+
+        return missing
+            .OrderByDescending(item => item.Priority)
+            .ToList();
     }
 
     private bool IsInsideCardAction(DependencyObject source)
