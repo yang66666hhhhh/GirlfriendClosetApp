@@ -90,7 +90,6 @@ GirlfriendClosetApp/
 - `string? Notes`
 - `Season Season`
 - `int FavoriteLevel`
-- `bool IsFavorite`
 
 #### Outfit
 

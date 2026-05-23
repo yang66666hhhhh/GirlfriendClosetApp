@@ -174,7 +174,7 @@ public sealed class ClothesTabState
 
         if (_favoriteOnly == true)
         {
-            filtered = filtered.Where(c => c.IsFavorite || c.FavoriteLevel >= 4);
+            filtered = filtered.Where(c => c.FavoriteLevel >= 4);
         }
 
         if (!string.IsNullOrWhiteSpace(_searchText))

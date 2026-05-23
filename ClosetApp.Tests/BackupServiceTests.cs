@@ -39,8 +39,7 @@ public class BackupServiceTests
                     Name = "Grey Blazer",
                     Type = ClothingType.Outerwear,
                     Season = Season.Autumn,
-                    FavoriteLevel = 4,
-                    IsFavorite = true
+                    FavoriteLevel = 4
                 };
                 clothing.ClothingTags.Add(new ClothingTag { ClothingId = clothing.Id, TagId = tag.Id, Tag = tag });
 
@@ -85,6 +84,7 @@ public class BackupServiceTests
                     .Where(c => c.Name == "Grey Blazer")
                     .ToListAsync());
             Assert.Single(restoredClothing.ClothingTags);
+            Assert.Equal(4, restoredClothing.FavoriteLevel);
 
             var restoredOutfit = Assert.Single(
                 await assertContext.Outfits

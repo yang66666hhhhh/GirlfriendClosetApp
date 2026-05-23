@@ -25,7 +25,7 @@ public sealed class GetWardrobeOverview
 
         return new WardrobeOverviewResult(
             clothes.Count,
-            clothes.Count(c => c.IsFavorite),
+            clothes.Count(c => c.FavoriteLevel >= 4),
             byCategory);
     }
 

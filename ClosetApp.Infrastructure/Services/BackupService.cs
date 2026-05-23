@@ -242,7 +242,6 @@ public sealed class BackupService : IBackupService
                     Notes = c.Notes,
                     Season = c.Season,
                     FavoriteLevel = c.FavoriteLevel,
-                    IsFavorite = c.IsFavorite,
                     TagIds = c.ClothingTags.Select(ct => ct.TagId).ToList()
                 })
                 .OrderBy(c => c.Name)
@@ -400,8 +399,7 @@ public sealed class BackupService : IBackupService
                 Brand = item.Brand,
                 Notes = item.Notes,
                 Season = item.Season,
-                FavoriteLevel = item.FavoriteLevel,
-                IsFavorite = item.IsFavorite
+                FavoriteLevel = item.FavoriteLevel
             };
 
             clothing.ClothingTags = item.TagIds

@@ -113,13 +113,9 @@
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
                     <StackPanel Grid.Column="0">
-                        <Border Style="{StaticResource TagEyebrowBadge}">
-                            <TextBlock Text="风格词库"
-                                       Style="{StaticResource TagEyebrowBadgeText}"/>
-                        </Border>
-                        <TextBlock Text="全部标签"
+                        <TextBlock Text="{Binding CollectionSectionTitle}"
                                    Style="{StaticResource PageSectionTitleText}"/>
-                        <TextBlock Text="优先整理风格词，其次再补场景和季节。"
+                        <TextBlock Text="{Binding CollectionSectionBody}"
                                    Style="{StaticResource PageSectionBodyText}"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
@@ -128,7 +124,7 @@
                             Background="{StaticResource TagRoseSurfaceBrush}"
                             BorderBrush="{StaticResource TagRoseBorderBrush}"
                             BorderThickness="1"
-                            VerticalAlignment="Center"
+                            VerticalAlignment="Top"
                             Padding="9,6"
                             Margin="12,0,0,0">
                         <TextBlock Text="{Binding TagCountText}"

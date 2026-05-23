@@ -16,7 +16,6 @@ public static class BatchClothingImportBuilder
             Brand = Normalize(options.Brand),
             Notes = Normalize(options.Notes),
             FavoriteLevel = options.FavoriteLevel,
-            IsFavorite = options.FavoriteLevel >= 4,
             ClothingTags = options.Tags
                 .Select(tag => new global::ClosetApp.Domain.Entities.ClothingTag { TagId = tag.Id })
                 .ToList()

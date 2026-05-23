@@ -197,16 +197,11 @@ public partial class ClothesTab : UserControl
         {
             await _viewModel.UpdateClothingAsync(clothing, clothing.ImagePath);
             ToastService.Instance.ShowSuccess(
-                clothing.IsFavorite ? $"已收藏「{clothing.Name}」" : $"已取消收藏「{clothing.Name}」");
+                clothing.FavoriteLevel >= 4 ? $"已收藏「{clothing.Name}」" : $"已取消收藏「{clothing.Name}」");
         }
         catch (Exception ex)
         {
-            var reverted = !clothing.IsFavorite;
-            clothing.IsFavorite = reverted;
-            if (!clothing.IsFavorite && clothing.FavoriteLevel >= 4)
-                clothing.FavoriteLevel = 3;
-            else if (clothing.IsFavorite && clothing.FavoriteLevel < 4)
-                clothing.FavoriteLevel = 4;
+            clothing.FavoriteLevel = card.LastFavoriteLevelBeforeToggle;
 
             card.RefreshFavoriteVisual();
             ToastService.Instance.ShowError("更新收藏失败", ex.Message);

@@ -420,7 +420,6 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
                 clothing.Brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim();
                 clothing.Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
                 clothing.FavoriteLevel = _favoriteLevel;
-                clothing.IsFavorite = _favoriteLevel >= 4;
 
                 if (_imageChanged && !string.IsNullOrEmpty(_selectedImagePath))
                 {
@@ -458,7 +457,6 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
                     Season = _selectedSeason,
                     ImagePath = imagePath,
                     FavoriteLevel = _favoriteLevel,
-                    IsFavorite = _favoriteLevel >= 4,
                     ClothingTags = TagSelection.SelectedTags
                         .Select(t => new ClothingTag { TagId = t.Id })
                         .ToList()

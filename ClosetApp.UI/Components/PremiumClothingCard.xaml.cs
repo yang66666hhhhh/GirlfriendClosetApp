@@ -59,6 +59,8 @@ public partial class PremiumClothingCard : UserControl
     private Point _mouseDownPos;
     private bool _heightApplied;
 
+    public int LastFavoriteLevelBeforeToggle { get; private set; }
+
     public PremiumClothingCard()
     {
         InitializeComponent();
@@ -427,21 +429,14 @@ public partial class PremiumClothingCard : UserControl
         RaiseEvent(new RoutedEventArgs(CardClickedEvent, this));
     }
 
-    private void Favorite_PreviewMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        e.Handled = true;
-    }
-
     private void Favorite_Click(object sender, RoutedEventArgs e)
     {
         if (DataContext is not global::ClosetApp.Domain.Entities.Clothing clothing)
             return;
 
-        clothing.IsFavorite = !clothing.IsFavorite;
-        if (!clothing.IsFavorite && clothing.FavoriteLevel >= 4)
-            clothing.FavoriteLevel = 3;
-        else if (clothing.IsFavorite && clothing.FavoriteLevel < 4)
-            clothing.FavoriteLevel = 4;
+        LastFavoriteLevelBeforeToggle = clothing.FavoriteLevel;
+        var isFavorite = clothing.FavoriteLevel >= 4;
+        clothing.FavoriteLevel = isFavorite ? 3 : 4;
 
         ApplyFavoriteVisual(clothing);
         RaiseEvent(new RoutedEventArgs(FavoriteToggledEvent, this));
@@ -462,7 +457,7 @@ public partial class PremiumClothingCard : UserControl
 
     private void ApplyFavoriteVisual(global::ClosetApp.Domain.Entities.Clothing clothing)
     {
-        var isFavorite = clothing.IsFavorite || clothing.FavoriteLevel >= 4;
+        var isFavorite = clothing.FavoriteLevel >= 4;
         BtnFavorite.Content = isFavorite ? "♥" : "♡";
         BtnFavorite.Foreground = isFavorite
             ? (Brush)FindResource("DangerBrush")

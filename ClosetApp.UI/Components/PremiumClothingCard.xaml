@@ -118,15 +118,15 @@
 
                         <!-- Bottom action overlay (same as OutfitCard) -->
                         <Border x:Name="ActionOverlay"
-                                Style="{StaticResource Card.ActionOverlay}">
+                                Style="{StaticResource WardrobeCard.ActionOverlay}">
                             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center"
-                                        VerticalAlignment="Bottom" Margin="0,0,0,12">
+                                        VerticalAlignment="Center">
                                 <Button x:Name="BtnEdit" Content="编辑"
-                                        Style="{StaticResource Card.OverlayCapsuleButton}"
+                                        Style="{StaticResource WardrobeCard.OverlayActionButton}"
                                         Click="MenuEdit_Click"
-                                        Margin="0,0,10,0"/>
+                                        Margin="0,0,8,0"/>
                                 <Button x:Name="BtnDelete" Content="删除"
-                                        Style="{StaticResource Card.OverlayCapsuleButton}"
+                                        Style="{StaticResource WardrobeCard.OverlayActionButton}"
                                         Foreground="{DynamicResource DangerBrush}"
                                         Click="MenuDelete_Click"/>
                             </StackPanel>
@@ -156,8 +156,7 @@
                                 Style="{StaticResource Card.FavoriteButtonBase}"
                                 Content="♡"
                                 FontSize="{StaticResource Card.FavoriteFontSize}"
-                                Click="Favorite_Click"
-                                PreviewMouseLeftButtonDown="Favorite_PreviewMouseLeftButtonDown"/>
+                                Click="Favorite_Click"/>
                     </Grid>
                 </Border>
             </Grid>

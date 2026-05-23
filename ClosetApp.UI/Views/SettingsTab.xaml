@@ -200,6 +200,19 @@
                     </Grid>
                 </Border>
 
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel>
+                        <TextBlock Text="全部设置"
+                                   Style="{StaticResource PageSectionTitleText}"/>
+                        <TextBlock Text="目录、维护、天气和备份都在这一层展开，排查问题时不用来回切页。"
+                                   Style="{StaticResource PageSectionBodyText}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                </Grid>
+
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="1.08*"/>

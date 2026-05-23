@@ -30,7 +30,6 @@ public class BatchClothingImportBuilderTests
         Assert.Equal("Uniqlo", clothing.Brand);
         Assert.Equal("一批同类外套", clothing.Notes);
         Assert.Equal(4, clothing.FavoriteLevel);
-        Assert.True(clothing.IsFavorite);
 
         var clothingTag = Assert.Single(clothing.ClothingTags);
         Assert.Equal(tag.Id, clothingTag.TagId);
@@ -57,7 +56,6 @@ public class BatchClothingImportBuilderTests
         Assert.Null(clothing.Brand);
         Assert.Null(clothing.Notes);
         Assert.Equal(0, clothing.FavoriteLevel);
-        Assert.False(clothing.IsFavorite);
         Assert.Empty(clothing.ClothingTags);
     }
 }

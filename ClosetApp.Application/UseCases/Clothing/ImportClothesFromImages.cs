@@ -63,7 +63,6 @@ public sealed class ImportClothesFromImages
             Brand = Normalize(request.Brand),
             Notes = Normalize(request.Notes),
             FavoriteLevel = request.FavoriteLevel,
-            IsFavorite = request.FavoriteLevel >= 4,
             ClothingTags = request.TagIds
                 .Select(tagId => new ClothingTag { TagId = tagId })
                 .ToList()

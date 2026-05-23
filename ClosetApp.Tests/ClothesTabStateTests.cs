@@ -70,17 +70,14 @@ public class ClothesTabStateTests
             GarmentType.Sweater,
             tags: [tag]);
         matching.Season = Season.Autumn;
-        matching.IsFavorite = true;
         matching.FavoriteLevel = 4;
 
         var otherSeason = CreateClothing("Summer Tee", ClothingType.Top, GarmentType.TShirt, tags: [tag]);
         otherSeason.Season = Season.Summer;
-        otherSeason.IsFavorite = true;
         otherSeason.FavoriteLevel = 4;
 
         var notFavorite = CreateClothing("Commute Shirt", ClothingType.Top, GarmentType.Shirt, tags: [tag]);
         notFavorite.Season = Season.Autumn;
-        notFavorite.IsFavorite = false;
         notFavorite.FavoriteLevel = 2;
 
         var state = new ClothesTabState();

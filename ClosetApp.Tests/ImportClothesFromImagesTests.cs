@@ -45,7 +45,6 @@ public class ImportClothesFromImagesTests
         Assert.Equal("Uniqlo", clothing.Brand);
         Assert.Equal("一批同类外套", clothing.Notes);
         Assert.Equal(4, clothing.FavoriteLevel);
-        Assert.True(clothing.IsFavorite);
         Assert.Equal(tagId, Assert.Single(clothing.ClothingTags).TagId);
         Assert.Equal(ImportClothesFromImages.DefaultName, repository.AddedClothes[1].Name);
     }
