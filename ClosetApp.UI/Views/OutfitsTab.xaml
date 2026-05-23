@@ -151,6 +151,7 @@
                 <Border Style="{StaticResource PageSummaryCard}"
                         Margin="0,0,0,12"
                         Padding="18,14"
+                        MinHeight="286"
                         Background="{DynamicResource SurfaceElevatedBrush}"
                         BorderBrush="{StaticResource OutfitSkyBorderBrush}"
                         BorderThickness="1">
@@ -241,7 +242,8 @@
                                     BorderBrush="{StaticResource OutfitMintBorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="12"
-                                    Padding="14,12">
+                                    Padding="14,12"
+                                    MinHeight="234">
                                 <StackPanel>
                                     <Grid>
                                         <Grid.ColumnDefinitions>
@@ -300,15 +302,22 @@
                                                   Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
                                         <ItemsControl.ItemsPanel>
                                             <ItemsPanelTemplate>
-                                                <WrapPanel/>
+                                                <UniformGrid Columns="3"/>
                                             </ItemsPanelTemplate>
                                         </ItemsControl.ItemsPanel>
                                     </ItemsControl>
-                                    <TextBlock Text="按当前天气暂时没有更合适的搭配。"
-                                               Foreground="{DynamicResource TextPlaceholderBrush}"
-                                               FontSize="9"
-                                               Margin="0,6,0,0"
-                                               Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                    <Border Background="{DynamicResource SurfaceElevatedBrush}"
+                                            CornerRadius="10"
+                                            Padding="10,8"
+                                            Margin="0,8,0,0"
+                                            MinHeight="96"
+                                            Visibility="{Binding HasWeatherRecommendations, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                        <TextBlock Text="正在整理今日推荐..."
+                                                   Foreground="{DynamicResource TextPlaceholderBrush}"
+                                                   FontSize="10"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"/>
+                                    </Border>
                                 </StackPanel>
                             </Border>
                         </StackPanel>
