@@ -39,6 +39,8 @@
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\RenderRole.cs" Link="UiLogic\Outfit\Engine\RenderRole.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitParts.cs" Link="UiLogic\Outfit\Engine\OutfitParts.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\RenderContext.cs" Link="UiLogic\Outfit\Engine\RenderContext.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\SemanticRegion.cs" Link="UiLogic\Outfit\Engine\SemanticRegion.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\LayoutResult.cs" Link="UiLogic\Outfit\Engine\LayoutResult.cs" />
   </ItemGroup>
 
 </Project>

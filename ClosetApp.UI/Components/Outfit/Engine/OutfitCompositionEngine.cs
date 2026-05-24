@@ -54,9 +54,11 @@ public class OutfitCompositionEngine
         return CompositionMode.Solo;
     }
 
-    public List<OutfitLayoutItem> CalculateLayout(IList<global::ClosetApp.Domain.Entities.Clothing> clothes, double cw, double ch)
+    public LayoutResult CalculateLayout(IList<global::ClosetApp.Domain.Entities.Clothing> clothes, double cw, double ch)
     {
-        if (clothes == null || clothes.Count == 0) return new List<OutfitLayoutItem>();
+        if (clothes == null || clothes.Count == 0)
+            return new LayoutResult(new List<OutfitLayoutItem>(), CompositionMode.Solo,
+                new OutfitParts(), cw, ch);
 
         var mode = DetermineMode(clothes);
         var ctx = RenderContext.Create(clothes, cw, ch, _metrics, mode);
@@ -69,13 +71,29 @@ public class OutfitCompositionEngine
             _ => SoloMode(ctx)
         };
 
+        foreach (var item in items)
+            item.SemanticRegion = ResolveSemanticRegion(item.RenderRole);
+
 #if DEBUG
         Debug.WriteLine($"[Engine] Mode={mode}, Items={items.Count}, Canvas={cw:F0}x{ch:F0}");
         foreach (var item in items)
-            Debug.WriteLine($"  → {item.Clothing.Name}: Role={item.RenderRole}, Pos=({item.X:F0},{item.Y:F0}), Size={item.Width:F0}x{item.Height:F0}, Z={item.ZIndex}");
+            Debug.WriteLine($"  → {item.Clothing.Name}: Role={item.RenderRole}, Region={item.SemanticRegion}, Pos=({item.X:F0},{item.Y:F0}), Size={item.Width:F0}x{item.Height:F0}, Z={item.ZIndex}");
 #endif
 
-        return items;
+        return new LayoutResult(items, mode, ctx.Parts, cw, ch);
+    }
+
+    private static SemanticRegion ResolveSemanticRegion(RenderRole role)
+    {
+        return role switch
+        {
+            RenderRole.Primary => SemanticRegion.UpperPrimary,
+            RenderRole.Overlay => SemanticRegion.UpperOverlay,
+            RenderRole.Bottom => SemanticRegion.LowerBody,
+            RenderRole.Footwear => SemanticRegion.Footwear,
+            RenderRole.Accessory => SemanticRegion.Accessory,
+            _ => SemanticRegion.UpperPrimary
+        };
     }
 
     private static LayerRole ResolveSoloLayerRole(global::ClosetApp.Domain.Entities.Clothing item)

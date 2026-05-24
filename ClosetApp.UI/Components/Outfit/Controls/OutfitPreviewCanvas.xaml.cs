@@ -87,7 +87,8 @@ public partial class OutfitPreviewCanvas : UserControl
         RenderCanvas.Width = cw;
         RenderCanvas.Height = ch;
 
-        var layoutItems = _engine.CalculateLayout(Clothes, cw, ch);
+        var layout = _engine.CalculateLayout(Clothes, cw, ch);
+        var layoutItems = layout.Items;
 
         foreach (var item in layoutItems)
         {
