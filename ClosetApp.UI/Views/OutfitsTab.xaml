@@ -459,6 +459,62 @@
                             <ItemsControl x:Name="RecentWornList"
                                           ItemsSource="{Binding RecentWornRecords}"
                                           ItemTemplate="{StaticResource RecentWornRecordTemplate}"/>
+                            <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                    BorderBrush="{StaticResource OutfitMintBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="16"
+                                    Padding="12,11"
+                                    Margin="0,2,0,0"
+                                    Visibility="{Binding SelectedRecentWornRecord, Converter={StaticResource NullToVisibilityConverter}}">
+                                <StackPanel>
+                                    <TextBlock Text="当前聚焦"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               FontSize="9"
+                                               FontWeight="SemiBold"/>
+                                    <Grid Margin="0,7,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding SelectedRecentWornRecord.OutfitName}"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                            <TextBlock Text="{Binding SelectedRecentWornRecord.FocusSummaryText}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       FontSize="11"
+                                                       Margin="0,4,0,0"
+                                                       TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <Border Grid.Column="1"
+                                                Background="{StaticResource OutfitLavenderSurfaceBrush}"
+                                                BorderBrush="{StaticResource OutfitLavenderBorderBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="9"
+                                                Padding="8,4"
+                                                Margin="10,0,0,0"
+                                                VerticalAlignment="Top">
+                                            <TextBlock Text="{Binding SelectedRecentWornRecord.FocusSyncText}"
+                                                       Foreground="{StaticResource OutfitLavenderTextBrush}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"/>
+                                        </Border>
+                                    </Grid>
+                                    <Border Background="{DynamicResource SurfaceElevatedBrush}"
+                                            BorderBrush="{DynamicResource BorderLightBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="10,8"
+                                            Margin="0,9,0,0">
+                                        <TextBlock Text="{Binding SelectedRecentWornRecord.FocusNoteText}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   FontSize="11"
+                                                   TextWrapping="Wrap"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
                         </StackPanel>
 
                         <StackPanel Grid.Column="2">

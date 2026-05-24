@@ -55,6 +55,7 @@ public partial class OutfitsViewModel : ObservableObject
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
     public IReadOnlyList<RecentWornListItem> RecentWornRecords => _state.RecentWornRecords;
+    public RecentWornListItem? SelectedRecentWornRecord => _state.SelectedRecentWornRecord;
     public IReadOnlyList<CalendarDayItem> CalendarDays => _state.CalendarDays;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
@@ -238,6 +239,7 @@ public partial class OutfitsViewModel : ObservableObject
     {
         OnPropertyChanged(nameof(Outfits));
         OnPropertyChanged(nameof(RecentWornRecords));
+        OnPropertyChanged(nameof(SelectedRecentWornRecord));
         OnPropertyChanged(nameof(CalendarDays));
         OnPropertyChanged(nameof(IsLoading));
         OnPropertyChanged(nameof(IsEmpty));

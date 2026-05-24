@@ -25,6 +25,7 @@ public sealed class OutfitsTabState
 
     public IReadOnlyList<Outfit> Outfits => _outfits;
     public IReadOnlyList<RecentWornListItem> RecentWornRecords => _recentWornRecords;
+    public RecentWornListItem? SelectedRecentWornRecord => _recentWornRecords.FirstOrDefault(item => item.IsSelected);
     public IReadOnlyList<CalendarDayItem> CalendarDays => _calendarDays;
     public bool IsLoading { get; private set; }
     public bool IsEmpty => _outfits.Count == 0;
@@ -169,6 +170,9 @@ public sealed record RecentWornListItem(
     string TimeText,
     string MetaText,
     IList<Clothing> PreviewClothes,
+    string FocusSummaryText,
+    string FocusNoteText,
+    string FocusSyncText,
     bool IsSelected = false)
 {
     public static RecentWornListItem FromRecord(OutfitWornRecord record)
@@ -195,6 +199,19 @@ public sealed record RecentWornListItem(
         var metaText = metaParts.Count > 0
             ? string.Join(" · ", metaParts)
             : "这次穿搭的预览还没补齐";
+        var wearSummary = record.Outfit?.WearCount > 0
+            ? $"累计穿过 {record.Outfit.WearCount} 次"
+            : "这是第一次记进时间线";
+        var seasonSummary = record.Outfit?.Season is { } focusSeason && focusSeason != Season.Unspecified
+            ? GetSeasonLabel(focusSeason)
+            : string.Empty;
+        var focusSummaryText = string.IsNullOrWhiteSpace(seasonSummary)
+            ? wearSummary
+            : $"{wearSummary} · {seasonSummary}";
+        var focusNoteText = string.IsNullOrWhiteSpace(record.Outfit?.Notes)
+            ? "这套还没有补搭配备注。"
+            : record.Outfit!.Notes!.Trim();
+        var focusSyncText = $"日历已同步到 {record.WornDate:M月d日}";
 
         return new RecentWornListItem(
             record.WornDate,
@@ -202,7 +219,10 @@ public sealed record RecentWornListItem(
             ResolveOutfitName(record.Outfit),
             record.WornDate.ToString("HH:mm"),
             metaText,
-            previewClothes);
+            previewClothes,
+            focusSummaryText,
+            focusNoteText,
+            focusSyncText);
     }
 
     private static string ResolveOutfitName(Outfit? outfit)
