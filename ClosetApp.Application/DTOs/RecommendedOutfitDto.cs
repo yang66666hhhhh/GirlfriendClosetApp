@@ -17,4 +17,10 @@ public sealed record RecommendedOutfitDto(
     public int Rating => Outfit.Rating;
     public int WearCount => Outfit.WearCount;
     public DateTime? WornDate => Outfit.WornDate;
+    public IList<Clothing> PreviewClothes => Outfit.OutfitClothes
+        .Select(link => link.Clothing)
+        .Where(clothing => clothing != null)
+        .Cast<Clothing>()
+        .ToList();
+    public string WearSummaryText => WearCount > 0 ? $"已穿 {WearCount} 次" : "还没穿过";
 }

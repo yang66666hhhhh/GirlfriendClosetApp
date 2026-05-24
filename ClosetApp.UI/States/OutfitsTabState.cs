@@ -247,9 +247,13 @@ public sealed record CalendarDayItem(
     string DayText,
     string CountText,
     string FirstOutfitName,
+    string DensityText,
+    string DensitySummaryText,
     IReadOnlyList<OutfitWornRecord> Records,
+    int RecordCount,
     bool IsInCurrentMonth,
     bool HasRecords,
+    bool HasMultipleRecords,
     bool IsToday,
     bool IsSelected)
 {
@@ -263,11 +267,39 @@ public sealed record CalendarDayItem(
             date,
             date.Day.ToString(),
             records.Count > 0 ? $"{records.Count} 套" : string.Empty,
-            records.FirstOrDefault()?.Outfit?.Name ?? string.Empty,
+            BuildFirstOutfitName(records),
+            records.Count switch
+            {
+                0 => string.Empty,
+                1 => "单套",
+                _ => "多套"
+            },
+            records.Count switch
+            {
+                0 => string.Empty,
+                1 => "这天只记录了一套",
+                _ => $"这天共记录了 {records.Count} 套"
+            },
             records,
+            records.Count,
             date.Month == currentMonth,
             records.Count > 0,
+            records.Count > 1,
             date == DateTime.Today,
             selectedDate != null && date.Date == selectedDate.Value.Date);
+    }
+
+    private static string BuildFirstOutfitName(IReadOnlyList<OutfitWornRecord> records)
+    {
+        if (records.Count == 0)
+            return string.Empty;
+
+        var firstName = records.FirstOrDefault()?.Outfit?.Name ?? string.Empty;
+        if (records.Count == 1)
+            return firstName;
+
+        return string.IsNullOrWhiteSpace(firstName)
+            ? $"共 {records.Count} 套"
+            : $"{firstName} 等";
     }
 }

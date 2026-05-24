@@ -52,17 +52,62 @@
 
         <DataTemplate x:Key="WeatherRecommendationTemplate">
             <Border Background="{DynamicResource SurfaceElevatedBrush}"
-                    CornerRadius="10"
-                    Padding="9,8"
+                    BorderBrush="{StaticResource OutfitMintBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="14"
+                    Padding="10"
                     Margin="0,0,6,0"
-                    Width="178">
+                    Width="186">
                 <StackPanel>
                     <Grid>
                         <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="70"/>
+                            <ColumnDefinition Width="10"/>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <StackPanel>
+                        <Border Grid.Column="0"
+                                Height="88"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{StaticResource OutfitSkyBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12">
+                            <Grid Margin="4">
+                                <Border Width="38"
+                                        HorizontalAlignment="Center"
+                                        VerticalAlignment="Stretch"
+                                        Margin="0,8,0,10"
+                                        CornerRadius="20"
+                                        Opacity="0.24">
+                                    <Border.Background>
+                                        <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                            <GradientStop Color="#28FFFFFF" Offset="0"/>
+                                            <GradientStop Color="#10FFFFFF" Offset="0.52"/>
+                                            <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                        </LinearGradientBrush>
+                                    </Border.Background>
+                                </Border>
+                                <Ellipse Width="30"
+                                         Height="6"
+                                         HorizontalAlignment="Center"
+                                         VerticalAlignment="Bottom"
+                                         Margin="0,0,0,12"
+                                         Opacity="0.13"
+                                         IsHitTestVisible="False">
+                                    <Ellipse.Fill>
+                                        <RadialGradientBrush RadiusX="0.78" RadiusY="0.9">
+                                            <GradientStop Color="#22000000" Offset="0"/>
+                                            <GradientStop Color="#00000000" Offset="1"/>
+                                        </RadialGradientBrush>
+                                    </Ellipse.Fill>
+                                </Ellipse>
+                                <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"
+                                                            Margin="0,1,0,0"
+                                                            HorizontalAlignment="Stretch"
+                                                            VerticalAlignment="Stretch"/>
+                            </Grid>
+                        </Border>
+                        <StackPanel Grid.Column="2">
                             <TextBlock Text="{Binding Name}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"
@@ -75,12 +120,26 @@
                                 <TextBlock Text=" · "
                                            Foreground="{DynamicResource TextPlaceholderBrush}"
                                            FontSize="10"/>
-                                <TextBlock Text="{Binding WearCount, StringFormat=已穿 {0} 次}"
+                                <TextBlock Text="{Binding WearSummaryText}"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                            FontSize="10"/>
                             </StackPanel>
+                            <Border Background="{StaticResource OutfitLavenderSurfaceBrush}"
+                                    BorderBrush="{StaticResource OutfitLavenderBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="6,3"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Left">
+                                <TextBlock Text="{Binding PrimaryReason}"
+                                           Foreground="{StaticResource OutfitLavenderTextBrush}"
+                                           FontSize="9"
+                                           FontWeight="SemiBold"
+                                           TextTrimming="CharacterEllipsis"
+                                           MaxWidth="76"/>
+                            </Border>
                         </StackPanel>
-                        <Button Grid.Column="1"
+                        <Button Grid.Column="3"
                                 Content="穿了"
                                 Style="{StaticResource OutfitMintButton}"
                                 Padding="7,4"
@@ -88,16 +147,11 @@
                                 VerticalAlignment="Top"
                                 Click="RecommendedOutfitWorn_Click"/>
                     </Grid>
-                    <TextBlock Text="{Binding PrimaryReason}"
-                               Foreground="{DynamicResource TextPrimaryBrush}"
-                               FontSize="10"
-                               TextWrapping="Wrap"
-                               Margin="0,6,0,0"/>
                     <TextBlock Text="{Binding SecondaryReason}"
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                FontSize="9"
                                TextWrapping="Wrap"
-                               Margin="0,3,0,0"
+                               Margin="0,8,0,0"
                                Visibility="{Binding SecondaryReason, Converter={StaticResource NullToVisibilityConverter}}"/>
                 </StackPanel>
             </Border>
@@ -594,31 +648,82 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <StackPanel>
-                                            <TextBlock Text="{Binding DayText}"
-                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                       FontWeight="SemiBold">
-                                                <TextBlock.Style>
-                                                    <Style TargetType="TextBlock">
-                                                        <Style.Triggers>
-                                                            <DataTrigger Binding="{Binding IsInCurrentMonth}" Value="False">
-                                                                <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
-                                                            </DataTrigger>
-                                                        </Style.Triggers>
-                                                    </Style>
-                                                </TextBlock.Style>
-                                            </TextBlock>
-                                            <TextBlock Text="{Binding CountText}"
-                                                       Foreground="{DynamicResource PrimaryBrush}"
-                                                       FontSize="11"
-                                                       FontWeight="SemiBold"
-                                                       Margin="0,8,0,0"/>
-                                            <TextBlock Text="{Binding FirstOutfitName}"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       FontSize="11"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       Margin="0,4,0,0"/>
-                                        </StackPanel>
+                                        <Grid>
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                            </Grid.RowDefinitions>
+
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="{Binding DayText}"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                           FontWeight="SemiBold">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding IsInCurrentMonth}" Value="False">
+                                                                    <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                                <Border Grid.Column="1"
+                                                        Background="{StaticResource OutfitLavenderSurfaceBrush}"
+                                                        BorderBrush="{StaticResource OutfitLavenderBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="6,2"
+                                                        Visibility="{Binding HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasMultipleRecords}" Value="True">
+                                                                    <Setter Property="Background" Value="{StaticResource OutfitMintSurfaceBrush}"/>
+                                                                    <Setter Property="BorderBrush" Value="{StaticResource OutfitMintBorderBrush}"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </Border.Style>
+                                                    <TextBlock Text="{Binding DensityText}"
+                                                               FontSize="9"
+                                                               FontWeight="SemiBold">
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Foreground" Value="{StaticResource OutfitLavenderTextBrush}"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding HasMultipleRecords}" Value="True">
+                                                                        <Setter Property="Foreground" Value="{StaticResource OutfitMintTextBrush}"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </Border>
+                                            </Grid>
+
+                                            <StackPanel Grid.Row="1"
+                                                        Margin="0,8,0,0">
+                                                <TextBlock Text="{Binding CountText}"
+                                                           Foreground="{DynamicResource PrimaryBrush}"
+                                                           FontSize="11"
+                                                           FontWeight="SemiBold"/>
+                                                <TextBlock Text="{Binding FirstOutfitName}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                                           FontSize="11"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           Margin="0,4,0,0"/>
+                                                <TextBlock Text="{Binding DensitySummaryText}"
+                                                           Foreground="{DynamicResource TextTertiaryBrush}"
+                                                           FontSize="9"
+                                                           Margin="0,3,0,0"
+                                                           Visibility="{Binding HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                            </StackPanel>
+                                        </Grid>
                                     </Border>
                                 </DataTemplate>
                             </ItemsControl.ItemTemplate>
