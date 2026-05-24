@@ -19,6 +19,7 @@ public sealed class OutfitsTabState
     private List<RecentWornListItem> _recentWornRecords = [];
     private List<CalendarDayItem> _calendarDays = [];
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
+    private DateTime? _selectedHistoryDate;
     private bool _isHistoryExpanded;
     private OutfitSortBy _sortBy = OutfitSortBy.Newest;
 
@@ -78,9 +79,16 @@ public sealed class OutfitsTabState
 
     public void SetRecentWornRecords(IEnumerable<OutfitWornRecord> records)
     {
-        _recentWornRecords = records
+        var items = records
             .Select(RecentWornListItem.FromRecord)
             .ToList();
+
+        if (_selectedHistoryDate == null && items.Count > 0)
+            _selectedHistoryDate = items[0].WornDate.Date;
+        else if (_selectedHistoryDate != null && items.All(item => item.WornDate.Date != _selectedHistoryDate.Value.Date))
+            _selectedHistoryDate = items.FirstOrDefault()?.WornDate.Date;
+
+        _recentWornRecords = ApplyRecentSelection(items);
     }
 
     public void SetCalendarRecords(IEnumerable<OutfitWornRecord> records)
@@ -91,7 +99,23 @@ public sealed class OutfitsTabState
             .ToDictionary(group => group.Key, group => group.ToList());
 
         CalendarSummaryText = BuildCalendarSummary(monthRecords);
-        _calendarDays = BuildCalendarDays(_calendarMonth, groupedRecords).ToList();
+        _calendarDays = BuildCalendarDays(_calendarMonth, groupedRecords, _selectedHistoryDate).ToList();
+    }
+
+    public bool SelectHistoryDate(DateTime date)
+    {
+        _selectedHistoryDate = date.Date;
+        _recentWornRecords = ApplyRecentSelection(_recentWornRecords);
+        _calendarDays = _calendarDays
+            .Select(day => day with { IsSelected = day.Date.Date == _selectedHistoryDate.Value.Date })
+            .ToList();
+
+        var targetMonth = new DateTime(date.Year, date.Month, 1);
+        var monthChanged = targetMonth != _calendarMonth;
+        if (monthChanged)
+            _calendarMonth = targetMonth;
+
+        return monthChanged;
     }
 
     private static string BuildCalendarSummary(IReadOnlyList<OutfitWornRecord> records)
@@ -110,7 +134,8 @@ public sealed class OutfitsTabState
 
     private static IReadOnlyList<CalendarDayItem> BuildCalendarDays(
         DateTime monthStart,
-        IReadOnlyDictionary<DateTime, List<OutfitWornRecord>> recordsByDate)
+        IReadOnlyDictionary<DateTime, List<OutfitWornRecord>> recordsByDate,
+        DateTime? selectedDate)
     {
         var firstDayOffset = ((int)monthStart.DayOfWeek + 6) % 7;
         var calendarStart = monthStart.AddDays(-firstDayOffset);
@@ -120,19 +145,31 @@ public sealed class OutfitsTabState
         {
             var date = calendarStart.AddDays(index);
             recordsByDate.TryGetValue(date, out var dayRecords);
-            days.Add(CalendarDayItem.FromDate(date, monthStart.Month, dayRecords ?? []));
+            days.Add(CalendarDayItem.FromDate(date, monthStart.Month, dayRecords ?? [], selectedDate));
         }
 
         return days;
     }
+
+    private List<RecentWornListItem> ApplyRecentSelection(IEnumerable<RecentWornListItem> items)
+    {
+        return items
+            .Select(item => item with
+            {
+                IsSelected = _selectedHistoryDate != null && item.WornDate.Date == _selectedHistoryDate.Value.Date
+            })
+            .ToList();
+    }
 }
 
 public sealed record RecentWornListItem(
+    DateTime WornDate,
     string DateText,
     string OutfitName,
     string TimeText,
     string MetaText,
-    IList<Clothing> PreviewClothes)
+    IList<Clothing> PreviewClothes,
+    bool IsSelected = false)
 {
     public static RecentWornListItem FromRecord(OutfitWornRecord record)
     {
@@ -160,6 +197,7 @@ public sealed record RecentWornListItem(
             : "这次穿搭的预览还没补齐";
 
         return new RecentWornListItem(
+            record.WornDate,
             dateText,
             ResolveOutfitName(record.Outfit),
             record.WornDate.ToString("HH:mm"),
@@ -192,12 +230,14 @@ public sealed record CalendarDayItem(
     IReadOnlyList<OutfitWornRecord> Records,
     bool IsInCurrentMonth,
     bool HasRecords,
-    bool IsToday)
+    bool IsToday,
+    bool IsSelected)
 {
     public static CalendarDayItem FromDate(
         DateTime date,
         int currentMonth,
-        IReadOnlyList<OutfitWornRecord> records)
+        IReadOnlyList<OutfitWornRecord> records,
+        DateTime? selectedDate)
     {
         return new CalendarDayItem(
             date,
@@ -207,6 +247,7 @@ public sealed record CalendarDayItem(
             records,
             date.Month == currentMonth,
             records.Count > 0,
-            date == DateTime.Today);
+            date == DateTime.Today,
+            selectedDate != null && date.Date == selectedDate.Value.Date);
     }
 }

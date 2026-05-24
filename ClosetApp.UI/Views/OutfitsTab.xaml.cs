@@ -208,6 +208,21 @@ public partial class OutfitsTab : UserControl
         window.NavigateToSettings();
     }
 
+    private async void RecentWornItem_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: RecentWornListItem item })
+            return;
+
+        try
+        {
+            await _viewModel.FocusHistoryDateAsync(item.WornDate);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("定位穿着记录失败", ex.Message);
+        }
+    }
+
     private void CalendarDay_Click(object sender, MouseButtonEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: CalendarDayItem day })

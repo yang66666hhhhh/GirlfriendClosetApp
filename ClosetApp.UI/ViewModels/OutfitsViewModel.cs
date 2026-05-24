@@ -210,6 +210,15 @@ public partial class OutfitsViewModel : ObservableObject
         NotifyStateChanged();
     }
 
+    public async Task FocusHistoryDateAsync(DateTime date)
+    {
+        var monthChanged = _state.SelectHistoryDate(date);
+        if (monthChanged)
+            await RefreshCalendarAsync();
+
+        NotifyStateChanged();
+    }
+
     private async Task RefreshDerivedStateAsync()
     {
         var recentRecords = await _outfitService.GetRecentWornRecordsAsync(6);
