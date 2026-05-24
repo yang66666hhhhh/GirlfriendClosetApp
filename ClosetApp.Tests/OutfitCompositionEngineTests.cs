@@ -189,6 +189,48 @@ public class OutfitCompositionEngineTests
     }
 
     [Fact]
+    public void CalculateLayout_WithOuterwearAndShoes_UsesMixedMode()
+    {
+        var outerwear = Clothing("Coat", GarmentType.Coat);
+        var shoes = Clothing("Sneakers", GarmentType.Sneakers);
+
+        var layout = _engine.CalculateLayout([outerwear, shoes], CanvasWidth, CanvasHeight);
+
+        Assert.Equal(2, layout.Count);
+        var outerItem = layout.Single(item => item.Clothing == outerwear);
+        var shoesItem = layout.Single(item => item.Clothing == shoes);
+        Assert.Equal(RenderRole.Primary, outerItem.RenderRole);
+        Assert.Equal(RenderRole.Footwear, shoesItem.RenderRole);
+        Assert.True(outerItem.Y < shoesItem.Y);
+        Assert.True(outerItem.Width > shoesItem.Width);
+    }
+
+    [Fact]
+    public void CalculateLayout_OuterwearInDressMode_HasOverlayRole()
+    {
+        var dress = Clothing("Dress", GarmentType.Dress);
+        var outerwear = Clothing("Coat", GarmentType.Coat);
+        var shoes = Clothing("Heels", GarmentType.Heels);
+
+        var layout = _engine.CalculateLayout([dress, outerwear, shoes], CanvasWidth, CanvasHeight);
+
+        var outerItem = layout.Single(item => item.Clothing == outerwear);
+        Assert.Equal(RenderRole.Overlay, outerItem.RenderRole);
+    }
+
+    [Fact]
+    public void CalculateLayout_OuterwearInMixedMode_HasPrimaryRole()
+    {
+        var outerwear = Clothing("Coat", GarmentType.Coat);
+        var shoes = Clothing("Sneakers", GarmentType.Sneakers);
+
+        var layout = _engine.CalculateLayout([outerwear, shoes], CanvasWidth, CanvasHeight);
+
+        var outerItem = layout.Single(item => item.Clothing == outerwear);
+        Assert.Equal(RenderRole.Primary, outerItem.RenderRole);
+    }
+
+    [Fact]
     public void CalculateLayout_WithExtraItems_UsesOneItemPerSupportedRole()
     {
         var clothes = new[]

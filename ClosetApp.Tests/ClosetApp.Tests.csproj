@@ -36,6 +36,7 @@
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitCompositionEngine.cs" Link="UiLogic\Outfit\Engine\OutfitCompositionEngine.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitLayoutItem.cs" Link="UiLogic\Outfit\Engine\OutfitLayoutItem.cs" />
     <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitRenderMetrics.cs" Link="UiLogic\Outfit\Engine\OutfitRenderMetrics.cs" />
+    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\RenderRole.cs" Link="UiLogic\Outfit\Engine\RenderRole.cs" />
   </ItemGroup>
 
 </Project>

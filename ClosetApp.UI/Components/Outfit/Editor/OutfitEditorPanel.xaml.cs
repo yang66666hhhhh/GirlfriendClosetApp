@@ -203,6 +203,7 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         {
             EmptyPreview.Visibility = Visibility.Visible;
             TxtPreviewCount.Text = "";
+            LivePreview.Clothes = null;
             return;
         }
 
@@ -210,6 +211,7 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         TxtPreviewCount.Text = $"已选 {selected.Count} 件";
 
         if (LivePreview == null) return;
+        LivePreview.Clothes = null;
         LivePreview.Clothes = selected.Select(i => i.Clothing).ToList();
     }
 

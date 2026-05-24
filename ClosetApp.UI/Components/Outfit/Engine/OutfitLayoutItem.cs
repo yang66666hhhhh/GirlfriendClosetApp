@@ -8,6 +8,7 @@ public class OutfitLayoutItem
     public required double Width { get; init; }
     public required double Height { get; init; }
     public required int ZIndex { get; init; }
+    public required RenderRole RenderRole { get; init; }
     public double Opacity { get; init; } = 1.0;
     public bool IsInset { get; init; }
 }

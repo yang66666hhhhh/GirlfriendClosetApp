@@ -226,7 +226,8 @@
                                 </StackPanel>
                                 <outfit:OutfitPreviewCanvas x:Name="LivePreview"
                                        VerticalAlignment="Top"
-                                       HorizontalAlignment="Center"/>
+                                       HorizontalAlignment="Center"
+                                       MinHeight="360"/>
                             </Grid>
                         </Border>
                     </StackPanel>

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -76,6 +77,8 @@ public partial class OutfitPreviewCanvas : UserControl
 
         if (Clothes == null || Clothes.Count == 0) return;
 
+        UpdateLayout();
+
         double cw = MeasureCanvasWidth();
         double ch = MeasureCanvasHeight();
 
@@ -104,6 +107,7 @@ public partial class OutfitPreviewCanvas : UserControl
                 Stretch = Stretch.Uniform,
                 Effect = shadow,
                 Opacity = item.Opacity,
+                RenderTransform = Transform.Identity,
                 Source = ClothingImageLoader.Load(
                     item.Clothing.ImagePath,
                     ImageVariant.Display,
@@ -117,5 +121,9 @@ public partial class OutfitPreviewCanvas : UserControl
             Canvas.SetZIndex(img, item.ZIndex);
             RenderCanvas.Children.Add(img);
         }
+
+#if DEBUG
+        Debug.WriteLine($"[Canvas] Render: Items={layoutItems.Count}, Canvas={cw:F0}x{ch:F0}, Children={RenderCanvas.Children.Count}");
+#endif
     }
 }
