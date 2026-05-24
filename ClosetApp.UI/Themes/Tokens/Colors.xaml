@@ -98,6 +98,7 @@
     <SolidColorBrush x:Key="SuccessBrush" Color="#10B981"/>
     <SolidColorBrush x:Key="WarningBrush" Color="#F59E0B"/>
     <SolidColorBrush x:Key="ErrorBrush" Color="{StaticResource Danger}"/>
+    <SolidColorBrush x:Key="InfoBrush" Color="#667EEA"/>
     <SolidColorBrush x:Key="OverlayBrush" Color="#40000000"/>
     <SolidColorBrush x:Key="RatingStarBrush" Color="#FBBF24"/>
 
