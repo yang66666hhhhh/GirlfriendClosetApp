@@ -16,4 +16,5 @@ public interface IOutfitService
     Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end);
     Task RecordWornDateAsync(Guid outfitId, DateTime date);
     Task DeleteWornRecordAsync(Guid recordId);
+    Task<bool> ToggleFavoriteAsync(Guid outfitId);
 }

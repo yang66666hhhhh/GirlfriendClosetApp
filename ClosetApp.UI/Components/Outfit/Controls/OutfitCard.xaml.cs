@@ -32,6 +32,10 @@ public partial class OutfitCard : UserControl
         EventManager.RegisterRoutedEvent("WornClicked", RoutingStrategy.Bubble,
             typeof(RoutedEventHandler), typeof(OutfitCard));
 
+    public static readonly RoutedEvent FavoriteToggledEvent =
+        EventManager.RegisterRoutedEvent("FavoriteToggled", RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(OutfitCard));
+
     public event RoutedEventHandler EditClicked
     {
         add => AddHandler(EditClickedEvent, value);
@@ -48,6 +52,12 @@ public partial class OutfitCard : UserControl
     {
         add => AddHandler(WornClickedEvent, value);
         remove => RemoveHandler(WornClickedEvent, value);
+    }
+
+    public event RoutedEventHandler FavoriteToggled
+    {
+        add => AddHandler(FavoriteToggledEvent, value);
+        remove => RemoveHandler(FavoriteToggledEvent, value);
     }
 
     public static readonly DependencyProperty OutfitProperty =
@@ -94,6 +104,11 @@ public partial class OutfitCard : UserControl
             if (Outfit != null)
                 WornRequested?.Invoke(this, Outfit);
         };
+        BtnFavorite.Click += (s, e) =>
+        {
+            RaiseEvent(new RoutedEventArgs(FavoriteToggledEvent, this));
+            e.Handled = true;
+        };
     }
 
     public event EventHandler<OutfitEntity>? EditCompleted;
@@ -116,6 +131,7 @@ public partial class OutfitCard : UserControl
             card.ApplyPreviewHeight(clothes);
             card.ApplyPreviewBackdrop(outfit, clothes);
             card.RenderMoodChips(chips);
+            card.ApplyFavoriteVisual(outfit);
         }
     }
 
@@ -237,6 +253,21 @@ public partial class OutfitCard : UserControl
     {
         var backdrop = ResolveBackdrop(outfit, clothes);
         PreviewShell.Background = new SolidColorBrush(backdrop);
+    }
+
+    public void ApplyFavoriteVisual(OutfitEntity outfit)
+    {
+        var isFav = outfit.Favorites.Count > 0;
+        BtnFavorite.Content = isFav ? "♥" : "♡";
+        BtnFavorite.Foreground = isFav
+            ? (Brush)FindResource("DangerBrush")
+            : (Brush)FindResource("TextPlaceholderBrush");
+        BtnFavorite.Background = isFav
+            ? new SolidColorBrush(Color.FromRgb(255, 243, 246))
+            : new SolidColorBrush(Color.FromRgb(247, 251, 255));
+        BtnFavorite.BorderBrush = isFav
+            ? (Brush)FindResource("DangerBrush")
+            : (Brush)FindResource("BorderLightBrush");
     }
 
     private void RenderMoodChips(IReadOnlyList<string> chips)

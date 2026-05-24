@@ -57,9 +57,11 @@ public partial class OutfitsTab : UserControl
             card.EditCompleted -= OutfitCard_EditCompleted;
             card.DeleteRequested -= OutfitCard_DeleteRequested;
             card.WornRequested -= OutfitCard_WornRequested;
+            card.FavoriteToggled -= OutfitCard_FavoriteToggled;
             card.EditCompleted += OutfitCard_EditCompleted;
             card.DeleteRequested += OutfitCard_DeleteRequested;
             card.WornRequested += OutfitCard_WornRequested;
+            card.FavoriteToggled += OutfitCard_FavoriteToggled;
         }
     }
 
@@ -120,6 +122,22 @@ public partial class OutfitsTab : UserControl
         {
             var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, outfit.Name);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
+    private async void OutfitCard_FavoriteToggled(object? sender, RoutedEventArgs e)
+    {
+        if (sender is not OutfitCard card || card.Outfit == null) return;
+
+        try
+        {
+            var isFav = await _viewModel.ToggleFavoriteAsync(card.Outfit);
+            card.ApplyFavoriteVisual(card.Outfit);
+            ToastService.Instance.ShowSuccess(isFav ? "已收藏" : "已取消收藏");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("操作失败", ex.Message);
         }
     }
 

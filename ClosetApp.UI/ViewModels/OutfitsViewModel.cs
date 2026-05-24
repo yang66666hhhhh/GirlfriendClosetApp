@@ -141,6 +141,13 @@ public partial class OutfitsViewModel : ObservableObject
         await LoadOutfitsAsync();
     }
 
+    public async Task<bool> ToggleFavoriteAsync(Outfit outfit)
+    {
+        var isFav = await _outfitService.ToggleFavoriteAsync(outfit.Id);
+        await LoadOutfitsAsync();
+        return isFav;
+    }
+
     public async Task RefreshWeatherRecommendationsAsync()
     {
         IsWeatherLoading = true;
