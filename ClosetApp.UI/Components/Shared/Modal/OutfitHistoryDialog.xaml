@@ -1,0 +1,500 @@
+<UserControl x:Class="ClosetApp.UI.Components.Shared.Modal.OutfitHistoryDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:outfit="clr-namespace:ClosetApp.UI.Components.Outfit.Controls"
+             xmlns:conv="clr-namespace:ClosetApp.UI.Converters">
+    <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
+        <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
+
+        <Style x:Key="RecentPreviewButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource CapsuleButton}">
+            <Setter Property="Content" Value="预览"/>
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D7E3F4"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="10,5"/>
+            <Setter Property="MinWidth" Value="58"/>
+            <Setter Property="MinHeight" Value="30"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                    <Setter Property="Content" Value="当前"/>
+                    <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <DataTemplate x:Key="RecentWornRecordTemplate">
+            <Border Background="{DynamicResource SurfaceElevatedBrush}"
+                    BorderBrush="{DynamicResource BorderLightBrush}"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Padding="12,10"
+                    Margin="0,0,0,10"
+                    Cursor="Hand"
+                    MouseLeftButtonDown="RecentWornItem_Click">
+                <Border.Style>
+                    <Style TargetType="Border">
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
+                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="BorderThickness" Value="1.4"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Border.Style>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Width="4"
+                            CornerRadius="2"
+                            Background="{DynamicResource PrimaryBrush}"
+                            Opacity="0"
+                            Margin="0,2,0,2">
+                        <Border.Style>
+                            <Style TargetType="Border">
+                                <Setter Property="Opacity" Value="0"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                        <Setter Property="Opacity" Value="1"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Border.Style>
+                    </Border>
+
+                    <StackPanel Grid.Column="2"
+                                VerticalAlignment="Center">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding DateText}"
+                                       Foreground="{DynamicResource PrimaryBrush}"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding OutfitName}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       FontWeight="SemiBold"
+                                       FontSize="13"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center"/>
+                            <Border Grid.Column="3"
+                                    Margin="10,0,0,0"
+                                    Padding="6,2"
+                                    CornerRadius="7"
+                                    Background="{DynamicResource PrimaryLightBrush}"
+                                    Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="当前"
+                                           Foreground="{DynamicResource PrimaryBrush}"
+                                           FontSize="9"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                        </Grid>
+
+                        <Grid Margin="0,8,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0"
+                                    Background="{DynamicResource SurfacePageBrush}"
+                                    BorderBrush="{DynamicResource BorderDividerBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="8"
+                                    Padding="7,3">
+                                <TextBlock Text="{Binding TimeText}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="9.5"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                            <TextBlock Grid.Column="2"
+                                       Text="{Binding MetaText}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="10.5"
+                                       VerticalAlignment="Center"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </Grid>
+                    </StackPanel>
+
+                    <Button Grid.Column="3"
+                            Style="{StaticResource RecentPreviewButtonStyle}"
+                            Margin="14,0,0,0"
+                            VerticalAlignment="Center"
+                            Click="RecentPreviewButton_Click"/>
+                </Grid>
+            </Border>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid>
+        <Border Style="{StaticResource ModalCardRoot}"
+                Width="920"
+                MaxHeight="780">
+            <Border Style="{StaticResource ModalCardClip}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <Border Grid.Row="0" Style="{StaticResource ModalHeaderHost}" Padding="28,22">
+                        <Grid>
+                            <StackPanel>
+                                <TextBlock Text="穿着记录"
+                                           Style="{StaticResource ModalHeaderTitle}"/>
+                                <TextBlock Text="最近穿着和月历放在一起，回看今天之前都更顺手。"
+                                           Style="{StaticResource ModalHeaderSubtitle}"/>
+                            </StackPanel>
+                            <Button HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Content="✕"
+                                    Style="{StaticResource ModalCloseButton}"
+                                    Click="CloseButton_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto">
+                        <StackPanel Margin="28,20,28,20">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="1.22*"/>
+                                    <ColumnDefinition Width="18"/>
+                                    <ColumnDefinition Width="0.9*"/>
+                                </Grid.ColumnDefinitions>
+
+                            <Border Grid.Column="0"
+                                    Background="{DynamicResource SurfaceElevatedBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="22"
+                                    Padding="16,16,16,10">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <StackPanel Grid.Row="0">
+                                        <TextBlock Text="最近穿着"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding HistorySummaryText}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   FontSize="12"
+                                                   Margin="0,6,0,0"/>
+                                    </StackPanel>
+
+                                    <ScrollViewer Grid.Row="1"
+                                                  Margin="0,14,0,0"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  MaxHeight="212">
+                                        <ItemsControl ItemsSource="{Binding RecentWornRecords}"
+                                                      ItemTemplate="{StaticResource RecentWornRecordTemplate}"/>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+
+                            <Border x:Name="CurrentPreviewPanel"
+                                    Grid.Column="2"
+                                    Background="{DynamicResource SurfaceElevatedBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="22"
+                                    Padding="16"
+                                    VerticalAlignment="Top"
+                                    Visibility="Collapsed">
+                                <StackPanel>
+                                    <TextBlock Text="当前预览"
+                                               Foreground="{DynamicResource TextTertiaryBrush}"
+                                               FontSize="10"
+                                               FontWeight="SemiBold"/>
+                                    <TextBlock Text="{Binding OutfitName}"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               FontSize="16"
+                                               FontWeight="SemiBold"
+                                               Margin="0,8,0,0"
+                                               TextTrimming="CharacterEllipsis"/>
+                                    <Border Height="238"
+                                            Margin="0,14,0,0"
+                                            Background="{DynamicResource SurfacePageBrush}"
+                                            BorderBrush="{DynamicResource BorderLightBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="18">
+                                        <Grid Margin="12">
+                                            <Border Width="92"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Stretch"
+                                                    Margin="0,10,0,14"
+                                                    CornerRadius="48"
+                                                    Opacity="0.16"
+                                                    Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Border.Background>
+                                                    <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                        <GradientStop Color="#24DCEAFF" Offset="0"/>
+                                                        <GradientStop Color="#10FFFFFF" Offset="0.5"/>
+                                                        <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                                    </LinearGradientBrush>
+                                                </Border.Background>
+                                            </Border>
+                                            <Ellipse Width="84"
+                                                     Height="12"
+                                                     HorizontalAlignment="Center"
+                                                     VerticalAlignment="Bottom"
+                                                     Margin="0,0,0,14"
+                                                     Opacity="0.08"
+                                                     IsHitTestVisible="False"
+                                                     Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Ellipse.Fill>
+                                                    <RadialGradientBrush RadiusX="0.78" RadiusY="0.9">
+                                                        <GradientStop Color="#26000000" Offset="0"/>
+                                                        <GradientStop Color="#00000000" Offset="1"/>
+                                                    </RadialGradientBrush>
+                                                </Ellipse.Fill>
+                                            </Ellipse>
+                                            <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"
+                                                                        Width="196"
+                                                                        Height="212"
+                                                                        HorizontalAlignment="Center"
+                                                                        VerticalAlignment="Center"
+                                                                        Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                            <TextBlock Text="这条记录暂时没有可预览的单品"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       FontSize="11"
+                                                       TextAlignment="Center"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="168"
+                                                       HorizontalAlignment="Center"
+                                                       VerticalAlignment="Center"
+                                                       Visibility="{Binding HasPreviewClothes, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock Text="{Binding FocusSummaryText}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               FontSize="12"
+                                               Margin="0,12,0,0"
+                                               TextWrapping="Wrap"/>
+                                    <Border Background="{DynamicResource SurfaceElevatedBrush}"
+                                            BorderBrush="{DynamicResource BorderLightBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="14"
+                                            Padding="12,10"
+                                            Margin="0,12,0,0">
+                                        <TextBlock Text="{Binding FocusNoteText}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   FontSize="12"
+                                                   TextWrapping="Wrap"
+                                                   MaxHeight="74"/>
+                                    </Border>
+                                    <Border Background="{DynamicResource SurfacePageBrush}"
+                                            BorderBrush="{DynamicResource BorderDividerBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="10,8"
+                                            Margin="0,12,0,0"
+                                            HorizontalAlignment="Left">
+                                        <TextBlock Text="{Binding FocusSyncText}"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                            <Border Margin="0,18,0,0"
+                                    Background="{DynamicResource SurfaceElevatedBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="22"
+                                    Padding="16">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="穿搭日历"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   FontSize="16"
+                                                   FontWeight="SemiBold"/>
+                                        <TextBlock Text="{Binding CalendarSummaryText}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   FontSize="12"
+                                                   Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1"
+                                                Orientation="Horizontal"
+                                                VerticalAlignment="Center">
+                                        <Button Content="‹"
+                                                Style="{StaticResource CapsuleButton}"
+                                                MinWidth="40"
+                                                Padding="11,7"
+                                                Click="PrevMonth_Click"/>
+                                        <TextBlock Text="{Binding CalendarMonthText}"
+                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"
+                                                   Margin="12,0"/>
+                                        <Button Content="›"
+                                                Style="{StaticResource CapsuleButton}"
+                                                MinWidth="40"
+                                                Padding="11,7"
+                                                Click="NextMonth_Click"/>
+                                    </StackPanel>
+                                </Grid>
+
+                                <UniformGrid Grid.Row="1" Columns="7" Margin="0,16,0,6">
+                                    <TextBlock Text="一" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="二" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="三" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="四" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="五" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="六" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+                                    <TextBlock Text="日" Foreground="{DynamicResource TextTertiaryBrush}" HorizontalAlignment="Center"/>
+                                </UniformGrid>
+
+                                <ItemsControl Grid.Row="2"
+                                              ItemsSource="{Binding CalendarDays}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <UniformGrid Columns="7"/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border MinHeight="66"
+                                                    CornerRadius="14"
+                                                    Background="{DynamicResource SurfaceElevatedBrush}"
+                                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                                    BorderThickness="1"
+                                                    Padding="8"
+                                                    Margin="3"
+                                                    Cursor="Hand"
+                                                    MouseLeftButtonDown="CalendarDay_Click">
+                                                <Border.Style>
+                                                        <Style TargetType="Border">
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding HasRecords}" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
+                                                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderDividerBrush}"/>
+                                                                </DataTrigger>
+                                                                <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                    <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                                                                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                                    <Setter Property="BorderThickness" Value="1.5"/>
+                                                                </DataTrigger>
+                                                            <DataTrigger Binding="{Binding IsToday}" Value="True">
+                                                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </Border.Style>
+                                                <Grid>
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="Auto"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="Auto"/>
+                                                        </Grid.ColumnDefinitions>
+                                                        <TextBlock Text="{Binding DayText}"
+                                                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                   FontWeight="SemiBold"
+                                                                   FontSize="11">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsInCurrentMonth}" Value="False">
+                                                                            <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
+                                                        <Border Grid.Column="1"
+                                                                Background="{DynamicResource SurfacePageBrush}"
+                                                                BorderBrush="{DynamicResource BorderDividerBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="7"
+                                                                Padding="5,2"
+                                                                Visibility="{Binding HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <TextBlock Text="{Binding DensityText}"
+                                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                       FontSize="8.5"
+                                                                       FontWeight="SemiBold"/>
+                                                        </Border>
+                                                    </Grid>
+
+                                                    <StackPanel Grid.Row="1"
+                                                                Margin="0,6,0,0">
+                                                        <TextBlock Text="{Binding CountText}"
+                                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                                   FontSize="10"
+                                                                   FontWeight="SemiBold"/>
+                                                        <TextBlock Text="{Binding FirstOutfitName}"
+                                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                   FontSize="9.5"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   Margin="0,3,0,0"/>
+                                                        <TextBlock Text="{Binding DensitySummaryText}"
+                                                                   Foreground="{DynamicResource TextTertiaryBrush}"
+                                                                   FontSize="8.5"
+                                                                   Margin="0,2,0,0"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   Visibility="{Binding HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <Border Grid.Row="2" Style="{StaticResource ModalFooterHost}" Padding="20,12">
+                        <Button Content="关闭"
+                                Style="{StaticResource ModalSaveButton}"
+                                HorizontalAlignment="Right"
+                                Click="CloseButton_Click"/>
+                    </Border>
+                </Grid>
+            </Border>
+        </Border>
+
+    </Grid>
+</UserControl>

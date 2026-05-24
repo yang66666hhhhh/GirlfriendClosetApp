@@ -3,6 +3,7 @@ using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.States;
 using Serilog;
@@ -98,8 +99,11 @@ public partial class OutfitsViewModel : ObservableObject
     public string WeatherCityCompactText => BuildCompactWeatherCity(WeatherCity);
     public string WeatherCompactSummaryText => $"{WeatherTemperature}°C · {WeatherCondition}";
     public bool HasWeatherRecommendations => WeatherRecommendations.Count > 0;
+    public bool HasPrimaryWeatherRecommendation => PrimaryWeatherRecommendation != null;
+    public bool HasSecondaryWeatherRecommendations => SecondaryWeatherRecommendations.Count > 0;
     public string WeatherRecommendationCountText => HasWeatherRecommendations ? $"{WeatherRecommendations.Count} 套" : "暂无";
     public RecommendedOutfitDto? PrimaryWeatherRecommendation => WeatherRecommendations.FirstOrDefault();
+    public IReadOnlyList<RecommendedOutfitDto> SecondaryWeatherRecommendations => WeatherRecommendations.Skip(1).Take(2).ToList();
     public bool CanRefreshWeatherRecommendations => !IsWeatherLoading;
     public string RefreshWeatherButtonText => IsWeatherLoading ? "刷新中..." : "刷新天气推荐";
     public bool HasRecommendationReadiness => RecommendationReadiness != null;
@@ -108,6 +112,13 @@ public partial class OutfitsViewModel : ObservableObject
     public string WeatherRecommendationHintText => WeatherRecommendations.Count == 0
         ? RecommendationReadinessDetail
         : $"{PrimaryWeatherRecommendation!.PrimaryReason}";
+    public string TodayHeroRecommendationNameText => HasPrimaryWeatherRecommendation
+        ? PrimaryWeatherRecommendation!.Name
+        : "今天还没有合适推荐";
+    public string TodayHeroRecommendationSupportText => HasPrimaryWeatherRecommendation
+        ? ResolveHeroSummaryText(PrimaryWeatherRecommendation!)
+        : RecommendationReadinessDetail;
+    public string TodayHeroPrimaryActionText => HasPrimaryWeatherRecommendation ? "今天穿它" : "去新建一套";
 
     public async Task LoadOutfitsAsync()
     {
@@ -220,6 +231,15 @@ public partial class OutfitsViewModel : ObservableObject
         NotifyStateChanged();
     }
 
+    public async Task FocusHistoryRecordAsync(Guid recordId, DateTime date)
+    {
+        var monthChanged = _state.SelectHistoryRecord(recordId, date);
+        if (monthChanged)
+            await RefreshCalendarAsync();
+
+        NotifyStateChanged();
+    }
+
     private async Task RefreshDerivedStateAsync()
     {
         var recentRecords = await _outfitService.GetRecentWornRecordsAsync(6);
@@ -269,12 +289,18 @@ public partial class OutfitsViewModel : ObservableObject
         OnPropertyChanged(nameof(RecommendationReadinessTitle));
         OnPropertyChanged(nameof(RecommendationReadinessDetail));
         OnPropertyChanged(nameof(HasWeatherRecommendations));
+        OnPropertyChanged(nameof(HasPrimaryWeatherRecommendation));
+        OnPropertyChanged(nameof(HasSecondaryWeatherRecommendations));
         OnPropertyChanged(nameof(WeatherHeadlineText));
         OnPropertyChanged(nameof(WeatherCityCompactText));
         OnPropertyChanged(nameof(WeatherCompactSummaryText));
         OnPropertyChanged(nameof(WeatherRecommendationCountText));
         OnPropertyChanged(nameof(PrimaryWeatherRecommendation));
+        OnPropertyChanged(nameof(SecondaryWeatherRecommendations));
         OnPropertyChanged(nameof(WeatherRecommendationHintText));
+        OnPropertyChanged(nameof(TodayHeroRecommendationNameText));
+        OnPropertyChanged(nameof(TodayHeroRecommendationSupportText));
+        OnPropertyChanged(nameof(TodayHeroPrimaryActionText));
     }
 
     private static string BuildCompactWeatherCity(string city)
@@ -299,5 +325,15 @@ public partial class OutfitsViewModel : ObservableObject
             5 or 10 => 22,
             _ => 28
         };
+    }
+
+    private static string ResolveHeroSummaryText(RecommendedOutfitDto recommendation)
+    {
+        var summary = recommendation.ReasonSummaryText?.Trim();
+        if (!string.IsNullOrWhiteSpace(summary))
+            return summary;
+
+        var primary = recommendation.PrimaryReason?.Trim();
+        return string.IsNullOrWhiteSpace(primary) ? "今天先穿这套。" : primary;
     }
 }

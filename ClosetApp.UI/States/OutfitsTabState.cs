@@ -20,6 +20,7 @@ public sealed class OutfitsTabState
     private List<CalendarDayItem> _calendarDays = [];
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
     private DateTime? _selectedHistoryDate;
+    private Guid? _selectedHistoryRecordId;
     private bool _isHistoryExpanded;
     private OutfitSortBy _sortBy = OutfitSortBy.Newest;
 
@@ -84,10 +85,30 @@ public sealed class OutfitsTabState
             .Select(RecentWornListItem.FromRecord)
             .ToList();
 
-        if (_selectedHistoryDate == null && items.Count > 0)
-            _selectedHistoryDate = items[0].WornDate.Date;
-        else if (_selectedHistoryDate != null && items.All(item => item.WornDate.Date != _selectedHistoryDate.Value.Date))
-            _selectedHistoryDate = items.FirstOrDefault()?.WornDate.Date;
+        if (items.Count == 0)
+        {
+            _selectedHistoryDate = null;
+            _selectedHistoryRecordId = null;
+            _recentWornRecords = [];
+            return;
+        }
+
+        if (_selectedHistoryRecordId is { } selectedRecordId)
+        {
+            var selectedItem = items.FirstOrDefault(item => item.RecordId == selectedRecordId);
+            if (selectedItem != null)
+            {
+                _selectedHistoryDate = selectedItem.WornDate.Date;
+            }
+            else
+            {
+                ResolveSelectionFallback(items, _selectedHistoryDate);
+            }
+        }
+        else
+        {
+            ResolveSelectionFallback(items, _selectedHistoryDate);
+        }
 
         _recentWornRecords = ApplyRecentSelection(items);
     }
@@ -105,6 +126,25 @@ public sealed class OutfitsTabState
 
     public bool SelectHistoryDate(DateTime date)
     {
+        _selectedHistoryDate = date.Date;
+        _selectedHistoryRecordId = _recentWornRecords
+            .FirstOrDefault(item => item.WornDate.Date == _selectedHistoryDate.Value.Date)?.RecordId;
+        _recentWornRecords = ApplyRecentSelection(_recentWornRecords);
+        _calendarDays = _calendarDays
+            .Select(day => day with { IsSelected = day.Date.Date == _selectedHistoryDate.Value.Date })
+            .ToList();
+
+        var targetMonth = new DateTime(date.Year, date.Month, 1);
+        var monthChanged = targetMonth != _calendarMonth;
+        if (monthChanged)
+            _calendarMonth = targetMonth;
+
+        return monthChanged;
+    }
+
+    public bool SelectHistoryRecord(Guid recordId, DateTime date)
+    {
+        _selectedHistoryRecordId = recordId;
         _selectedHistoryDate = date.Date;
         _recentWornRecords = ApplyRecentSelection(_recentWornRecords);
         _calendarDays = _calendarDays
@@ -157,13 +197,24 @@ public sealed class OutfitsTabState
         return items
             .Select(item => item with
             {
-                IsSelected = _selectedHistoryDate != null && item.WornDate.Date == _selectedHistoryDate.Value.Date
+                IsSelected = _selectedHistoryRecordId != null && item.RecordId == _selectedHistoryRecordId.Value
             })
             .ToList();
+    }
+
+    private void ResolveSelectionFallback(IReadOnlyList<RecentWornListItem> items, DateTime? preferredDate)
+    {
+        var fallbackItem = preferredDate != null
+            ? items.FirstOrDefault(item => item.WornDate.Date == preferredDate.Value.Date) ?? items[0]
+            : items[0];
+
+        _selectedHistoryRecordId = fallbackItem.RecordId;
+        _selectedHistoryDate = fallbackItem.WornDate.Date;
     }
 }
 
 public sealed record RecentWornListItem(
+    Guid RecordId,
     DateTime WornDate,
     string DateText,
     string OutfitName,
@@ -175,6 +226,8 @@ public sealed record RecentWornListItem(
     string FocusSyncText,
     bool IsSelected = false)
 {
+    public bool HasPreviewClothes => PreviewClothes.Count > 0;
+
     public static RecentWornListItem FromRecord(OutfitWornRecord record)
     {
         var date = record.WornDate.Date;
@@ -214,6 +267,7 @@ public sealed record RecentWornListItem(
         var focusSyncText = $"日历已同步到 {record.WornDate:M月d日}";
 
         return new RecentWornListItem(
+            record.Id,
             record.WornDate,
             dateText,
             ResolveOutfitName(record.Outfit),

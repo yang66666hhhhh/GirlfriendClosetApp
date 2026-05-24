@@ -158,33 +158,29 @@ public partial class OutfitsTab : UserControl
         }
     }
 
-    private async void PrevMonth_Click(object sender, RoutedEventArgs e)
+    private async void TodayHeroPrimaryAction_Click(object sender, RoutedEventArgs e)
     {
+        if (_viewModel.PrimaryWeatherRecommendation is not { } recommendation)
+        {
+            CreateOutfit_Click(sender, e);
+            return;
+        }
+
         try
         {
-            await _viewModel.MoveCalendarMonthAsync(-1);
+            await _viewModel.RecordWornDateAsync(recommendation.Outfit, DateTime.Now);
+            ToastService.Instance.ShowSuccess($"已记录穿过「{recommendation.Name}」", "今日推荐已经同步到穿着记录。");
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("切换月份失败", ex.Message);
+            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, recommendation.Name);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
     }
 
-    private async void NextMonth_Click(object sender, RoutedEventArgs e)
+    private void OpenOutfitHistory_Click(object sender, RoutedEventArgs e)
     {
-        try
-        {
-            await _viewModel.MoveCalendarMonthAsync(1);
-        }
-        catch (Exception ex)
-        {
-            ToastService.Instance.ShowError("切换月份失败", ex.Message);
-        }
-    }
-
-    private void ToggleHistory_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ToggleHistoryExpanded();
+        ModalService.Instance.Show(new OutfitHistoryDialog(_viewModel));
     }
 
     private async void RefreshWeatherRecommendations_Click(object sender, RoutedEventArgs e)
@@ -206,41 +202,6 @@ public partial class OutfitsTab : UserControl
             return;
 
         window.NavigateToSettings();
-    }
-
-    private async void RecentWornItem_Click(object sender, MouseButtonEventArgs e)
-    {
-        if (sender is not FrameworkElement { DataContext: RecentWornListItem item })
-            return;
-
-        try
-        {
-            await _viewModel.FocusHistoryDateAsync(item.WornDate);
-        }
-        catch (Exception ex)
-        {
-            ToastService.Instance.ShowError("定位穿着记录失败", ex.Message);
-        }
-    }
-
-    private void CalendarDay_Click(object sender, MouseButtonEventArgs e)
-    {
-        if (sender is not FrameworkElement { DataContext: CalendarDayItem day })
-            return;
-
-        var dialog = new WornDayDetailsDialog(day.Date, day.Records);
-        dialog.RecordsChanged += async (_, _) =>
-        {
-            try
-            {
-                await LoadOutfitsAsync();
-            }
-            catch (Exception ex)
-            {
-                ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
-            }
-        };
-        ModalService.Instance.Show(dialog);
     }
 
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
