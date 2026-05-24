@@ -69,6 +69,8 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
+            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(oc => oc.Clothing)
             .OrderByDescending(r => r.WornDate)
             .Take(count)
             .ToListAsync();

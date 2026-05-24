@@ -132,28 +132,57 @@
                                              Placement="Bottom"
                                              HorizontalOffset="-6"
                                              VerticalOffset="6">
-                                    <MenuItem Header="编辑"
-                                              Click="MenuEdit_Click">
-                                        <MenuItem.Icon>
-                                            <Viewbox Width="12" Height="12">
-                                                <Canvas Width="16" Height="16">
-                                                    <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                                          Data="M12.6,1.4 C13.4,0.6 14.6,0.6 15.4,1.4 C16.2,2.2 16.2,3.4 15.4,4.2 L5.1,14.5 L1,15 L1.5,10.9 z"/>
-                                                </Canvas>
-                                            </Viewbox>
-                                        </MenuItem.Icon>
+                                    <MenuItem Click="MenuEdit_Click">
+                                        <MenuItem.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="14"/>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Viewbox Width="12"
+                                                         Height="12"
+                                                         VerticalAlignment="Center">
+                                                    <Canvas Width="16" Height="16">
+                                                        <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                              Data="M12.6,1.4 C13.4,0.6 14.6,0.6 15.4,1.4 C16.2,2.2 16.2,3.4 15.4,4.2 L5.1,14.5 L1,15 L1.5,10.9 z"/>
+                                                    </Canvas>
+                                                </Viewbox>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="编辑"
+                                                           Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </MenuItem.Header>
                                     </MenuItem>
-                                    <MenuItem Header="删除"
+                                    <MenuItem
                                               Click="MenuDelete_Click"
                                               Tag="Danger">
-                                        <MenuItem.Icon>
-                                            <Viewbox Width="12" Height="12">
-                                                <Canvas Width="16" Height="16">
-                                                    <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                                          Data="M6,1 L10,1 L11,2.2 L14.5,2.2 L14.5,3.6 L1.5,3.6 L1.5,2.2 L5,2.2 z M3,4.6 L13,4.6 L12.3,15 L3.7,15 z"/>
-                                                </Canvas>
-                                            </Viewbox>
-                                        </MenuItem.Icon>
+                                        <MenuItem.Header>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="14"/>
+                                                    <ColumnDefinition Width="10"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Viewbox Width="12"
+                                                         Height="12"
+                                                         VerticalAlignment="Center">
+                                                    <Canvas Width="16" Height="16">
+                                                        <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                              Data="M6,1 L10,1 L11,2.2 L14.5,2.2 L14.5,3.6 L1.5,3.6 L1.5,2.2 L5,2.2 z M3,4.6 L13,4.6 L12.3,15 L3.7,15 z"/>
+                                                    </Canvas>
+                                                </Viewbox>
+                                                <TextBlock Grid.Column="2"
+                                                           Text="删除"
+                                                           Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                           FontSize="12"
+                                                           FontWeight="SemiBold"
+                                                           VerticalAlignment="Center"/>
+                                            </Grid>
+                                        </MenuItem.Header>
                                     </MenuItem>
                                 </ContextMenu>
                             </Button.ContextMenu>
@@ -196,59 +225,63 @@
                StaysOpen="True"
                IsOpen="False"
                IsHitTestVisible="False">
-            <Border x:Name="HoverInfoPopupRoot"
-                    Style="{StaticResource WardrobeCard.HoverInfoPopup}">
-                <StackPanel>
-                    <TextBlock x:Name="HoverInfoTitleText"
-                               Style="{StaticResource WardrobeCard.HoverInfoTitle}"/>
-                    <TextBlock Text="整理建议"
-                               Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
-                    <TextBlock x:Name="HoverInfoDetailText"
-                               Style="{StaticResource WardrobeCard.HoverInfoBody}"
-                               Margin="0,5,0,0"/>
+            <Grid Background="Transparent"
+                  Margin="10">
+                <Border Style="{StaticResource WardrobeCard.HoverInfoPopupShadow}"/>
+                <Border x:Name="HoverInfoPopupRoot"
+                        Style="{StaticResource WardrobeCard.HoverInfoPopup}">
+                    <StackPanel>
+                        <TextBlock x:Name="HoverInfoTitleText"
+                                   Style="{StaticResource WardrobeCard.HoverInfoTitle}"/>
+                        <TextBlock Text="整理建议"
+                                   Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
+                        <TextBlock x:Name="HoverInfoDetailText"
+                                   Style="{StaticResource WardrobeCard.HoverInfoBody}"
+                                   Margin="0,5,0,0"/>
 
-                    <Grid Margin="0,10,0,0">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="10"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
+                        <Grid Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
 
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="当前状态"
-                                       Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
-                            <TextBlock x:Name="HoverInfoStatusText"
-                                       Style="{StaticResource WardrobeCard.HoverInfoValue}"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="当前状态"
+                                           Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
+                                <TextBlock x:Name="HoverInfoStatusText"
+                                           Style="{StaticResource WardrobeCard.HoverInfoValue}"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
 
-                        <StackPanel Grid.Column="2">
-                            <TextBlock Text="加入衣柜"
-                                       Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
-                            <TextBlock x:Name="HoverInfoCreatedText"
-                                       Style="{StaticResource WardrobeCard.HoverInfoValue}"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
-                    </Grid>
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="加入衣柜"
+                                           Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
+                                <TextBlock x:Name="HoverInfoCreatedText"
+                                           Style="{StaticResource WardrobeCard.HoverInfoValue}"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </Grid>
 
-                    <Border x:Name="HoverInfoNotesCard"
-                            Background="{DynamicResource SurfaceSectionBrush}"
-                            BorderBrush="{DynamicResource BorderLightBrush}"
-                            BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="10,8"
-                            Margin="0,10,0,0"
-                            Visibility="Collapsed">
-                        <StackPanel>
-                            <TextBlock Text="备注"
-                                       Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
-                            <TextBlock x:Name="HoverInfoNotesText"
-                                       Style="{StaticResource WardrobeCard.HoverInfoBody}"
-                                       Margin="0,5,0,0"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Border>
+                        <Border x:Name="HoverInfoNotesCard"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="10,8"
+                                Margin="0,10,0,0"
+                                Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="备注"
+                                           Style="{StaticResource WardrobeCard.HoverInfoLabel}"/>
+                                <TextBlock x:Name="HoverInfoNotesText"
+                                           Style="{StaticResource WardrobeCard.HoverInfoBody}"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
         </Popup>
     </Grid>
 </UserControl>

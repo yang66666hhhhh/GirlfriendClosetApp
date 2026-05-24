@@ -1,4 +1,5 @@
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.UI.States;
 
@@ -126,7 +127,12 @@ public sealed class OutfitsTabState
     }
 }
 
-public sealed record RecentWornListItem(string DateText, string OutfitName, string TimeText)
+public sealed record RecentWornListItem(
+    string DateText,
+    string OutfitName,
+    string TimeText,
+    string MetaText,
+    IList<Clothing> PreviewClothes)
 {
     public static RecentWornListItem FromRecord(OutfitWornRecord record)
     {
@@ -136,12 +142,46 @@ public sealed record RecentWornListItem(string DateText, string OutfitName, stri
             : date == DateTime.Today.AddDays(-1)
                 ? "昨天"
                 : date.ToString("M月d日");
+        var previewClothes = record.Outfit?.OutfitClothes
+            .Select(link => link.Clothing)
+            .Where(clothing => clothing != null)
+            .Cast<Clothing>()
+            .ToList() ?? [];
+        var metaParts = new List<string>();
+
+        if (previewClothes.Count > 0)
+            metaParts.Add($"{previewClothes.Count} 件单品");
+
+        if (record.Outfit?.Season is { } season && season != Season.Unspecified)
+            metaParts.Add(GetSeasonLabel(season));
+
+        var metaText = metaParts.Count > 0
+            ? string.Join(" · ", metaParts)
+            : "这次穿搭的预览还没补齐";
 
         return new RecentWornListItem(
             dateText,
-            record.Outfit?.Name ?? "未命名搭配",
-            record.WornDate.ToString("HH:mm"));
+            ResolveOutfitName(record.Outfit),
+            record.WornDate.ToString("HH:mm"),
+            metaText,
+            previewClothes);
     }
+
+    private static string ResolveOutfitName(Outfit? outfit)
+    {
+        var name = outfit?.Name?.Trim();
+        return string.IsNullOrWhiteSpace(name) ? "未命名搭配" : name;
+    }
+
+    private static string GetSeasonLabel(Season season) => season switch
+    {
+        Season.Spring => "春季常穿",
+        Season.Summer => "夏季常穿",
+        Season.Autumn => "秋季常穿",
+        Season.Winter => "冬季常穿",
+        Season.AllSeason => "四季可穿",
+        _ => string.Empty
+    };
 }
 
 public sealed record CalendarDayItem(
