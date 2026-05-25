@@ -52,7 +52,7 @@
                                 <Setter TargetName="SearchBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                                 <Setter TargetName="SearchBorder" Property="Effect">
                                     <Setter.Value>
-                                        <DropShadowEffect Color="{StaticResource Primary}" BlurRadius="14" ShadowDepth="0" Opacity="0.2"/>
+                                        <DropShadowEffect Color="{DynamicResource Primary}" BlurRadius="14" ShadowDepth="0" Opacity="0.2"/>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
