@@ -10,6 +10,7 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
 using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;
@@ -392,10 +393,18 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Cancelled));
     }
 
-    private void Delete_Click(object sender, RoutedEventArgs e)
+    private async void Delete_Click(object sender, RoutedEventArgs e)
     {
-        if (_existingClothing != null)
-            EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Deleted, _existingClothing));
+        if (_existingClothing == null)
+            return;
+
+        var confirmed = await ConfirmModal.ShowDeleteAsync(
+            $"确定删除「{_existingClothing.Name}」吗？",
+            title: "删除衣服");
+        if (!confirmed)
+            return;
+
+        EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Deleted, _existingClothing));
     }
 
     private async void Save_Click(object sender, RoutedEventArgs e)

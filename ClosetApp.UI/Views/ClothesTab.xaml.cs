@@ -91,11 +91,7 @@ public partial class ClothesTab : UserControl
 
     private void AddClothing_Click(object sender, RoutedEventArgs e)
     {
-        EditorModal.Show(new ClothingEditorPanel(), async result =>
-        {
-            if (result.Type == EditorResultType.Saved)
-                await _viewModel.AddClothingAsync(result.Entity!);
-        });
+        EditorModal.Show(new ClothingEditorPanel(), HandleAddClothingResultAsync);
     }
 
     private void BatchImport_Click(object sender, RoutedEventArgs e)
@@ -144,17 +140,7 @@ public partial class ClothesTab : UserControl
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;
 
         var oldImagePath = clothing.ImagePath;
-        EditorModal.Show(new ClothingEditorPanel(clothing), async result =>
-        {
-            if (result.Type == EditorResultType.Saved)
-            {
-                await _viewModel.UpdateClothingAsync(result.Entity!, oldImagePath);
-            }
-            else if (result.Type == EditorResultType.Deleted)
-            {
-                await _viewModel.DeleteClothingAsync(clothing);
-            }
-        });
+        EditorModal.Show(new ClothingEditorPanel(clothing), result => HandleEditClothingResultAsync(clothing, oldImagePath, result));
     }
 
     private async void ClothingCard_FavoriteToggled(object sender, RoutedEventArgs e)
@@ -180,21 +166,47 @@ public partial class ClothesTab : UserControl
     {
         if (sender is not FrameworkElement fe || fe.DataContext is not Clothing clothing) return;
 
-        var confirmed = await ConfirmModal.ShowDeleteAsync(
-            $"确定删除「{clothing.Name}」吗？",
-            title: "删除衣服");
-        if (!confirmed)
+        await ConfirmAndDeleteClothingAsync(clothing);
+    }
+
+    private async Task HandleAddClothingResultAsync(EditorResult<Clothing> result)
+    {
+        if (result.Type != EditorResultType.Saved || result.Entity == null)
             return;
 
         try
         {
-            await _viewModel.DeleteClothingAsync(clothing);
+            await _viewModel.AddClothingAsync(result.Entity);
         }
         catch (Exception ex)
         {
-            var feedback = WardrobeActionErrorPresenter.ForSingleDelete(ex, clothing.Name);
+            var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, isEditMode: false);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
+    }
+
+    private async Task HandleEditClothingResultAsync(
+        Clothing originalClothing,
+        string? oldImagePath,
+        EditorResult<Clothing> result)
+    {
+        if (result.Type == EditorResultType.Saved && result.Entity != null)
+        {
+            try
+            {
+                await _viewModel.UpdateClothingAsync(result.Entity, oldImagePath);
+            }
+            catch (Exception ex)
+            {
+                var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, isEditMode: true);
+                ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+            }
+
+            return;
+        }
+
+        if (result.Type == EditorResultType.Deleted)
+            await DeleteClothingWithFeedbackAsync(originalClothing);
     }
 
     private async Task HandleBatchImportResultAsync(EditorResult<BatchClothingImportRequest> result)
@@ -248,6 +260,30 @@ public partial class ClothesTab : UserControl
         catch (Exception ex)
         {
             var feedback = WardrobeActionErrorPresenter.ForBatchClear(ex);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
+    private async Task ConfirmAndDeleteClothingAsync(Clothing clothing)
+    {
+        var confirmed = await ConfirmModal.ShowDeleteAsync(
+            $"确定删除「{clothing.Name}」吗？",
+            title: "删除衣服");
+        if (!confirmed)
+            return;
+
+        await DeleteClothingWithFeedbackAsync(clothing);
+    }
+
+    private async Task DeleteClothingWithFeedbackAsync(Clothing clothing)
+    {
+        try
+        {
+            await _viewModel.DeleteClothingAsync(clothing);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForSingleDelete(ex, clothing.Name);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
     }
