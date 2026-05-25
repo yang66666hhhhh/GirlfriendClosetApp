@@ -22,6 +22,12 @@
             <Setter Property="Foreground" Value="{DynamicResource TagSkyTextBrush}"/>
         </Style>
 
+        <Style x:Key="TagRoseButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Background" Value="{DynamicResource TagRoseSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TagRoseBorderBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TagRoseTextBrush}"/>
+        </Style>
+
         <Style x:Key="TagEyebrowBadge" TargetType="Border">
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="8,3"/>
@@ -36,6 +42,102 @@
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource TagLavenderTextBrush}"/>
+        </Style>
+
+        <Style x:Key="TagMetaBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+        </Style>
+
+        <Style x:Key="TagMetaBadgeText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="TagCardMoreButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
+            <Setter Property="Width" Value="24"/>
+            <Setter Property="MinHeight" Value="24"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="HorizontalAlignment" Value="Right"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Opacity" Value="0.32"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="MoreBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="12"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="MoreBorder" Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+                                <Setter TargetName="MoreBorder" Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+                                <Setter TargetName="MoreBorder" Property="BorderThickness" Value="1"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+                                <Setter Property="Opacity" Value="1"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="MoreBorder" Property="Background" Value="{DynamicResource TagSkySurfaceBrush}"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=IsMouseOver}" Value="True">
+                                <Setter Property="Opacity" Value="0.72"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TagCardMoreMenu" TargetType="ContextMenu" BasedOn="{StaticResource WardrobeCard.MoreMenu}">
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Grid Background="Transparent"
+                              Margin="6">
+                            <Border CornerRadius="12"
+                                    Background="#01FFFFFF">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="16"
+                                                      ShadowDepth="4"
+                                                      Opacity="0.08"
+                                                      Color="#564A61"/>
+                                </Border.Effect>
+                            </Border>
+                            <Border Background="#FFFFFFFF"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="4">
+                                <StackPanel IsItemsHost="True"
+                                            KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                            </Border>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TagCardMoreMenuItem" TargetType="MenuItem" BasedOn="{StaticResource WardrobeCard.MoreMenuItem}">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Padding" Value="9,7,10,7"/>
         </Style>
     </UserControl.Resources>
 
@@ -66,7 +168,7 @@
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="44,12,44,60"
+                      Padding="44,12,44,40"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
                 <Border Style="{StaticResource PageSummaryCard}"
@@ -84,27 +186,103 @@
                                 <TextBlock Text="标签体系"
                                            Style="{StaticResource TagEyebrowBadgeText}"/>
                             </Border>
-                            <TextBlock Text="标签总览"
+                            <TextBlock Text="整理你的标签库"
                                        Style="{StaticResource PageSummaryTitleText}"/>
                             <TextBlock Text="{Binding CategorySummaryText}"
                                        Style="{StaticResource PageSummaryBodyText}"/>
+                            <TextBlock Text="{Binding UsageSummaryText}"
+                                       Style="{StaticResource PageSummaryBodyText}"
+                                       Margin="0,3,0,0"/>
                         </StackPanel>
-                        <Border Grid.Column="1"
-                                Style="{StaticResource PageSummaryBadge}"
-                                Background="{DynamicResource TagSkySurfaceBrush}"
-                                BorderBrush="{DynamicResource TagSkyBorderBrush}"
-                                BorderThickness="1"
-                                Margin="20,0,0,0"
-                                VerticalAlignment="Center">
-                            <StackPanel>
-                                <TextBlock Text="{Binding TagCountText}"
-                                           Style="{StaticResource PageSummaryValueText}"/>
-                                <TextBlock Text="当前标签库"
-                                           Style="{StaticResource PageSummaryHintText}"
-                                           Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </Border>
+                        <StackPanel Grid.Column="1"
+                                    Margin="20,0,0,0"
+                                    VerticalAlignment="Center">
+                            <Border Style="{StaticResource PageSummaryBadge}"
+                                    Background="{DynamicResource TagSkySurfaceBrush}"
+                                    BorderBrush="{DynamicResource TagSkyBorderBrush}"
+                                    BorderThickness="1"
+                                    Margin="0,0,0,8">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding TagCountText}"
+                                               Style="{StaticResource PageSummaryValueText}"/>
+                                    <TextBlock Text="当前标签库"
+                                               Style="{StaticResource PageSummaryHintText}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource PageSummaryBadge}"
+                                    Background="{DynamicResource TagRoseSurfaceBrush}"
+                                    BorderBrush="{DynamicResource TagRoseBorderBrush}"
+                                    BorderThickness="1">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding UnusedCountText}"
+                                               Style="{StaticResource PageSummaryValueText}"/>
+                                    <TextBlock Text="建议优先整理"
+                                               Style="{StaticResource PageSummaryHintText}"
+                                               Margin="0,2,0,0"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
                     </Grid>
+                </Border>
+
+                <Border Style="{StaticResource PageSummaryCard}"
+                        Margin="0,0,0,14"
+                        Padding="16,14">
+                    <StackPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="筛选标签"
+                                           Style="{StaticResource PageSummaryTitleText}"/>
+                                <TextBlock Text="先按名称和分类缩小范围，再处理那些还没真正用起来的词。"
+                                           Style="{StaticResource PageSummaryBodyText}"/>
+                            </StackPanel>
+                            <Button Grid.Column="1"
+                                    Content="清除筛选"
+                                    Style="{StaticResource PageToolbarCapsuleButton}"
+                                    Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    Click="ClearFilters_Click"/>
+                        </Grid>
+
+                        <WrapPanel Margin="0,10,0,0">
+                            <StackPanel Width="240"
+                                        Margin="0,0,10,8">
+                                <TextBlock Text="搜索"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                         MinHeight="36"
+                                         Padding="12,9"
+                                         Margin="0,6,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Width="140"
+                                        Margin="0,0,10,8">
+                                <TextBlock Text="分类"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <ComboBox x:Name="CategoryFilterComboBox"
+                                          MinHeight="36"
+                                          Margin="0,6,0,0"
+                                          SelectionChanged="CategoryFilterComboBox_SelectionChanged">
+                                    <ComboBoxItem Content="全部分类"
+                                                  IsSelected="True"/>
+                                    <ComboBoxItem Content="风格标签"
+                                                  Tag="Style"/>
+                                    <ComboBoxItem Content="场景标签"
+                                                  Tag="Scene"/>
+                                    <ComboBoxItem Content="季节标签"
+                                                  Tag="Season"/>
+                                </ComboBox>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <TextBlock Text="{Binding FilterSummary}"
+                                   Style="{StaticResource PageSummaryBodyText}"
+                                   Margin="0,2,0,0"/>
+                    </StackPanel>
                 </Border>
 
                 <Grid Margin="0,0,0,12">
@@ -119,55 +297,373 @@
                                    Style="{StaticResource PageSectionBodyText}"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
-                    <Border Grid.Column="1"
-                            Style="{StaticResource PageSummaryBadge}"
-                            Background="{DynamicResource TagRoseSurfaceBrush}"
-                            BorderBrush="{DynamicResource TagRoseBorderBrush}"
-                            BorderThickness="1"
-                            VerticalAlignment="Top"
-                            Padding="9,6"
-                            Margin="12,0,0,0">
-                        <TextBlock Text="{Binding TagCountText}"
-                                   Style="{StaticResource PageSummaryValueText}"/>
-                    </Border>
+                    <StackPanel Grid.Column="1"
+                                Width="116"
+                                VerticalAlignment="Top">
+                        <TextBlock Text="排序"
+                                   Style="{StaticResource PageFieldLabelText}"
+                                   HorizontalAlignment="Left"/>
+                        <ComboBox x:Name="SortComboBox"
+                                  MinWidth="108"
+                                  Margin="0,6,0,0"
+                                  SelectionChanged="SortComboBox_SelectionChanged">
+                            <ComboBoxItem Content="常用在前"
+                                          Tag="MostUsed"
+                                          IsSelected="True"/>
+                            <ComboBoxItem Content="名称"
+                                          Tag="Name"/>
+                            <ComboBoxItem Content="待整理在前"
+                                          Tag="LeastUsed"/>
+                        </ComboBox>
+                    </StackPanel>
                 </Grid>
 
-                <ItemsControl x:Name="TagsList"
-                              ItemsSource="{Binding Tags}">
-                    <ItemsControl.ItemsPanel>
-                        <ItemsPanelTemplate>
-                            <WrapPanel/>
-                        </ItemsPanelTemplate>
-                    </ItemsControl.ItemsPanel>
-                    <ItemsControl.ItemTemplate>
-                        <DataTemplate>
-                            <Border Style="{StaticResource PageItemCard}"
-                                    Background="{DynamicResource SurfaceElevatedBrush}"
+                <Border Style="{StaticResource PageInsetCard}"
+                        Margin="0,0,0,12"
+                        Padding="16,14"
+                        Visibility="{Binding IsFilteredEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="没有找到符合条件的标签"
+                                   Style="{StaticResource PageSummaryTitleText}"/>
+                        <TextBlock Text="换个关键词试试，或者先把分类筛选清掉。"
+                                   Style="{StaticResource PageSummaryBodyText}"/>
+                        <Button Content="清除筛选"
+                                Style="{StaticResource PageToolbarCapsuleButton}"
+                                HorizontalAlignment="Left"
+                                Margin="0,12,0,0"
+                                Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Click="ClearFilters_Click"/>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource PageSummaryCard}"
+                        Margin="0,0,0,14"
+                        Padding="16,14"
+                        Visibility="{Binding ShowStyleSection, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="风格标签"
+                                           Style="{StaticResource PageSummaryTitleText}"/>
+                                <TextBlock Text="最适合用来描述单品气质和长期穿搭偏好。"
+                                           Style="{StaticResource PageSummaryBodyText}"/>
+                            </StackPanel>
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource PageSummaryBadge}"
+                                    Background="{DynamicResource TagLavenderSurfaceBrush}"
                                     BorderBrush="{DynamicResource TagLavenderBorderBrush}"
                                     BorderThickness="1"
-                                    Cursor="Hand" Tag="{Binding}">
-                                <Border.ContextMenu>
-                                    <ContextMenu>
-                                        <MenuItem Header="编辑" Click="EditTag_Click"/>
-                                        <MenuItem Header="删除" Click="DeleteTag_Click"/>
-                                    </ContextMenu>
-                                </Border.ContextMenu>
-                                <StackPanel Orientation="Horizontal">
-                                    <Border Background="{DynamicResource TagRoseSurfaceBrush}"
-                                            BorderBrush="{DynamicResource TagRoseBorderBrush}"
-                                            BorderThickness="1"
-                                            CornerRadius="10"
-                                            Padding="6,4">
-                                        <Ellipse Width="10" Height="10" Fill="{Binding Color}"/>
-                                    </Border>
-                                    <TextBlock Text="{Binding Name}"
-                                               Style="{StaticResource PageItemTitleText}"
-                                               VerticalAlignment="Center" Margin="8,0,0,0"/>
-                                </StackPanel>
+                                    VerticalAlignment="Top">
+                                <TextBlock Text="{Binding StyleTags.Count, StringFormat={}{0} 个}"
+                                           Style="{StaticResource PageSummaryValueText}"/>
                             </Border>
-                        </DataTemplate>
-                    </ItemsControl.ItemTemplate>
-                </ItemsControl>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding StyleTags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource PageItemCard}"
+                                            Width="268"
+                                            Padding="14,12"
+                                            Margin="0,0,12,12"
+                                            Background="{DynamicResource SurfaceElevatedBrush}"
+                                            BorderBrush="{DynamicResource TagLavenderBorderBrush}"
+                                            BorderThickness="1"
+                                            Tag="{Binding Tag}">
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="编辑"
+                                                          Click="EditTag_Click"/>
+                                                <MenuItem Header="删除"
+                                                          Click="DeleteTag_Click"/>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0"
+                                                            Orientation="Horizontal"
+                                                            Margin="0,0,10,0">
+                                                    <Border Background="{DynamicResource TagRoseSurfaceBrush}"
+                                                            BorderBrush="{DynamicResource TagRoseBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="10"
+                                                            Padding="6,4">
+                                                        <Ellipse Width="10"
+                                                                 Height="10"
+                                                                 Fill="{Binding Color}"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Style="{StaticResource PageItemTitleText}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="8,0,0,0"
+                                                               TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="⋯"
+                                                        Style="{StaticResource TagCardMoreButton}"
+                                                        Tag="{Binding Tag}"
+                                                        Click="MoreButton_Click">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu Style="{StaticResource TagCardMoreMenu}"
+                                                                     ItemContainerStyle="{StaticResource TagCardMoreMenuItem}"
+                                                                     Placement="Bottom"
+                                                                     HorizontalOffset="-2"
+                                                                     VerticalOffset="2">
+                                                            <MenuItem Header="编辑"
+                                                                      Click="EditTag_Click"/>
+                                                            <MenuItem Header="删除"
+                                                                      Tag="Danger"
+                                                                      Click="DeleteTag_Click"/>
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                </Button>
+                                            </Grid>
+
+                                            <Border Style="{StaticResource TagMetaBadge}"
+                                                    Margin="0,10,0,0"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding UsageText}"
+                                                           Style="{StaticResource TagMetaBadgeText}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource PageSummaryCard}"
+                        Margin="0,0,0,14"
+                        Padding="16,14"
+                        Visibility="{Binding ShowSceneSection, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="场景标签"
+                                           Style="{StaticResource PageSummaryTitleText}"/>
+                                <TextBlock Text="通勤、约会和出游这类词，最适合帮搭配页快速收窄范围。"
+                                           Style="{StaticResource PageSummaryBodyText}"/>
+                            </StackPanel>
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource PageSummaryBadge}"
+                                    Background="{DynamicResource TagSkySurfaceBrush}"
+                                    BorderBrush="{DynamicResource TagSkyBorderBrush}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Top">
+                                <TextBlock Text="{Binding SceneTags.Count, StringFormat={}{0} 个}"
+                                           Style="{StaticResource PageSummaryValueText}"/>
+                            </Border>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding SceneTags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource PageItemCard}"
+                                            Width="268"
+                                            Padding="14,12"
+                                            Margin="0,0,12,12"
+                                            Background="{DynamicResource SurfaceElevatedBrush}"
+                                            BorderBrush="{DynamicResource TagLavenderBorderBrush}"
+                                            BorderThickness="1"
+                                            Tag="{Binding Tag}">
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="编辑"
+                                                          Click="EditTag_Click"/>
+                                                <MenuItem Header="删除"
+                                                          Click="DeleteTag_Click"/>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0"
+                                                            Orientation="Horizontal"
+                                                            Margin="0,0,10,0">
+                                                    <Border Background="{DynamicResource TagRoseSurfaceBrush}"
+                                                            BorderBrush="{DynamicResource TagRoseBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="10"
+                                                            Padding="6,4">
+                                                        <Ellipse Width="10"
+                                                                 Height="10"
+                                                                 Fill="{Binding Color}"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Style="{StaticResource PageItemTitleText}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="8,0,0,0"
+                                                               TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="⋯"
+                                                        Style="{StaticResource TagCardMoreButton}"
+                                                        Tag="{Binding Tag}"
+                                                        Click="MoreButton_Click">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu Style="{StaticResource TagCardMoreMenu}"
+                                                                     ItemContainerStyle="{StaticResource TagCardMoreMenuItem}"
+                                                                     Placement="Bottom"
+                                                                     HorizontalOffset="-2"
+                                                                     VerticalOffset="2">
+                                                            <MenuItem Header="编辑"
+                                                                      Click="EditTag_Click"/>
+                                                            <MenuItem Header="删除"
+                                                                      Tag="Danger"
+                                                                      Click="DeleteTag_Click"/>
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                </Button>
+                                            </Grid>
+
+                                            <Border Style="{StaticResource TagMetaBadge}"
+                                                    Margin="0,10,0,0"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding UsageText}"
+                                                           Style="{StaticResource TagMetaBadgeText}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource PageSummaryCard}"
+                        Padding="16,14"
+                        Visibility="{Binding ShowSeasonSection, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="季节标签"
+                                           Style="{StaticResource PageSummaryTitleText}"/>
+                                <TextBlock Text="它会直接影响季节筛选和天气推荐时的命中率。"
+                                           Style="{StaticResource PageSummaryBodyText}"/>
+                            </StackPanel>
+                            <Border Grid.Column="1"
+                                    Style="{StaticResource PageSummaryBadge}"
+                                    Background="{DynamicResource TagRoseSurfaceBrush}"
+                                    BorderBrush="{DynamicResource TagRoseBorderBrush}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Top">
+                                <TextBlock Text="{Binding SeasonTags.Count, StringFormat={}{0} 个}"
+                                           Style="{StaticResource PageSummaryValueText}"/>
+                            </Border>
+                        </Grid>
+
+                        <ItemsControl ItemsSource="{Binding SeasonTags}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource PageItemCard}"
+                                            Width="268"
+                                            Padding="14,12"
+                                            Margin="0,0,12,12"
+                                            Background="{DynamicResource SurfaceElevatedBrush}"
+                                            BorderBrush="{DynamicResource TagLavenderBorderBrush}"
+                                            BorderThickness="1"
+                                            Tag="{Binding Tag}">
+                                        <Border.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="编辑"
+                                                          Click="EditTag_Click"/>
+                                                <MenuItem Header="删除"
+                                                          Click="DeleteTag_Click"/>
+                                            </ContextMenu>
+                                        </Border.ContextMenu>
+                                        <StackPanel>
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <StackPanel Grid.Column="0"
+                                                            Orientation="Horizontal"
+                                                            Margin="0,0,10,0">
+                                                    <Border Background="{DynamicResource TagRoseSurfaceBrush}"
+                                                            BorderBrush="{DynamicResource TagRoseBorderBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="10"
+                                                            Padding="6,4">
+                                                        <Ellipse Width="10"
+                                                                 Height="10"
+                                                                 Fill="{Binding Color}"/>
+                                                    </Border>
+                                                    <TextBlock Text="{Binding Name}"
+                                                               Style="{StaticResource PageItemTitleText}"
+                                                               VerticalAlignment="Center"
+                                                               Margin="8,0,0,0"
+                                                               TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1"
+                                                        Content="⋯"
+                                                        Style="{StaticResource TagCardMoreButton}"
+                                                        Tag="{Binding Tag}"
+                                                        Click="MoreButton_Click">
+                                                    <Button.ContextMenu>
+                                                        <ContextMenu Style="{StaticResource TagCardMoreMenu}"
+                                                                     ItemContainerStyle="{StaticResource TagCardMoreMenuItem}"
+                                                                     Placement="Bottom"
+                                                                     HorizontalOffset="-2"
+                                                                     VerticalOffset="2">
+                                                            <MenuItem Header="编辑"
+                                                                      Click="EditTag_Click"/>
+                                                            <MenuItem Header="删除"
+                                                                      Tag="Danger"
+                                                                      Click="DeleteTag_Click"/>
+                                                        </ContextMenu>
+                                                    </Button.ContextMenu>
+                                                </Button>
+                                            </Grid>
+
+                                            <Border Style="{StaticResource TagMetaBadge}"
+                                                    Margin="0,10,0,0"
+                                                    HorizontalAlignment="Left">
+                                                <TextBlock Text="{Binding UsageText}"
+                                                           Style="{StaticResource TagMetaBadgeText}"/>
+                                            </Border>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
             </StackPanel>
         </ScrollViewer>
 

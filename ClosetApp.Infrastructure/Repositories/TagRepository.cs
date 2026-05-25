@@ -16,7 +16,10 @@ public class TagRepository : ITagRepository
 
     public async Task<IEnumerable<Tag>> GetAllAsync()
     {
-        return await _context.Tags.ToListAsync();
+        // 标签页需要知道每个标签被多少件衣物使用，因此这里一并带上关联。
+        return await _context.Tags
+            .Include(tag => tag.ClothingTags)
+            .ToListAsync();
     }
 
     public async Task<Tag?> GetByIdAsync(Guid id)
@@ -26,7 +29,10 @@ public class TagRepository : ITagRepository
 
     public async Task<IEnumerable<Tag>> GetByCategoryAsync(TagCategory category)
     {
-        return await _context.Tags.Where(t => t.Category == category).ToListAsync();
+        return await _context.Tags
+            .Include(tag => tag.ClothingTags)
+            .Where(tag => tag.Category == category)
+            .ToListAsync();
     }
 
     public async Task AddAsync(Tag entity)
