@@ -12,6 +12,8 @@ using ClosetApp.UI.States;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using OutfitEntity = ClosetApp.Domain.Entities.Outfit;
+using OutfitScene = ClosetApp.Domain.Enums.OutfitScene;
+using Season = ClosetApp.Domain.Enums.Season;
 
 namespace ClosetApp.UI.Views;
 
@@ -41,6 +43,41 @@ public partial class OutfitsTab : UserControl
     }
 
     public Task RefreshAsync() => _viewModel.RefreshAsync();
+
+    private void ClearFilters_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.ClearFilters();
+        SceneFilterComboBox.SelectedIndex = 0;
+        SeasonFilterComboBox.SelectedIndex = 0;
+    }
+
+    private void SceneFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var scene = (sender as ComboBox)?.SelectedItem as ComboBoxItem;
+        _viewModel.SetSelectedScene(scene?.Tag?.ToString() switch
+        {
+            "Work" => OutfitScene.Work,
+            "Date" => OutfitScene.Date,
+            "Travel" => OutfitScene.Travel,
+            "Party" => OutfitScene.Party,
+            "Casual" => OutfitScene.Casual,
+            _ => null
+        });
+    }
+
+    private void SeasonFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        var season = (sender as ComboBox)?.SelectedItem as ComboBoxItem;
+        _viewModel.SetSelectedSeason(season?.Tag?.ToString() switch
+        {
+            "Spring" => Season.Spring,
+            "Summer" => Season.Summer,
+            "Autumn" => Season.Autumn,
+            "Winter" => Season.Winter,
+            "AllSeason" => Season.AllSeason,
+            _ => null
+        });
+    }
 
     private void AttachCardHandlers()
     {

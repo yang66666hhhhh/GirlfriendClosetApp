@@ -683,9 +683,9 @@ public partial class SettingsTab : UserControl
             ThemeRoseCurrentBadge,
             BtnUseRoseTheme,
             isRose,
-            Color.FromRgb(246, 242, 239),  // Rose surface
-            Color.FromRgb(224, 202, 206),  // Rose border
-            "切换到柔粉");
+            Color.FromRgb(249, 245, 241),  // Rose surface
+            Color.FromRgb(230, 213, 216),  // Rose border
+            "使用柔粉");
 
         ApplyThemeCardState(
             ThemeBlueCard,
@@ -694,16 +694,16 @@ public partial class SettingsTab : UserControl
             !isRose,
             Color.FromRgb(235, 241, 251),  // Blue surface
             Color.FromRgb(200, 214, 237),  // Blue border
-            "切换到清蓝");
+            "使用清蓝");
 
         ApplyThemeSwatchState(
             isRose,
             ThemeRoseSwatchPrimary,
             ThemeRoseSwatchSoft,
             ThemeRoseSwatchSurface,
-            Color.FromRgb(196, 143, 149),
-            Color.FromRgb(243, 234, 233),
-            Color.FromRgb(246, 242, 239));
+            Color.FromRgb(202, 156, 159),
+            Color.FromRgb(247, 240, 238),
+            Color.FromRgb(249, 245, 241));
 
         ApplyThemeSwatchState(
             !isRose,

@@ -100,6 +100,15 @@
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
         </Style>
+
+        <Style x:Key="ThemeChoiceButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Padding" Value="8,5"/>
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid Background="{DynamicResource SurfacePageBrush}">
@@ -586,21 +595,20 @@
                                                             </Border>
                                                         </Grid>
                                                         <WrapPanel Grid.Row="1" Margin="0,8,0,0">
-                                                            <Border x:Name="ThemeRoseSwatchPrimary" Width="22" Height="22" CornerRadius="11" Background="#FFC48F95" Margin="0,0,6,6"/>
-                                                            <Border x:Name="ThemeRoseSwatchSoft" Width="22" Height="22" CornerRadius="11" Background="#FFF3EAE9" Margin="0,0,6,6"/>
-                                                            <Border x:Name="ThemeRoseSwatchSurface" Width="22" Height="22" CornerRadius="11" Background="#FFF6F2EF" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchPrimary" Width="22" Height="22" CornerRadius="11" Background="#FFCA9C9F" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchSoft" Width="22" Height="22" CornerRadius="11" Background="#FFF7F0EE" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchSurface" Width="22" Height="22" CornerRadius="11" Background="#FFF9F5F1" Margin="0,0,6,6"/>
                                                         </WrapPanel>
                                                         <TextBlock Grid.Row="2"
-                                                                   Text="柔和、克制、暖灰粉。"
+                                                                   Text="柔和、克制、奶雾粉。"
                                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                                    FontSize="11"
                                                                    Margin="0,4,0,0"
                                                                    TextWrapping="Wrap"/>
                                                         <Button x:Name="BtnUseRoseTheme"
                                                                 Grid.Row="3"
-                                                                Content="启用柔粉"
-                                                                Style="{StaticResource PageToolbarCapsuleButton}"
-                                                                HorizontalAlignment="Left"
+                                                                Content="使用柔粉"
+                                                                Style="{StaticResource ThemeChoiceButton}"
                                                                 Margin="0,10,0,0"
                                                                 Click="UseRoseTheme_Click"/>
                                                     </Grid>
@@ -649,9 +657,8 @@
                                                                    TextWrapping="Wrap"/>
                                                         <Button x:Name="BtnUseBlueTheme"
                                                                 Grid.Row="3"
-                                                                Content="启用清蓝"
-                                                                Style="{StaticResource PageToolbarCapsuleButton}"
-                                                                HorizontalAlignment="Left"
+                                                                Content="使用清蓝"
+                                                                Style="{StaticResource ThemeChoiceButton}"
                                                                 Margin="0,10,0,0"
                                                                 Click="UseBlueTheme_Click"/>
                                                     </Grid>

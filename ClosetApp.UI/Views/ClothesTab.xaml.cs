@@ -18,6 +18,8 @@ public partial class ClothesTab : UserControl
 {
     private readonly WardrobeViewModel _viewModel;
 
+    public event EventHandler<int>? ClothingCountChanged;
+
     public ClothesTab()
     {
         _viewModel = App.Services.GetRequiredService<WardrobeViewModel>();
@@ -27,6 +29,9 @@ public partial class ClothesTab : UserControl
         {
             if (e.PropertyName is nameof(WardrobeViewModel.FilteredClothes) or nameof(WardrobeViewModel.IsEmpty))
                 _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+
+            if (e.PropertyName == nameof(WardrobeViewModel.TotalCount))
+                ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
         };
         Loaded += (s, e) => _ = LoadClothesAsync();
         SizeChanged += (_, _) => UpdateCardWidth();
@@ -35,6 +40,7 @@ public partial class ClothesTab : UserControl
     private async Task LoadClothesAsync()
     {
         await _viewModel.LoadClothesAsync();
+        ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
         _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
     }
 

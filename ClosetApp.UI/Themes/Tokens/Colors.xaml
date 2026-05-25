@@ -1,13 +1,13 @@
 <ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
-    <Color x:Key="Primary">#FFC48F95</Color>
+    <Color x:Key="Primary">#FFCA9C9F</Color>
     <SolidColorBrush x:Key="PrimaryBrush" Color="{StaticResource Primary}"/>
-    <Color x:Key="Primary.Dark">#FFA47179</Color>
+    <Color x:Key="Primary.Dark">#FFB08488</Color>
     <SolidColorBrush x:Key="PrimaryDarkBrush" Color="{StaticResource Primary.Dark}"/>
-    <Color x:Key="Primary.Light">#FFF3EAE9</Color>
+    <Color x:Key="Primary.Light">#FFF7F0EE</Color>
     <SolidColorBrush x:Key="PrimaryLightBrush" Color="{StaticResource Primary.Light}"/>
-    <Color x:Key="Primary.Glow">#33C48F95</Color>
+    <Color x:Key="Primary.Glow">#33CA9C9F</Color>
     <SolidColorBrush x:Key="PrimaryGlowBrush" Color="{StaticResource Primary.Glow}"/>
 
     <Color x:Key="Danger">#FFE88D8D</Color>
@@ -28,30 +28,30 @@
     <SolidColorBrush x:Key="TextPlaceholderBrush" Color="{StaticResource Text.Placeholder}"/>
     <SolidColorBrush x:Key="TextTertiaryBrush" Color="{StaticResource Text.Placeholder}"/>
 
-    <Color x:Key="Surface.Page">#FFF6F2EF</Color>
+    <Color x:Key="Surface.Page">#FFF9F5F1</Color>
     <SolidColorBrush x:Key="SurfacePageBrush" Color="{StaticResource Surface.Page}"/>
-    <Color x:Key="Surface.Modal">#FFFFFBF9</Color>
+    <Color x:Key="Surface.Modal">#FFFFFCFA</Color>
     <SolidColorBrush x:Key="SurfaceModalBrush" Color="{StaticResource Surface.Modal}"/>
     <Color x:Key="Surface.Card">#FFFDFCFC</Color>
     <SolidColorBrush x:Key="SurfaceCardBrush" Color="{StaticResource Surface.Card}"/>
-    <Color x:Key="Surface.Hero">#FFF4EDEA</Color>
+    <Color x:Key="Surface.Hero">#FFF7F1ED</Color>
     <SolidColorBrush x:Key="SurfaceHeroBrush" Color="{StaticResource Surface.Hero}"/>
-    <Color x:Key="Surface.Section">#FFF9F4F1</Color>
+    <Color x:Key="Surface.Section">#FFFBF6F3</Color>
     <SolidColorBrush x:Key="SurfaceSectionBrush" Color="{StaticResource Surface.Section}"/>
     <Color x:Key="Surface.Elevated">#FFFFFFFF</Color>
     <SolidColorBrush x:Key="SurfaceElevatedBrush" Color="{StaticResource Surface.Elevated}"/>
 
-    <Color x:Key="Surface.ImageArea">#FFF4EEEA</Color>
+    <Color x:Key="Surface.ImageArea">#FFF7F2EE</Color>
     <SolidColorBrush x:Key="SurfaceImageAreaBrush" Color="{StaticResource Surface.ImageArea}"/>
 
-    <Color x:Key="Border.Light">#FFE8DDDB</Color>
+    <Color x:Key="Border.Light">#FFECE2DF</Color>
     <SolidColorBrush x:Key="BorderLightBrush" Color="{StaticResource Border.Light}"/>
-    <Color x:Key="Border.Divider">#FFEFE7E4</Color>
+    <Color x:Key="Border.Divider">#FFF2EAE7</Color>
     <SolidColorBrush x:Key="BorderDividerBrush" Color="{StaticResource Border.Divider}"/>
 
-    <Color x:Key="Sidebar.Background">#FFFBF7F4</Color>
+    <Color x:Key="Sidebar.Background">#FFFCF9F6</Color>
     <SolidColorBrush x:Key="SidebarBgBrush" Color="{StaticResource Sidebar.Background}"/>
-    <Color x:Key="Sidebar.Border">#FFEDE3E0</Color>
+    <Color x:Key="Sidebar.Border">#FFF0E7E4</Color>
     <SolidColorBrush x:Key="SidebarBorderBrush" Color="{StaticResource Sidebar.Border}"/>
 
     <Color x:Key="Theme.Sky.Surface">#FFEEF4FF</Color>
@@ -68,11 +68,11 @@
     <Color x:Key="Theme.Mint.Text">#FF5E8A67</Color>
     <SolidColorBrush x:Key="ThemeMintTextBrush" Color="{StaticResource Theme.Mint.Text}"/>
 
-    <Color x:Key="Theme.Rose.Surface">#FFF8EEF0</Color>
+    <Color x:Key="Theme.Rose.Surface">#FFFAF2F3</Color>
     <SolidColorBrush x:Key="ThemeRoseSurfaceBrush" Color="{StaticResource Theme.Rose.Surface}"/>
-    <Color x:Key="Theme.Rose.Border">#FFE0CACE</Color>
+    <Color x:Key="Theme.Rose.Border">#FFE6D5D8</Color>
     <SolidColorBrush x:Key="ThemeRoseBorderBrush" Color="{StaticResource Theme.Rose.Border}"/>
-    <Color x:Key="Theme.Rose.Text">#FF9E6C74</Color>
+    <Color x:Key="Theme.Rose.Text">#FFA3787D</Color>
     <SolidColorBrush x:Key="ThemeRoseTextBrush" Color="{StaticResource Theme.Rose.Text}"/>
 
     <Color x:Key="Theme.Amber.Surface">#FFFCF3E8</Color>
@@ -102,7 +102,7 @@
     <SolidColorBrush x:Key="OverlayBrush" Color="#40000000"/>
     <SolidColorBrush x:Key="RatingStarBrush" Color="#FBBF24"/>
 
-    <Color x:Key="Shadow.Color">#308A7670</Color>
+    <Color x:Key="Shadow.Color">#30927C76</Color>
     <SolidColorBrush x:Key="ShadowColorBrush" Color="{StaticResource Shadow.Color}"/>
 
 </ResourceDictionary>

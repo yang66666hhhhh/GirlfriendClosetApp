@@ -14,6 +14,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        ClothesTabContent.ClothingCountChanged += ClothesTabContent_ClothingCountChanged;
         SizeChanged += MainWindow_SizeChanged;
         Loaded += MainWindow_Loaded;
     }
@@ -21,6 +22,11 @@ public partial class MainWindow : Window
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyResponsiveSidebar();
+    }
+
+    private void ClothesTabContent_ClothingCountChanged(object? sender, int count)
+    {
+        Sidebar.SetClothingCount(count);
     }
 
     private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)

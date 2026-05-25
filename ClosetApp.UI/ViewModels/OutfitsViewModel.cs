@@ -40,6 +40,8 @@ public partial class OutfitsViewModel : ObservableObject
     [ObservableProperty]
     private RecommendationReadinessSummaryDto? _recommendationReadiness;
 
+    private string _searchText = string.Empty;
+
     public OutfitsViewModel(
         IOutfitService outfitService,
         IOutfitRecommendationService recommendationService,
@@ -60,8 +62,45 @@ public partial class OutfitsViewModel : ObservableObject
     public IReadOnlyList<CalendarDayItem> CalendarDays => _state.CalendarDays;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
+    public bool IsFilteredEmpty => _state.IsFilteredEmpty;
     public int OutfitCount => _state.OutfitCount;
+    public int TotalCount => _state.TotalCount;
     public string OutfitCountText => $"{OutfitCount} 套搭配";
+    public string TotalCountText => $"{TotalCount} 套搭配";
+    public bool HasActiveFilters => _state.HasActiveFilters;
+    public string FilterSummary => _state.FilterSummary;
+    public string FilterResultText => HasActiveFilters
+        ? $"{FilterSummary} · {OutfitCount} 套结果"
+        : $"{FilterSummary} · {OutfitCount} 套";
+    public string CollectionSectionTitle => HasActiveFilters ? "当前结果" : "全部搭配";
+    public string CollectionSectionBody => HasActiveFilters
+        ? $"按 {FilterSummary} 缩小到了 {OutfitCount} 套，继续改条件会更快。"
+        : "按场景、季节、名称和收藏状态收窄结果，会更快找到今天那套。";
+    public bool FavoriteOnly
+    {
+        get => _state.FavoriteOnly;
+        set
+        {
+            if (_state.FavoriteOnly == value)
+                return;
+
+            _state.SetFavoriteOnly(value);
+            NotifyStateChanged();
+        }
+    }
+
+    public string SearchText
+    {
+        get => _searchText;
+        set
+        {
+            if (!SetProperty(ref _searchText, value))
+                return;
+
+            _state.SetSearchText(value);
+            NotifyStateChanged();
+        }
+    }
 
     public IReadOnlyList<OutfitSortBy> SortOptions { get; } = Enum.GetValues<OutfitSortBy>();
 
@@ -140,6 +179,27 @@ public partial class OutfitsViewModel : ObservableObject
     }
 
     public Task RefreshAsync() => LoadOutfitsAsync();
+
+    public void SetSelectedScene(OutfitScene? scene)
+    {
+        _state.SetSelectedScene(scene);
+        NotifyStateChanged();
+    }
+
+    public void SetSelectedSeason(Season? season)
+    {
+        _state.SetSelectedSeason(season);
+        NotifyStateChanged();
+    }
+
+    public void ClearFilters()
+    {
+        _state.SetSelectedScene(null);
+        _state.SetSelectedSeason(null);
+        _state.SetFavoriteOnly(false);
+        SearchText = string.Empty;
+        NotifyStateChanged();
+    }
 
     public async Task DeleteOutfitAsync(Outfit outfit)
     {
@@ -263,8 +323,18 @@ public partial class OutfitsViewModel : ObservableObject
         OnPropertyChanged(nameof(CalendarDays));
         OnPropertyChanged(nameof(IsLoading));
         OnPropertyChanged(nameof(IsEmpty));
+        OnPropertyChanged(nameof(IsFilteredEmpty));
         OnPropertyChanged(nameof(OutfitCount));
+        OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(OutfitCountText));
+        OnPropertyChanged(nameof(TotalCountText));
+        OnPropertyChanged(nameof(HasActiveFilters));
+        OnPropertyChanged(nameof(FilterSummary));
+        OnPropertyChanged(nameof(FilterResultText));
+        OnPropertyChanged(nameof(CollectionSectionTitle));
+        OnPropertyChanged(nameof(CollectionSectionBody));
+        OnPropertyChanged(nameof(FavoriteOnly));
+        OnPropertyChanged(nameof(SearchText));
         OnPropertyChanged(nameof(HistoryQuickText));
         OnPropertyChanged(nameof(HistorySummaryText));
         OnPropertyChanged(nameof(IsHistoryExpanded));

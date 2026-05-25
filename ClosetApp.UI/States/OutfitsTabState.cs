@@ -15,7 +15,8 @@ public enum OutfitSortBy
 
 public sealed class OutfitsTabState
 {
-    private List<Outfit> _outfits = new();
+    private List<Outfit> _allOutfits = [];
+    private List<Outfit> _outfits = [];
     private List<RecentWornListItem> _recentWornRecords = [];
     private List<CalendarDayItem> _calendarDays = [];
     private DateTime _calendarMonth = new(DateTime.Today.Year, DateTime.Today.Month, 1);
@@ -23,15 +24,31 @@ public sealed class OutfitsTabState
     private Guid? _selectedHistoryRecordId;
     private bool _isHistoryExpanded;
     private OutfitSortBy _sortBy = OutfitSortBy.Newest;
+    private string _searchText = string.Empty;
+    private OutfitScene? _selectedScene;
+    private Season? _selectedSeason;
+    private bool _favoriteOnly;
 
     public IReadOnlyList<Outfit> Outfits => _outfits;
     public IReadOnlyList<RecentWornListItem> RecentWornRecords => _recentWornRecords;
     public RecentWornListItem? SelectedRecentWornRecord => _recentWornRecords.FirstOrDefault(item => item.IsSelected);
     public IReadOnlyList<CalendarDayItem> CalendarDays => _calendarDays;
     public bool IsLoading { get; private set; }
-    public bool IsEmpty => _outfits.Count == 0;
+    public bool IsEmpty => _allOutfits.Count == 0;
+    public bool IsFilteredEmpty => _outfits.Count == 0;
     public int OutfitCount => _outfits.Count;
+    public int TotalCount => _allOutfits.Count;
     public OutfitSortBy SortBy => _sortBy;
+    public string SearchText => _searchText;
+    public OutfitScene? SelectedScene => _selectedScene;
+    public Season? SelectedSeason => _selectedSeason;
+    public bool FavoriteOnly => _favoriteOnly;
+    public bool HasActiveFilters =>
+        !string.IsNullOrWhiteSpace(_searchText) ||
+        _selectedScene != null ||
+        _selectedSeason != null ||
+        _favoriteOnly;
+    public string FilterSummary => BuildFilterSummary();
     public DateTime CalendarMonth => _calendarMonth;
     public string CalendarMonthText => _calendarMonth.ToString("yyyy年 M月");
     public bool IsHistoryExpanded => _isHistoryExpanded;
@@ -48,14 +65,58 @@ public sealed class OutfitsTabState
 
     public void SetOutfits(IEnumerable<Outfit> outfits)
     {
-        _outfits = ApplySorting(outfits).ToList();
+        _allOutfits = outfits.ToList();
+        ApplyFilters();
         IsLoading = false;
     }
 
     public void SetSortBy(OutfitSortBy sortBy)
     {
         _sortBy = sortBy;
-        _outfits = ApplySorting(_outfits).ToList();
+        ApplyFilters();
+    }
+
+    public void SetSearchText(string? searchText)
+    {
+        _searchText = searchText?.Trim() ?? string.Empty;
+        ApplyFilters();
+    }
+
+    public void SetSelectedScene(OutfitScene? scene)
+    {
+        _selectedScene = scene;
+        ApplyFilters();
+    }
+
+    public void SetSelectedSeason(Season? season)
+    {
+        _selectedSeason = season;
+        ApplyFilters();
+    }
+
+    public void SetFavoriteOnly(bool favoriteOnly)
+    {
+        _favoriteOnly = favoriteOnly;
+        ApplyFilters();
+    }
+
+    private void ApplyFilters()
+    {
+        IEnumerable<Outfit> items = _allOutfits;
+
+        if (!string.IsNullOrWhiteSpace(_searchText))
+            items = items.Where(MatchesSearch);
+
+        if (_selectedScene != null)
+            items = items.Where(outfit => outfit.Scene == _selectedScene.Value);
+
+        if (_selectedSeason != null)
+            items = items.Where(MatchesSeasonFilter);
+
+        if (_favoriteOnly)
+            items = items.Where(outfit => outfit.Favorites.Count > 0);
+
+        _outfits = ApplySorting(items).ToList();
     }
 
     private IEnumerable<Outfit> ApplySorting(IEnumerable<Outfit> items)
@@ -70,6 +131,59 @@ public sealed class OutfitsTabState
             OutfitSortBy.LastWorn => items.OrderByDescending(o => o.WornDate ?? o.CreatedAt),
             _ => items.OrderByDescending(o => o.CreatedAt)
         };
+    }
+
+    private bool MatchesSearch(Outfit outfit)
+    {
+        var term = _searchText.Trim();
+        if (string.IsNullOrWhiteSpace(term))
+            return true;
+
+        var searchableValues = new List<string?>
+        {
+            outfit.Name,
+            outfit.Notes,
+            GetSceneLabel(outfit.Scene),
+            GetSeasonLabel(outfit.Season)
+        };
+
+        searchableValues.AddRange(outfit.OutfitClothes.Select(link => link.Clothing?.Name));
+        searchableValues.AddRange(outfit.OutfitClothes.Select(link => link.Clothing?.Brand));
+        searchableValues.AddRange(outfit.OutfitClothes.Select(link => link.Clothing?.Color));
+
+        return searchableValues.Any(value =>
+            !string.IsNullOrWhiteSpace(value) &&
+            value.Contains(term, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private bool MatchesSeasonFilter(Outfit outfit)
+    {
+        if (_selectedSeason == null)
+            return true;
+
+        if (_selectedSeason == Season.AllSeason)
+            return outfit.Season == Season.AllSeason;
+
+        return outfit.Season == _selectedSeason.Value || outfit.Season == Season.AllSeason;
+    }
+
+    private string BuildFilterSummary()
+    {
+        var parts = new List<string>();
+
+        if (!string.IsNullOrWhiteSpace(_searchText))
+            parts.Add($"搜索「{_searchText}」");
+
+        if (_selectedScene != null)
+            parts.Add(GetSceneLabel(_selectedScene.Value));
+
+        if (_selectedSeason != null)
+            parts.Add(GetSeasonLabel(_selectedSeason.Value));
+
+        if (_favoriteOnly)
+            parts.Add("仅收藏");
+
+        return parts.Count == 0 ? "全部搭配" : string.Join(" + ", parts);
     }
 
     public void ToggleHistoryExpanded() => _isHistoryExpanded = !_isHistoryExpanded;
@@ -172,6 +286,26 @@ public sealed class OutfitsTabState
 
         return $"本月 {records.Count} 次记录 · {activeDays} 天有穿搭 · 最常穿「{mostWorn.Key}」";
     }
+
+    private static string GetSceneLabel(OutfitScene scene) => scene switch
+    {
+        OutfitScene.Work => "通勤",
+        OutfitScene.Date => "约会",
+        OutfitScene.Travel => "出游",
+        OutfitScene.Party => "派对",
+        OutfitScene.Casual => "休闲",
+        _ => scene.ToString()
+    };
+
+    private static string GetSeasonLabel(Season season) => season switch
+    {
+        Season.Spring => "春季",
+        Season.Summer => "夏季",
+        Season.Autumn => "秋季",
+        Season.Winter => "冬季",
+        Season.AllSeason => "四季",
+        _ => "未设季节"
+    };
 
     private static IReadOnlyList<CalendarDayItem> BuildCalendarDays(
         DateTime monthStart,

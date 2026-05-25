@@ -261,28 +261,144 @@
                 </Grid>
 
                 <Grid Margin="0,0,0,8">
+                    <Border Style="{StaticResource PageSummaryCard}"
+                            Margin="0,0,0,18"
+                            Padding="18,16"
+                            Grid.ColumnSpan="2">
+                        <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="筛选搭配"
+                                               Style="{StaticResource PageSummaryTitleText}"/>
+                                    <TextBlock Text="先按名称、场景、季节和收藏缩小范围，再决定今天穿哪套。"
+                                               Style="{StaticResource PageSummaryBodyText}"/>
+                                </StackPanel>
+                                <Button Grid.Column="1"
+                                        Content="清除筛选"
+                                        Style="{StaticResource PageToolbarCapsuleButton}"
+                                        Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                        Click="ClearFilters_Click"/>
+                            </Grid>
+
+                            <WrapPanel Margin="0,12,0,0">
+                                <StackPanel Width="228" Margin="0,0,12,10">
+                                    <TextBlock Text="搜索"
+                                               Style="{StaticResource PageFieldLabelText}"/>
+                                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                             MinHeight="40"
+                                             Padding="12,9"
+                                             Margin="0,6,0,0"/>
+                                </StackPanel>
+
+                                <StackPanel Width="126" Margin="0,0,12,10">
+                                    <TextBlock Text="场景"
+                                               Style="{StaticResource PageFieldLabelText}"/>
+                                    <ComboBox x:Name="SceneFilterComboBox"
+                                              MinHeight="40"
+                                              Margin="0,6,0,0"
+                                              SelectionChanged="SceneFilterComboBox_SelectionChanged">
+                                        <ComboBoxItem Content="全部场景" IsSelected="True"/>
+                                        <ComboBoxItem Content="通勤" Tag="Work"/>
+                                        <ComboBoxItem Content="约会" Tag="Date"/>
+                                        <ComboBoxItem Content="出游" Tag="Travel"/>
+                                        <ComboBoxItem Content="派对" Tag="Party"/>
+                                        <ComboBoxItem Content="休闲" Tag="Casual"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <StackPanel Width="126" Margin="0,0,12,10">
+                                    <TextBlock Text="季节"
+                                               Style="{StaticResource PageFieldLabelText}"/>
+                                    <ComboBox x:Name="SeasonFilterComboBox"
+                                              MinHeight="40"
+                                              Margin="0,6,0,0"
+                                              SelectionChanged="SeasonFilterComboBox_SelectionChanged">
+                                        <ComboBoxItem Content="全部季节" IsSelected="True"/>
+                                        <ComboBoxItem Content="春季" Tag="Spring"/>
+                                        <ComboBoxItem Content="夏季" Tag="Summer"/>
+                                        <ComboBoxItem Content="秋季" Tag="Autumn"/>
+                                        <ComboBoxItem Content="冬季" Tag="Winter"/>
+                                        <ComboBoxItem Content="四季" Tag="AllSeason"/>
+                                    </ComboBox>
+                                </StackPanel>
+
+                                <Border Style="{StaticResource PageInsetCard}"
+                                        Padding="14,10"
+                                        Margin="0,20,0,10"
+                                        Background="{StaticResource OutfitLavenderSurfaceBrush}"
+                                        BorderBrush="{StaticResource OutfitLavenderBorderBrush}"
+                                        BorderThickness="1">
+                                    <CheckBox Content="仅看收藏"
+                                              IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"
+                                              Foreground="{StaticResource OutfitLavenderTextBrush}"
+                                              VerticalAlignment="Center"/>
+                                </Border>
+                            </WrapPanel>
+
+                            <TextBlock Text="{Binding FilterResultText}"
+                                       Style="{StaticResource PageSummaryBodyText}"
+                                       Margin="0,2,0,0"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+
+                <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBlock Grid.Column="0"
-                               Text="全部搭配"
-                               Style="{StaticResource PageSectionTitleText}"/>
-                    <ComboBox Grid.Column="1"
-                              x:Name="SortComboBox"
-                              MinWidth="108"
-                              ItemsSource="{Binding SortOptions}"
-                              SelectedItem="{Binding SortBy, Mode=TwoWay}">
-                        <ComboBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding Converter={StaticResource OutfitSortByLabelConverter}}"/>
-                            </DataTemplate>
-                        </ComboBox.ItemTemplate>
-                    </ComboBox>
+                    <StackPanel Grid.Column="0">
+                        <TextBlock Text="{Binding CollectionSectionTitle}"
+                                   Style="{StaticResource PageSectionTitleText}"/>
+                        <TextBlock Text="{Binding CollectionSectionBody}"
+                                   Style="{StaticResource PageSectionBodyText}"
+                                   Margin="0,4,0,0"/>
+                    </StackPanel>
+                    <StackPanel Grid.Column="1"
+                                Width="116"
+                                VerticalAlignment="Top">
+                        <TextBlock Text="排序"
+                                   Style="{StaticResource PageFieldLabelText}"
+                                   HorizontalAlignment="Left"/>
+                        <ComboBox x:Name="SortComboBox"
+                                  MinWidth="108"
+                                  Margin="0,6,0,0"
+                                  ItemsSource="{Binding SortOptions}"
+                                  SelectedItem="{Binding SortBy, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource OutfitSortByLabelConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                    </StackPanel>
                 </Grid>
+
+                <Border Style="{StaticResource PageInsetCard}"
+                        Margin="0,0,0,16"
+                        Padding="18,16"
+                        Visibility="{Binding IsFilteredEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="没有筛出搭配"
+                                   Style="{StaticResource PageSummaryTitleText}"/>
+                        <TextBlock Text="换个条件试试，或者先清掉一两个筛选项。"
+                                   Style="{StaticResource PageSummaryBodyText}"/>
+                        <Button Content="清除筛选"
+                                Style="{StaticResource PageToolbarCapsuleButton}"
+                                HorizontalAlignment="Left"
+                                Margin="0,12,0,0"
+                                Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                Click="ClearFilters_Click"/>
+                    </StackPanel>
+                </Border>
 
                 <ItemsControl x:Name="OutfitsList"
                               ItemsSource="{Binding Outfits}"
+                              Visibility="{Binding IsFilteredEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                               ItemTemplate="{StaticResource OutfitCardTemplate}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
