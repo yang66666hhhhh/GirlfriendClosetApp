@@ -293,7 +293,7 @@
                         Margin="44,8,44,8"
                         Padding="12,10"
                         Background="{DynamicResource SurfaceElevatedBrush}"
-                        BorderBrush="{StaticResource PrimaryBrush}"
+                        BorderBrush="{DynamicResource PrimaryBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <Grid>
@@ -320,7 +320,7 @@
 
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
                                 <Border Style="{StaticResource PageSummaryBadge}"
-                                        Background="{StaticResource PrimaryLightBrush}"
+                                        Background="{DynamicResource PrimaryLightBrush}"
                                         Padding="8,5"
                                         Margin="0,0,4,0">
                                     <StackPanel Orientation="Horizontal">
@@ -333,12 +333,12 @@
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource PageSummaryBadge}"
-                                        Background="{StaticResource PrimaryLightBrush}"
+                                        Background="{DynamicResource PrimaryLightBrush}"
                                         Padding="8,5">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock x:Name="TxtFilteredCount"
                                                    Text="{Binding FilteredCount, StringFormat={}{0} 件}"
-                                                   Foreground="{StaticResource PrimaryBrush}"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
                                                    FontWeight="SemiBold"/>
                                         <TextBlock Text=" 当前"
                                                    Style="{StaticResource PageSummaryHintText}"
@@ -471,7 +471,7 @@
                                                Margin="0,3,0,0"/>
                                     <WrapPanel Margin="0,7,0,0">
                                         <Border Style="{StaticResource PageSummaryBadge}"
-                                                Background="{StaticResource PrimaryLightBrush}"
+                                                Background="{DynamicResource PrimaryLightBrush}"
                                                 Padding="7,4"
                                                 Margin="0,0,5,4">
                                             <TextBlock Text="{Binding RecentlyImportedUnnamedCount, StringFormat=未命名 {0}}"
@@ -479,7 +479,7 @@
                                                        FontSize="9"/>
                                         </Border>
                                         <Border Style="{StaticResource PageSummaryBadge}"
-                                                Background="{StaticResource PrimaryLightBrush}"
+                                                Background="{DynamicResource PrimaryLightBrush}"
                                                 Padding="7,4"
                                                 Margin="0,0,5,4">
                                             <TextBlock Text="{Binding RecentlyImportedUncategorizedCount, StringFormat=未分类 {0}}"
@@ -487,7 +487,7 @@
                                                        FontSize="9"/>
                                         </Border>
                                         <Border Style="{StaticResource PageSummaryBadge}"
-                                                Background="{StaticResource PrimaryLightBrush}"
+                                                Background="{DynamicResource PrimaryLightBrush}"
                                                 Padding="7,4"
                                                 Margin="0,0,5,4">
                                             <TextBlock Text="{Binding RecentlyImportedUnseasonedCount, StringFormat=未设季节 {0}}"
@@ -495,7 +495,7 @@
                                                        FontSize="9"/>
                                         </Border>
                                         <Border Style="{StaticResource PageSummaryBadge}"
-                                                Background="{StaticResource PrimaryLightBrush}"
+                                                Background="{DynamicResource PrimaryLightBrush}"
                                                 Padding="7,4"
                                                 Margin="0,0,5,4">
                                             <TextBlock Text="{Binding RecentlyImportedUntaggedCount, StringFormat=无标签 {0}}"
@@ -503,7 +503,7 @@
                                                        FontSize="9"/>
                                         </Border>
                                         <Border Style="{StaticResource PageSummaryBadge}"
-                                                Background="{StaticResource PrimaryLightBrush}"
+                                                Background="{DynamicResource PrimaryLightBrush}"
                                                 Padding="7,4"
                                                 Margin="0,0,0,4">
                                             <TextBlock Text="{Binding RecentlyImportedMissingBrandOrColorCount, StringFormat=无品牌/颜色 {0}}"
@@ -522,8 +522,8 @@
                         Style="{StaticResource PageSummaryCard}"
                         Margin="44,0,44,10"
                         Padding="12,10"
-                        Background="{StaticResource PrimaryLightBrush}"
-                        BorderBrush="{StaticResource PrimaryBrush}"
+                        Background="{DynamicResource PrimaryLightBrush}"
+                        BorderBrush="{DynamicResource PrimaryBrush}"
                         BorderThickness="1"
                         Visibility="{Binding IsFilterExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
