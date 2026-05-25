@@ -1,7 +1,8 @@
 <UserControl x:Class="ClosetApp.UI.Components.Shared.Modal.WornDayDetailsDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border Style="{StaticResource ModalCardRoot}"
+    <Border x:Name="RootCard"
+            Style="{StaticResource ModalCardRoot}"
             Width="560"
             MinHeight="360">
         <Border Style="{StaticResource ModalCardClip}">

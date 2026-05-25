@@ -10,6 +10,7 @@ namespace ClosetApp.UI.Components.Shared.Modal;
 public partial class OutfitHistoryDialog : UserControl
 {
     private readonly OutfitsViewModel _viewModel;
+    private bool _isRecentSectionCollapsed;
 
     public OutfitHistoryDialog(OutfitsViewModel viewModel)
     {
@@ -22,6 +23,7 @@ public partial class OutfitHistoryDialog : UserControl
     private void OutfitHistoryDialog_Loaded(object sender, RoutedEventArgs e)
     {
         SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
+        UpdateRecentSectionState();
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
@@ -65,18 +67,57 @@ public partial class OutfitHistoryDialog : UserControl
         await _viewModel.FocusHistoryDateAsync(day.Date);
         SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
 
-        var dialog = new WornDayDetailsDialog(day.Date, day.Records);
+        var dialog = new WornDayDetailsDialog(day.Date, day.Records, isEmbedded: true);
         dialog.RecordsChanged += async (_, _) =>
         {
             await _viewModel.RefreshAsync();
             SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
         };
-        ModalService.Instance.Show(dialog);
+        dialog.CloseRequested += (_, _) => CloseDayDetailsOverlay();
+        OpenDayDetailsOverlay(dialog);
     }
 
     private void SyncCurrentPreview(RecentWornListItem? item)
     {
         CurrentPreviewPanel.DataContext = item;
         CurrentPreviewPanel.Visibility = item == null ? Visibility.Collapsed : Visibility.Visible;
+        UpdateRecentSectionState();
+    }
+
+    private void OpenDayDetailsOverlay(WornDayDetailsDialog dialog)
+    {
+        DayDetailsHost.Content = dialog;
+        DayDetailsOverlay.Visibility = Visibility.Visible;
+    }
+
+    private void CloseDayDetailsOverlay()
+    {
+        DayDetailsHost.Content = null;
+        DayDetailsOverlay.Visibility = Visibility.Collapsed;
+    }
+
+    private void ToggleRecentSection_Click(object sender, RoutedEventArgs e)
+    {
+        _isRecentSectionCollapsed = !_isRecentSectionCollapsed;
+        UpdateRecentSectionState();
+    }
+
+    private void UpdateRecentSectionState()
+    {
+        if (RecentSectionContent == null || ToggleRecentSectionButton == null || RecentSectionSummaryText == null)
+            return;
+
+        RecentSectionContent.Visibility = _isRecentSectionCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        ToggleRecentSectionButton.Content = _isRecentSectionCollapsed ? "展开" : "收起";
+
+        var recordCount = _viewModel.RecentWornRecords.Count;
+        var currentItem = CurrentPreviewPanel?.DataContext as RecentWornListItem ?? _viewModel.SelectedRecentWornRecord;
+
+        RecentSectionSummaryText.Text = recordCount switch
+        {
+            0 => "还没有最近穿着记录。",
+            _ when currentItem == null => $"最近 {recordCount} 条穿着记录。",
+            _ => $"最近 {recordCount} 条穿着记录 · 当前 {currentItem.OutfitName}"
+        };
     }
 }

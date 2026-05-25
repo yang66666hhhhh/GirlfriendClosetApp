@@ -13,21 +13,25 @@ public partial class WornDayDetailsDialog : UserControl
     private readonly IOutfitService _outfitService;
     private readonly DateTime _date;
     private List<OutfitWornRecord> _records;
+    private readonly bool _isEmbedded;
 
-    public WornDayDetailsDialog(DateTime date, IReadOnlyList<OutfitWornRecord> records)
+    public WornDayDetailsDialog(DateTime date, IReadOnlyList<OutfitWornRecord> records, bool isEmbedded = false)
     {
         InitializeComponent();
         _outfitService = App.Services.GetRequiredService<IOutfitService>();
         _date = date.Date;
         _records = records.ToList();
+        _isEmbedded = isEmbedded;
 
         Loaded += async (_, _) => await LoadOutfitOptionsAsync();
+        Loaded += (_, _) => ApplyMode();
 
         TitleText.Text = FormatTitle(_date);
         RefreshRecords();
     }
 
     public event EventHandler? RecordsChanged;
+    public event EventHandler? CloseRequested;
 
     private async Task LoadOutfitOptionsAsync()
     {
@@ -76,6 +80,12 @@ public partial class WornDayDetailsDialog : UserControl
 
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
+        if (_isEmbedded)
+        {
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+            return;
+        }
+
         ModalService.Instance.Hide();
     }
 
@@ -115,5 +125,15 @@ public partial class WornDayDetailsDialog : UserControl
                 record.Outfit?.Name ?? "未命名搭配",
                 record.WornDate.ToString("HH:mm"));
         }
+    }
+
+    private void ApplyMode()
+    {
+        if (!_isEmbedded)
+            return;
+
+        RootCard.MaxWidth = 560;
+        RootCard.HorizontalAlignment = HorizontalAlignment.Center;
+        RootCard.VerticalAlignment = VerticalAlignment.Center;
     }
 }
