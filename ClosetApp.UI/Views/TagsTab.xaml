@@ -58,6 +58,58 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
+        <Style x:Key="TagCardItem" TargetType="Border" BasedOn="{StaticResource PageItemCard}">
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TagLavenderBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect" Value="{x:Null}"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="RenderTransform">
+                <Setter.Value>
+                    <TranslateTransform Y="0"/>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource TagSkyBorderBrush}"/>
+                    <Setter Property="Effect" Value="{StaticResource Shadow.Card}"/>
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TranslateTransform Y="-2"/>
+                        </Setter.Value>
+                    </Setter>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="TagCardTitleText" TargetType="TextBlock" BasedOn="{StaticResource PageItemTitleText}">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=IsMouseOver}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource TagSkyTextBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="TagCardUsageBadge" TargetType="Border" BasedOn="{StaticResource TagMetaBadge}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Border, AncestorLevel=2}, Path=IsMouseOver}" Value="True">
+                    <Setter Property="Background" Value="{DynamicResource TagSkySurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource TagSkyBorderBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="TagCardUsageText" TargetType="TextBlock" BasedOn="{StaticResource TagMetaBadgeText}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Border, AncestorLevel=2}, Path=IsMouseOver}" Value="True">
+                    <Setter Property="Foreground" Value="{DynamicResource TagSkyTextBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="TagCardMoreButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
             <Setter Property="Width" Value="24"/>
             <Setter Property="MinHeight" Value="24"/>
@@ -68,7 +120,7 @@
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="Opacity" Value="0.32"/>
+            <Setter Property="Opacity" Value="0"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -95,8 +147,8 @@
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="MoreBorder" Property="Background" Value="{DynamicResource TagSkySurfaceBrush}"/>
                             </Trigger>
-                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Border}, Path=IsMouseOver}" Value="True">
-                                <Setter Property="Opacity" Value="0.72"/>
+                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Border, AncestorLevel=2}, Path=IsMouseOver}" Value="True">
+                                <Setter Property="Opacity" Value="0.56"/>
                                 <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
                             </DataTrigger>
                         </ControlTemplate.Triggers>
@@ -371,13 +423,10 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Style="{StaticResource PageItemCard}"
+                                    <Border Style="{StaticResource TagCardItem}"
                                             Width="268"
                                             Padding="14,12"
                                             Margin="0,0,12,12"
-                                            Background="{DynamicResource SurfaceElevatedBrush}"
-                                            BorderBrush="{DynamicResource TagLavenderBorderBrush}"
-                                            BorderThickness="1"
                                             Tag="{Binding Tag}">
                                         <Border.ContextMenu>
                                             <ContextMenu>
@@ -406,7 +455,7 @@
                                                                  Fill="{Binding Color}"/>
                                                     </Border>
                                                     <TextBlock Text="{Binding Name}"
-                                                               Style="{StaticResource PageItemTitleText}"
+                                                               Style="{StaticResource TagCardTitleText}"
                                                                VerticalAlignment="Center"
                                                                Margin="8,0,0,0"
                                                                TextWrapping="Wrap"/>
@@ -415,6 +464,7 @@
                                                         Content="⋯"
                                                         Style="{StaticResource TagCardMoreButton}"
                                                         Tag="{Binding Tag}"
+                                                        ToolTip="管理标签"
                                                         Click="MoreButton_Click">
                                                     <Button.ContextMenu>
                                                         <ContextMenu Style="{StaticResource TagCardMoreMenu}"
@@ -422,21 +472,67 @@
                                                                      Placement="Bottom"
                                                                      HorizontalOffset="-2"
                                                                      VerticalOffset="2">
-                                                            <MenuItem Header="编辑"
-                                                                      Click="EditTag_Click"/>
-                                                            <MenuItem Header="删除"
-                                                                      Tag="Danger"
-                                                                      Click="DeleteTag_Click"/>
+                                                            <MenuItem Click="EditTag_Click">
+                                                                <MenuItem.Header>
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="14"/>
+                                                                            <ColumnDefinition Width="8"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <Viewbox Width="12"
+                                                                                 Height="12"
+                                                                                 VerticalAlignment="Center">
+                                                                            <Canvas Width="16" Height="16">
+                                                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                      Data="M12.6,1.4 C13.4,0.6 14.6,0.6 15.4,1.4 C16.2,2.2 16.2,3.4 15.4,4.2 L5.1,14.5 L1,15 L1.5,10.9 z"/>
+                                                                            </Canvas>
+                                                                        </Viewbox>
+                                                                        <TextBlock Grid.Column="2"
+                                                                                   Text="编辑"
+                                                                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                   FontSize="11"
+                                                                                   FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Grid>
+                                                                </MenuItem.Header>
+                                                            </MenuItem>
+                                                            <MenuItem Tag="Danger"
+                                                                      Click="DeleteTag_Click">
+                                                                <MenuItem.Header>
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="14"/>
+                                                                            <ColumnDefinition Width="8"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <Viewbox Width="12"
+                                                                                 Height="12"
+                                                                                 VerticalAlignment="Center">
+                                                                            <Canvas Width="16" Height="16">
+                                                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                      Data="M6,1 L10,1 L11,2.2 L14.5,2.2 L14.5,3.6 L1.5,3.6 L1.5,2.2 L5,2.2 z M3,4.6 L13,4.6 L12.3,15 L3.7,15 z"/>
+                                                                            </Canvas>
+                                                                        </Viewbox>
+                                                                        <TextBlock Grid.Column="2"
+                                                                                   Text="删除"
+                                                                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                   FontSize="11"
+                                                                                   FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Grid>
+                                                                </MenuItem.Header>
+                                                            </MenuItem>
                                                         </ContextMenu>
                                                     </Button.ContextMenu>
                                                 </Button>
                                             </Grid>
 
-                                            <Border Style="{StaticResource TagMetaBadge}"
+                                            <Border Style="{StaticResource TagCardUsageBadge}"
                                                     Margin="0,10,0,0"
                                                     HorizontalAlignment="Left">
                                                 <TextBlock Text="{Binding UsageText}"
-                                                           Style="{StaticResource TagMetaBadgeText}"/>
+                                                           Style="{StaticResource TagCardUsageText}"/>
                                             </Border>
                                         </StackPanel>
                                     </Border>
@@ -481,13 +577,10 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Style="{StaticResource PageItemCard}"
+                                    <Border Style="{StaticResource TagCardItem}"
                                             Width="268"
                                             Padding="14,12"
                                             Margin="0,0,12,12"
-                                            Background="{DynamicResource SurfaceElevatedBrush}"
-                                            BorderBrush="{DynamicResource TagLavenderBorderBrush}"
-                                            BorderThickness="1"
                                             Tag="{Binding Tag}">
                                         <Border.ContextMenu>
                                             <ContextMenu>
@@ -516,7 +609,7 @@
                                                                  Fill="{Binding Color}"/>
                                                     </Border>
                                                     <TextBlock Text="{Binding Name}"
-                                                               Style="{StaticResource PageItemTitleText}"
+                                                               Style="{StaticResource TagCardTitleText}"
                                                                VerticalAlignment="Center"
                                                                Margin="8,0,0,0"
                                                                TextWrapping="Wrap"/>
@@ -525,6 +618,7 @@
                                                         Content="⋯"
                                                         Style="{StaticResource TagCardMoreButton}"
                                                         Tag="{Binding Tag}"
+                                                        ToolTip="管理标签"
                                                         Click="MoreButton_Click">
                                                     <Button.ContextMenu>
                                                         <ContextMenu Style="{StaticResource TagCardMoreMenu}"
@@ -532,21 +626,67 @@
                                                                      Placement="Bottom"
                                                                      HorizontalOffset="-2"
                                                                      VerticalOffset="2">
-                                                            <MenuItem Header="编辑"
-                                                                      Click="EditTag_Click"/>
-                                                            <MenuItem Header="删除"
-                                                                      Tag="Danger"
-                                                                      Click="DeleteTag_Click"/>
+                                                            <MenuItem Click="EditTag_Click">
+                                                                <MenuItem.Header>
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="14"/>
+                                                                            <ColumnDefinition Width="8"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <Viewbox Width="12"
+                                                                                 Height="12"
+                                                                                 VerticalAlignment="Center">
+                                                                            <Canvas Width="16" Height="16">
+                                                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                      Data="M12.6,1.4 C13.4,0.6 14.6,0.6 15.4,1.4 C16.2,2.2 16.2,3.4 15.4,4.2 L5.1,14.5 L1,15 L1.5,10.9 z"/>
+                                                                            </Canvas>
+                                                                        </Viewbox>
+                                                                        <TextBlock Grid.Column="2"
+                                                                                   Text="编辑"
+                                                                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                   FontSize="11"
+                                                                                   FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Grid>
+                                                                </MenuItem.Header>
+                                                            </MenuItem>
+                                                            <MenuItem Tag="Danger"
+                                                                      Click="DeleteTag_Click">
+                                                                <MenuItem.Header>
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="14"/>
+                                                                            <ColumnDefinition Width="8"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <Viewbox Width="12"
+                                                                                 Height="12"
+                                                                                 VerticalAlignment="Center">
+                                                                            <Canvas Width="16" Height="16">
+                                                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                      Data="M6,1 L10,1 L11,2.2 L14.5,2.2 L14.5,3.6 L1.5,3.6 L1.5,2.2 L5,2.2 z M3,4.6 L13,4.6 L12.3,15 L3.7,15 z"/>
+                                                                            </Canvas>
+                                                                        </Viewbox>
+                                                                        <TextBlock Grid.Column="2"
+                                                                                   Text="删除"
+                                                                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                   FontSize="11"
+                                                                                   FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Grid>
+                                                                </MenuItem.Header>
+                                                            </MenuItem>
                                                         </ContextMenu>
                                                     </Button.ContextMenu>
                                                 </Button>
                                             </Grid>
 
-                                            <Border Style="{StaticResource TagMetaBadge}"
+                                            <Border Style="{StaticResource TagCardUsageBadge}"
                                                     Margin="0,10,0,0"
                                                     HorizontalAlignment="Left">
                                                 <TextBlock Text="{Binding UsageText}"
-                                                           Style="{StaticResource TagMetaBadgeText}"/>
+                                                           Style="{StaticResource TagCardUsageText}"/>
                                             </Border>
                                         </StackPanel>
                                     </Border>
@@ -590,13 +730,10 @@
                             </ItemsControl.ItemsPanel>
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
-                                    <Border Style="{StaticResource PageItemCard}"
+                                    <Border Style="{StaticResource TagCardItem}"
                                             Width="268"
                                             Padding="14,12"
                                             Margin="0,0,12,12"
-                                            Background="{DynamicResource SurfaceElevatedBrush}"
-                                            BorderBrush="{DynamicResource TagLavenderBorderBrush}"
-                                            BorderThickness="1"
                                             Tag="{Binding Tag}">
                                         <Border.ContextMenu>
                                             <ContextMenu>
@@ -625,7 +762,7 @@
                                                                  Fill="{Binding Color}"/>
                                                     </Border>
                                                     <TextBlock Text="{Binding Name}"
-                                                               Style="{StaticResource PageItemTitleText}"
+                                                               Style="{StaticResource TagCardTitleText}"
                                                                VerticalAlignment="Center"
                                                                Margin="8,0,0,0"
                                                                TextWrapping="Wrap"/>
@@ -634,6 +771,7 @@
                                                         Content="⋯"
                                                         Style="{StaticResource TagCardMoreButton}"
                                                         Tag="{Binding Tag}"
+                                                        ToolTip="管理标签"
                                                         Click="MoreButton_Click">
                                                     <Button.ContextMenu>
                                                         <ContextMenu Style="{StaticResource TagCardMoreMenu}"
@@ -641,21 +779,67 @@
                                                                      Placement="Bottom"
                                                                      HorizontalOffset="-2"
                                                                      VerticalOffset="2">
-                                                            <MenuItem Header="编辑"
-                                                                      Click="EditTag_Click"/>
-                                                            <MenuItem Header="删除"
-                                                                      Tag="Danger"
-                                                                      Click="DeleteTag_Click"/>
+                                                            <MenuItem Click="EditTag_Click">
+                                                                <MenuItem.Header>
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="14"/>
+                                                                            <ColumnDefinition Width="8"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <Viewbox Width="12"
+                                                                                 Height="12"
+                                                                                 VerticalAlignment="Center">
+                                                                            <Canvas Width="16" Height="16">
+                                                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                      Data="M12.6,1.4 C13.4,0.6 14.6,0.6 15.4,1.4 C16.2,2.2 16.2,3.4 15.4,4.2 L5.1,14.5 L1,15 L1.5,10.9 z"/>
+                                                                            </Canvas>
+                                                                        </Viewbox>
+                                                                        <TextBlock Grid.Column="2"
+                                                                                   Text="编辑"
+                                                                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                   FontSize="11"
+                                                                                   FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Grid>
+                                                                </MenuItem.Header>
+                                                            </MenuItem>
+                                                            <MenuItem Tag="Danger"
+                                                                      Click="DeleteTag_Click">
+                                                                <MenuItem.Header>
+                                                                    <Grid>
+                                                                        <Grid.ColumnDefinitions>
+                                                                            <ColumnDefinition Width="14"/>
+                                                                            <ColumnDefinition Width="8"/>
+                                                                            <ColumnDefinition Width="Auto"/>
+                                                                        </Grid.ColumnDefinitions>
+                                                                        <Viewbox Width="12"
+                                                                                 Height="12"
+                                                                                 VerticalAlignment="Center">
+                                                                            <Canvas Width="16" Height="16">
+                                                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                      Data="M6,1 L10,1 L11,2.2 L14.5,2.2 L14.5,3.6 L1.5,3.6 L1.5,2.2 L5,2.2 z M3,4.6 L13,4.6 L12.3,15 L3.7,15 z"/>
+                                                                            </Canvas>
+                                                                        </Viewbox>
+                                                                        <TextBlock Grid.Column="2"
+                                                                                   Text="删除"
+                                                                                   Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
+                                                                                   FontSize="11"
+                                                                                   FontWeight="SemiBold"
+                                                                                   VerticalAlignment="Center"/>
+                                                                    </Grid>
+                                                                </MenuItem.Header>
+                                                            </MenuItem>
                                                         </ContextMenu>
                                                     </Button.ContextMenu>
                                                 </Button>
                                             </Grid>
 
-                                            <Border Style="{StaticResource TagMetaBadge}"
+                                            <Border Style="{StaticResource TagCardUsageBadge}"
                                                     Margin="0,10,0,0"
                                                     HorizontalAlignment="Left">
                                                 <TextBlock Text="{Binding UsageText}"
-                                                           Style="{StaticResource TagMetaBadgeText}"/>
+                                                           Style="{StaticResource TagCardUsageText}"/>
                                             </Border>
                                         </StackPanel>
                                     </Border>
