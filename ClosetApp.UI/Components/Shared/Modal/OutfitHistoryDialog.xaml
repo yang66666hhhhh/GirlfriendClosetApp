@@ -10,15 +10,14 @@
 
         <Style x:Key="RecentSectionTriggerButtonStyle"
                TargetType="Button"
-               BasedOn="{StaticResource IconButton}">
+               BasedOn="{StaticResource CapsuleButton}">
             <Setter Property="Background" Value="#FBFDFF"/>
             <Setter Property="BorderBrush" Value="#E1EAF5"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-            <Setter Property="Width" Value="34"/>
-            <Setter Property="MinHeight" Value="34"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="ToolTip" Value="最近穿着"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="FontSize" Value="11"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F6FAFF"/>
@@ -202,16 +201,25 @@
                                         Grid.Column="1"
                                         Style="{StaticResource RecentSectionTriggerButtonStyle}"
                                         VerticalAlignment="Center"
+                                        ToolTip="查看最近穿着"
                                         Click="OpenRecentSection_Click">
                                     <Button.Content>
-                                        <Viewbox Width="14"
-                                                 Height="14">
-                                            <Canvas Width="16"
-                                                    Height="16">
-                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                                      Data="M8,3 C4.5,3 1.9,5.2 0.8,8 C1.9,10.8 4.5,13 8,13 C11.5,13 14.1,10.8 15.2,8 C14.1,5.2 11.5,3 8,3 z M8,5.2 C9.55,5.2 10.8,6.45 10.8,8 C10.8,9.55 9.55,10.8 8,10.8 C6.45,10.8 5.2,9.55 5.2,8 C5.2,6.45 6.45,5.2 8,5.2 z"/>
-                                            </Canvas>
-                                        </Viewbox>
+                                        <StackPanel Orientation="Horizontal">
+                                            <Viewbox Width="14"
+                                                     Height="14"
+                                                     VerticalAlignment="Center">
+                                                <Canvas Width="16"
+                                                        Height="16">
+                                                    <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                                          Data="M8,3 C4.5,3 1.9,5.2 0.8,8 C1.9,10.8 4.5,13 8,13 C11.5,13 14.1,10.8 15.2,8 C14.1,5.2 11.5,3 8,3 z M8,5.2 C9.55,5.2 10.8,6.45 10.8,8 C10.8,9.55 9.55,10.8 8,10.8 C6.45,10.8 5.2,9.55 5.2,8 C5.2,6.45 6.45,5.2 8,5.2 z"/>
+                                                </Canvas>
+                                            </Viewbox>
+                                            <TextBlock Text="最近穿着"
+                                                       Margin="6,0,0,0"
+                                                       FontSize="11"
+                                                       FontWeight="SemiBold"
+                                                       VerticalAlignment="Center"/>
+                                        </StackPanel>
                                     </Button.Content>
                                 </Button>
                             </Grid>

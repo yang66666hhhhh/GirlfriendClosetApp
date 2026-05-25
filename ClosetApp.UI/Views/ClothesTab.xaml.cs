@@ -3,6 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
 using ClosetApp.Domain.Entities;
+using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared.Editor;
@@ -146,7 +147,20 @@ public partial class ClothesTab : UserControl
             });
     }
 
-    private void BatchClearWardrobe_Click(object sender, RoutedEventArgs e)
+    private void OpenBatchClearWardrobe_Click(object sender, RoutedEventArgs e)
+    {
+        OpenClearWardrobePanel(initialType: null);
+    }
+
+    private void ClearCurrentCategory_Click(object sender, RoutedEventArgs e)
+    {
+        if (_viewModel.SelectedType == null)
+            return;
+
+        OpenClearWardrobePanel(_viewModel.SelectedType);
+    }
+
+    private void OpenClearWardrobePanel(ClothingType? initialType)
     {
         if (_viewModel.TotalCount == 0)
         {
@@ -155,7 +169,7 @@ public partial class ClothesTab : UserControl
         }
 
         EditorModal.Show(
-            new BatchWardrobeClearPanel(_viewModel.AllClothes.ToList(), _viewModel.SelectedType),
+            new BatchWardrobeClearPanel(_viewModel.AllClothes.ToList(), initialType),
             async result =>
             {
                 if (result.Type != EditorResultType.Saved || result.Entity == null)

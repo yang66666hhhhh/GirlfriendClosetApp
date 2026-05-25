@@ -312,6 +312,19 @@ public partial class WardrobeViewModel : ObservableObject
     public string QueueMissingBrandOrColorText => BuildQueueText("无品牌/无颜色", WardrobeQueueFilter.MissingBrandOrColor);
     public string QueueRecentlyImportedText => BuildQueueText("刚导入", WardrobeQueueFilter.RecentlyImported);
     public bool CanBatchCompleteCurrentQueue => ActiveQueueFilter.HasValue && FilteredCount > 0;
+    public bool CanClearCurrentCategory => SelectedType != null && FilteredCount > 0;
+    public string ClearCurrentCategoryText => SelectedType switch
+    {
+        ClothingType.Top => "清空当前上衣",
+        ClothingType.Outerwear => "清空当前外套",
+        ClothingType.Bottom => "清空当前裤装",
+        ClothingType.Skirt => "清空当前半裙",
+        ClothingType.Dress => "清空当前连衣裙",
+        ClothingType.Shoes => "清空当前鞋子",
+        ClothingType.Accessory => "清空当前配饰",
+        ClothingType.Unspecified => "清空当前待分类",
+        _ => "清空当前分类"
+    };
     public string ActiveQueueLabel => ActiveQueueFilter switch
     {
         WardrobeQueueFilter.Unnamed => "未命名",
@@ -545,6 +558,8 @@ public partial class WardrobeViewModel : ObservableObject
         OnPropertyChanged(nameof(QueueMissingBrandOrColorText));
         OnPropertyChanged(nameof(QueueRecentlyImportedText));
         OnPropertyChanged(nameof(CanBatchCompleteCurrentQueue));
+        OnPropertyChanged(nameof(CanClearCurrentCategory));
+        OnPropertyChanged(nameof(ClearCurrentCategoryText));
         OnPropertyChanged(nameof(ActiveQueueLabel));
         OnPropertyChanged(nameof(ShowRecentImportSummary));
         OnPropertyChanged(nameof(RecentlyImportedCount));

@@ -269,7 +269,7 @@
                             Margin="0,0,5,0"/>
                     <Button Content="批量清空"
                             Style="{StaticResource PageToolbarDangerButton}"
-                            Click="BatchClearWardrobe_Click"
+                            Click="OpenBatchClearWardrobe_Click"
                             Margin="0,0,5,0"/>
                     <Button Content="+ 添加衣服"
                             Style="{StaticResource PageToolbarPrimaryButton}"
@@ -360,18 +360,7 @@
                                      MinWidth="240"
                                      Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
-                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0">
-                                <ComboBox x:Name="SortComboBox"
-                                          MinWidth="90"
-                                          ItemsSource="{Binding SortOptions}"
-                                          SelectedItem="{Binding SortBy, Mode=TwoWay}"
-                                          Margin="0,0,4,0">
-                                    <ComboBox.ItemTemplate>
-                                        <DataTemplate>
-                                            <TextBlock Text="{Binding Converter={StaticResource SortByLabelConverter}}"/>
-                                        </DataTemplate>
-                                    </ComboBox.ItemTemplate>
-                                </ComboBox>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
                                 <Button x:Name="ToggleFilterButton"
                                         Content="{Binding FilterToggleText}"
                                         Style="{StaticResource WardrobeButton}"
@@ -408,10 +397,11 @@
                                             HorizontalAlignment="Left"
                                             Visibility="{Binding CanBatchCompleteCurrentQueue, Converter={StaticResource BooleanToVisibilityConverter}}"
                                             Click="BatchCompleteQueue_Click"/>
-                                    <Button Content="清空当前"
+                                    <Button Content="{Binding ClearCurrentCategoryText}"
                                             Style="{StaticResource WardrobeButton}"
                                             Margin="4,0,0,0"
-                                            Click="BatchClearWardrobe_Click"/>
+                                            Visibility="{Binding CanClearCurrentCategory, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            Click="ClearCurrentCategory_Click"/>
                                 </StackPanel>
                             </Grid>
 
@@ -657,13 +647,33 @@
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <StackPanel>
+                    <StackPanel Grid.Column="0">
                         <TextBlock Text="{Binding CollectionSectionTitle}"
                                    Style="{StaticResource PageSectionTitleText}"/>
                         <TextBlock Text="{Binding CollectionSectionBody}"
                                    Style="{StaticResource PageSectionBodyText}"
                                    Margin="0,4,0,0"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="1"
+                                Width="120"
+                                VerticalAlignment="Top">
+                        <TextBlock Text="排序"
+                                   Style="{StaticResource PageFieldLabelText}"
+                                   HorizontalAlignment="Left"/>
+                        <ComboBox x:Name="SortComboBox"
+                                  MinWidth="112"
+                                  Margin="0,6,0,0"
+                                  ItemsSource="{Binding SortOptions}"
+                                  SelectedItem="{Binding SortBy, Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Converter={StaticResource SortByLabelConverter}}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
                     </StackPanel>
                 </Grid>
 
