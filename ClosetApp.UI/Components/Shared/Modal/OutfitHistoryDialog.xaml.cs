@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.States;
 using ClosetApp.UI.ViewModels;
@@ -37,16 +38,6 @@ public partial class OutfitHistoryDialog : UserControl
 
         await _viewModel.FocusHistoryRecordAsync(item.RecordId, item.WornDate);
         SyncCurrentPreview(item);
-    }
-
-    private async void RecentPreviewButton_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is not FrameworkElement { DataContext: RecentWornListItem item } element)
-            return;
-
-        await _viewModel.FocusHistoryRecordAsync(item.RecordId, item.WornDate);
-        SyncCurrentPreview(item);
-        OpenRecentWornPopup(element);
     }
 
     private async void PrevMonth_Click(object sender, RoutedEventArgs e)
@@ -122,13 +113,13 @@ public partial class OutfitHistoryDialog : UserControl
             return;
 
         var recordCount = _viewModel.RecentWornRecords.Count;
-        var currentItem = CurrentPreviewPanel?.DataContext as RecentWornListItem ?? _viewModel.SelectedRecentWornRecord;
+        var latestItem = _viewModel.RecentWornRecords.FirstOrDefault();
 
         RecentSectionSummaryText.Text = recordCount switch
         {
             0 => "还没有最近穿着记录。",
-            _ when currentItem == null => $"最近 {recordCount} 条记录",
-            _ => $"最近 {recordCount} 条记录 · 最新 {currentItem.DateText}"
+            _ when latestItem == null => $"最近 {recordCount} 条记录",
+            _ => $"最近 {recordCount} 条记录 · 最新 {latestItem.DateText}"
         };
     }
 
@@ -138,8 +129,43 @@ public partial class OutfitHistoryDialog : UserControl
             SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
 
         RecentWornPopup.PlacementTarget = placementTarget;
-        RecentWornPopup.HorizontalOffset = 0;
-        RecentWornPopup.VerticalOffset = 6;
+        // 让浮层优先向左展开，避免把主日历区域压得太满。
+        RecentWornPopup.HorizontalOffset = placementTarget.ActualWidth - 468;
+        RecentWornPopup.VerticalOffset = 8;
         RecentWornPopup.IsOpen = true;
+    }
+
+    private void RecentWornPopup_Opened(object sender, System.EventArgs e)
+    {
+        UpdateRecentSectionTriggerVisual(isOpen: true);
+    }
+
+    private void RecentWornPopup_Closed(object sender, System.EventArgs e)
+    {
+        UpdateRecentSectionTriggerVisual(isOpen: false);
+    }
+
+    private void UpdateRecentSectionTriggerVisual(bool isOpen)
+    {
+        if (OpenRecentSectionButton == null)
+            return;
+
+        OpenRecentSectionButton.Background = ResolveBrush(
+            isOpen ? "PrimaryLightBrush" : null,
+            isOpen ? "#F4F8FF" : "#FBFDFF");
+        OpenRecentSectionButton.BorderBrush = ResolveBrush(
+            isOpen ? "PrimaryBrush" : null,
+            isOpen ? "#5B83D8" : "#E1EAF5");
+        OpenRecentSectionButton.Foreground = ResolveBrush(
+            isOpen ? "PrimaryBrush" : "TextSecondaryBrush",
+            isOpen ? "#5B83D8" : "#6E7685");
+    }
+
+    private Brush ResolveBrush(string? resourceKey, string fallbackHex)
+    {
+        if (!string.IsNullOrWhiteSpace(resourceKey) && TryFindResource(resourceKey) is Brush brush)
+            return brush;
+
+        return (Brush)new BrushConverter().ConvertFromString(fallbackHex)!;
     }
 }

@@ -8,56 +8,44 @@
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
         <conv:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
 
-        <Style x:Key="RecentPreviewButtonStyle"
-               TargetType="Button"
-               BasedOn="{StaticResource IconButton}">
-            <Setter Property="Background" Value="#F8FBFF"/>
-            <Setter Property="BorderBrush" Value="#D7E3F4"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-            <Setter Property="Width" Value="30"/>
-            <Setter Property="MinHeight" Value="30"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="ToolTip" Value="查看预览"/>
-            <Style.Triggers>
-                <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                    <Setter Property="Content" Value="当前"/>
-                    <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
-
         <Style x:Key="RecentSectionTriggerButtonStyle"
                TargetType="Button"
                BasedOn="{StaticResource IconButton}">
-            <Setter Property="Background" Value="#F8FBFF"/>
-            <Setter Property="BorderBrush" Value="#D7E3F4"/>
+            <Setter Property="Background" Value="#FBFDFF"/>
+            <Setter Property="BorderBrush" Value="#E1EAF5"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="Width" Value="34"/>
             <Setter Property="MinHeight" Value="34"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="ToolTip" Value="最近穿着"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#F6FAFF"/>
+                    <Setter Property="BorderBrush" Value="#D7E3F4"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <DataTemplate x:Key="RecentWornRecordTemplate">
-            <Border Background="{DynamicResource SurfaceElevatedBrush}"
-                    BorderBrush="{DynamicResource BorderLightBrush}"
+            <Border Background="Transparent"
+                    BorderBrush="Transparent"
                     BorderThickness="1"
-                    CornerRadius="18"
-                    Padding="11,9"
-                    Margin="0,0,0,8"
+                    CornerRadius="14"
+                    Padding="8,8"
+                    Margin="0,0,0,2"
                     Cursor="Hand"
                     MouseLeftButtonDown="RecentWornItem_Click">
                 <Border.Style>
                     <Style TargetType="Border">
                         <Style.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="#FBFDFF"/>
+                                <Setter Property="BorderBrush" Value="#E6EEF8"/>
+                            </Trigger>
                             <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
+                                <Setter Property="Background" Value="#F5FAFF"/>
                                 <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter Property="BorderThickness" Value="1.4"/>
                             </DataTrigger>
                         </Style.Triggers>
                     </Style>
@@ -65,17 +53,19 @@
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
-                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0"
-                            Width="4"
-                            CornerRadius="2"
+                            Width="3"
+                            Height="34"
+                            VerticalAlignment="Center"
+                            CornerRadius="1.5"
                             Background="{DynamicResource PrimaryBrush}"
                             Opacity="0"
-                            Margin="0,2,0,2">
+                            Margin="0,1,0,1">
                         <Border.Style>
                             <Style TargetType="Border">
                                 <Setter Property="Opacity" Value="0"/>
@@ -95,11 +85,10 @@
                                 <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding DateText}"
                                        Foreground="{DynamicResource PrimaryBrush}"
-                                       FontSize="11"
+                                       FontSize="10.5"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="2"
@@ -109,36 +98,28 @@
                                        FontSize="13"
                                        TextTrimming="CharacterEllipsis"
                                        VerticalAlignment="Center"/>
-                            <Border Grid.Column="3"
-                                    Margin="10,0,0,0"
-                                    Width="8"
-                                    Height="8"
-                                    CornerRadius="4"
-                                    Background="{DynamicResource PrimaryLightBrush}"
-                                    BorderBrush="#60FFFFFF"
-                                    BorderThickness="1"
-                                    Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
-                            </Border>
                         </Grid>
 
-                        <Grid Margin="0,8,0,0">
+                        <Grid Margin="0,7,0,0">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="8"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
-                            <Border Grid.Column="0"
-                                    Background="#F7FAFD"
-                                    BorderBrush="#E7EEF7"
-                                    BorderThickness="1"
-                                    CornerRadius="7"
-                                    Padding="6,2">
-                                <TextBlock Text="{Binding TimeText}"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                           FontSize="9"
-                                           FontWeight="SemiBold"/>
-                            </Border>
+                            <TextBlock Grid.Column="0"
+                                       Text="{Binding TimeText}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="9.5"
+                                       FontWeight="SemiBold"
+                                       VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="2"
+                                       Text="·"
+                                       Foreground="{DynamicResource TextPlaceholderBrush}"
+                                       FontSize="10"
+                                       VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="4"
                                        Text="{Binding MetaText}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                        FontSize="10"
@@ -147,22 +128,20 @@
                         </Grid>
                     </StackPanel>
 
-                    <Button Grid.Column="3"
-                            Style="{StaticResource RecentPreviewButtonStyle}"
-                            Margin="14,0,0,0"
+                    <Border Grid.Column="3"
+                            Margin="12,0,0,0"
+                            Padding="7,3"
                             VerticalAlignment="Center"
-                            Click="RecentPreviewButton_Click">
-                        <Button.Content>
-                            <Viewbox Width="13"
-                                     Height="13">
-                                <Canvas Width="16"
-                                        Height="16">
-                                    <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                          Data="M8,3 C4.5,3 1.9,5.2 0.8,8 C1.9,10.8 4.5,13 8,13 C11.5,13 14.1,10.8 15.2,8 C14.1,5.2 11.5,3 8,3 z M8,5.2 C9.55,5.2 10.8,6.45 10.8,8 C10.8,9.55 9.55,10.8 8,10.8 C6.45,10.8 5.2,9.55 5.2,8 C5.2,6.45 6.45,5.2 8,5.2 z"/>
-                                </Canvas>
-                            </Viewbox>
-                        </Button.Content>
-                    </Button>
+                            Background="{DynamicResource PrimaryLightBrush}"
+                            BorderBrush="#D5E3F5"
+                            BorderThickness="1"
+                            CornerRadius="8"
+                            Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
+                        <TextBlock Text="预览中"
+                                   Foreground="{DynamicResource PrimaryBrush}"
+                                   FontSize="9"
+                                   FontWeight="SemiBold"/>
+                    </Border>
                 </Grid>
             </Border>
         </DataTemplate>
@@ -199,48 +178,45 @@
                     <ScrollViewer Grid.Row="1"
                                   VerticalScrollBarVisibility="Auto">
                         <StackPanel Margin="28,20,28,20">
-                            <Border Background="{DynamicResource SurfaceElevatedBrush}"
-                                    BorderBrush="{DynamicResource BorderLightBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="22"
-                                    Padding="16">
-                                <StackPanel>
-                                    <Grid>
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0">
-                                            <TextBlock Text="最近穿着"
-                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                       FontSize="16"
-                                                       FontWeight="SemiBold"/>
-                                            <TextBlock x:Name="RecentSectionSummaryText"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       FontSize="12"
-                                                       Margin="0,6,0,0"/>
-                                        </StackPanel>
-                                        <Button x:Name="OpenRecentSectionButton"
-                                                Grid.Column="1"
-                                                Style="{StaticResource RecentSectionTriggerButtonStyle}"
-                                                VerticalAlignment="Center"
-                                                Click="OpenRecentSection_Click">
-                                            <Button.Content>
-                                                <Viewbox Width="14"
-                                                         Height="14">
-                                                    <Canvas Width="16"
-                                                            Height="16">
-                                                        <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
-                                                              Data="M8,3 C4.5,3 1.9,5.2 0.8,8 C1.9,10.8 4.5,13 8,13 C11.5,13 14.1,10.8 15.2,8 C14.1,5.2 11.5,3 8,3 z M8,5.2 C9.55,5.2 10.8,6.45 10.8,8 C10.8,9.55 9.55,10.8 8,10.8 C6.45,10.8 5.2,9.55 5.2,8 C5.2,6.45 6.45,5.2 8,5.2 z"/>
-                                                    </Canvas>
-                                                </Viewbox>
-                                            </Button.Content>
-                                        </Button>
-                                    </Grid>
+                            <Grid Margin="4,0,4,2">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="最近穿着"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock x:Name="RecentSectionSummaryText"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               FontSize="11.5"
+                                               Margin="10,1,0,0"
+                                               VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis"/>
                                 </StackPanel>
-                            </Border>
+                                <Button x:Name="OpenRecentSectionButton"
+                                        Grid.Column="1"
+                                        Style="{StaticResource RecentSectionTriggerButtonStyle}"
+                                        VerticalAlignment="Center"
+                                        Click="OpenRecentSection_Click">
+                                    <Button.Content>
+                                        <Viewbox Width="14"
+                                                 Height="14">
+                                            <Canvas Width="16"
+                                                    Height="16">
+                                                <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                                      Data="M8,3 C4.5,3 1.9,5.2 0.8,8 C1.9,10.8 4.5,13 8,13 C11.5,13 14.1,10.8 15.2,8 C14.1,5.2 11.5,3 8,3 z M8,5.2 C9.55,5.2 10.8,6.45 10.8,8 C10.8,9.55 9.55,10.8 8,10.8 C6.45,10.8 5.2,9.55 5.2,8 C5.2,6.45 6.45,5.2 8,5.2 z"/>
+                                            </Canvas>
+                                        </Viewbox>
+                                    </Button.Content>
+                                </Button>
+                            </Grid>
 
-                            <Border Margin="0,18,0,0"
+                            <Border Margin="0,10,0,0"
                                     Background="{DynamicResource SurfaceElevatedBrush}"
                                     BorderBrush="{DynamicResource BorderLightBrush}"
                                     BorderThickness="1"
@@ -428,33 +404,35 @@
         <Popup x:Name="RecentWornPopup"
                Placement="Bottom"
                AllowsTransparency="True"
-               StaysOpen="False">
+               StaysOpen="False"
+               Opened="RecentWornPopup_Opened"
+               Closed="RecentWornPopup_Closed">
             <Grid Background="Transparent"
                   Margin="8">
-            <Border Width="516"
+            <Border Width="468"
                     CornerRadius="18"
                     Background="#01FFFFFF">
                 <Border.Effect>
-                    <DropShadowEffect BlurRadius="22"
-                                      ShadowDepth="7"
-                                      Opacity="0.13"
+                    <DropShadowEffect BlurRadius="16"
+                                      ShadowDepth="5"
+                                      Opacity="0.1"
                                       Color="#564A61"/>
                 </Border.Effect>
             </Border>
             <Border Background="#FFFFFFFF"
                     BorderBrush="#E9E2EC"
                     BorderThickness="1"
-                    CornerRadius="18"
-                    Padding="10">
+                    CornerRadius="16"
+                    Padding="8">
                 <Grid>
                     <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.18*"/>
+                        <ColumnDefinition Width="1.34*"/>
                         <ColumnDefinition Width="10"/>
-                        <ColumnDefinition Width="0.82*"/>
+                        <ColumnDefinition Width="0.66*"/>
                     </Grid.ColumnDefinitions>
 
                     <ScrollViewer Grid.Column="0"
-                                  MaxHeight="288"
+                                  MaxHeight="292"
                                   VerticalScrollBarVisibility="Auto">
                         <ItemsControl ItemsSource="{Binding RecentWornRecords}"
                                       ItemTemplate="{StaticResource RecentWornRecordTemplate}"/>
@@ -462,33 +440,55 @@
 
                     <Border x:Name="CurrentPreviewPanel"
                             Grid.Column="2"
-                            Background="{DynamicResource SurfaceElevatedBrush}"
-                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            Background="#FBFCFF"
+                            BorderBrush="#EDF2F8"
                             BorderThickness="1"
-                            CornerRadius="18"
-                            Padding="14"
+                            CornerRadius="16"
+                            Padding="10"
                             VerticalAlignment="Top"
                             Visibility="Collapsed">
                         <StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{Binding DateText}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"
+                                           VerticalAlignment="Center"/>
+                                <Border Grid.Column="1"
+                                        Padding="7,3"
+                                        Background="{DynamicResource PrimaryLightBrush}"
+                                        BorderBrush="#D5E3F5"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                    <TextBlock Text="当前预览"
+                                               Foreground="{DynamicResource PrimaryBrush}"
+                                               FontSize="8.5"
+                                               FontWeight="SemiBold"/>
+                                </Border>
+                            </Grid>
                             <TextBlock Text="{Binding OutfitName}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
-                                       FontSize="14"
+                                       FontSize="13"
                                        FontWeight="SemiBold"
-                                       Margin="0,0,0,0"
+                                       Margin="0,7,0,0"
                                        TextTrimming="CharacterEllipsis"/>
                             <TextBlock Text="{Binding FocusSummaryText}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                       FontSize="11"
-                                       Margin="0,5,0,0"
+                                       FontSize="10"
+                                       Margin="0,4,0,0"
                                        TextWrapping="Wrap"/>
-                            <Border Height="220"
-                                    Margin="0,10,0,0"
+                            <Border Height="196"
+                                    Margin="0,8,0,0"
                                     Background="{DynamicResource SurfacePageBrush}"
                                     BorderBrush="{DynamicResource BorderLightBrush}"
                                     BorderThickness="1"
                                     CornerRadius="14">
                                 <Grid Margin="8">
-                                    <Border Width="82"
+                                    <Border Width="80"
                                             HorizontalAlignment="Center"
                                             VerticalAlignment="Stretch"
                                             Margin="0,8,0,12"
@@ -503,7 +503,7 @@
                                             </LinearGradientBrush>
                                         </Border.Background>
                                     </Border>
-                                    <Ellipse Width="74"
+                                    <Ellipse Width="70"
                                              Height="10"
                                              HorizontalAlignment="Center"
                                              VerticalAlignment="Bottom"
@@ -519,17 +519,17 @@
                                         </Ellipse.Fill>
                                     </Ellipse>
                                     <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"
-                                                                Width="166"
-                                                                Height="184"
+                                                                Width="146"
+                                                                Height="162"
                                                                 HorizontalAlignment="Center"
                                                                 VerticalAlignment="Center"
                                                                 Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     <TextBlock Text="这条记录暂时没有可预览的单品"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
-                                               FontSize="10"
+                                               FontSize="9.5"
                                                TextAlignment="Center"
                                                TextWrapping="Wrap"
-                                               MaxWidth="142"
+                                               MaxWidth="130"
                                                HorizontalAlignment="Center"
                                                VerticalAlignment="Center"
                                                Visibility="{Binding HasPreviewClothes, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
