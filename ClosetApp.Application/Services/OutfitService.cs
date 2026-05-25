@@ -7,6 +7,8 @@ namespace ClosetApp.Application.Services;
 
 public class OutfitService : IOutfitService
 {
+    private const string DefaultOutfitName = "未命名";
+
     private readonly IOutfitRepository _repository;
     private readonly IOutfitWornRecordRepository _wornRecordRepository;
     private readonly IFavoriteRepository _favoriteRepository;
@@ -33,6 +35,8 @@ public class OutfitService : IOutfitService
 
     public async Task<Outfit> AddOutfitAsync(Outfit outfit)
     {
+        // 创建搭配时允许名称留空，统一补一个稳定的默认名。
+        outfit.Name = NormalizeName(outfit.Name);
         await _repository.AddAsync(outfit);
         return outfit;
     }
@@ -125,5 +129,11 @@ public class OutfitService : IOutfitService
 
         await _favoriteRepository.AddAsync(new Favorite { OutfitId = outfitId });
         return true;
+    }
+
+    private static string NormalizeName(string? name)
+    {
+        var trimmed = name?.Trim();
+        return string.IsNullOrWhiteSpace(trimmed) ? DefaultOutfitName : trimmed;
     }
 }

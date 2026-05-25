@@ -586,12 +586,12 @@
                                                             </Border>
                                                         </Grid>
                                                         <WrapPanel Grid.Row="1" Margin="0,8,0,0">
-                                                            <Border x:Name="ThemeRoseSwatchPrimary" Width="22" Height="22" CornerRadius="11" Background="#FFDA94A5" Margin="0,0,6,6"/>
-                                                            <Border x:Name="ThemeRoseSwatchSoft" Width="22" Height="22" CornerRadius="11" Background="#FFF7E3E8" Margin="0,0,6,6"/>
-                                                            <Border x:Name="ThemeRoseSwatchSurface" Width="22" Height="22" CornerRadius="11" Background="#FFF8F1ED" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchPrimary" Width="22" Height="22" CornerRadius="11" Background="#FFC48F95" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchSoft" Width="22" Height="22" CornerRadius="11" Background="#FFF3EAE9" Margin="0,0,6,6"/>
+                                                            <Border x:Name="ThemeRoseSwatchSurface" Width="22" Height="22" CornerRadius="11" Background="#FFF6F2EF" Margin="0,0,6,6"/>
                                                         </WrapPanel>
                                                         <TextBlock Grid.Row="2"
-                                                                   Text="温柔、亲近、暖一点。"
+                                                                   Text="柔和、克制、暖灰粉。"
                                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                                    FontSize="11"
                                                                    Margin="0,4,0,0"
@@ -663,7 +663,7 @@
                                                        FontWeight="SemiBold"
                                                        Margin="0,12,0,0"/>
                                             <TextBlock x:Name="TxtThemeDescription"
-                                                       Text="适合长期整理衣橱，不抢照片和衣物本身的视觉重点。"
+                                                       Text="柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。"
                                                        Style="{StaticResource PageMutedBodyText}"
                                                        Margin="0,6,0,0"/>
                                         </StackPanel>

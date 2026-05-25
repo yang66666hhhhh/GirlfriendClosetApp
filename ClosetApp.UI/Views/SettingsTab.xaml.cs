@@ -683,8 +683,8 @@ public partial class SettingsTab : UserControl
             ThemeRoseCurrentBadge,
             BtnUseRoseTheme,
             isRose,
-            Color.FromRgb(248, 241, 237),  // Rose surface
-            Color.FromRgb(236, 223, 220),  // Rose border
+            Color.FromRgb(246, 242, 239),  // Rose surface
+            Color.FromRgb(224, 202, 206),  // Rose border
             "切换到柔粉");
 
         ApplyThemeCardState(
@@ -701,9 +701,9 @@ public partial class SettingsTab : UserControl
             ThemeRoseSwatchPrimary,
             ThemeRoseSwatchSoft,
             ThemeRoseSwatchSurface,
-            Color.FromRgb(218, 148, 165),
-            Color.FromRgb(247, 227, 232),
-            Color.FromRgb(248, 241, 237));
+            Color.FromRgb(196, 143, 149),
+            Color.FromRgb(243, 234, 233),
+            Color.FromRgb(246, 242, 239));
 
         ApplyThemeSwatchState(
             !isRose,
@@ -723,7 +723,7 @@ public partial class SettingsTab : UserControl
 
         TxtThemeSummary.Text = isRose ? "当前使用柔粉主题" : "当前使用清蓝主题";
         TxtThemeDescription.Text = isRose
-            ? "柔粉更温和、亲近，适合保留现在这套偏生活感的衣橱气质。"
+            ? "柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。"
             : "清蓝更克制、清爽，页面会更冷静，也更偏中性工具感。";
     }
 

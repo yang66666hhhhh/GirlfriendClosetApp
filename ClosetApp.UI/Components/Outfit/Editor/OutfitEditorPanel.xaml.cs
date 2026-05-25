@@ -217,7 +217,7 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(TxtName.Text))
+        if (_isEditMode && string.IsNullOrWhiteSpace(TxtName.Text))
         {
             MessageBox.Show("请输入搭配名称", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
             return;

@@ -37,7 +37,7 @@ public partial class SettingsViewModel : ObservableObject
     private string _themeSummary = "当前使用柔粉主题";
 
     [ObservableProperty]
-    private string _themeDescription = "柔粉更温和、亲近，适合保留现在这套偏生活感的衣橱气质。";
+    private string _themeDescription = "柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。";
 
     [ObservableProperty]
     private string _imageStats = "";
@@ -151,7 +151,7 @@ public partial class SettingsViewModel : ObservableObject
         var isRose = CurrentTheme == AppThemeKind.Rose;
         ThemeSummary = isRose ? "当前使用柔粉主题" : "当前使用清蓝主题";
         ThemeDescription = isRose
-            ? "柔粉更温和、亲近，适合保留现在这套偏生活感的衣橱气质。"
+            ? "柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。"
             : "清蓝更克制、清爽，页面会更冷静，也更偏中性工具感。";
     }
 
