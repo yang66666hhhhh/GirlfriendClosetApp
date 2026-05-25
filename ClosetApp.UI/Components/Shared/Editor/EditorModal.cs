@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Windows.Controls;
 using ClosetApp.UI.Services;
 
@@ -25,10 +26,13 @@ public static class EditorModal
             try
             {
                 await onCompleted(result);
-            }
-            finally
-            {
+                await Task.Delay(600);
                 ModalService.Instance.Hide();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[EditorModal] onCompleted exception: {ex}");
+                ToastService.Instance.ShowError("操作失败", ex.Message);
             }
         };
 

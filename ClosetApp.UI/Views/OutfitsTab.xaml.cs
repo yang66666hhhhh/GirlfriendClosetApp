@@ -120,7 +120,14 @@ public partial class OutfitsTab : UserControl
 
     private async void OutfitCard_EditCompleted(object? sender, OutfitEntity outfit)
     {
-        await RefreshAfterEditorSaveAsync($"已更新「{outfit.Name}」", "修改后的搭配已经同步到列表。");
+        try
+        {
+            await RefreshAfterEditorSaveAsync($"已更新「{outfit.Name}」", "修改后的搭配已经同步到列表。");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+        }
     }
 
     private async void OutfitCard_DeleteRequested(object? sender, OutfitEntity outfit)
@@ -217,15 +224,8 @@ public partial class OutfitsTab : UserControl
 
     private async Task RefreshAfterEditorSaveAsync(string title, string detail)
     {
-        try
-        {
-            await _viewModel.RefreshAfterOutfitSavedAsync();
-            ToastService.Instance.ShowSuccess(title, detail);
-        }
-        catch (Exception ex)
-        {
-            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
-        }
+        await _viewModel.RefreshAfterOutfitSavedAsync();
+        ToastService.Instance.ShowSuccess(title, detail);
     }
 
     private async Task RecordOutfitWornAsync(OutfitEntity outfit, string displayName, string detail = "今天的穿着记录已经更新。")

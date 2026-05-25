@@ -181,16 +181,8 @@ public partial class ClothesTab : UserControl
         if (result.Type != EditorResultType.Saved || result.Entity == null)
             return;
 
-        try
-        {
-            await _viewModel.AddClothingAsync(result.Entity);
-            ToastService.Instance.ShowSuccess($"已添加「{result.Entity.Name}」");
-        }
-        catch (Exception ex)
-        {
-            var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, isEditMode: false);
-            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-        }
+        await _viewModel.AddClothingAsync(result.Entity);
+        ToastService.Instance.ShowSuccess($"已添加「{result.Entity.Name}」");
     }
 
     private async Task HandleEditClothingResultAsync(
@@ -200,17 +192,8 @@ public partial class ClothesTab : UserControl
     {
         if (result.Type == EditorResultType.Saved && result.Entity != null)
         {
-            try
-            {
-                await _viewModel.UpdateClothingAsync(result.Entity, oldImagePath);
-                ToastService.Instance.ShowSuccess($"已更新「{result.Entity.Name}」");
-            }
-            catch (Exception ex)
-            {
-                var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, isEditMode: true);
-                ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-            }
-
+            await _viewModel.UpdateClothingAsync(result.Entity, oldImagePath);
+            ToastService.Instance.ShowSuccess($"已更新「{result.Entity.Name}」");
             return;
         }
 
@@ -223,20 +206,12 @@ public partial class ClothesTab : UserControl
         if (result.Type != EditorResultType.Saved || result.Entity == null)
             return;
 
-        try
-        {
-            var summary = await _viewModel.ImportClothesAndBuildSummaryAsync(result.Entity);
-            _ = Dispatcher.BeginInvoke(
-                () => ModalService.Instance.Show(new BatchClothingImportSummaryDialog(
-                    summary,
-                    () => _viewModel.SetQueueFilter(WardrobeQueueFilter.RecentlyImported))),
-                DispatcherPriority.Background);
-        }
-        catch (Exception ex)
-        {
-            var feedback = WardrobeActionErrorPresenter.ForImport(ex);
-            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-        }
+        var summary = await _viewModel.ImportClothesAndBuildSummaryAsync(result.Entity);
+        _ = Dispatcher.BeginInvoke(
+            () => ModalService.Instance.Show(new BatchClothingImportSummaryDialog(
+                summary,
+                () => _viewModel.SetQueueFilter(WardrobeQueueFilter.RecentlyImported))),
+            DispatcherPriority.Background);
     }
 
     private async Task HandleBatchCompleteResultAsync(EditorResult<BatchClothingCompletionRequest> result)
@@ -244,16 +219,8 @@ public partial class ClothesTab : UserControl
         if (result.Type != EditorResultType.Saved || result.Entity == null)
             return;
 
-        try
-        {
-            var message = await _viewModel.CompleteCurrentQueueAndBuildSuccessMessageAsync(result.Entity);
-            ToastService.Instance.ShowSuccess(message);
-        }
-        catch (Exception ex)
-        {
-            var feedback = WardrobeActionErrorPresenter.ForBatchComplete(ex);
-            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-        }
+        var message = await _viewModel.CompleteCurrentQueueAndBuildSuccessMessageAsync(result.Entity);
+        ToastService.Instance.ShowSuccess(message);
     }
 
     private async Task HandleClearWardrobeResultAsync(EditorResult<BatchWardrobeClearRequest> result)
@@ -261,16 +228,8 @@ public partial class ClothesTab : UserControl
         if (result.Type != EditorResultType.Saved || result.Entity == null)
             return;
 
-        try
-        {
-            var message = await _viewModel.ClearWardrobeByTypesAndBuildSuccessMessageAsync(result.Entity);
-            ToastService.Instance.ShowSuccess(message);
-        }
-        catch (Exception ex)
-        {
-            var feedback = WardrobeActionErrorPresenter.ForBatchClear(ex);
-            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-        }
+        var message = await _viewModel.ClearWardrobeByTypesAndBuildSuccessMessageAsync(result.Entity);
+        ToastService.Instance.ShowSuccess(message);
     }
 
     private async Task ConfirmAndDeleteClothingAsync(Clothing clothing)

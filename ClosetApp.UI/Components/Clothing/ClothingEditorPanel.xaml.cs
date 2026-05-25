@@ -484,13 +484,19 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
                 };
             }
 
+            System.Diagnostics.Debug.WriteLine($"[Save_Click] Invoking EditorCompleted, Name={clothing.Name}, Tags={clothing.ClothingTags.Count}");
             EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Saved, clothing));
+            System.Diagnostics.Debug.WriteLine("[Save_Click] EditorCompleted invoked");
         }
         catch (Exception ex)
         {
-            SetSubmitting(false);
+            System.Diagnostics.Debug.WriteLine($"[Save_Click] Exception: {ex}");
             var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, _isEditMode);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+        finally
+        {
+            SetSubmitting(false);
         }
     }
 

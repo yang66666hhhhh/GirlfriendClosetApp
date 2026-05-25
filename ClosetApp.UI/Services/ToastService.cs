@@ -270,7 +270,7 @@ public class ToastService
             VerticalAlignment = VerticalAlignment.Stretch,
             IsHitTestVisible = false
         };
-        Panel.SetZIndex(toastOverlay, 3000);
+        Panel.SetZIndex(toastOverlay, 9999);
         Grid.SetColumnSpan(toastOverlay, Math.Max(1, root.ColumnDefinitions.Count));
         Grid.SetRowSpan(toastOverlay, Math.Max(1, root.RowDefinitions.Count));
         toastOverlay.Children.Add(host);
