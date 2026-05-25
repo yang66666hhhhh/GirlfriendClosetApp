@@ -1,7 +1,7 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-05-23
-> 当前状态：主流程可用，近期重点已转向天气驱动的今日穿搭助手、衣柜批量导入治理与本地数据安全体验
+> 最后更新时间：2026-05-26
+> 当前状态：主流程可用，近期重点已转向天气驱动的今日穿搭助手、衣柜批量导入治理、标签页整理体验与本地数据安全体验
 
 ---
 
@@ -159,7 +159,10 @@ GirlfriendClosetApp/
 
 #### TagsTab
 
-- 标签列表维护
+- 标签按风格 / 场景 / 季节分组整理
+- 支持名称搜索、分类筛选与按使用频次排序
+- 展示标签当前关联的衣物数量，用于区分“已在使用”和“待整理”
+- 标签卡片操作收纳为右上角轻量菜单，避免底部按钮影响信息密度
 - 标签编辑器与可选择标签组件复用
 - 依赖 `TagsTabState`
 
@@ -182,6 +185,7 @@ GirlfriendClosetApp/
 
 - 页面轻状态放在 `ClosetApp.UI/States`
 - State 负责搜索文本、筛选器、加载标记、当前集合与空状态
+- 当页面存在分组视图时，State 也负责分组集合、汇总计数和筛选摘要
 - 交互和 modal 编排仍可保留在 code-behind
 
 ---
@@ -237,6 +241,21 @@ GirlfriendClosetApp/
 - `Components/Shared/Modal/*`
 - `Components/Shared/States/EmptyState`
 - `Components/Tags/Controls/*`
+
+### 6.4 标签页状态与交互约定
+
+`TagsTab` 当前采用“View + ViewModel + State”的轻组合：
+
+- `TagsViewModel` 负责把 `ITagService` 返回的数据映射到页面可绑定属性
+- `TagsTabState` 负责标签搜索、分类筛选、排序、分组集合和汇总文案
+- `TagRepository` 查询标签列表时会一并加载 `ClothingTags`，用于计算每个标签的当前使用次数
+- `TagsTab.xaml.cs` 主要保留分类切换、排序切换、清空筛选和卡片菜单事件
+
+标签页当前交互目标：
+
+- 先快速看见标签库总量、已用数量和待整理数量
+- 再按名称 / 分类缩小范围
+- 最后在分组卡片里完成编辑或删除，而不打断浏览节奏
 
 ---
 
