@@ -96,6 +96,12 @@ public partial class OutfitHistoryDialog : UserControl
         DayDetailsOverlay.Visibility = Visibility.Collapsed;
     }
 
+    private void DayDetailsBackdrop_Click(object sender, MouseButtonEventArgs e)
+    {
+        CloseDayDetailsOverlay();
+        e.Handled = true;
+    }
+
     private void ToggleRecentSection_Click(object sender, RoutedEventArgs e)
     {
         _isRecentSectionCollapsed = !_isRecentSectionCollapsed;

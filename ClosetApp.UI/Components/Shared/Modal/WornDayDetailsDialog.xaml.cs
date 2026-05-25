@@ -132,8 +132,16 @@ public partial class WornDayDetailsDialog : UserControl
         if (!_isEmbedded)
             return;
 
-        RootCard.MaxWidth = 560;
-        RootCard.HorizontalAlignment = HorizontalAlignment.Center;
-        RootCard.VerticalAlignment = VerticalAlignment.Center;
+        RootCard.Width = 428;
+        RootCard.MinHeight = 0;
+        RootCard.MaxHeight = 640;
+        RootCard.HorizontalAlignment = HorizontalAlignment.Right;
+        RootCard.VerticalAlignment = VerticalAlignment.Stretch;
+        RootCard.Margin = new Thickness(0);
+        FooterHost.Visibility = Visibility.Collapsed;
+
+        SubtitleText.Text = _records.Count == 0
+            ? "补记这一天穿了什么。"
+            : $"这一天记录了 {_records.Count} 套穿搭，可继续补记或撤销。";
     }
 }

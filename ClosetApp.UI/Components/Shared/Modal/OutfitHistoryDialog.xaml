@@ -504,11 +504,12 @@
                           Grid.RowSpan="3"
                           Visibility="Collapsed"
                           Panel.ZIndex="10">
-                        <Border Background="#52000000"/>
-                        <Grid Margin="24">
+                        <Border Background="#30000000"
+                                MouseLeftButtonDown="DayDetailsBackdrop_Click"/>
+                        <Grid Margin="24,20,24,20">
                             <ContentControl x:Name="DayDetailsHost"
-                                            HorizontalAlignment="Center"
-                                            VerticalAlignment="Center"/>
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Stretch"/>
                         </Grid>
                     </Grid>
                 </Grid>

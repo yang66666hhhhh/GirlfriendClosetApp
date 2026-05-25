@@ -118,7 +118,7 @@
                     </ScrollViewer>
                 </Grid>
 
-                <Border Grid.Row="3" Style="{StaticResource ModalFooterHost}" Padding="24,14">
+                <Border x:Name="FooterHost" Grid.Row="3" Style="{StaticResource ModalFooterHost}" Padding="24,14">
                     <Button Content="关闭"
                             Style="{StaticResource ModalSaveButton}"
                             HorizontalAlignment="Right"
