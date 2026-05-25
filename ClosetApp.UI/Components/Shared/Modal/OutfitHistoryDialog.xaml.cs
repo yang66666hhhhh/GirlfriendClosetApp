@@ -10,7 +10,6 @@ namespace ClosetApp.UI.Components.Shared.Modal;
 public partial class OutfitHistoryDialog : UserControl
 {
     private readonly OutfitsViewModel _viewModel;
-    private bool _isRecentSectionCollapsed;
 
     public OutfitHistoryDialog(OutfitsViewModel viewModel)
     {
@@ -42,11 +41,12 @@ public partial class OutfitHistoryDialog : UserControl
 
     private async void RecentPreviewButton_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is not FrameworkElement { DataContext: RecentWornListItem item })
+        if (sender is not FrameworkElement { DataContext: RecentWornListItem item } element)
             return;
 
         await _viewModel.FocusHistoryRecordAsync(item.RecordId, item.WornDate);
         SyncCurrentPreview(item);
+        OpenRecentWornPopup(element);
     }
 
     private async void PrevMonth_Click(object sender, RoutedEventArgs e)
@@ -102,19 +102,24 @@ public partial class OutfitHistoryDialog : UserControl
         e.Handled = true;
     }
 
-    private void ToggleRecentSection_Click(object sender, RoutedEventArgs e)
+    private void OpenRecentSection_Click(object sender, RoutedEventArgs e)
     {
-        _isRecentSectionCollapsed = !_isRecentSectionCollapsed;
-        UpdateRecentSectionState();
+        if (sender is not FrameworkElement element)
+            return;
+
+        if (RecentWornPopup.IsOpen)
+        {
+            RecentWornPopup.IsOpen = false;
+            return;
+        }
+
+        OpenRecentWornPopup(element);
     }
 
     private void UpdateRecentSectionState()
     {
-        if (RecentSectionContent == null || ToggleRecentSectionButton == null || RecentSectionSummaryText == null)
+        if (OpenRecentSectionButton == null || RecentSectionSummaryText == null)
             return;
-
-        RecentSectionContent.Visibility = _isRecentSectionCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ToggleRecentSectionButton.Content = _isRecentSectionCollapsed ? "展开" : "收起";
 
         var recordCount = _viewModel.RecentWornRecords.Count;
         var currentItem = CurrentPreviewPanel?.DataContext as RecentWornListItem ?? _viewModel.SelectedRecentWornRecord;
@@ -122,8 +127,19 @@ public partial class OutfitHistoryDialog : UserControl
         RecentSectionSummaryText.Text = recordCount switch
         {
             0 => "还没有最近穿着记录。",
-            _ when currentItem == null => $"最近 {recordCount} 条穿着记录。",
-            _ => $"最近 {recordCount} 条穿着记录 · 当前 {currentItem.OutfitName}"
+            _ when currentItem == null => $"最近 {recordCount} 条记录",
+            _ => $"最近 {recordCount} 条记录 · 最新 {currentItem.DateText}"
         };
+    }
+
+    private void OpenRecentWornPopup(FrameworkElement placementTarget)
+    {
+        if (CurrentPreviewPanel.DataContext == null)
+            SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
+
+        RecentWornPopup.PlacementTarget = placementTarget;
+        RecentWornPopup.HorizontalOffset = 0;
+        RecentWornPopup.VerticalOffset = 6;
+        RecentWornPopup.IsOpen = true;
     }
 }

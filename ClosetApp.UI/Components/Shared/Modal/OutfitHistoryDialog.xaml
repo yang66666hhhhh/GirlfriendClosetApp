@@ -30,6 +30,19 @@
             </Style.Triggers>
         </Style>
 
+        <Style x:Key="RecentSectionTriggerButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource IconButton}">
+            <Setter Property="Background" Value="#F8FBFF"/>
+            <Setter Property="BorderBrush" Value="#D7E3F4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="Width" Value="34"/>
+            <Setter Property="MinHeight" Value="34"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ToolTip" Value="最近穿着"/>
+        </Style>
+
         <DataTemplate x:Key="RecentWornRecordTemplate">
             <Border Background="{DynamicResource SurfaceElevatedBrush}"
                     BorderBrush="{DynamicResource BorderLightBrush}"
@@ -198,135 +211,22 @@
                                                        FontSize="12"
                                                        Margin="0,6,0,0"/>
                                         </StackPanel>
-                                        <Button x:Name="ToggleRecentSectionButton"
+                                        <Button x:Name="OpenRecentSectionButton"
                                                 Grid.Column="1"
-                                                Style="{StaticResource CapsuleButton}"
-                                                MinWidth="72"
-                                                Padding="12,7"
+                                                Style="{StaticResource RecentSectionTriggerButtonStyle}"
                                                 VerticalAlignment="Center"
-                                                Click="ToggleRecentSection_Click"/>
-                                    </Grid>
-
-                                    <Grid x:Name="RecentSectionContent"
-                                          Margin="0,14,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="1.22*"/>
-                                            <ColumnDefinition Width="18"/>
-                                            <ColumnDefinition Width="0.9*"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <ScrollViewer Grid.Column="0"
-                                                      VerticalScrollBarVisibility="Auto"
-                                                      MaxHeight="224">
-                                            <ItemsControl ItemsSource="{Binding RecentWornRecords}"
-                                                          ItemTemplate="{StaticResource RecentWornRecordTemplate}"/>
-                                        </ScrollViewer>
-
-                                        <Border x:Name="CurrentPreviewPanel"
-                                                Grid.Column="2"
-                                                Background="{DynamicResource SurfaceElevatedBrush}"
-                                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="22"
-                                                Padding="16"
-                                                VerticalAlignment="Top"
-                                                Visibility="Collapsed">
-                                            <StackPanel>
-                                                <TextBlock Text="当前预览"
-                                                           Foreground="{DynamicResource TextTertiaryBrush}"
-                                                           FontSize="10"
-                                                           FontWeight="SemiBold"/>
-                                                <TextBlock Text="{Binding OutfitName}"
-                                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                                           FontSize="16"
-                                                           FontWeight="SemiBold"
-                                                           Margin="0,8,0,0"
-                                                           TextTrimming="CharacterEllipsis"/>
-                                                <Border Height="238"
-                                                        Margin="0,14,0,0"
-                                                        Background="{DynamicResource SurfacePageBrush}"
-                                                        BorderBrush="{DynamicResource BorderLightBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="18">
-                                                    <Grid Margin="12">
-                                                        <Border Width="92"
-                                                                HorizontalAlignment="Center"
-                                                                VerticalAlignment="Stretch"
-                                                                Margin="0,10,0,14"
-                                                                CornerRadius="48"
-                                                                Opacity="0.16"
-                                                                Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                            <Border.Background>
-                                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                                    <GradientStop Color="#24DCEAFF" Offset="0"/>
-                                                                    <GradientStop Color="#10FFFFFF" Offset="0.5"/>
-                                                                    <GradientStop Color="#00FFFFFF" Offset="1"/>
-                                                                </LinearGradientBrush>
-                                                            </Border.Background>
-                                                        </Border>
-                                                        <Ellipse Width="84"
-                                                                 Height="12"
-                                                                 HorizontalAlignment="Center"
-                                                                 VerticalAlignment="Bottom"
-                                                                 Margin="0,0,0,14"
-                                                                 Opacity="0.08"
-                                                                 IsHitTestVisible="False"
-                                                                 Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                            <Ellipse.Fill>
-                                                                <RadialGradientBrush RadiusX="0.78" RadiusY="0.9">
-                                                                    <GradientStop Color="#26000000" Offset="0"/>
-                                                                    <GradientStop Color="#00000000" Offset="1"/>
-                                                                </RadialGradientBrush>
-                                                            </Ellipse.Fill>
-                                                        </Ellipse>
-                                                        <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"
-                                                                                    Width="196"
-                                                                                    Height="212"
-                                                                                    HorizontalAlignment="Center"
-                                                                                    VerticalAlignment="Center"
-                                                                                    Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                        <TextBlock Text="这条记录暂时没有可预览的单品"
-                                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                   FontSize="11"
-                                                                   TextAlignment="Center"
-                                                                   TextWrapping="Wrap"
-                                                                   MaxWidth="168"
-                                                                   HorizontalAlignment="Center"
-                                                                   VerticalAlignment="Center"
-                                                                   Visibility="{Binding HasPreviewClothes, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
-                                                    </Grid>
-                                                </Border>
-                                                <TextBlock Text="{Binding FocusSummaryText}"
-                                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                                           FontSize="12"
-                                                           Margin="0,12,0,0"
-                                                           TextWrapping="Wrap"/>
-                                                <Border Background="{DynamicResource SurfaceElevatedBrush}"
-                                                        BorderBrush="{DynamicResource BorderLightBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="14"
-                                                        Padding="12,10"
-                                                        Margin="0,12,0,0">
-                                                    <TextBlock Text="{Binding FocusNoteText}"
-                                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                                               FontSize="12"
-                                                               TextWrapping="Wrap"
-                                                               MaxHeight="74"/>
-                                                </Border>
-                                                <Border Background="{DynamicResource SurfacePageBrush}"
-                                                        BorderBrush="{DynamicResource BorderDividerBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="12"
-                                                        Padding="10,8"
-                                                        Margin="0,12,0,0"
-                                                        HorizontalAlignment="Left">
-                                                    <TextBlock Text="{Binding FocusSyncText}"
-                                                               Foreground="{DynamicResource PrimaryBrush}"
-                                                               FontSize="11"
-                                                               FontWeight="SemiBold"/>
-                                                </Border>
-                                            </StackPanel>
-                                        </Border>
+                                                Click="OpenRecentSection_Click">
+                                            <Button.Content>
+                                                <Viewbox Width="14"
+                                                         Height="14">
+                                                    <Canvas Width="16"
+                                                            Height="16">
+                                                        <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                                              Data="M8,3 C4.5,3 1.9,5.2 0.8,8 C1.9,10.8 4.5,13 8,13 C11.5,13 14.1,10.8 15.2,8 C14.1,5.2 11.5,3 8,3 z M8,5.2 C9.55,5.2 10.8,6.45 10.8,8 C10.8,9.55 9.55,10.8 8,10.8 C6.45,10.8 5.2,9.55 5.2,8 C5.2,6.45 6.45,5.2 8,5.2 z"/>
+                                                    </Canvas>
+                                                </Viewbox>
+                                            </Button.Content>
+                                        </Button>
                                     </Grid>
                                 </StackPanel>
                             </Border>
@@ -516,5 +416,121 @@
             </Border>
         </Border>
 
+        <Popup x:Name="RecentWornPopup"
+               Placement="Bottom"
+               AllowsTransparency="True"
+               StaysOpen="False">
+            <Grid Background="Transparent"
+                  Margin="8">
+            <Border Width="548"
+                    CornerRadius="18"
+                    Background="#01FFFFFF">
+                <Border.Effect>
+                    <DropShadowEffect BlurRadius="22"
+                                      ShadowDepth="7"
+                                      Opacity="0.13"
+                                      Color="#564A61"/>
+                </Border.Effect>
+            </Border>
+            <Border Background="#FFFFFFFF"
+                    BorderBrush="#E9E2EC"
+                    BorderThickness="1"
+                    CornerRadius="18"
+                    Padding="12">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.12*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="0.88*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ScrollViewer Grid.Column="0"
+                                  MaxHeight="296"
+                                  VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding RecentWornRecords}"
+                                      ItemTemplate="{StaticResource RecentWornRecordTemplate}"/>
+                    </ScrollViewer>
+
+                    <Border x:Name="CurrentPreviewPanel"
+                            Grid.Column="2"
+                            Background="{DynamicResource SurfaceElevatedBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="18"
+                            Padding="14"
+                            VerticalAlignment="Top"
+                            Visibility="Collapsed">
+                        <StackPanel>
+                            <TextBlock Text="{Binding OutfitName}"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock Text="{Binding FocusSummaryText}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       FontSize="11.5"
+                                       Margin="0,6,0,0"
+                                       TextWrapping="Wrap"/>
+                            <Border Height="220"
+                                    Margin="0,12,0,0"
+                                    Background="{DynamicResource SurfacePageBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="16">
+                                <Grid Margin="10">
+                                    <Border Width="82"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Stretch"
+                                            Margin="0,10,0,14"
+                                            CornerRadius="42"
+                                            Opacity="0.16"
+                                            Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <Border.Background>
+                                            <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                                <GradientStop Color="#24DCEAFF" Offset="0"/>
+                                                <GradientStop Color="#10FFFFFF" Offset="0.5"/>
+                                                <GradientStop Color="#00FFFFFF" Offset="1"/>
+                                            </LinearGradientBrush>
+                                        </Border.Background>
+                                    </Border>
+                                    <Ellipse Width="74"
+                                             Height="10"
+                                             HorizontalAlignment="Center"
+                                             VerticalAlignment="Bottom"
+                                             Margin="0,0,0,12"
+                                             Opacity="0.07"
+                                             IsHitTestVisible="False"
+                                             Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <Ellipse.Fill>
+                                            <RadialGradientBrush RadiusX="0.78" RadiusY="0.9">
+                                                <GradientStop Color="#26000000" Offset="0"/>
+                                                <GradientStop Color="#00000000" Offset="1"/>
+                                            </RadialGradientBrush>
+                                        </Ellipse.Fill>
+                                    </Ellipse>
+                                    <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"
+                                                                Width="180"
+                                                                Height="196"
+                                                                HorizontalAlignment="Center"
+                                                                VerticalAlignment="Center"
+                                                                Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                    <TextBlock Text="这条记录暂时没有可预览的单品"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               FontSize="10.5"
+                                               TextAlignment="Center"
+                                               TextWrapping="Wrap"
+                                               MaxWidth="154"
+                                               HorizontalAlignment="Center"
+                                               VerticalAlignment="Center"
+                                               Visibility="{Binding HasPreviewClothes, Converter={StaticResource InverseBooleanToVisibilityConverter}}"/>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+            </Grid>
+        </Popup>
     </Grid>
 </UserControl>

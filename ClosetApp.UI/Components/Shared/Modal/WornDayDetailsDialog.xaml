@@ -5,15 +5,15 @@
     <UserControl.Resources>
         <Style x:Key="RecordPreviewButtonStyle"
                TargetType="Button"
-               BasedOn="{StaticResource CapsuleButton}">
-            <Setter Property="Content" Value="预览"/>
-            <Setter Property="Background" Value="White"/>
+               BasedOn="{StaticResource IconButton}">
+            <Setter Property="Background" Value="#F8FBFF"/>
             <Setter Property="BorderBrush" Value="#D7E3F4"/>
+            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Padding" Value="9,6"/>
-            <Setter Property="MinWidth" Value="54"/>
+            <Setter Property="Width" Value="30"/>
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="ToolTip" Value="查看预览"/>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
                     <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
@@ -163,15 +163,13 @@
                                                     <Border x:Name="SelectedBadge"
                                                             Grid.Column="1"
                                                             Background="{DynamicResource PrimaryLightBrush}"
-                                                            CornerRadius="7"
-                                                            Padding="6,2"
-                                                            Margin="10,0,0,0"
-                                                            Visibility="Collapsed">
-                                                        <TextBlock Text="当前"
-                                                                   Foreground="{DynamicResource PrimaryBrush}"
-                                                                   FontSize="9"
-                                                                   FontWeight="SemiBold"/>
-                                                    </Border>
+                                                            BorderBrush="#60FFFFFF"
+                                                            BorderThickness="1"
+                                                            Width="8"
+                                                            Height="8"
+                                                            CornerRadius="4"
+                                                            Margin="8,0,0,0"
+                                                            Visibility="Collapsed"/>
                                                 </Grid>
                                                 <TextBlock Text="{Binding TimeText}"
                                                            FontSize="11.5"
@@ -181,9 +179,19 @@
 
                                             <Button Grid.Column="3"
                                                     Style="{StaticResource RecordPreviewButtonStyle}"
-                                                    Margin="0,0,0,0"
                                                     VerticalAlignment="Center"
-                                                    Click="PreviewButton_Click"/>
+                                                    Click="PreviewButton_Click">
+                                                <Button.Content>
+                                                    <Viewbox Width="13"
+                                                             Height="13">
+                                                        <Canvas Width="16"
+                                                                Height="16">
+                                                            <Path Fill="{Binding RelativeSource={RelativeSource AncestorType=Button}, Path=Foreground}"
+                                                                  Data="M8,3 C4.5,3 1.9,5.2 0.8,8 C1.9,10.8 4.5,13 8,13 C11.5,13 14.1,10.8 15.2,8 C14.1,5.2 11.5,3 8,3 z M8,5.2 C9.55,5.2 10.8,6.45 10.8,8 C10.8,9.55 9.55,10.8 8,10.8 C6.45,10.8 5.2,9.55 5.2,8 C5.2,6.45 6.45,5.2 8,5.2 z"/>
+                                                        </Canvas>
+                                                    </Viewbox>
+                                                </Button.Content>
+                                            </Button>
 
                                             <Button Grid.Column="5"
                                                     Content="撤销"
