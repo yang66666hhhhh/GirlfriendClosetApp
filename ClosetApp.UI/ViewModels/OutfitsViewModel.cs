@@ -149,8 +149,20 @@ public partial class OutfitsViewModel : ObservableObject
     public bool CanRefreshWeatherRecommendations => !IsWeatherLoading;
     public string RefreshWeatherButtonText => IsWeatherLoading ? "刷新中..." : "刷新天气推荐";
     public bool HasRecommendationReadiness => RecommendationReadiness != null;
+    public bool HasRecommendationGap => RecommendationReadiness?.HasGap ?? false;
     public string RecommendationReadinessTitle => RecommendationReadiness?.Title ?? "推荐准备度";
     public string RecommendationReadinessDetail => RecommendationReadiness?.Detail ?? "刷新天气后会整理当前搭配是否够用。";
+    public string RecommendationReadinessBadgeText => HasRecommendationGap ? "还差一点" : "已经就绪";
+    public string RecommendationReadinessCountText => RecommendationReadiness == null
+        ? "等待刷新"
+        : RecommendationReadiness.MatchingSeasonCount > 0
+            ? $"{RecommendationReadiness.MatchingSeasonCount}/{RecommendationReadiness.ReadyOutfitCount} 套对季"
+            : $"{RecommendationReadiness.ReadyOutfitCount} 套已整理";
+    public string RecommendationMissingSeasonText => RecommendationReadiness?.MissingSeason is { } season
+        ? $"建议补 {GetSeasonLabel(season)} 搭配"
+        : HasRecommendationGap
+            ? "先把常穿搭配补完整，推荐会更稳。"
+            : "当前温度下已经有可轮换的搭配。";
     public string WeatherRecommendationHintText => WeatherRecommendations.Count == 0
         ? RecommendationReadinessDetail
         : $"{PrimaryWeatherRecommendation!.PrimaryReason}";
@@ -374,8 +386,12 @@ public partial class OutfitsViewModel : ObservableObject
         OnPropertyChanged(nameof(WeatherRecommendations));
         OnPropertyChanged(nameof(RecommendationReadiness));
         OnPropertyChanged(nameof(HasRecommendationReadiness));
+        OnPropertyChanged(nameof(HasRecommendationGap));
         OnPropertyChanged(nameof(RecommendationReadinessTitle));
         OnPropertyChanged(nameof(RecommendationReadinessDetail));
+        OnPropertyChanged(nameof(RecommendationReadinessBadgeText));
+        OnPropertyChanged(nameof(RecommendationReadinessCountText));
+        OnPropertyChanged(nameof(RecommendationMissingSeasonText));
         OnPropertyChanged(nameof(HasWeatherRecommendations));
         OnPropertyChanged(nameof(HasPrimaryWeatherRecommendation));
         OnPropertyChanged(nameof(HasSecondaryWeatherRecommendations));
@@ -412,6 +428,19 @@ public partial class OutfitsViewModel : ObservableObject
             3 or 4 or 11 => 16,
             5 or 10 => 22,
             _ => 28
+        };
+    }
+
+    private static string GetSeasonLabel(Season season)
+    {
+        return season switch
+        {
+            Season.Spring => "春季",
+            Season.Summer => "夏季",
+            Season.Autumn => "秋季",
+            Season.Winter => "冬季",
+            Season.AllSeason => "四季",
+            _ => "当前"
         };
     }
 
