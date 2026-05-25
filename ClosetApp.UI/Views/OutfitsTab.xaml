@@ -94,16 +94,16 @@
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="44,12,44,48"
+                      Padding="44,10,44,28"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
-                <Grid Margin="0,0,0,22">
+                <Grid Margin="0,0,0,16">
                     <Border Background="{StaticResource TodayHeroBackgroundBrush}"
                             BorderBrush="{DynamicResource BorderLightBrush}"
                             BorderThickness="1"
-                            CornerRadius="28"
-                            Padding="32,28,28,26">
-                        <Grid MinHeight="292">
+                            CornerRadius="24"
+                            Padding="28,22,24,20">
+                        <Grid MinHeight="252">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="0.8*"/>
                                 <ColumnDefinition Width="1.2*"/>
@@ -132,31 +132,31 @@
 
                                 <TextBlock Text="今天穿什么"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
-                                           FontSize="32"
+                                           FontSize="28"
                                            FontWeight="SemiBold"
-                                           Margin="0,18,0,0"/>
+                                           Margin="0,14,0,0"/>
 
-                                <StackPanel Margin="0,18,0,0"
+                                <StackPanel Margin="0,14,0,0"
                                             MaxWidth="336">
                                     <TextBlock Text="{Binding TodayHeroRecommendationNameText}"
                                            Foreground="{DynamicResource TextPrimaryBrush}"
-                                               FontSize="28"
+                                               FontSize="24"
                                                FontWeight="SemiBold"
                                                TextWrapping="Wrap"/>
                                     <TextBlock Text="{Binding TodayHeroRecommendationSupportText}"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                FontSize="12.5"
-                                               Margin="0,9,0,0"
+                                               Margin="0,7,0,0"
                                                TextWrapping="Wrap"
                                                MaxWidth="284"/>
 
                                     <StackPanel Orientation="Horizontal"
-                                                Margin="0,18,0,0"
+                                                Margin="0,14,0,0"
                                                 VerticalAlignment="Center">
                                         <Button Content="{Binding TodayHeroPrimaryActionText}"
                                                 Style="{StaticResource OutfitMintButton}"
                                                 Padding="18,10"
-                                                Margin="0,0,14,0"
+                                                Margin="0,0,12,0"
                                                 HorizontalAlignment="Left"
                                                 Click="TodayHeroPrimaryAction_Click"/>
 
@@ -195,7 +195,7 @@
                                 <Grid>
                                     <Border HorizontalAlignment="Stretch"
                                             VerticalAlignment="Stretch"
-                                            Margin="84,18,0,22"
+                                            Margin="98,10,0,16"
                                             Background="{StaticResource TodayHeroAtmosphereBrush}"
                                             CornerRadius="156,32,32,156"
                                             Opacity="0.7"/>
@@ -204,7 +204,7 @@
                                         <Border Width="118"
                                                 HorizontalAlignment="Center"
                                                 VerticalAlignment="Stretch"
-                                                Margin="0,18,0,24"
+                                                Margin="0,10,0,18"
                                                 CornerRadius="60"
                                                 Opacity="0.13">
                                             <Border.Background>
@@ -220,7 +220,7 @@
                                                  Height="12"
                                                  HorizontalAlignment="Center"
                                                  VerticalAlignment="Bottom"
-                                                 Margin="0,0,0,20"
+                                                 Margin="0,0,0,14"
                                                  Opacity="0.07"
                                                  IsHitTestVisible="False">
                                             <Ellipse.Fill>
@@ -232,7 +232,7 @@
                                         </Ellipse>
 
                                         <outfit:OutfitPreviewCanvas Clothes="{Binding PrimaryWeatherRecommendation.PreviewClothes}"
-                                                                    Margin="40,-4,0,-8"
+                                                                    Margin="52,-8,0,-18"
                                                                     HorizontalAlignment="Stretch"
                                                                     VerticalAlignment="Stretch"/>
                                     </Grid>
@@ -260,10 +260,10 @@
                     </Border>
                 </Grid>
 
-                <Grid Margin="0,0,0,8">
+                <Grid Margin="0,0,0,6">
                     <Border Style="{StaticResource PageSummaryCard}"
-                            Margin="0,0,0,18"
-                            Padding="18,16"
+                            Margin="0,0,0,14"
+                            Padding="16,14"
                             Grid.ColumnSpan="2">
                         <StackPanel>
                             <Grid>
@@ -284,21 +284,21 @@
                                         Click="ClearFilters_Click"/>
                             </Grid>
 
-                            <WrapPanel Margin="0,12,0,0">
-                                <StackPanel Width="228" Margin="0,0,12,10">
+                            <WrapPanel Margin="0,10,0,0">
+                                <StackPanel Width="220" Margin="0,0,10,8">
                                     <TextBlock Text="搜索"
                                                Style="{StaticResource PageFieldLabelText}"/>
                                     <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                             MinHeight="40"
+                                             MinHeight="36"
                                              Padding="12,9"
                                              Margin="0,6,0,0"/>
                                 </StackPanel>
 
-                                <StackPanel Width="126" Margin="0,0,12,10">
+                                <StackPanel Width="122" Margin="0,0,10,8">
                                     <TextBlock Text="场景"
                                                Style="{StaticResource PageFieldLabelText}"/>
                                     <ComboBox x:Name="SceneFilterComboBox"
-                                              MinHeight="40"
+                                              MinHeight="36"
                                               Margin="0,6,0,0"
                                               SelectionChanged="SceneFilterComboBox_SelectionChanged">
                                         <ComboBoxItem Content="全部场景" IsSelected="True"/>
@@ -310,11 +310,11 @@
                                     </ComboBox>
                                 </StackPanel>
 
-                                <StackPanel Width="126" Margin="0,0,12,10">
+                                <StackPanel Width="122" Margin="0,0,10,8">
                                     <TextBlock Text="季节"
                                                Style="{StaticResource PageFieldLabelText}"/>
                                     <ComboBox x:Name="SeasonFilterComboBox"
-                                              MinHeight="40"
+                                              MinHeight="36"
                                               Margin="0,6,0,0"
                                               SelectionChanged="SeasonFilterComboBox_SelectionChanged">
                                         <ComboBoxItem Content="全部季节" IsSelected="True"/>
@@ -327,8 +327,8 @@
                                 </StackPanel>
 
                                 <Border Style="{StaticResource PageInsetCard}"
-                                        Padding="14,10"
-                                        Margin="0,20,0,10"
+                                        Padding="12,8"
+                                        Margin="0,18,0,8"
                                         Background="{StaticResource OutfitLavenderSurfaceBrush}"
                                         BorderBrush="{StaticResource OutfitLavenderBorderBrush}"
                                         BorderThickness="1">
@@ -341,12 +341,12 @@
 
                             <TextBlock Text="{Binding FilterResultText}"
                                        Style="{StaticResource PageSummaryBodyText}"
-                                       Margin="0,2,0,0"/>
+                                       Margin="0,0,0,0"/>
                         </StackPanel>
                     </Border>
                 </Grid>
 
-                <Grid Margin="0,0,0,8">
+                <Grid Margin="0,0,0,6">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -379,8 +379,8 @@
                 </Grid>
 
                 <Border Style="{StaticResource PageInsetCard}"
-                        Margin="0,0,0,16"
-                        Padding="18,16"
+                        Margin="0,0,0,12"
+                        Padding="16,14"
                         Visibility="{Binding IsFilteredEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Text="没有筛出搭配"
