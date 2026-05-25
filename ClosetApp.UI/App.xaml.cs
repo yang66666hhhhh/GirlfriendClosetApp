@@ -65,10 +65,8 @@ public partial class App : System.Windows.Application
         Services.GetRequiredService<ThemeService>().InitializeAsync().GetAwaiter().GetResult();
 
         var dbContext = Services.GetRequiredService<ClosetDbContext>();
-        Log.Information("Ensuring database is created");
-        // TODO: Switch to Migrate() once a proper initial migration snapshot exists.
-        // Current migrations only add columns; EnsureCreated handles full schema creation.
-        dbContext.Database.EnsureCreated();
+        Log.Information("Initializing database migration chain");
+        ClosetDatabaseInitializer.InitializeAsync(dbContext).GetAwaiter().GetResult();
         Log.Information("Application startup completed");
     }
 

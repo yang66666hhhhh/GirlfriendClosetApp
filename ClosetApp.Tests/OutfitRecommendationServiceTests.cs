@@ -46,6 +46,19 @@ public class OutfitRecommendationServiceTests
     }
 
     [Fact]
+    public async Task GetRecommendationsByRuleAsync_TodaysOutfitStronglyDropsInRank()
+    {
+        var today = Outfit("Today Look", Season.Spring, rating: 5, wornDate: DateTime.Today);
+        var nextOption = Outfit("Next Look", Season.Spring, rating: 4, wornDate: DateTime.Today.AddDays(-12));
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([today, nextOption]));
+
+        var result = (await service.GetRecommendationsByRuleAsync(20)).ToList();
+
+        Assert.Equal(nextOption, result[0].Outfit);
+        Assert.Contains(result.Single(item => item.Outfit == today).Reasons, reason => reason.Contains("今天已经穿过一次"));
+    }
+
+    [Fact]
     public async Task GetRecommendationsByRuleAsync_FavoriteHighRatedOutfitGetsBoost()
     {
         var plain = Outfit("Plain Look", Season.Autumn, rating: 3);

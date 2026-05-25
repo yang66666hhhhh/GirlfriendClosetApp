@@ -128,6 +128,16 @@
                                                FontSize="11"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
+                                    <Border Width="1"
+                                            Height="12"
+                                            Background="{DynamicResource BorderDividerBrush}"
+                                            Margin="10,0"
+                                            VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding TodayWornStatusText}"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               FontSize="11"
+                                               FontWeight="SemiBold"
+                                               VerticalAlignment="Center"/>
                                 </StackPanel>
 
                                 <TextBlock Text="今天穿什么"

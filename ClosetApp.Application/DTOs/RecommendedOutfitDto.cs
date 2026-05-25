@@ -17,6 +17,7 @@ public sealed record RecommendedOutfitDto(
     public int Rating => Outfit.Rating;
     public int WearCount => Outfit.WearCount;
     public DateTime? WornDate => Outfit.WornDate;
+    public bool IsWornToday => WornDate?.Date == DateTime.Today;
     public IList<Clothing> PreviewClothes => Outfit.OutfitClothes
         .Select(link => link.Clothing)
         .Where(clothing => clothing != null)
@@ -30,6 +31,9 @@ public sealed record RecommendedOutfitDto(
     {
         if (!WornDate.HasValue || WearCount == 0)
             return "适合今天试";
+
+        if (IsWornToday)
+            return "今天穿过";
 
         if (PrimaryReason.Contains("天气", StringComparison.OrdinalIgnoreCase) ||
             PrimaryReason.Contains("温度", StringComparison.OrdinalIgnoreCase))

@@ -81,6 +81,7 @@ public class ClosetDbContext : DbContext
 
     private void SeedData(ModelBuilder modelBuilder)
     {
+        var seededAt = new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc);
         var styleTags = new[] {
             ("韩系", "#D8B7A3"),
             ("极简", "#C8C2B8"),
@@ -100,8 +101,24 @@ public class ClosetDbContext : DbContext
 
         int id = 1;
         foreach (var (name, color) in styleTags)
-            modelBuilder.Entity<Tag>().HasData(new Tag { Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"), Name = name, Color = color, Category = TagCategory.Style });
+            modelBuilder.Entity<Tag>().HasData(new Tag
+            {
+                Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"),
+                Name = name,
+                Color = color,
+                Category = TagCategory.Style,
+                CreatedAt = seededAt,
+                UpdatedAt = seededAt
+            });
         foreach (var (name, color) in sceneTags)
-            modelBuilder.Entity<Tag>().HasData(new Tag { Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"), Name = name, Color = color, Category = TagCategory.Scene });
+            modelBuilder.Entity<Tag>().HasData(new Tag
+            {
+                Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"),
+                Name = name,
+                Color = color,
+                Category = TagCategory.Scene,
+                CreatedAt = seededAt,
+                UpdatedAt = seededAt
+            });
     }
 }

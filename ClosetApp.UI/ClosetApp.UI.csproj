@@ -3,14 +3,32 @@
   <ItemGroup>
     <ProjectReference Include="..\ClosetApp.Application\ClosetApp.Application.csproj" />
     <ProjectReference Include="..\ClosetApp.Infrastructure\ClosetApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\ClosetApp.UI.Logic\ClosetApp.UI.Logic.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.2" />
     <PackageReference Include="HandyControl" Version="3.4.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Http" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\WardrobeActionErrorPresenter.cs" />
+    <Compile Remove="States\*.cs" />
+    <Compile Remove="Components\Clothing\BatchClothingImportBuilder.cs" />
+    <Compile Remove="Components\Clothing\BatchClothingImportOptions.cs" />
+    <Compile Remove="Components\Clothing\BatchClothingImportPreviewItem.cs" />
+    <Compile Remove="Components\Clothing\BatchClothingImportSummaryBuilder.cs" />
+    <Compile Remove="Components\Clothing\BatchImportDuplicateCheckResult.cs" />
+    <Compile Remove="Components\Clothing\BatchImportDuplicateChecker.cs" />
+    <Compile Remove="Components\Outfit\Editor\OutfitSelectionRules.cs" />
+    <Compile Remove="Components\Outfit\Engine\*.cs" />
   </ItemGroup>
 
 <PropertyGroup>

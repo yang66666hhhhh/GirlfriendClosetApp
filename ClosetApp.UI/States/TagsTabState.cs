@@ -119,14 +119,17 @@ public sealed class TagsTabState
     private IEnumerable<TagListItem> Sort(IEnumerable<TagListItem> query) => SortBy switch
     {
         TagSortBy.Name => query
-            .OrderBy(tag => tag.Name)
+            .OrderBy(tag => GetCategoryOrder(tag.Category))
+            .ThenBy(tag => tag.Name, StringComparer.CurrentCulture)
             .ThenByDescending(tag => tag.UsageCount),
         TagSortBy.LeastUsed => query
-            .OrderBy(tag => tag.UsageCount)
-            .ThenBy(tag => tag.Name),
+            .OrderBy(tag => GetCategoryOrder(tag.Category))
+            .ThenBy(tag => tag.UsageCount)
+            .ThenBy(tag => tag.Name, StringComparer.CurrentCulture),
         _ => query
-            .OrderByDescending(tag => tag.UsageCount)
-            .ThenBy(tag => tag.Name)
+            .OrderBy(tag => GetCategoryOrder(tag.Category))
+            .ThenByDescending(tag => tag.UsageCount)
+            .ThenBy(tag => tag.Name, StringComparer.CurrentCulture)
     };
 
     private bool ShouldShowSection(TagCategory category, int count) =>
@@ -152,5 +155,13 @@ public sealed class TagsTabState
         TagCategory.Scene => "场景标签",
         TagCategory.Season => "季节标签",
         _ => category.ToString()
+    };
+
+    private static int GetCategoryOrder(TagCategory category) => category switch
+    {
+        TagCategory.Style => 0,
+        TagCategory.Scene => 1,
+        TagCategory.Season => 2,
+        _ => 3
     };
 }

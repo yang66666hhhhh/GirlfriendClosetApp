@@ -194,6 +194,57 @@ public class ClothesTabStateTests
         Assert.Equal(1, state.GetQueueCount(WardrobeQueueFilter.RecentlyImported));
     }
 
+    [Fact]
+    public void ApplyFilter_WithSeasonFavoriteQueueAndSorting_KeepsSummaryAndOrderStable()
+    {
+        var tag = CreateTag("通勤");
+        var highFavorite = CreateClothing("Morning Coat", ClothingType.Outerwear, GarmentType.Coat, tags: [tag]);
+        highFavorite.Season = Season.Winter;
+        highFavorite.FavoriteLevel = 5;
+        highFavorite.CreatedAt = new DateTime(2026, 5, 1);
+
+        var lowFavorite = CreateClothing("Daily Coat", ClothingType.Outerwear, GarmentType.Coat, tags: [tag]);
+        lowFavorite.Season = Season.AllSeason;
+        lowFavorite.FavoriteLevel = 4;
+        lowFavorite.CreatedAt = new DateTime(2026, 5, 2);
+
+        var excluded = CreateClothing("Loose Tee", ClothingType.Top, GarmentType.TShirt, tags: [tag]);
+        excluded.Season = Season.Winter;
+        excluded.FavoriteLevel = 5;
+
+        var state = new ClothesTabState();
+        state.SetClothes([highFavorite, lowFavorite, excluded]);
+        state.SetRecentlyImportedClothingIds([highFavorite.Id, lowFavorite.Id]);
+        state.SetQueueFilter(WardrobeQueueFilter.RecentlyImported);
+        state.SetSelectedType(ClothingType.Outerwear);
+        state.SetSelectedSeason(Season.Winter);
+        state.SetSelectedTagIds([tag.Id]);
+        state.SetFavoriteOnly(true);
+        state.SetSortBy(WardrobeSortBy.FavoriteLevel);
+
+        Assert.True(new[] { "Morning Coat", "Daily Coat" }.SequenceEqual(state.FilteredClothes.Select(clothing => clothing.Name)));
+        Assert.Equal("分类 + 季节 + 标签 + 刚导入 + 收藏", state.FilterSummary);
+    }
+
+    [Fact]
+    public void ApplyFilter_WithSeason_IncludesAllSeasonClothes()
+    {
+        var springJacket = CreateClothing("Spring Jacket", ClothingType.Outerwear, GarmentType.Jacket);
+        springJacket.Season = Season.Spring;
+        var allSeasonShirt = CreateClothing("All Season Shirt", ClothingType.Top, GarmentType.Shirt);
+        allSeasonShirt.Season = Season.AllSeason;
+        var winterCoat = CreateClothing("Winter Coat", ClothingType.Outerwear, GarmentType.Coat);
+        winterCoat.Season = Season.Winter;
+
+        var state = new ClothesTabState();
+        state.SetClothes([springJacket, allSeasonShirt, winterCoat]);
+        state.SetSelectedSeason(Season.Spring);
+
+        Assert.Equal(2, state.FilteredClothes.Count);
+        Assert.Contains(state.FilteredClothes, clothing => clothing.Name == "Spring Jacket");
+        Assert.Contains(state.FilteredClothes, clothing => clothing.Name == "All Season Shirt");
+    }
+
     private static Clothing CreateClothing(
         string name,
         ClothingType type,

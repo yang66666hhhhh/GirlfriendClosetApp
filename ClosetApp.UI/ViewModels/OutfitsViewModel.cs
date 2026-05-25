@@ -137,6 +137,9 @@ public partial class OutfitsViewModel : ObservableObject
     public string WeatherHeadlineText => $"{WeatherCity} · {WeatherTemperature}°C · {WeatherCondition}";
     public string WeatherCityCompactText => BuildCompactWeatherCity(WeatherCity);
     public string WeatherCompactSummaryText => $"{WeatherTemperature}°C · {WeatherCondition}";
+    public int TodayWornCount => RecentWornRecords.Count(record => record.WornDate.Date == DateTime.Today);
+    public bool HasTodayWornRecords => TodayWornCount > 0;
+    public string TodayWornStatusText => HasTodayWornRecords ? $"今天已记 {TodayWornCount} 套" : "今天还没记录";
     public bool HasWeatherRecommendations => WeatherRecommendations.Count > 0;
     public bool HasPrimaryWeatherRecommendation => PrimaryWeatherRecommendation != null;
     public bool HasSecondaryWeatherRecommendations => SecondaryWeatherRecommendations.Count > 0;
@@ -155,9 +158,17 @@ public partial class OutfitsViewModel : ObservableObject
         ? PrimaryWeatherRecommendation!.Name
         : "今天还没有合适推荐";
     public string TodayHeroRecommendationSupportText => HasPrimaryWeatherRecommendation
-        ? ResolveHeroSummaryText(PrimaryWeatherRecommendation!)
-        : RecommendationReadinessDetail;
-    public string TodayHeroPrimaryActionText => HasPrimaryWeatherRecommendation ? "今天穿它" : "去新建一套";
+        ? BuildTodayHeroSupportText(PrimaryWeatherRecommendation!)
+        : HasTodayWornRecords
+            ? $"{TodayWornStatusText}，{RecommendationReadinessDetail}"
+            : RecommendationReadinessDetail;
+    public string TodayHeroPrimaryActionText => HasPrimaryWeatherRecommendation
+        ? PrimaryWeatherRecommendation!.IsWornToday
+            ? "今天又穿它"
+            : HasTodayWornRecords
+                ? "再记这套"
+                : "今天穿它"
+        : "去新建一套";
 
     public async Task LoadOutfitsAsync()
     {
@@ -212,6 +223,10 @@ public partial class OutfitsViewModel : ObservableObject
         await _outfitService.RecordWornDateAsync(outfit.Id, date);
         await LoadOutfitsAsync();
     }
+
+    public Task RecordOutfitWornTodayAsync(Outfit outfit) => RecordWornDateAsync(outfit, DateTime.Now);
+
+    public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();
 
     public async Task<bool> ToggleFavoriteAsync(Outfit outfit)
     {
@@ -341,6 +356,9 @@ public partial class OutfitsViewModel : ObservableObject
         OnPropertyChanged(nameof(HistoryToggleText));
         OnPropertyChanged(nameof(CalendarMonthText));
         OnPropertyChanged(nameof(CalendarSummaryText));
+        OnPropertyChanged(nameof(TodayWornCount));
+        OnPropertyChanged(nameof(HasTodayWornRecords));
+        OnPropertyChanged(nameof(TodayWornStatusText));
         NotifyWeatherStateChanged();
     }
 
@@ -395,6 +413,18 @@ public partial class OutfitsViewModel : ObservableObject
             5 or 10 => 22,
             _ => 28
         };
+    }
+
+    private string BuildTodayHeroSupportText(RecommendedOutfitDto recommendation)
+    {
+        if (recommendation.IsWornToday)
+            return "这套今天已经记过一次了；如果晚点还要出门，也可以继续穿它。";
+
+        var summary = ResolveHeroSummaryText(recommendation);
+        if (!HasTodayWornRecords)
+            return summary;
+
+        return $"{summary} 今天已经记过 {TodayWornCount} 套，下一套可以换个感觉。";
     }
 
     private static string ResolveHeroSummaryText(RecommendedOutfitDto recommendation)

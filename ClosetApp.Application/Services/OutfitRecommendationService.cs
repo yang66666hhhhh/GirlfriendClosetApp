@@ -129,6 +129,12 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         }
 
         var daysSinceLastWorn = (DateTime.Today - outfit.WornDate.Value.Date).TotalDays;
+        if (daysSinceLastWorn <= 0)
+        {
+            reasons.Add("今天已经穿过一次了，我先把它往后放一放。");
+            return -48;
+        }
+
         if (daysSinceLastWorn <= 2)
             return -28;
 

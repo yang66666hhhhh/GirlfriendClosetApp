@@ -4,4 +4,5 @@
   <Project Path="ClosetApp.Infrastructure/ClosetApp.Infrastructure.csproj" />
   <Project Path="ClosetApp.Tests/ClosetApp.Tests.csproj" />
   <Project Path="ClosetApp.UI/ClosetApp.UI.csproj" />
+  <Project Path="ClosetApp.UI.Logic/ClosetApp.UI.Logic.csproj" />
 </Solution>

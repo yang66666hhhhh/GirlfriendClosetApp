@@ -71,6 +71,62 @@ public class OutfitsTabStateTests
         Assert.Equal("全部搭配", state.FilterSummary);
     }
 
+    [Fact]
+    public void ApplyFilter_WithSearchSceneSeasonFavoriteAndSort_ReturnsSortedMatches()
+    {
+        var first = CreateOutfit("周一通勤", OutfitScene.Work, Season.Autumn, isFavorite: true, notes: "羊毛西装");
+        first.WearCount = 6;
+        first.OutfitClothes.Add(new OutfitClothing
+        {
+            Clothing = new Clothing
+            {
+                Name = "羊毛大衣",
+                Brand = "COS",
+                Color = "驼色"
+            }
+        });
+
+        var second = CreateOutfit("轻松通勤", OutfitScene.Work, Season.AllSeason, isFavorite: true, notes: "羊毛针织");
+        second.WearCount = 3;
+        second.OutfitClothes.Add(new OutfitClothing
+        {
+            Clothing = new Clothing
+            {
+                Name = "羊毛开衫",
+                Brand = "Uniqlo",
+                Color = "灰色"
+            }
+        });
+
+        var excluded = CreateOutfit("周末约会", OutfitScene.Date, Season.Autumn, isFavorite: true, notes: "羊毛裙");
+
+        var state = new OutfitsTabState();
+        state.SetOutfits([second, excluded, first]);
+        state.SetSearchText("羊毛");
+        state.SetSelectedScene(OutfitScene.Work);
+        state.SetSelectedSeason(Season.Autumn);
+        state.SetFavoriteOnly(true);
+        state.SetSortBy(OutfitSortBy.WearCount);
+
+        Assert.True(new[] { "周一通勤", "轻松通勤" }.SequenceEqual(state.Outfits.Select(outfit => outfit.Name)));
+        Assert.Equal("搜索「羊毛」 + 通勤 + 秋季 + 仅收藏", state.FilterSummary);
+        Assert.Equal(2, state.OutfitCount);
+    }
+
+    [Fact]
+    public void ToggleHistoryExpanded_UpdatesToggleText()
+    {
+        var state = new OutfitsTabState();
+
+        Assert.False(state.IsHistoryExpanded);
+        Assert.Equal("查看记录日历", state.HistoryToggleText);
+
+        state.ToggleHistoryExpanded();
+
+        Assert.True(state.IsHistoryExpanded);
+        Assert.Equal("收起记录日历", state.HistoryToggleText);
+    }
+
     private static Outfit CreateOutfit(
         string name,
         OutfitScene scene,

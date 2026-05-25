@@ -18,29 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClosetApp.Infrastructure\ClosetApp.Infrastructure.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Include="..\ClosetApp.UI\Services\WardrobeActionErrorPresenter.cs" Link="UiLogic\Services\WardrobeActionErrorPresenter.cs" />
-    <Compile Include="..\ClosetApp.UI\States\ClothesTabState.cs" Link="UiLogic\States\ClothesTabState.cs" />
-    <Compile Include="..\ClosetApp.UI\States\OutfitsTabState.cs" Link="UiLogic\States\OutfitsTabState.cs" />
-    <Compile Include="..\ClosetApp.UI\States\TagsTabState.cs" Link="UiLogic\States\TagsTabState.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportBuilder.cs" Link="UiLogic\Clothing\BatchClothingImportBuilder.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportOptions.cs" Link="UiLogic\Clothing\BatchClothingImportOptions.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportPreviewItem.cs" Link="UiLogic\Clothing\BatchClothingImportPreviewItem.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportSummaryBuilder.cs" Link="UiLogic\Clothing\BatchClothingImportSummaryBuilder.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchImportDuplicateCheckResult.cs" Link="UiLogic\Clothing\BatchImportDuplicateCheckResult.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchImportDuplicateChecker.cs" Link="UiLogic\Clothing\BatchImportDuplicateChecker.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Editor\OutfitSelectionRules.cs" Link="UiLogic\Outfit\Editor\OutfitSelectionRules.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\CompositionMode.cs" Link="UiLogic\Outfit\Engine\CompositionMode.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitCompositionEngine.cs" Link="UiLogic\Outfit\Engine\OutfitCompositionEngine.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitLayoutItem.cs" Link="UiLogic\Outfit\Engine\OutfitLayoutItem.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitRenderMetrics.cs" Link="UiLogic\Outfit\Engine\OutfitRenderMetrics.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\RenderRole.cs" Link="UiLogic\Outfit\Engine\RenderRole.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\OutfitParts.cs" Link="UiLogic\Outfit\Engine\OutfitParts.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\RenderContext.cs" Link="UiLogic\Outfit\Engine\RenderContext.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\SemanticRegion.cs" Link="UiLogic\Outfit\Engine\SemanticRegion.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\LayoutResult.cs" Link="UiLogic\Outfit\Engine\LayoutResult.cs" />
+    <ProjectReference Include="..\ClosetApp.UI.Logic\ClosetApp.UI.Logic.csproj" />
   </ItemGroup>
 
 </Project>

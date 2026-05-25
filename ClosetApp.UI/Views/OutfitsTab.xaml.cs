@@ -108,30 +108,14 @@ public partial class OutfitsTab : UserControl
         {
             if (result.Type == EditorResultType.Saved)
             {
-                try
-                {
-                    await LoadOutfitsAsync();
-                    ToastService.Instance.ShowSuccess("已保存搭配", "新的搭配已经出现在列表里。");
-                }
-                catch (Exception ex)
-                {
-                    ToastService.Instance.ShowError("保存搭配后刷新失败", ex.Message);
-                }
+                await RefreshAfterEditorSaveAsync("已保存搭配", "新的搭配已经出现在列表里。");
             }
         });
     }
 
     private async void OutfitCard_EditCompleted(object? sender, OutfitEntity outfit)
     {
-        try
-        {
-            await _viewModel.RefreshAsync();
-            ToastService.Instance.ShowSuccess($"已更新「{outfit.Name}」", "修改后的搭配已经同步到列表。");
-        }
-        catch (Exception ex)
-        {
-            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
-        }
+        await RefreshAfterEditorSaveAsync($"已更新「{outfit.Name}」", "修改后的搭配已经同步到列表。");
     }
 
     private async void OutfitCard_DeleteRequested(object? sender, OutfitEntity outfit)
@@ -150,16 +134,7 @@ public partial class OutfitsTab : UserControl
 
     private async void OutfitCard_WornRequested(object? sender, OutfitEntity outfit)
     {
-        try
-        {
-            await _viewModel.RecordWornDateAsync(outfit, DateTime.Now);
-            ToastService.Instance.ShowSuccess($"已记录穿过「{outfit.Name}」", "今天的穿着记录已经更新。");
-        }
-        catch (Exception ex)
-        {
-            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, outfit.Name);
-            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-        }
+        await RecordOutfitWornAsync(outfit, outfit.Name);
     }
 
     private async void OutfitCard_FavoriteToggled(object? sender, RoutedEventArgs e)
@@ -183,16 +158,7 @@ public partial class OutfitsTab : UserControl
         if (sender is not FrameworkElement { DataContext: RecommendedOutfitDto recommendation })
             return;
 
-        try
-        {
-            await _viewModel.RecordWornDateAsync(recommendation.Outfit, DateTime.Now);
-            ToastService.Instance.ShowSuccess($"已记录穿过「{recommendation.Name}」", "今日推荐已经同步到穿着记录。");
-        }
-        catch (Exception ex)
-        {
-            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, recommendation.Name);
-            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-        }
+        await RecordOutfitWornAsync(recommendation.Outfit, recommendation.Name, "今日推荐已经同步到穿着记录。");
     }
 
     private async void TodayHeroPrimaryAction_Click(object sender, RoutedEventArgs e)
@@ -203,16 +169,7 @@ public partial class OutfitsTab : UserControl
             return;
         }
 
-        try
-        {
-            await _viewModel.RecordWornDateAsync(recommendation.Outfit, DateTime.Now);
-            ToastService.Instance.ShowSuccess($"已记录穿过「{recommendation.Name}」", "今日推荐已经同步到穿着记录。");
-        }
-        catch (Exception ex)
-        {
-            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, recommendation.Name);
-            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-        }
+        await RecordOutfitWornAsync(recommendation.Outfit, recommendation.Name, "今日推荐已经同步到穿着记录。");
     }
 
     private void OpenOutfitHistory_Click(object sender, RoutedEventArgs e)
@@ -251,5 +208,32 @@ public partial class OutfitsTab : UserControl
             if (found != null) return found;
         }
         return null;
+    }
+
+    private async Task RefreshAfterEditorSaveAsync(string title, string detail)
+    {
+        try
+        {
+            await _viewModel.RefreshAfterOutfitSavedAsync();
+            ToastService.Instance.ShowSuccess(title, detail);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+        }
+    }
+
+    private async Task RecordOutfitWornAsync(OutfitEntity outfit, string displayName, string detail = "今天的穿着记录已经更新。")
+    {
+        try
+        {
+            await _viewModel.RecordOutfitWornTodayAsync(outfit);
+            ToastService.Instance.ShowSuccess($"已记录穿过「{displayName}」", detail);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, displayName);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
     }
 }
