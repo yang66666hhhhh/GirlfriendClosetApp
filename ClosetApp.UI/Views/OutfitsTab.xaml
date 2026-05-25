@@ -41,6 +41,34 @@
             <Setter Property="Foreground" Value="{StaticResource OutfitLavenderTextBrush}"/>
         </Style>
 
+        <Style x:Key="WeatherRecommendationCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14"/>
+        </Style>
+
+        <Style x:Key="WeatherRecommendationChip" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource OutfitSkySurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OutfitSkyBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="WeatherRecommendationChipText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource OutfitSkyTextBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="WeatherRecommendationMetaText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+        </Style>
+
         <Style x:Key="TodayHeroSecondaryActionButton" TargetType="Button" BasedOn="{StaticResource CapsuleButton}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -269,6 +297,109 @@
                         </Grid>
                     </Border>
                 </Grid>
+
+                <StackPanel Margin="0,0,0,16"
+                            Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <TextBlock Text="今天还可以考虑"
+                                       Style="{StaticResource PageSectionTitleText}"/>
+                            <TextBlock Text="把主推荐之外的两套也摆出来，换场景或换心情时不用重新翻。"
+                                       Style="{StaticResource PageSectionBodyText}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
+                        <Border Grid.Column="1"
+                                Style="{StaticResource PageSummaryBadge}"
+                                Background="{StaticResource OutfitSkySurfaceBrush}"
+                                BorderBrush="{StaticResource OutfitSkyBorderBrush}"
+                                BorderThickness="1"
+                                Padding="10,7">
+                            <StackPanel>
+                                <TextBlock Text="{Binding WeatherRecommendationCountText}"
+                                           Style="{StaticResource PageSummaryValueText}"/>
+                                <TextBlock Text="天气候选"
+                                           Style="{StaticResource PageSummaryHintText}"
+                                           Margin="0,2,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <ItemsControl ItemsSource="{Binding SecondaryWeatherRecommendations}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel ItemWidth="332"
+                                           Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Style="{StaticResource WeatherRecommendationCard}"
+                                        Margin="0,0,16,0"
+                                        Width="316">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="132"/>
+                                            <ColumnDefinition Width="16"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0"
+                                                Background="{DynamicResource SurfaceHeroBrush}"
+                                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="8"
+                                                Height="156"
+                                                Padding="10">
+                                            <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"/>
+                                        </Border>
+
+                                        <StackPanel Grid.Column="2"
+                                                    VerticalAlignment="Stretch">
+                                            <Border Style="{StaticResource WeatherRecommendationChip}">
+                                                <TextBlock Text="{Binding ReasonChipText}"
+                                                           Style="{StaticResource WeatherRecommendationChipText}"/>
+                                            </Border>
+
+                                            <TextBlock Text="{Binding Name}"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       FontSize="16"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,10,0,0"
+                                                       TextWrapping="Wrap"/>
+
+                                            <TextBlock Text="{Binding ReasonSummaryText}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       FontSize="11.5"
+                                                       Margin="0,6,0,0"
+                                                       TextWrapping="Wrap"/>
+
+                                            <StackPanel Margin="0,10,0,0">
+                                                <TextBlock Text="{Binding WearSummaryText}"
+                                                           Style="{StaticResource WeatherRecommendationMetaText}"/>
+                                                <TextBlock Text="{Binding PrimaryReason}"
+                                                           Style="{StaticResource WeatherRecommendationMetaText}"
+                                                           Margin="0,4,0,0"
+                                                           TextWrapping="Wrap"
+                                                           MaxHeight="48"/>
+                                            </StackPanel>
+
+                                            <Button Content="记这套"
+                                                    Style="{StaticResource OutfitSkyButton}"
+                                                    Padding="14,8"
+                                                    Margin="0,12,0,0"
+                                                    HorizontalAlignment="Left"
+                                                    Click="RecommendedOutfitWorn_Click"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
 
                 <Grid Margin="0,0,0,6">
                     <Border Style="{StaticResource PageSummaryCard}"
