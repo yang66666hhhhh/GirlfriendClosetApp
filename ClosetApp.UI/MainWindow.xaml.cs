@@ -42,15 +42,10 @@ public partial class MainWindow : Window
             Sidebar.Expand();
     }
 
-    private void Sidebar_NavigationChanged(object? sender, int tabIndex)
+    private async void Sidebar_NavigationChanged(object? sender, int tabIndex)
     {
         ShowTab(tabIndex);
-
-        if (tabIndex == 1)
-        {
-            Log.Debug("Refreshing outfits after navigating to outfits tab");
-            _ = OutfitsTabContent.RefreshAsync();
-        }
+        await RefreshVisibleTabAsync(tabIndex);
     }
 
     private void Sidebar_CollapseStateChanged(object? sender, bool isCollapsed)
@@ -66,10 +61,30 @@ public partial class MainWindow : Window
         SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, anim);
     }
 
-    public void NavigateToSettings()
+    public async void NavigateToSettings()
     {
         Sidebar.SetSelectedTab(3);
         ShowTab(3);
+        await RefreshVisibleTabAsync(3);
+    }
+
+    public async Task RefreshDataTabsAsync(
+        bool clothes = false,
+        bool outfits = false,
+        bool tags = false,
+        bool settings = false)
+    {
+        if (clothes)
+            await ClothesTabContent.RefreshAsync();
+
+        if (outfits)
+            await OutfitsTabContent.RefreshAsync();
+
+        if (tags)
+            await TagsTabContent.RefreshAsync();
+
+        if (settings)
+            await SettingsTabContent.RefreshAsync();
     }
 
     private void ShowTab(int tabIndex)
@@ -79,5 +94,25 @@ public partial class MainWindow : Window
         OutfitsTabContent.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         TagsTabContent.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;
         SettingsTabContent.Visibility = tabIndex == 3 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async Task RefreshVisibleTabAsync(int tabIndex)
+    {
+        switch (tabIndex)
+        {
+            case 0:
+                await ClothesTabContent.RefreshAsync();
+                break;
+            case 1:
+                Log.Debug("Refreshing outfits after navigating to outfits tab");
+                await OutfitsTabContent.RefreshAsync();
+                break;
+            case 2:
+                await TagsTabContent.RefreshAsync();
+                break;
+            case 3:
+                await SettingsTabContent.RefreshAsync();
+                break;
+        }
     }
 }

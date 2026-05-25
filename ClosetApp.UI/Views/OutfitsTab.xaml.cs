@@ -33,16 +33,21 @@ public partial class OutfitsTab : UserControl
                 _ = Dispatcher.BeginInvoke(AttachCardHandlers, System.Windows.Threading.DispatcherPriority.Loaded);
             }
         };
-        Loaded += async (s, e) => await LoadOutfitsAsync();
+        Loaded += async (_, _) => await RefreshAsync();
     }
 
-    private async Task LoadOutfitsAsync()
+    public async Task RefreshAsync()
     {
-        await _viewModel.LoadOutfitsAsync();
-        _ = Dispatcher.BeginInvoke(AttachCardHandlers, System.Windows.Threading.DispatcherPriority.Loaded);
+        try
+        {
+            await _viewModel.LoadOutfitsAsync();
+            _ = Dispatcher.BeginInvoke(AttachCardHandlers, System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+        }
     }
-
-    public Task RefreshAsync() => _viewModel.RefreshAsync();
 
     private void ClearFilters_Click(object sender, RoutedEventArgs e)
     {

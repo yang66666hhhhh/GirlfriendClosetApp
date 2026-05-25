@@ -9,6 +9,7 @@ using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
+using ClosetApp.UI;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
@@ -32,20 +33,27 @@ public partial class SettingsTab : UserControl
         _weatherPreferencesService = App.Services.GetRequiredService<IWeatherPreferencesService>();
         _themeService = App.Services.GetRequiredService<ThemeService>();
         InitializeComponent();
-        Loaded += async (_, _) => await LoadSettingsAsync();
+        Loaded += async (_, _) => await RefreshAsync();
     }
 
-    private async Task LoadSettingsAsync()
+    public async Task RefreshAsync()
     {
-        TxtDataDir.Text = AppPaths.BaseDir;
-        TxtImagesDir.Text = AppPaths.ImagesDir;
-        TxtLogDir.Text = AppPaths.LogsDir;
-        TxtVersion.Text = $"版本 {GetVersion()}";
-        await LoadWeatherPreferencesAsync();
-        ApplyThemeSelectionState(_themeService.CurrentTheme);
-        await RefreshStatsAsync();
-        await RefreshBackupStateAsync();
-        await RefreshWeatherAsync(showStatus: false);
+        try
+        {
+            TxtDataDir.Text = AppPaths.BaseDir;
+            TxtImagesDir.Text = AppPaths.ImagesDir;
+            TxtLogDir.Text = AppPaths.LogsDir;
+            TxtVersion.Text = $"版本 {GetVersion()}";
+            await LoadWeatherPreferencesAsync();
+            ApplyThemeSelectionState(_themeService.CurrentTheme);
+            await RefreshStatsAsync();
+            await RefreshBackupStateAsync();
+            await RefreshWeatherAsync(showStatus: false);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新设置失败", ex.Message);
+        }
     }
 
     private static string GetVersion()
@@ -155,6 +163,7 @@ public partial class SettingsTab : UserControl
     {
         await RefreshStatsAsync();
         await RefreshBackupStateAsync();
+        ToastService.Instance.ShowInfo("统计信息已刷新。");
     }
 
     private async void RefreshWeather_Click(object sender, RoutedEventArgs e)
@@ -178,18 +187,22 @@ public partial class SettingsTab : UserControl
         });
 
         ShowWeatherStatus($"默认城市已保存为 {city}。");
+        ToastService.Instance.ShowSuccess("已保存默认城市", city);
+        await RequestAppRefreshAsync(outfits: true);
     }
 
     private async void UseRoseTheme_Click(object sender, RoutedEventArgs e)
     {
         await _themeService.ApplyThemeAsync(AppThemeKind.Rose);
         ApplyThemeSelectionState(AppThemeKind.Rose);
+        ToastService.Instance.ShowSuccess("已切换到柔粉主题");
     }
 
     private async void UseBlueTheme_Click(object sender, RoutedEventArgs e)
     {
         await _themeService.ApplyThemeAsync(AppThemeKind.Blue);
         ApplyThemeSelectionState(AppThemeKind.Blue);
+        ToastService.Instance.ShowSuccess("已切换到清蓝主题");
     }
 
     private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
@@ -208,6 +221,7 @@ public partial class SettingsTab : UserControl
 
         await RefreshStatsAsync();
         MessageBox.Show("图片缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess("图片缓存已清理");
     }
 
     private async void RebuildThumbnails_Click(object sender, RoutedEventArgs e)
@@ -220,6 +234,7 @@ public partial class SettingsTab : UserControl
             "图片缓存",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess("图片缓存已重建", result.Summary);
     }
 
     private async void CleanupOrphanOriginals_Click(object sender, RoutedEventArgs e)
@@ -244,6 +259,7 @@ public partial class SettingsTab : UserControl
         await RefreshStatsAsync();
 
         MessageBox.Show(result.Summary, "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess("孤儿原图已清理", result.Summary);
     }
 
     private async void ClearLogs_Click(object sender, RoutedEventArgs e)
@@ -279,6 +295,7 @@ public partial class SettingsTab : UserControl
 
         await RefreshStatsAsync();
         MessageBox.Show("历史日志已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess("历史日志已清理");
     }
 
     private async void ExportBackup_Click(object sender, RoutedEventArgs e)
@@ -306,6 +323,7 @@ public partial class SettingsTab : UserControl
             "完成",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess("备份已导出", Path.GetFileName(result.FilePath));
     }
 
     private async void QuickExportBackup_Click(object sender, RoutedEventArgs e)
@@ -323,6 +341,7 @@ public partial class SettingsTab : UserControl
             "完成",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess("备份已导出", Path.GetFileName(result.FilePath));
     }
 
     private async void ImportBackup_Click(object sender, RoutedEventArgs e)
@@ -349,12 +368,14 @@ public partial class SettingsTab : UserControl
         var result = await _backupService.ImportAsync(dialog.FileName);
         await RefreshStatsAsync();
         await RefreshBackupStateAsync(result);
+        await RequestAppRefreshAsync(clothes: true, outfits: true, tags: true);
 
         MessageBox.Show(
             BuildImportMessage(result),
             "完成",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess("备份已导入", "衣柜、搭配和标签列表已经刷新。");
     }
 
     private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
@@ -369,6 +390,7 @@ public partial class SettingsTab : UserControl
 
         var repairedCount = await _imageMaintenanceService.RelinkMissingImagesAsync(dialog.FolderName);
         await RefreshStatsAsync();
+        await RequestAppRefreshAsync(clothes: true, outfits: true);
 
         MessageBox.Show(
             repairedCount == 0
@@ -377,11 +399,15 @@ public partial class SettingsTab : UserControl
             "图片修复",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
+        ToastService.Instance.ShowSuccess(
+            repairedCount == 0 ? "没有需要修复的图片" : "缺失图片已重连",
+            repairedCount == 0 ? null : $"共修复 {repairedCount} 张图片。");
     }
 
     private async void RefreshBackupState_Click(object sender, RoutedEventArgs e)
     {
         await RefreshBackupStateAsync();
+        ToastService.Instance.ShowInfo("备份状态已刷新。");
     }
 
     private async Task LoadWeatherPreferencesAsync()
@@ -452,6 +478,19 @@ public partial class SettingsTab : UserControl
 
         await _backupService.ClearHistoryAsync();
         await RefreshBackupStateAsync();
+        ToastService.Instance.ShowSuccess("备份历史已清空");
+    }
+
+    private async Task RequestAppRefreshAsync(
+        bool clothes = false,
+        bool outfits = false,
+        bool tags = false,
+        bool settings = false)
+    {
+        if (Window.GetWindow(this) is not MainWindow window)
+            return;
+
+        await window.RefreshDataTabsAsync(clothes, outfits, tags, settings);
     }
 
     private void OpenBackupFile_Click(object sender, RoutedEventArgs e)

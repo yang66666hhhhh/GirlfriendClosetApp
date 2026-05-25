@@ -23,6 +23,7 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
     private readonly List<SelectableClothing> _allItems = new();
     private readonly bool _isEditMode;
     private readonly OutfitEntity? _existingOutfit;
+    private bool _isSubmitting;
 
     public event EventHandler<EditorResult<OutfitEntity>>? EditorCompleted;
 
@@ -217,67 +218,80 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
-        if (_isEditMode && string.IsNullOrWhiteSpace(TxtName.Text))
+        if (_isSubmitting)
+            return;
+
+        if (string.IsNullOrWhiteSpace(TxtName.Text))
         {
-            MessageBox.Show("请输入搭配名称", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToastService.Instance.ShowInfo("先输入搭配名称。");
             return;
         }
 
         var selectedClothes = _allItems.Where(i => i.IsSelected).Select(i => i.Clothing).ToList();
         if (selectedClothes.Count == 0)
         {
-            MessageBox.Show("请至少选择一件衣服", "提示", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToastService.Instance.ShowInfo("请至少选择一件衣服。");
             return;
         }
 
-        var scene = (CmbScene.SelectedItem as ComboBoxItem)?.Tag?.ToString() switch
+        try
         {
-            "Work" => OutfitScene.Work, "Date" => OutfitScene.Date,
-            "Travel" => OutfitScene.Travel, "Party" => OutfitScene.Party,
-            _ => OutfitScene.Casual
-        };
-        var season = (CmbSeason.SelectedItem as ComboBoxItem)?.Tag?.ToString() switch
-        {
-            "Spring" => Season.Spring, "Summer" => Season.Summer,
-            "Autumn" => Season.Autumn, "Winter" => Season.Winter,
-            _ => Season.AllSeason
-        };
+            SetSubmitting(true);
 
-        OutfitEntity savedOutfit;
-        if (_isEditMode && _existingOutfit != null)
-        {
-            _existingOutfit.Name = TxtName.Text.Trim();
-            _existingOutfit.Scene = scene;
-            _existingOutfit.Season = season;
-            _existingOutfit.Rating = (int)RatingControl.Value;
-            _existingOutfit.OutfitClothes.Clear();
-            foreach (var clothing in selectedClothes)
-                _existingOutfit.OutfitClothes.Add(new OutfitClothingEntity { OutfitId = _existingOutfit.Id, ClothingId = clothing.Id });
-            await _outfitService.UpdateOutfitAsync(_existingOutfit);
-            savedOutfit = _existingOutfit;
-        }
-        else
-        {
-            var outfit = new OutfitEntity
+            var scene = (CmbScene.SelectedItem as ComboBoxItem)?.Tag?.ToString() switch
             {
-                Name = TxtName.Text.Trim(),
-                Scene = scene,
-                Season = season,
-                Rating = (int)RatingControl.Value
+                "Work" => OutfitScene.Work, "Date" => OutfitScene.Date,
+                "Travel" => OutfitScene.Travel, "Party" => OutfitScene.Party,
+                _ => OutfitScene.Casual
             };
-            await _outfitService.AddOutfitAsync(outfit);
-            foreach (var clothing in selectedClothes)
-                outfit.OutfitClothes.Add(new OutfitClothingEntity { OutfitId = outfit.Id, ClothingId = clothing.Id });
-            await _outfitService.UpdateOutfitAsync(outfit);
-            savedOutfit = outfit;
+            var season = (CmbSeason.SelectedItem as ComboBoxItem)?.Tag?.ToString() switch
+            {
+                "Spring" => Season.Spring, "Summer" => Season.Summer,
+                "Autumn" => Season.Autumn, "Winter" => Season.Winter,
+                _ => Season.AllSeason
+            };
+
+            OutfitEntity savedOutfit;
+            if (_isEditMode && _existingOutfit != null)
+            {
+                _existingOutfit.Name = TxtName.Text.Trim();
+                _existingOutfit.Scene = scene;
+                _existingOutfit.Season = season;
+                _existingOutfit.Rating = (int)RatingControl.Value;
+                _existingOutfit.OutfitClothes.Clear();
+                foreach (var clothing in selectedClothes)
+                    _existingOutfit.OutfitClothes.Add(new OutfitClothingEntity { OutfitId = _existingOutfit.Id, ClothingId = clothing.Id });
+                await _outfitService.UpdateOutfitAsync(_existingOutfit);
+                savedOutfit = _existingOutfit;
+            }
+            else
+            {
+                var outfit = new OutfitEntity
+                {
+                    Name = TxtName.Text.Trim(),
+                    Scene = scene,
+                    Season = season,
+                    Rating = (int)RatingControl.Value
+                };
+                await _outfitService.AddOutfitAsync(outfit);
+                foreach (var clothing in selectedClothes)
+                    outfit.OutfitClothes.Add(new OutfitClothingEntity { OutfitId = outfit.Id, ClothingId = clothing.Id });
+                await _outfitService.UpdateOutfitAsync(outfit);
+                savedOutfit = outfit;
+            }
+
+            TxtName.Text = string.Empty;
+            foreach (var item in _allItems) item.IsSelected = false;
+            UpdateSectionStates();
+            UpdatePreview();
+
+            EditorCompleted?.Invoke(this, new EditorResult<OutfitEntity>(EditorResultType.Saved, savedOutfit));
         }
-
-        TxtName.Text = string.Empty;
-        foreach (var item in _allItems) item.IsSelected = false;
-        UpdateSectionStates();
-        UpdatePreview();
-
-        EditorCompleted?.Invoke(this, new EditorResult<OutfitEntity>(EditorResultType.Saved, savedOutfit));
+        catch (Exception ex)
+        {
+            SetSubmitting(false);
+            ToastService.Instance.ShowError(_isEditMode ? "保存搭配失败" : "创建搭配失败", ex.Message);
+        }
     }
 
     private void CloseButton_Click(object sender, RoutedEventArgs e) =>
@@ -285,6 +299,17 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
 
     private void Cancel_Click(object sender, RoutedEventArgs e) =>
         EditorCompleted?.Invoke(this, new EditorResult<OutfitEntity>(EditorResultType.Cancelled));
+
+    private void SetSubmitting(bool isSubmitting)
+    {
+        _isSubmitting = isSubmitting;
+        BtnSave.IsEnabled = !isSubmitting;
+        BtnCancel.IsEnabled = !isSubmitting;
+        BtnClose.IsEnabled = !isSubmitting;
+        BtnSave.Content = isSubmitting
+            ? (_isEditMode ? "正在保存..." : "正在创建...")
+            : (_isEditMode ? "保存修改" : "创建搭配");
+    }
 }
 
 public class SelectableClothing : System.ComponentModel.INotifyPropertyChanged

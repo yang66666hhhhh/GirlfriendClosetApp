@@ -4,6 +4,7 @@ using System.Windows.Controls.Primitives;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Tags.Controls;
 
@@ -80,6 +81,7 @@ public partial class TagEditorPanel : UserControl, IEditorPanel<Tag>
         if (string.IsNullOrWhiteSpace(TxtName.Text))
         {
             TxtName.Focus();
+            ToastService.Instance.ShowInfo("先输入标签名称。");
             return;
         }
 

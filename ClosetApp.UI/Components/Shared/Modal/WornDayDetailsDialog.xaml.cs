@@ -38,14 +38,21 @@ public partial class WornDayDetailsDialog : UserControl
 
     private async Task LoadOutfitOptionsAsync()
     {
-        var outfits = (await _outfitService.GetAllOutfitsAsync())
-            .OrderByDescending(o => o.WornDate)
-            .ThenBy(o => o.Name)
-            .ToList();
+        try
+        {
+            var outfits = (await _outfitService.GetAllOutfitsAsync())
+                .OrderByDescending(o => o.WornDate)
+                .ThenBy(o => o.Name)
+                .ToList();
 
-        OutfitPicker.ItemsSource = outfits;
-        if (outfits.Count > 0)
-            OutfitPicker.SelectedIndex = 0;
+            OutfitPicker.ItemsSource = outfits;
+            if (outfits.Count > 0)
+                OutfitPicker.SelectedIndex = 0;
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("加载搭配列表失败", ex.Message);
+        }
     }
 
     private void RefreshRecords()
@@ -121,13 +128,20 @@ public partial class WornDayDetailsDialog : UserControl
             return;
         }
 
-        var recordTime = _date.Date == DateTime.Today
-            ? DateTime.Now
-            : _date.Date.AddHours(9);
+        try
+        {
+            var recordTime = _date.Date == DateTime.Today
+                ? DateTime.Now
+                : _date.Date.AddHours(9);
 
-        await _outfitService.RecordWornDateAsync(outfit.Id, recordTime);
-        ToastService.Instance.ShowSuccess("已添加穿搭记录");
-        await ReloadDayRecordsAsync();
+            await _outfitService.RecordWornDateAsync(outfit.Id, recordTime);
+            ToastService.Instance.ShowSuccess("已添加穿搭记录");
+            await ReloadDayRecordsAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("添加穿搭记录失败", ex.Message);
+        }
     }
 
     private async void DeleteRecordButton_Click(object sender, RoutedEventArgs e)
@@ -135,9 +149,16 @@ public partial class WornDayDetailsDialog : UserControl
         if (sender is not Button { Tag: Guid recordId })
             return;
 
-        await _outfitService.DeleteWornRecordAsync(recordId);
-        ToastService.Instance.ShowSuccess("已撤销这条记录");
-        await ReloadDayRecordsAsync();
+        try
+        {
+            await _outfitService.DeleteWornRecordAsync(recordId);
+            ToastService.Instance.ShowSuccess("已撤销这条记录");
+            await ReloadDayRecordsAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("撤销穿搭记录失败", ex.Message);
+        }
     }
 
     private void RecordsList_SelectionChanged(object sender, SelectionChangedEventArgs e)

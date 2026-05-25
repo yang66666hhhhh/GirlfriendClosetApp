@@ -35,15 +35,22 @@ public partial class ClothesTab : UserControl
             if (e.PropertyName == nameof(WardrobeViewModel.TotalCount))
                 ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
         };
-        Loaded += (s, e) => _ = LoadClothesAsync();
+        Loaded += async (_, _) => await RefreshAsync();
         SizeChanged += (_, _) => UpdateCardWidth();
     }
 
-    private async Task LoadClothesAsync()
+    public async Task RefreshAsync()
     {
-        await _viewModel.LoadClothesAsync();
-        ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
-        _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+        try
+        {
+            await _viewModel.LoadClothesAsync();
+            ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
+            _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新衣柜失败", ex.Message);
+        }
     }
 
     private void UpdateCardWidth()
@@ -282,6 +289,7 @@ public partial class ClothesTab : UserControl
         try
         {
             await _viewModel.DeleteClothingAsync(clothing);
+            ToastService.Instance.ShowSuccess($"已删除「{clothing.Name}」", "这件衣服已经从衣柜里移除。");
         }
         catch (Exception ex)
         {

@@ -21,12 +21,19 @@ public partial class TagsTab : UserControl
         _viewModel = App.Services.GetRequiredService<TagsViewModel>();
         InitializeComponent();
         DataContext = _viewModel;
-        Loaded += async (s, e) => await LoadTagsAsync();
+        Loaded += async (_, _) => await RefreshAsync();
     }
 
-    private async Task LoadTagsAsync()
+    public async Task RefreshAsync()
     {
-        await _viewModel.LoadTagsAsync();
+        try
+        {
+            await _viewModel.LoadTagsAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新标签失败", ex.Message);
+        }
     }
 
     private void CategoryFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -63,7 +63,7 @@
                 <Grid Margin="24,0">
                     <TextBlock x:Name="TxtHeader" Text="创建搭配" FontSize="18" FontWeight="SemiBold"
                                VerticalAlignment="Center" Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <Button HorizontalAlignment="Right" VerticalAlignment="Center"
+                    <Button x:Name="BtnClose" HorizontalAlignment="Right" VerticalAlignment="Center"
                             Content="✕"
                             Style="{StaticResource ModalCloseButton}"
                             Click="CloseButton_Click"/>
@@ -244,7 +244,7 @@
                         <ColumnDefinition Width="12"/>
                         <ColumnDefinition Width="2*"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="0" Content="取消" Style="{StaticResource ModalCancelButton}" Click="Cancel_Click"/>
+                    <Button Grid.Column="0" x:Name="BtnCancel" Content="取消" Style="{StaticResource ModalCancelButton}" Click="Cancel_Click"/>
                     <Button Grid.Column="2" x:Name="BtnSave" Content="创建搭配" Style="{StaticResource ModalSaveButton}" Click="Save_Click"/>
                 </Grid>
             </Border>
