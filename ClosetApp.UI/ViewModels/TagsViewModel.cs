@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -7,8 +6,36 @@ using Serilog;
 
 namespace ClosetApp.UI.ViewModels;
 
-public partial class TagsViewModel : ObservableObject
+public partial class TagsViewModel : ViewModelBase
 {
+    private static readonly string[] StatePropertyNames =
+    [
+        nameof(Tags),
+        nameof(StyleTags),
+        nameof(SceneTags),
+        nameof(SeasonTags),
+        nameof(IsLoading),
+        nameof(IsEmpty),
+        nameof(IsFilteredEmpty),
+        nameof(TagCount),
+        nameof(FilteredCount),
+        nameof(UsedCount),
+        nameof(UnusedCount),
+        nameof(TagCountText),
+        nameof(UsedCountText),
+        nameof(UnusedCountText),
+        nameof(CategorySummaryText),
+        nameof(UsageSummaryText),
+        nameof(FilterSummary),
+        nameof(HasActiveFilters),
+        nameof(CollectionSectionTitle),
+        nameof(CollectionSectionBody),
+        nameof(ShowStyleSection),
+        nameof(ShowSceneSection),
+        nameof(ShowSeasonSection),
+        nameof(SearchText)
+    ];
+
     private readonly ITagService _tagService;
     private readonly TagsTabState _state = new();
     private string _searchText = string.Empty;
@@ -112,29 +139,6 @@ public partial class TagsViewModel : ObservableObject
 
     private void NotifyStateChanged()
     {
-        OnPropertyChanged(nameof(Tags));
-        OnPropertyChanged(nameof(StyleTags));
-        OnPropertyChanged(nameof(SceneTags));
-        OnPropertyChanged(nameof(SeasonTags));
-        OnPropertyChanged(nameof(IsLoading));
-        OnPropertyChanged(nameof(IsEmpty));
-        OnPropertyChanged(nameof(IsFilteredEmpty));
-        OnPropertyChanged(nameof(TagCount));
-        OnPropertyChanged(nameof(FilteredCount));
-        OnPropertyChanged(nameof(UsedCount));
-        OnPropertyChanged(nameof(UnusedCount));
-        OnPropertyChanged(nameof(TagCountText));
-        OnPropertyChanged(nameof(UsedCountText));
-        OnPropertyChanged(nameof(UnusedCountText));
-        OnPropertyChanged(nameof(CategorySummaryText));
-        OnPropertyChanged(nameof(UsageSummaryText));
-        OnPropertyChanged(nameof(FilterSummary));
-        OnPropertyChanged(nameof(HasActiveFilters));
-        OnPropertyChanged(nameof(CollectionSectionTitle));
-        OnPropertyChanged(nameof(CollectionSectionBody));
-        OnPropertyChanged(nameof(ShowStyleSection));
-        OnPropertyChanged(nameof(ShowSceneSection));
-        OnPropertyChanged(nameof(ShowSeasonSection));
-        OnPropertyChanged(nameof(SearchText));
+        NotifyPropertiesChanged(StatePropertyNames);
     }
 }

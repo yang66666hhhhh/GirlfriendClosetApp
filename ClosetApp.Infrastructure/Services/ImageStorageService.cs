@@ -39,18 +39,21 @@ public class ImageStorageService : IImageStorageService
 
     public async Task<string> SaveImageAsync(string sourcePath)
     {
-        var fileName = $"{Guid.NewGuid()}{Path.GetExtension(sourcePath)}";
-        var destPath = Path.Combine(_originalFolder, fileName);
-        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+        return await Task.Run(async () =>
+        {
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(sourcePath)}";
+            var destPath = Path.Combine(_originalFolder, fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
 
-        using var image = await Image.LoadAsync<Rgba32>(sourcePath);
-        File.Copy(sourcePath, destPath, overwrite: true);
-        CropTransparentPadding(image);
-        await SaveDisplayForStoredImageAsync(image, fileName, DefaultDisplayWidth);
-        await SaveThumbnailForStoredImageAsync(image, fileName, DefaultThumbnailSize);
+            using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+            File.Copy(sourcePath, destPath, overwrite: true);
+            CropTransparentPadding(image);
+            await SaveDisplayForStoredImageAsync(image, fileName, DefaultDisplayWidth);
+            await SaveThumbnailForStoredImageAsync(image, fileName, DefaultThumbnailSize);
 
-        Log.Information("Saved clothing image {SourcePath} -> {FileName}", sourcePath, fileName);
-        return fileName;
+            Log.Information("Saved clothing image {SourcePath} -> {FileName}", sourcePath, fileName);
+            return fileName;
+        });
     }
 
     public async Task<string> SaveThumbnailAsync(string sourcePath, int maxSize = 200)
@@ -107,16 +110,19 @@ public class ImageStorageService : IImageStorageService
 
     public async Task RestoreImageAsync(string sourcePath, string storedFileName)
     {
-        var destPath = GetImageFullPath(storedFileName);
-        Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
+        await Task.Run(async () =>
+        {
+            var destPath = GetImageFullPath(storedFileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
 
-        using var image = await Image.LoadAsync<Rgba32>(sourcePath);
-        File.Copy(sourcePath, destPath, overwrite: true);
-        CropTransparentPadding(image);
-        await SaveDisplayForStoredImageAsync(image, storedFileName, DefaultDisplayWidth);
-        await SaveThumbnailForStoredImageAsync(image, storedFileName, DefaultThumbnailSize);
+            using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+            File.Copy(sourcePath, destPath, overwrite: true);
+            CropTransparentPadding(image);
+            await SaveDisplayForStoredImageAsync(image, storedFileName, DefaultDisplayWidth);
+            await SaveThumbnailForStoredImageAsync(image, storedFileName, DefaultThumbnailSize);
 
-        Log.Information("Restored clothing image {SourcePath} -> {FileName}", sourcePath, storedFileName);
+            Log.Information("Restored clothing image {SourcePath} -> {FileName}", sourcePath, storedFileName);
+        });
     }
 
     private async Task SaveDisplayForStoredImageAsync(Image<Rgba32> image, string imageFileName, int maxWidth)

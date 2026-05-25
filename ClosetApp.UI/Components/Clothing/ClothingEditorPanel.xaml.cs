@@ -31,6 +31,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
     private ClothingType _selectedType = ClothingType.Top;
     private Season _selectedSeason = Season.AllSeason;
     private int _favoriteLevel;
+    private bool _isSubmitting;
 
     public bool IsDirty { get; private set; }
 
@@ -390,11 +391,17 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private void Cancel_Click(object sender, RoutedEventArgs e)
     {
+        if (_isSubmitting)
+            return;
+
         EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Cancelled));
     }
 
     private async void Delete_Click(object sender, RoutedEventArgs e)
     {
+        if (_isSubmitting)
+            return;
+
         if (_existingClothing == null)
             return;
 
@@ -409,15 +416,20 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
+        if (_isSubmitting)
+            return;
+
         if (string.IsNullOrWhiteSpace(TxtName.Text))
         {
             ShakeElement(TxtName);
             TxtName.Focus();
+            ToastService.Instance.ShowInfo("先给这件衣服起个名字吧。");
             return;
         }
 
         try
         {
+            SetSubmitting(true);
             global::ClosetApp.Domain.Entities.Clothing clothing;
             if (_isEditMode && _existingClothing != null)
             {
@@ -432,7 +444,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
                 if (_imageChanged && !string.IsNullOrEmpty(_selectedImagePath))
                 {
-                    clothing.ImagePath = await _imageStorage.SaveImageAsync(_selectedImagePath);
+                    clothing.ImagePath = await SaveSelectedImageAsync(_selectedImagePath);
                 }
                 else if (_imageChanged && string.IsNullOrEmpty(_selectedImagePath))
                 {
@@ -453,7 +465,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
                 string imagePath = string.Empty;
                 if (!string.IsNullOrEmpty(_selectedImagePath) && File.Exists(_selectedImagePath))
                 {
-                    imagePath = await _imageStorage.SaveImageAsync(_selectedImagePath);
+                    imagePath = await SaveSelectedImageAsync(_selectedImagePath);
                 }
 
                 clothing = new global::ClosetApp.Domain.Entities.Clothing
@@ -476,9 +488,25 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         }
         catch (Exception ex)
         {
+            SetSubmitting(false);
             var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, _isEditMode);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
+    }
+
+    private Task<string> SaveSelectedImageAsync(string selectedImagePath)
+    {
+        return _imageStorage.SaveImageAsync(selectedImagePath);
+    }
+
+    private void SetSubmitting(bool isSubmitting)
+    {
+        _isSubmitting = isSubmitting;
+        BtnSave.IsEnabled = !isSubmitting;
+        BtnHeaderCancel.IsEnabled = !isSubmitting;
+        BtnFooterCancel.IsEnabled = !isSubmitting;
+        BtnDelete.IsEnabled = !isSubmitting;
+        BtnSave.Content = isSubmitting ? "正在保存..." : "保存衣服 ♥";
     }
 
     private void ShakeElement(UIElement element)

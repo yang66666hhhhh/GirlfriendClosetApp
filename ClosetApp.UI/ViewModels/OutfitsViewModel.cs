@@ -10,8 +10,72 @@ using Serilog;
 
 namespace ClosetApp.UI.ViewModels;
 
-public partial class OutfitsViewModel : ObservableObject
+public partial class OutfitsViewModel : ViewModelBase
 {
+    private static readonly string[] StatePropertyNames =
+    [
+        nameof(Outfits),
+        nameof(RecentWornRecords),
+        nameof(SelectedRecentWornRecord),
+        nameof(CalendarDays),
+        nameof(IsLoading),
+        nameof(IsEmpty),
+        nameof(IsFilteredEmpty),
+        nameof(OutfitCount),
+        nameof(TotalCount),
+        nameof(OutfitCountText),
+        nameof(TotalCountText),
+        nameof(HasActiveFilters),
+        nameof(FilterSummary),
+        nameof(FilterResultText),
+        nameof(CollectionSectionTitle),
+        nameof(CollectionSectionBody),
+        nameof(FavoriteOnly),
+        nameof(SearchText),
+        nameof(HistoryQuickText),
+        nameof(HistorySummaryText),
+        nameof(IsHistoryExpanded),
+        nameof(HistoryToggleText),
+        nameof(CalendarMonthText),
+        nameof(CalendarSummaryText),
+        nameof(TodayWornCount),
+        nameof(HasTodayWornRecords),
+        nameof(TodayWornStatusText)
+    ];
+
+    private static readonly string[] WeatherPropertyNames =
+    [
+        nameof(WeatherCity),
+        nameof(WeatherTemperature),
+        nameof(WeatherCondition),
+        nameof(IsWeatherLoading),
+        nameof(CanRefreshWeatherRecommendations),
+        nameof(RefreshWeatherButtonText),
+        nameof(WeatherStatusText),
+        nameof(WeatherRecommendations),
+        nameof(RecommendationReadiness),
+        nameof(HasRecommendationReadiness),
+        nameof(HasRecommendationGap),
+        nameof(RecommendationReadinessTitle),
+        nameof(RecommendationReadinessDetail),
+        nameof(RecommendationReadinessBadgeText),
+        nameof(RecommendationReadinessCountText),
+        nameof(RecommendationMissingSeasonText),
+        nameof(HasWeatherRecommendations),
+        nameof(HasPrimaryWeatherRecommendation),
+        nameof(HasSecondaryWeatherRecommendations),
+        nameof(WeatherHeadlineText),
+        nameof(WeatherCityCompactText),
+        nameof(WeatherCompactSummaryText),
+        nameof(WeatherRecommendationCountText),
+        nameof(PrimaryWeatherRecommendation),
+        nameof(SecondaryWeatherRecommendations),
+        nameof(WeatherRecommendationHintText),
+        nameof(TodayHeroRecommendationNameText),
+        nameof(TodayHeroRecommendationSupportText),
+        nameof(TodayHeroPrimaryActionText)
+    ];
+
     private readonly IOutfitService _outfitService;
     private readonly IOutfitRecommendationService _recommendationService;
     private readonly IWeatherService _weatherService;
@@ -344,67 +408,13 @@ public partial class OutfitsViewModel : ObservableObject
 
     private void NotifyStateChanged()
     {
-        OnPropertyChanged(nameof(Outfits));
-        OnPropertyChanged(nameof(RecentWornRecords));
-        OnPropertyChanged(nameof(SelectedRecentWornRecord));
-        OnPropertyChanged(nameof(CalendarDays));
-        OnPropertyChanged(nameof(IsLoading));
-        OnPropertyChanged(nameof(IsEmpty));
-        OnPropertyChanged(nameof(IsFilteredEmpty));
-        OnPropertyChanged(nameof(OutfitCount));
-        OnPropertyChanged(nameof(TotalCount));
-        OnPropertyChanged(nameof(OutfitCountText));
-        OnPropertyChanged(nameof(TotalCountText));
-        OnPropertyChanged(nameof(HasActiveFilters));
-        OnPropertyChanged(nameof(FilterSummary));
-        OnPropertyChanged(nameof(FilterResultText));
-        OnPropertyChanged(nameof(CollectionSectionTitle));
-        OnPropertyChanged(nameof(CollectionSectionBody));
-        OnPropertyChanged(nameof(FavoriteOnly));
-        OnPropertyChanged(nameof(SearchText));
-        OnPropertyChanged(nameof(HistoryQuickText));
-        OnPropertyChanged(nameof(HistorySummaryText));
-        OnPropertyChanged(nameof(IsHistoryExpanded));
-        OnPropertyChanged(nameof(HistoryToggleText));
-        OnPropertyChanged(nameof(CalendarMonthText));
-        OnPropertyChanged(nameof(CalendarSummaryText));
-        OnPropertyChanged(nameof(TodayWornCount));
-        OnPropertyChanged(nameof(HasTodayWornRecords));
-        OnPropertyChanged(nameof(TodayWornStatusText));
+        NotifyPropertiesChanged(StatePropertyNames);
         NotifyWeatherStateChanged();
     }
 
     private void NotifyWeatherStateChanged()
     {
-        OnPropertyChanged(nameof(WeatherCity));
-        OnPropertyChanged(nameof(WeatherTemperature));
-        OnPropertyChanged(nameof(WeatherCondition));
-        OnPropertyChanged(nameof(IsWeatherLoading));
-        OnPropertyChanged(nameof(CanRefreshWeatherRecommendations));
-        OnPropertyChanged(nameof(RefreshWeatherButtonText));
-        OnPropertyChanged(nameof(WeatherStatusText));
-        OnPropertyChanged(nameof(WeatherRecommendations));
-        OnPropertyChanged(nameof(RecommendationReadiness));
-        OnPropertyChanged(nameof(HasRecommendationReadiness));
-        OnPropertyChanged(nameof(HasRecommendationGap));
-        OnPropertyChanged(nameof(RecommendationReadinessTitle));
-        OnPropertyChanged(nameof(RecommendationReadinessDetail));
-        OnPropertyChanged(nameof(RecommendationReadinessBadgeText));
-        OnPropertyChanged(nameof(RecommendationReadinessCountText));
-        OnPropertyChanged(nameof(RecommendationMissingSeasonText));
-        OnPropertyChanged(nameof(HasWeatherRecommendations));
-        OnPropertyChanged(nameof(HasPrimaryWeatherRecommendation));
-        OnPropertyChanged(nameof(HasSecondaryWeatherRecommendations));
-        OnPropertyChanged(nameof(WeatherHeadlineText));
-        OnPropertyChanged(nameof(WeatherCityCompactText));
-        OnPropertyChanged(nameof(WeatherCompactSummaryText));
-        OnPropertyChanged(nameof(WeatherRecommendationCountText));
-        OnPropertyChanged(nameof(PrimaryWeatherRecommendation));
-        OnPropertyChanged(nameof(SecondaryWeatherRecommendations));
-        OnPropertyChanged(nameof(WeatherRecommendationHintText));
-        OnPropertyChanged(nameof(TodayHeroRecommendationNameText));
-        OnPropertyChanged(nameof(TodayHeroRecommendationSupportText));
-        OnPropertyChanged(nameof(TodayHeroPrimaryActionText));
+        NotifyPropertiesChanged(WeatherPropertyNames);
     }
 
     private static string BuildCompactWeatherCity(string city)

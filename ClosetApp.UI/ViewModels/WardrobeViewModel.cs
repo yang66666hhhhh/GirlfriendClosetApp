@@ -1,4 +1,3 @@
-using CommunityToolkit.Mvvm.ComponentModel;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Clothing;
@@ -13,8 +12,74 @@ using Serilog;
 
 namespace ClosetApp.UI.ViewModels;
 
-public partial class WardrobeViewModel : ObservableObject
+public partial class WardrobeViewModel : ViewModelBase
 {
+    private static readonly string[] StatePropertyNames =
+    [
+        nameof(AvailableTags),
+        nameof(TagFilters),
+        nameof(HasAvailableTags),
+        nameof(AllClothes),
+        nameof(FilteredClothes),
+        nameof(IsLoading),
+        nameof(IsEmpty),
+        nameof(TotalCount),
+        nameof(FilteredCount),
+        nameof(SelectedType),
+        nameof(ActiveQueueFilter),
+        nameof(FilterSummary),
+        nameof(FilterResultText),
+        nameof(HasActiveFilters),
+        nameof(CollectionSectionTitle),
+        nameof(CollectionSectionBody),
+        nameof(SelectedSeason),
+        nameof(SelectedTagIds),
+        nameof(FavoriteOnly),
+        nameof(FilterHint),
+        nameof(FilterToggleText),
+        nameof(IsCategoryAllSelected),
+        nameof(IsCategoryTopSelected),
+        nameof(IsCategoryOuterwearSelected),
+        nameof(IsCategoryBottomSelected),
+        nameof(IsCategorySkirtSelected),
+        nameof(IsCategoryDressSelected),
+        nameof(IsCategoryShoesSelected),
+        nameof(IsCategoryAccessorySelected),
+        nameof(IsCategoryUnspecifiedSelected),
+        nameof(IsSeasonAllSelected),
+        nameof(IsSeasonSpringSelected),
+        nameof(IsSeasonSummerSelected),
+        nameof(IsSeasonAutumnSelected),
+        nameof(IsSeasonWinterSelected),
+        nameof(IsQueueAllSelected),
+        nameof(IsQueueUnnamedSelected),
+        nameof(IsQueueUncategorizedSelected),
+        nameof(IsQueueUnseasonedSelected),
+        nameof(IsQueueUntaggedSelected),
+        nameof(IsQueueMissingBrandOrColorSelected),
+        nameof(IsQueueRecentlyImportedSelected),
+        nameof(QueueAllText),
+        nameof(QueueUnnamedText),
+        nameof(QueueUncategorizedText),
+        nameof(QueueUnseasonedText),
+        nameof(QueueUntaggedText),
+        nameof(QueueMissingBrandOrColorText),
+        nameof(QueueRecentlyImportedText),
+        nameof(CanBatchCompleteCurrentQueue),
+        nameof(CanClearCurrentCategory),
+        nameof(ClearCurrentCategoryText),
+        nameof(ActiveQueueLabel),
+        nameof(ShowRecentImportSummary),
+        nameof(RecentlyImportedCount),
+        nameof(RecentlyImportedUnnamedCount),
+        nameof(RecentlyImportedUncategorizedCount),
+        nameof(RecentlyImportedUnseasonedCount),
+        nameof(RecentlyImportedUntaggedCount),
+        nameof(RecentlyImportedMissingBrandOrColorCount),
+        nameof(RecentImportSummaryTitle),
+        nameof(RecentImportSummaryBody)
+    ];
+
     private readonly IClothingService _clothingService;
     private readonly ITagService _tagService;
     private readonly IImageStorageService _imageStorageService;
@@ -535,68 +600,7 @@ public partial class WardrobeViewModel : ObservableObject
 
     private void NotifyStateChanged()
     {
-        OnPropertyChanged(nameof(AvailableTags));
-        OnPropertyChanged(nameof(TagFilters));
-        OnPropertyChanged(nameof(HasAvailableTags));
-        OnPropertyChanged(nameof(AllClothes));
-        OnPropertyChanged(nameof(FilteredClothes));
-        OnPropertyChanged(nameof(IsLoading));
-        OnPropertyChanged(nameof(IsEmpty));
-        OnPropertyChanged(nameof(TotalCount));
-        OnPropertyChanged(nameof(FilteredCount));
-        OnPropertyChanged(nameof(SelectedType));
-        OnPropertyChanged(nameof(ActiveQueueFilter));
-        OnPropertyChanged(nameof(FilterSummary));
-        OnPropertyChanged(nameof(FilterResultText));
-        OnPropertyChanged(nameof(HasActiveFilters));
-        OnPropertyChanged(nameof(CollectionSectionTitle));
-        OnPropertyChanged(nameof(CollectionSectionBody));
-        OnPropertyChanged(nameof(SelectedSeason));
-        OnPropertyChanged(nameof(SelectedTagIds));
-        OnPropertyChanged(nameof(FavoriteOnly));
-        OnPropertyChanged(nameof(FilterHint));
-        OnPropertyChanged(nameof(FilterToggleText));
-        OnPropertyChanged(nameof(IsCategoryAllSelected));
-        OnPropertyChanged(nameof(IsCategoryTopSelected));
-        OnPropertyChanged(nameof(IsCategoryOuterwearSelected));
-        OnPropertyChanged(nameof(IsCategoryBottomSelected));
-        OnPropertyChanged(nameof(IsCategorySkirtSelected));
-        OnPropertyChanged(nameof(IsCategoryDressSelected));
-        OnPropertyChanged(nameof(IsCategoryShoesSelected));
-        OnPropertyChanged(nameof(IsCategoryAccessorySelected));
-        OnPropertyChanged(nameof(IsCategoryUnspecifiedSelected));
-        OnPropertyChanged(nameof(IsSeasonAllSelected));
-        OnPropertyChanged(nameof(IsSeasonSpringSelected));
-        OnPropertyChanged(nameof(IsSeasonSummerSelected));
-        OnPropertyChanged(nameof(IsSeasonAutumnSelected));
-        OnPropertyChanged(nameof(IsSeasonWinterSelected));
-        OnPropertyChanged(nameof(IsQueueAllSelected));
-        OnPropertyChanged(nameof(IsQueueUnnamedSelected));
-        OnPropertyChanged(nameof(IsQueueUncategorizedSelected));
-        OnPropertyChanged(nameof(IsQueueUnseasonedSelected));
-        OnPropertyChanged(nameof(IsQueueUntaggedSelected));
-        OnPropertyChanged(nameof(IsQueueMissingBrandOrColorSelected));
-        OnPropertyChanged(nameof(IsQueueRecentlyImportedSelected));
-        OnPropertyChanged(nameof(QueueAllText));
-        OnPropertyChanged(nameof(QueueUnnamedText));
-        OnPropertyChanged(nameof(QueueUncategorizedText));
-        OnPropertyChanged(nameof(QueueUnseasonedText));
-        OnPropertyChanged(nameof(QueueUntaggedText));
-        OnPropertyChanged(nameof(QueueMissingBrandOrColorText));
-        OnPropertyChanged(nameof(QueueRecentlyImportedText));
-        OnPropertyChanged(nameof(CanBatchCompleteCurrentQueue));
-        OnPropertyChanged(nameof(CanClearCurrentCategory));
-        OnPropertyChanged(nameof(ClearCurrentCategoryText));
-        OnPropertyChanged(nameof(ActiveQueueLabel));
-        OnPropertyChanged(nameof(ShowRecentImportSummary));
-        OnPropertyChanged(nameof(RecentlyImportedCount));
-        OnPropertyChanged(nameof(RecentlyImportedUnnamedCount));
-        OnPropertyChanged(nameof(RecentlyImportedUncategorizedCount));
-        OnPropertyChanged(nameof(RecentlyImportedUnseasonedCount));
-        OnPropertyChanged(nameof(RecentlyImportedUntaggedCount));
-        OnPropertyChanged(nameof(RecentlyImportedMissingBrandOrColorCount));
-        OnPropertyChanged(nameof(RecentImportSummaryTitle));
-        OnPropertyChanged(nameof(RecentImportSummaryBody));
+        NotifyPropertiesChanged(StatePropertyNames);
     }
 
     private void BuildTagFilters(IEnumerable<Tag> tags)

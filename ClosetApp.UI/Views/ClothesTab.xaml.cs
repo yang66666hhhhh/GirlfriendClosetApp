@@ -177,6 +177,7 @@ public partial class ClothesTab : UserControl
         try
         {
             await _viewModel.AddClothingAsync(result.Entity);
+            ToastService.Instance.ShowSuccess($"已添加「{result.Entity.Name}」");
         }
         catch (Exception ex)
         {
@@ -195,6 +196,7 @@ public partial class ClothesTab : UserControl
             try
             {
                 await _viewModel.UpdateClothingAsync(result.Entity, oldImagePath);
+                ToastService.Instance.ShowSuccess($"已更新「{result.Entity.Name}」");
             }
             catch (Exception ex)
             {
