@@ -25,13 +25,16 @@ public static class EditorModal
         {
             try
             {
+                Debug.WriteLine($"[EditorModal] onCompleted start, result={result.Type}");
                 await onCompleted(result);
+                Debug.WriteLine("[EditorModal] onCompleted success, delaying 600ms...");
                 await Task.Delay(600);
+                Debug.WriteLine("[EditorModal] Hiding modal");
                 ModalService.Instance.Hide();
             }
             catch (Exception ex)
             {
-                Debug.WriteLine($"[EditorModal] onCompleted exception: {ex}");
+                Debug.WriteLine($"[EditorModal] onCompleted exception: {ex.Message}");
                 ToastService.Instance.ShowError("操作失败", ex.Message);
             }
         };

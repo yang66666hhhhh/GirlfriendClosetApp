@@ -74,9 +74,14 @@ public class ToastService
                 };
                 toast.Tag = timer;
                 timer.Start();
+
+                System.Diagnostics.Debug.WriteLine($"[Toast] Shown: '{message}', Host children={toastHost.Children.Count}, Active={_activeToasts.Count}");
             });
         }
-        catch { }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[Toast] Exception: {ex}");
+        }
     }
 
     private static Border BuildToast(string message, string? detail, Brush backgroundBrush, ToastService owner)
@@ -130,29 +135,61 @@ public class ToastService
         root.Children.Add(content);
 
         // Close button
-        var closeBtn = new Button
-        {
-            Content = "\u00D7",
-            Width = 28,
-            Height = 28,
-            FontSize = 16,
-            FontWeight = FontWeights.SemiBold,
-            Foreground = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
-            Background = Brushes.Transparent,
-            BorderThickness = new Thickness(0),
-            Cursor = Cursors.Hand,
-            VerticalAlignment = VerticalAlignment.Top,
-            Margin = new Thickness(4, 0, 0, 0),
-            Padding = new Thickness(0),
-            Template = CreateCloseButtonTemplate()
-        };
+        var closeBtn = BuildCloseButton(toast, owner);
 
         Grid.SetColumn(closeBtn, 1);
         root.Children.Add(closeBtn);
 
         toast.Child = root;
 
-        closeBtn.Click += (_, _) =>
+        return toast;
+    }
+
+    private static Button BuildCloseButton(Border toast, ToastService owner)
+    {
+        var btnBorder = new Border
+        {
+            Background = Brushes.Transparent,
+            CornerRadius = new CornerRadius(14),
+            Width = 28,
+            Height = 28,
+            Child = new TextBlock
+            {
+                Text = "\u00D7",
+                FontSize = 16,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(Color.FromArgb(200, 255, 255, 255)),
+                HorizontalAlignment = HorizontalAlignment.Center,
+                VerticalAlignment = VerticalAlignment.Center
+            }
+        };
+
+        var btn = new Button
+        {
+            Width = 28,
+            Height = 28,
+            Cursor = Cursors.Hand,
+            VerticalAlignment = VerticalAlignment.Top,
+            Margin = new Thickness(4, 0, 0, 0),
+            Padding = new Thickness(0),
+            Background = Brushes.Transparent,
+            BorderThickness = new Thickness(0),
+            Template = new ControlTemplate(typeof(Button))
+            {
+                VisualTree = new FrameworkElementFactory(typeof(ContentPresenter))
+            }
+        };
+
+        btn.MouseEnter += (_, _) =>
+        {
+            btnBorder.Background = new SolidColorBrush(Color.FromArgb(40, 255, 255, 255));
+        };
+        btn.MouseLeave += (_, _) =>
+        {
+            btnBorder.Background = Brushes.Transparent;
+        };
+
+        btn.Click += (_, _) =>
         {
             if (toast.Parent is StackPanel host)
             {
@@ -161,31 +198,8 @@ public class ToastService
             }
         };
 
-        return toast;
-    }
-
-    private static ControlTemplate CreateCloseButtonTemplate()
-    {
-        var template = new ControlTemplate(typeof(Button));
-        var border = new FrameworkElementFactory(typeof(Border));
-        border.SetValue(Border.NameProperty, "BtnBorder");
-        border.SetValue(Border.BackgroundProperty, Brushes.Transparent);
-        border.SetValue(Border.CornerRadiusProperty, new CornerRadius(14));
-        border.SetValue(Border.WidthProperty, 28.0);
-        border.SetValue(Border.HeightProperty, 28.0);
-
-        var contentPresenter = new FrameworkElementFactory(typeof(ContentPresenter));
-        contentPresenter.SetValue(ContentPresenter.HorizontalAlignmentProperty, HorizontalAlignment.Center);
-        contentPresenter.SetValue(ContentPresenter.VerticalAlignmentProperty, VerticalAlignment.Center);
-        border.AppendChild(contentPresenter);
-        template.VisualTree = border;
-
-        var hoverTrigger = new Trigger { Property = UIElement.IsMouseOverProperty, Value = true };
-        hoverTrigger.Setters.Add(new Setter(Border.BackgroundProperty,
-            new SolidColorBrush(Color.FromArgb(40, 255, 255, 255)), "BtnBorder"));
-        template.Triggers.Add(hoverTrigger);
-
-        return template;
+        btn.Content = btnBorder;
+        return btn;
     }
 
     private static void RemoveToastVisual(StackPanel host, Border toast, bool slideUp)
