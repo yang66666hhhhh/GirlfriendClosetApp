@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Threading;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
@@ -99,27 +100,7 @@ public partial class ClothesTab : UserControl
 
     private void BatchImport_Click(object sender, RoutedEventArgs e)
     {
-        EditorModal.Show(new BatchClothingImportPanel(), async result =>
-        {
-            if (result.Type == EditorResultType.Saved && result.Entity != null)
-            {
-                try
-                {
-                    var importResult = await _viewModel.ImportClothesAsync(result.Entity);
-                    var summary = BatchClothingImportSummaryBuilder.Build(result.Entity, importResult.Clothes);
-                    _ = Dispatcher.BeginInvoke(
-                        () => ModalService.Instance.Show(new BatchClothingImportSummaryDialog(
-                            summary,
-                            () => _viewModel.SetQueueFilter(WardrobeQueueFilter.RecentlyImported))),
-                        DispatcherPriority.Background);
-                }
-                catch (Exception ex)
-                {
-                    var feedback = WardrobeActionErrorPresenter.ForImport(ex);
-                    ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-                }
-            }
-        });
+        EditorModal.Show(new BatchClothingImportPanel(), HandleBatchImportResultAsync);
     }
 
     private void BatchCompleteQueue_Click(object sender, RoutedEventArgs e)
@@ -129,22 +110,7 @@ public partial class ClothesTab : UserControl
 
         EditorModal.Show(
             new BatchClothingCompletionPanel(_viewModel.FilteredClothes.ToList(), _viewModel.ActiveQueueLabel),
-            async result =>
-            {
-                if (result.Type != EditorResultType.Saved || result.Entity == null)
-                    return;
-
-                try
-                {
-                    var summary = await _viewModel.CompleteCurrentQueueAsync(result.Entity);
-                    ToastService.Instance.ShowSuccess($"已补全 {summary.UpdatedCount} 件衣服");
-                }
-                catch (Exception ex)
-                {
-                    var feedback = WardrobeActionErrorPresenter.ForBatchComplete(ex);
-                    ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-                }
-            });
+            HandleBatchCompleteResultAsync);
     }
 
     private void OpenBatchClearWardrobe_Click(object sender, RoutedEventArgs e)
@@ -170,24 +136,7 @@ public partial class ClothesTab : UserControl
 
         EditorModal.Show(
             new BatchWardrobeClearPanel(_viewModel.AllClothes.ToList(), initialType),
-            async result =>
-            {
-                if (result.Type != EditorResultType.Saved || result.Entity == null)
-                    return;
-
-                try
-                {
-                    var summary = await _viewModel.ClearWardrobeByTypesAsync(result.Entity);
-                    ToastService.Instance.ShowSuccess(summary.DeletedCount == 0
-                        ? "选中的分类里没有可清空的衣服。"
-                        : $"已清空 {summary.DeletedCount} 件衣服");
-                }
-                catch (Exception ex)
-                {
-                    var feedback = WardrobeActionErrorPresenter.ForBatchClear(ex);
-                    ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
-                }
-            });
+            HandleClearWardrobeResultAsync);
     }
 
     private void ClothingCard_Edit(object sender, RoutedEventArgs e)
@@ -215,9 +164,8 @@ public partial class ClothesTab : UserControl
 
         try
         {
-            await _viewModel.UpdateClothingAsync(clothing, clothing.ImagePath);
-            ToastService.Instance.ShowSuccess(
-                clothing.FavoriteLevel >= 4 ? $"已收藏「{clothing.Name}」" : $"已取消收藏「{clothing.Name}」");
+            var message = await _viewModel.UpdateFavoriteAsync(clothing);
+            ToastService.Instance.ShowSuccess(message);
         }
         catch (Exception ex)
         {
@@ -245,6 +193,61 @@ public partial class ClothesTab : UserControl
         catch (Exception ex)
         {
             var feedback = WardrobeActionErrorPresenter.ForSingleDelete(ex, clothing.Name);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
+    private async Task HandleBatchImportResultAsync(EditorResult<BatchClothingImportRequest> result)
+    {
+        if (result.Type != EditorResultType.Saved || result.Entity == null)
+            return;
+
+        try
+        {
+            var summary = await _viewModel.ImportClothesAndBuildSummaryAsync(result.Entity);
+            _ = Dispatcher.BeginInvoke(
+                () => ModalService.Instance.Show(new BatchClothingImportSummaryDialog(
+                    summary,
+                    () => _viewModel.SetQueueFilter(WardrobeQueueFilter.RecentlyImported))),
+                DispatcherPriority.Background);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForImport(ex);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
+    private async Task HandleBatchCompleteResultAsync(EditorResult<BatchClothingCompletionRequest> result)
+    {
+        if (result.Type != EditorResultType.Saved || result.Entity == null)
+            return;
+
+        try
+        {
+            var message = await _viewModel.CompleteCurrentQueueAndBuildSuccessMessageAsync(result.Entity);
+            ToastService.Instance.ShowSuccess(message);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForBatchComplete(ex);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
+    private async Task HandleClearWardrobeResultAsync(EditorResult<BatchWardrobeClearRequest> result)
+    {
+        if (result.Type != EditorResultType.Saved || result.Entity == null)
+            return;
+
+        try
+        {
+            var message = await _viewModel.ClearWardrobeByTypesAndBuildSuccessMessageAsync(result.Entity);
+            ToastService.Instance.ShowSuccess(message);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForBatchClear(ex);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
     }

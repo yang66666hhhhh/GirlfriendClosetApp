@@ -2,6 +2,7 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Clothing;
+using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Tags.Models;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -454,11 +455,23 @@ public partial class WardrobeViewModel : ObservableObject
         return result;
     }
 
+    public async Task<BatchClothingImportSummary> ImportClothesAndBuildSummaryAsync(BatchClothingImportRequest request)
+    {
+        var result = await ImportClothesAsync(request);
+        return BatchClothingImportSummaryBuilder.Build(request, result.Clothes);
+    }
+
     public async Task<BatchClothingCompletionResult> CompleteCurrentQueueAsync(BatchClothingCompletionRequest request)
     {
         var result = await _completeClothingMetadataBatch.ExecuteAsync(request);
         await LoadClothesAsync();
         return result;
+    }
+
+    public async Task<string> CompleteCurrentQueueAndBuildSuccessMessageAsync(BatchClothingCompletionRequest request)
+    {
+        var result = await CompleteCurrentQueueAsync(request);
+        return $"已补全 {result.UpdatedCount} 件衣服";
     }
 
     public async Task<BatchWardrobeClearResult> ClearWardrobeByTypesAsync(BatchWardrobeClearRequest request)
@@ -468,11 +481,25 @@ public partial class WardrobeViewModel : ObservableObject
         return result;
     }
 
+    public async Task<string> ClearWardrobeByTypesAndBuildSuccessMessageAsync(BatchWardrobeClearRequest request)
+    {
+        var result = await ClearWardrobeByTypesAsync(request);
+        return result.DeletedCount == 0
+            ? "选中的分类里没有可清空的衣服。"
+            : $"已清空 {result.DeletedCount} 件衣服";
+    }
+
     public async Task UpdateClothingAsync(Clothing clothing, string? oldImagePath)
     {
         await _clothingService.UpdateClothingAsync(clothing);
         await DeleteReplacedImageAsync(oldImagePath, clothing.ImagePath);
         await LoadClothesAsync();
+    }
+
+    public async Task<string> UpdateFavoriteAsync(Clothing clothing)
+    {
+        await UpdateClothingAsync(clothing, clothing.ImagePath);
+        return clothing.FavoriteLevel >= 4 ? $"已收藏「{clothing.Name}」" : $"已取消收藏「{clothing.Name}」";
     }
 
     public async Task DeleteClothingAsync(Clothing clothing)
