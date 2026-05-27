@@ -370,6 +370,35 @@ public partial class SettingsViewModel : ObservableObject
         return validation;
     }
 
+    public string BuildDefaultBackupPath() => _backupService.BuildDefaultBackupPath();
+
+    public Task<BackupValidationResult> ValidateBackupExportAsync(string filePath)
+        => _backupService.ValidateExportAsync(filePath);
+
+    public async Task<BackupExportResult> ExportBackupWithFeedbackAsync(string filePath)
+    {
+        var result = await _backupService.ExportAsync(filePath);
+        await RefreshBackupStateAsync();
+        ToastService.Instance.ShowSuccess("备份已导出", Path.GetFileName(result.FilePath));
+        return result;
+    }
+
+    public async Task<BackupImportResult> ImportBackupWithFeedbackAsync(string filePath)
+    {
+        var result = await _backupService.ImportAsync(filePath);
+        await RefreshStatsAsync();
+        await RefreshBackupStateAsync(result);
+        ToastService.Instance.ShowSuccess("备份已导入", "衣柜、搭配和标签列表已经刷新。");
+        return result;
+    }
+
+    public async Task ClearBackupHistoryWithFeedbackAsync()
+    {
+        await _backupService.ClearHistoryAsync();
+        await RefreshBackupStateAsync();
+        ToastService.Instance.ShowSuccess("备份历史已清空");
+    }
+
     public static string BuildValidationHint(BackupValidationResult validation)
     {
         if (validation.IsEmptyBackup)

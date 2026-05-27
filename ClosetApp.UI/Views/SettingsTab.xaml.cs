@@ -19,14 +19,12 @@ namespace ClosetApp.UI.Views;
 
 public partial class SettingsTab : UserControl
 {
-    private readonly IBackupService _backupService;
     private readonly IImageMaintenanceService _imageMaintenanceService;
     private readonly ThemeService _themeService;
     private readonly SettingsViewModel _viewModel;
 
     public SettingsTab()
     {
-        _backupService = App.Services.GetRequiredService<IBackupService>();
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
         _themeService = App.Services.GetRequiredService<ThemeService>();
         _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
@@ -247,44 +245,40 @@ public partial class SettingsTab : UserControl
         {
             Filter = "ZIP 备份包|*.zip|JSON 备份|*.json",
             DefaultExt = ".zip",
-            FileName = Path.GetFileName(_backupService.BuildDefaultBackupPath()),
+            FileName = Path.GetFileName(_viewModel.BuildDefaultBackupPath()),
             InitialDirectory = AppPaths.BackupsDir
         };
 
         if (dialog.ShowDialog() != true)
             return;
 
-        var validation = await _backupService.ValidateExportAsync(dialog.FileName);
+        var validation = await _viewModel.ValidateBackupExportAsync(dialog.FileName);
         if (!ConfirmExport(validation))
             return;
 
-        var result = await _backupService.ExportAsync(dialog.FileName);
-        await RefreshBackupStateAsync();
+        var result = await _viewModel.ExportBackupWithFeedbackAsync(dialog.FileName);
 
         MessageBox.Show(
             BuildExportMessage(result),
             "完成",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("备份已导出", Path.GetFileName(result.FilePath));
     }
 
     private async void QuickExportBackup_Click(object sender, RoutedEventArgs e)
     {
-        var filePath = _backupService.BuildDefaultBackupPath();
-        var validation = await _backupService.ValidateExportAsync(filePath);
+        var filePath = _viewModel.BuildDefaultBackupPath();
+        var validation = await _viewModel.ValidateBackupExportAsync(filePath);
         if (!ConfirmExport(validation))
             return;
 
-        var result = await _backupService.ExportAsync(filePath);
-        await RefreshBackupStateAsync();
+        var result = await _viewModel.ExportBackupWithFeedbackAsync(filePath);
 
         MessageBox.Show(
             BuildExportMessage(result),
             "完成",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("备份已导出", Path.GetFileName(result.FilePath));
     }
 
     private async void ImportBackup_Click(object sender, RoutedEventArgs e)
@@ -308,9 +302,7 @@ public partial class SettingsTab : UserControl
         if (confirm != MessageBoxResult.OK)
             return;
 
-        var result = await _backupService.ImportAsync(dialog.FileName);
-        await RefreshStatsAsync();
-        await RefreshBackupStateAsync(result);
+        var result = await _viewModel.ImportBackupWithFeedbackAsync(dialog.FileName);
         await RequestAppRefreshAsync(clothes: true, outfits: true, tags: true);
 
         MessageBox.Show(
@@ -318,7 +310,6 @@ public partial class SettingsTab : UserControl
             "完成",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("备份已导入", "衣柜、搭配和标签列表已经刷新。");
     }
 
     private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
@@ -364,9 +355,7 @@ public partial class SettingsTab : UserControl
         if (confirm != MessageBoxResult.OK)
             return;
 
-        await _backupService.ClearHistoryAsync();
-        await RefreshBackupStateAsync();
-        ToastService.Instance.ShowSuccess("备份历史已清空");
+        await _viewModel.ClearBackupHistoryWithFeedbackAsync();
     }
 
     private async Task RequestAppRefreshAsync(

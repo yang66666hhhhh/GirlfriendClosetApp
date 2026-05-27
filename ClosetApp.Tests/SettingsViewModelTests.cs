@@ -102,6 +102,78 @@ public class SettingsViewModelTests
         Assert.Contains("等 7 个文件", viewModel.LastImportMissingFiles);
     }
 
+    [Fact]
+    public async Task ExportBackupWithFeedbackAsync_ExportsAndRefreshesBackupHistory()
+    {
+        var backup = new FakeBackupService
+        {
+            ExportResult = CreateExportResult(@"D:\backup\export.zip"),
+            HistoryAfterExport =
+            [
+                new BackupHistoryItem(
+                    new DateTime(2026, 5, 28, 11, 0, 0),
+                    "Export",
+                    "zip",
+                    @"D:\backup\export.zip",
+                    1024,
+                    true,
+                    "导出 2 件衣服、1 套搭配、3 个标签，打包 5 张图片。")
+            ]
+        };
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), backup);
+
+        var result = await viewModel.ExportBackupWithFeedbackAsync(@"D:\backup\export.zip");
+
+        Assert.Equal(@"D:\backup\export.zip", backup.ExportedPath);
+        Assert.Equal(result, backup.ExportResult);
+        Assert.Single(viewModel.BackupHistory);
+        Assert.False(viewModel.IsBackupHistoryEmpty);
+    }
+
+    [Fact]
+    public async Task ImportBackupWithFeedbackAsync_ImportsRefreshesStatsAndLatestImport()
+    {
+        var imageMaintenance = new FakeImageMaintenanceService
+        {
+            MissingImages = 0,
+            MissingThumbnails = 0,
+            OrphanOriginals = new OrphanOriginalsResult(0, 0)
+        };
+        var backup = new FakeBackupService
+        {
+            ImportResult = CreateImportResult(@"D:\backup\import.zip")
+        };
+        var viewModel = CreateViewModel(imageMaintenance, backup);
+
+        var result = await viewModel.ImportBackupWithFeedbackAsync(@"D:\backup\import.zip");
+
+        Assert.Equal(@"D:\backup\import.zip", backup.ImportedPath);
+        Assert.Equal(result, backup.ImportResult);
+        Assert.Contains("导入 2 件衣服", viewModel.LastImportSummary);
+        Assert.Equal("没有发现缺失图片", viewModel.MissingImageStats);
+    }
+
+    [Fact]
+    public async Task ClearBackupHistoryWithFeedbackAsync_ClearsHistoryAndRefreshesEmptyState()
+    {
+        var backup = new FakeBackupService
+        {
+            History =
+            [
+                new BackupHistoryItem(DateTime.Now, "Export", "zip", @"D:\backup\old.zip", 1024, true, "导出完成")
+            ],
+            HistoryAfterClear = []
+        };
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), backup);
+        await viewModel.RefreshBackupStateAsync();
+
+        await viewModel.ClearBackupHistoryWithFeedbackAsync();
+
+        Assert.True(backup.ClearHistoryCalled);
+        Assert.Empty(viewModel.BackupHistory);
+        Assert.True(viewModel.IsBackupHistoryEmpty);
+    }
+
     private static SettingsViewModel CreateViewModel(
         FakeImageMaintenanceService imageMaintenance,
         FakeBackupService? backup = null)
@@ -127,6 +199,40 @@ public class SettingsViewModelTests
             5,
             1,
             warnings ?? []);
+    }
+
+    private static BackupExportResult CreateExportResult(string filePath)
+    {
+        return new BackupExportResult(
+            filePath,
+            "zip",
+            new DateTime(2026, 5, 28, 11, 0, 0),
+            1024,
+            2,
+            1,
+            3,
+            4,
+            5,
+            6,
+            0,
+            []);
+    }
+
+    private static BackupImportResult CreateImportResult(string filePath)
+    {
+        return new BackupImportResult(
+            filePath,
+            "zip",
+            new DateTime(2026, 5, 28, 12, 0, 0),
+            2,
+            1,
+            3,
+            4,
+            5,
+            6,
+            0,
+            [],
+            []);
     }
 
     private sealed class FakeImageMaintenanceService : IImageMaintenanceService
@@ -158,12 +264,37 @@ public class SettingsViewModelTests
     {
         public BackupValidationResult Validation { get; set; } = CreateValidation();
         public IReadOnlyList<BackupHistoryItem> History { get; set; } = [];
+        public IReadOnlyList<BackupHistoryItem>? HistoryAfterExport { get; set; }
+        public IReadOnlyList<BackupHistoryItem>? HistoryAfterClear { get; set; }
+        public BackupExportResult ExportResult { get; set; } = CreateExportResult(@"D:\backup\export.zip");
+        public BackupImportResult ImportResult { get; set; } = CreateImportResult(@"D:\backup\import.zip");
+        public string? ExportedPath { get; private set; }
+        public string? ImportedPath { get; private set; }
+        public bool ClearHistoryCalled { get; private set; }
 
         public Task<BackupValidationResult> ValidateExportAsync(string filePath) => Task.FromResult(Validation);
-        public Task<BackupExportResult> ExportAsync(string filePath) => throw new NotImplementedException();
-        public Task<BackupImportResult> ImportAsync(string filePath) => throw new NotImplementedException();
+        public Task<BackupExportResult> ExportAsync(string filePath)
+        {
+            ExportedPath = filePath;
+            if (HistoryAfterExport != null)
+                History = HistoryAfterExport;
+            return Task.FromResult(ExportResult);
+        }
+
+        public Task<BackupImportResult> ImportAsync(string filePath)
+        {
+            ImportedPath = filePath;
+            return Task.FromResult(ImportResult);
+        }
+
         public Task<IReadOnlyList<BackupHistoryItem>> GetHistoryAsync(int maxCount = 8) => Task.FromResult(History);
-        public Task ClearHistoryAsync() => throw new NotImplementedException();
-        public string BuildDefaultBackupPath() => throw new NotImplementedException();
+        public Task ClearHistoryAsync()
+        {
+            ClearHistoryCalled = true;
+            History = HistoryAfterClear ?? [];
+            return Task.CompletedTask;
+        }
+
+        public string BuildDefaultBackupPath() => @"D:\backup\default.zip";
     }
 }
