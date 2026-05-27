@@ -221,12 +221,6 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         if (_isSubmitting)
             return;
 
-        if (string.IsNullOrWhiteSpace(TxtName.Text))
-        {
-            ToastService.Instance.ShowInfo("先输入搭配名称。");
-            return;
-        }
-
         var selectedClothes = _allItems.Where(i => i.IsSelected).Select(i => i.Clothing).ToList();
         if (selectedClothes.Count == 0)
         {

@@ -213,6 +213,55 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
             yield return path;
     }
 
+    public Task CleanupLogsAsync()
+    {
+        var logsDir = AppPaths.LogsDir;
+        if (!Directory.Exists(logsDir))
+            return Task.CompletedTask;
+
+        var today = DateTime.Today;
+        foreach (var file in Directory.EnumerateFiles(logsDir, "*.log", SearchOption.TopDirectoryOnly))
+        {
+            var info = new FileInfo(file);
+            if (info.LastWriteTime.Date >= today)
+                continue;
+
+            try { File.Delete(file); }
+            catch { /* ignore locked files */ }
+        }
+        return Task.CompletedTask;
+    }
+
+    public Task CleanupImageCacheAsync()
+    {
+        DeleteFilesInDirectory(AppPaths.DisplayDir);
+        DeleteFilesInDirectory(AppPaths.ThumbnailsDir);
+        return Task.CompletedTask;
+    }
+
+    public Task<int> CountFilesAsync(string directory)
+    {
+        if (!Directory.Exists(directory))
+            return Task.FromResult(0);
+        return Task.FromResult(Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Count());
+    }
+
+    public Task<long> GetDirectorySizeAsync(string directory)
+    {
+        if (!Directory.Exists(directory))
+            return Task.FromResult(0L);
+        return Task.FromResult(Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
+            .Sum(file => new FileInfo(file).Length));
+    }
+
+    private static void DeleteFilesInDirectory(string directory)
+    {
+        if (!Directory.Exists(directory))
+            return;
+        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
+            File.Delete(file);
+    }
+
     private static bool TryDeleteFile(string path, out long deletedBytes)
     {
         deletedBytes = 0;

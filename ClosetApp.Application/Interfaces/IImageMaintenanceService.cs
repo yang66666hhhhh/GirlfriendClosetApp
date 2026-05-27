@@ -10,4 +10,9 @@ public interface IImageMaintenanceService
     Task<int> RelinkMissingImagesAsync(string sourceDirectory);
     Task<OrphanOriginalsResult> AnalyzeOrphanOriginalsAsync();
     Task<OrphanOriginalsCleanupResult> CleanupOrphanOriginalsAsync();
+
+    Task CleanupLogsAsync();
+    Task CleanupImageCacheAsync();
+    Task<int> CountFilesAsync(string directory);
+    Task<long> GetDirectorySizeAsync(string directory);
 }

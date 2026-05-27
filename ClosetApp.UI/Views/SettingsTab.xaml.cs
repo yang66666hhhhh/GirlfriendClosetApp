@@ -3,13 +3,10 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Effects;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
-using ClosetApp.Infrastructure.Services;
-using ClosetApp.UI;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,7 +39,7 @@ public partial class SettingsTab : UserControl
             TxtLogDir.Text = AppPaths.LogsDir;
             TxtVersion.Text = $"版本 {GetVersion()}";
             await _viewModel.InitializeAsync();
-            ApplyThemeSelectionState(_themeService.CurrentTheme);
+            ApplyThemeCardSelection(_themeService.CurrentTheme);
             await RefreshStatsAsync();
             await RefreshBackupStateAsync();
             await _viewModel.RefreshWeatherAsync(showStatus: false);
@@ -67,11 +64,7 @@ public partial class SettingsTab : UserControl
     private static void OpenPath(string path)
     {
         Directory.CreateDirectory(path);
-        Process.Start(new ProcessStartInfo
-        {
-            FileName = path,
-            UseShellExecute = true
-        });
+        Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
     }
 
     private static void RevealFile(string filePath)
@@ -96,17 +89,11 @@ public partial class SettingsTab : UserControl
     }
 
     private void OpenDataDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.BaseDir);
-
     private void OpenDatabase_Click(object sender, RoutedEventArgs e) => RevealFile(AppPaths.DatabasePath);
-
     private void OpenImagesDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.ImagesDir);
-
     private void OpenThumbnailsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.ThumbnailsDir);
-
     private void OpenLogsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.LogsDir);
-
     private void OpenBackupsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.BackupsDir);
-
     private void OpenAppDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppDomain.CurrentDomain.BaseDirectory);
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
@@ -125,10 +112,8 @@ public partial class SettingsTab : UserControl
     {
         var city = _viewModel.WeatherCity.Trim();
         await _viewModel.SaveWeatherCityAsync(city);
-
         if (string.IsNullOrWhiteSpace(city))
             TxtWeatherCity.Focus();
-
         await RequestAppRefreshAsync(outfits: true);
     }
 
@@ -138,19 +123,29 @@ public partial class SettingsTab : UserControl
         await RequestAppRefreshAsync(outfits: true);
     }
 
-    private async void UseRoseTheme_Click(object sender, RoutedEventArgs e)
+    // ── 主题切换 ──
+
+    private void ThemeCard_Selected(object sender, RoutedEventArgs e)
     {
-        await _viewModel.ApplyThemeAsync(AppThemeKind.Rose);
-        ApplyThemeSelectionState(AppThemeKind.Rose);
-        ToastService.Instance.ShowSuccess("已切换到柔粉主题");
+        if (e.OriginalSource is not Components.Shared.ThemeCard card)
+            return;
+        _ = ApplyThemeAsync(card.ThemeKind);
     }
 
-    private async void UseBlueTheme_Click(object sender, RoutedEventArgs e)
+    private async Task ApplyThemeAsync(AppThemeKind theme)
     {
-        await _viewModel.ApplyThemeAsync(AppThemeKind.Blue);
-        ApplyThemeSelectionState(AppThemeKind.Blue);
-        ToastService.Instance.ShowSuccess("已切换到清蓝主题");
+        await _viewModel.ApplyThemeAsync(theme);
+        ApplyThemeCardSelection(theme);
+        ToastService.Instance.ShowSuccess(theme == AppThemeKind.Rose ? "已切换到柔粉主题" : "已切换到清蓝主题");
     }
+
+    private void ApplyThemeCardSelection(AppThemeKind theme)
+    {
+        ThemeRoseCard.IsSelected = theme == AppThemeKind.Rose;
+        ThemeBlueCard.IsSelected = theme == AppThemeKind.Blue;
+    }
+
+    // ── 图片维护 ──
 
     private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
     {
@@ -163,9 +158,7 @@ public partial class SettingsTab : UserControl
         if (result != MessageBoxResult.OK)
             return;
 
-        DeleteFilesInDirectory(AppPaths.DisplayDir);
-        DeleteFilesInDirectory(AppPaths.ThumbnailsDir);
-
+        await _imageMaintenanceService.CleanupImageCacheAsync();
         await RefreshStatsAsync();
         MessageBox.Show("图片缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
         ToastService.Instance.ShowSuccess("图片缓存已清理");
@@ -175,12 +168,7 @@ public partial class SettingsTab : UserControl
     {
         var result = await _imageMaintenanceService.RebuildMissingThumbnailsAsync();
         await RefreshStatsAsync();
-
-        MessageBox.Show(
-            result.Summary,
-            "图片缓存",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        MessageBox.Show(result.Summary, "图片缓存", MessageBoxButton.OK, MessageBoxImage.Information);
         ToastService.Instance.ShowSuccess("图片缓存已重建", result.Summary);
     }
 
@@ -194,7 +182,7 @@ public partial class SettingsTab : UserControl
         }
 
         var confirm = MessageBox.Show(
-            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {SettingsViewModel.FormatSize(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物引用的图片。确定继续吗？",
+            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FileSizeFormatter.Format(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物引用的图片。确定继续吗？",
             "清理孤儿原图",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Warning);
@@ -204,7 +192,6 @@ public partial class SettingsTab : UserControl
 
         var result = await _imageMaintenanceService.CleanupOrphanOriginalsAsync();
         await RefreshStatsAsync();
-
         MessageBox.Show(result.Summary, "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
         ToastService.Instance.ShowSuccess("孤儿原图已清理", result.Summary);
     }
@@ -220,30 +207,13 @@ public partial class SettingsTab : UserControl
         if (result != MessageBoxResult.OK)
             return;
 
-        if (Directory.Exists(AppPaths.LogsDir))
-        {
-            var today = DateTime.Today;
-            foreach (var file in Directory.EnumerateFiles(AppPaths.LogsDir, "*.log", SearchOption.TopDirectoryOnly))
-            {
-                var info = new FileInfo(file);
-                if (info.LastWriteTime.Date >= today)
-                    continue;
-
-                try
-                {
-                    File.Delete(file);
-                }
-                catch
-                {
-                    // The log view should remain usable even if a file is locked by another process.
-                }
-            }
-        }
-
+        await _imageMaintenanceService.CleanupLogsAsync();
         await RefreshStatsAsync();
         MessageBox.Show("历史日志已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
         ToastService.Instance.ShowSuccess("历史日志已清理");
     }
+
+    // ── 备份 ──
 
     private async void ExportBackup_Click(object sender, RoutedEventArgs e)
     {
@@ -263,12 +233,7 @@ public partial class SettingsTab : UserControl
             return;
 
         var result = await _viewModel.ExportBackupWithFeedbackAsync(dialog.FileName);
-
-        MessageBox.Show(
-            BuildExportMessage(result),
-            "完成",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        MessageBox.Show(BuildExportMessage(result), "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void QuickExportBackup_Click(object sender, RoutedEventArgs e)
@@ -279,12 +244,7 @@ public partial class SettingsTab : UserControl
             return;
 
         var result = await _viewModel.ExportBackupWithFeedbackAsync(filePath);
-
-        MessageBox.Show(
-            BuildExportMessage(result),
-            "完成",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        MessageBox.Show(BuildExportMessage(result), "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void ImportBackup_Click(object sender, RoutedEventArgs e)
@@ -310,12 +270,7 @@ public partial class SettingsTab : UserControl
 
         var result = await _viewModel.ImportBackupWithFeedbackAsync(dialog.FileName);
         await RequestAppRefreshAsync(clothes: true, outfits: true, tags: true);
-
-        MessageBox.Show(
-            BuildImportMessage(result),
-            "完成",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
+        MessageBox.Show(BuildImportMessage(result), "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
     private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
@@ -372,7 +327,6 @@ public partial class SettingsTab : UserControl
     {
         if (Window.GetWindow(this) is not MainWindow window)
             return;
-
         await window.RefreshDataTabsAsync(clothes, outfits, tags, settings);
     }
 
@@ -380,7 +334,6 @@ public partial class SettingsTab : UserControl
     {
         if (sender is not FrameworkElement { Tag: string filePath } || string.IsNullOrWhiteSpace(filePath))
             return;
-
         RevealFile(filePath);
     }
 
@@ -388,7 +341,6 @@ public partial class SettingsTab : UserControl
     {
         if (sender is not FrameworkElement { Tag: string filePath } || string.IsNullOrWhiteSpace(filePath))
             return;
-
         var directory = Path.GetDirectoryName(filePath);
         if (!string.IsNullOrWhiteSpace(directory))
             OpenPath(directory);
@@ -426,164 +378,5 @@ public partial class SettingsTab : UserControl
         if (result.Warnings.Count > 0)
             message += $"\n\n提醒：{string.Join(" ", result.Warnings)}";
         return message;
-    }
-
-    private static void DeleteFilesInDirectory(string directory)
-    {
-        if (!Directory.Exists(directory))
-            return;
-
-        foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
-            File.Delete(file);
-    }
-
-    private void ApplyThemeSelectionState(AppThemeKind theme)
-    {
-        bool isRose = theme == AppThemeKind.Rose;
-
-        ApplyThemeCardState(
-            ThemeRoseCard,
-            ThemeRoseCurrentBadge,
-            BtnUseRoseTheme,
-            isRose,
-            Color.FromRgb(249, 245, 241),  // Rose surface
-            Color.FromRgb(230, 213, 216),  // Rose border
-            "使用柔粉");
-
-        ApplyThemeCardState(
-            ThemeBlueCard,
-            ThemeBlueCurrentBadge,
-            BtnUseBlueTheme,
-            !isRose,
-            Color.FromRgb(235, 241, 251),  // Blue surface
-            Color.FromRgb(200, 214, 237),  // Blue border
-            "使用清蓝");
-
-        ApplyThemeSwatchState(
-            isRose,
-            ThemeRoseSwatchPrimary,
-            ThemeRoseSwatchSoft,
-            ThemeRoseSwatchSurface,
-            Color.FromRgb(202, 156, 159),
-            Color.FromRgb(247, 240, 238),
-            Color.FromRgb(249, 245, 241));
-
-        ApplyThemeSwatchState(
-            !isRose,
-            ThemeBlueSwatchPrimary,
-            ThemeBlueSwatchSoft,
-            ThemeBlueSwatchSurface,
-            Color.FromRgb(88, 129, 214),
-            Color.FromRgb(224, 236, 255),
-            Color.FromRgb(235, 241, 251));
-
-        // Use unified theme colors for appearance section
-        var primary = GetBrushColor("PrimaryBrush");
-        var primaryLight = GetBrushColor("PrimaryLightBrush");
-        var primaryText = GetBrushColor("PrimaryDarkBrush");
-
-        ApplyAppearanceSectionState(primary, primaryLight, primaryText);
-
-    }
-
-    private void ApplyThemeCardState(
-        Border card,
-        Border badge,
-        Button button,
-        bool isSelected,
-        Color previewSurface,
-        Color previewBorder,
-        string idleText)
-    {
-        var primary = GetBrushColor("PrimaryBrush");
-        var primaryLight = GetBrushColor("PrimaryLightBrush");
-        var borderLight = GetBrushColor("BorderLightBrush");
-        var textSecondary = GetBrushColor("TextSecondaryBrush");
-
-        card.BorderThickness = new Thickness(isSelected ? 2.5 : 1.25);
-        card.BorderBrush = new SolidColorBrush(isSelected ? primary : previewBorder);
-        card.Background = new SolidColorBrush(previewSurface);
-        card.Opacity = 1;
-        card.Effect = isSelected
-            ? new DropShadowEffect
-            {
-                Color = primary,
-                BlurRadius = 20,
-                ShadowDepth = 0,
-                Opacity = 0.18
-            }
-            : null;
-
-        badge.Visibility = isSelected ? Visibility.Visible : Visibility.Collapsed;
-        badge.Background = new SolidColorBrush(primaryLight);
-        badge.BorderBrush = new SolidColorBrush(primary);
-
-        button.Content = isSelected ? "已启用" : idleText;
-        button.IsEnabled = !isSelected;
-        button.Background = new SolidColorBrush(isSelected ? previewSurface : primaryLight);
-        button.BorderBrush = new SolidColorBrush(isSelected ? borderLight : primary);
-        button.Foreground = new SolidColorBrush(isSelected ? textSecondary : primary);
-    }
-
-    private void ApplyThemeSwatchState(
-        bool isSelected,
-        Border primarySwatch,
-        Border softSwatch,
-        Border surfaceSwatch,
-        Color primaryColor,
-        Color softColor,
-        Color surfaceColor)
-    {
-        primarySwatch.Background = new SolidColorBrush(primaryColor);
-        softSwatch.Background = new SolidColorBrush(softColor);
-        surfaceSwatch.Background = new SolidColorBrush(surfaceColor);
-        primarySwatch.Opacity = 1;
-        softSwatch.Opacity = 1;
-        surfaceSwatch.Opacity = 1;
-    }
-
-    private void ApplyAppearanceSectionState(
-        Color primary,
-        Color primaryLight,
-        Color primaryText)
-    {
-        var surfaceElevated = GetBrushColor("SurfaceElevatedBrush");
-
-        AppearanceSectionCard.Background = new SolidColorBrush(surfaceElevated);
-        AppearanceSectionCard.BorderBrush = new SolidColorBrush(primary);
-
-        AppearanceSectionBadge.Background = new SolidColorBrush(primaryLight);
-        AppearanceSectionBadge.BorderBrush = new SolidColorBrush(primary);
-        AppearanceSectionBadgeText.Foreground = new SolidColorBrush(primaryText);
-
-        ThemeSelectionPanel.Background = new SolidColorBrush(surfaceElevated);
-        ThemeSelectionPanel.BorderBrush = new SolidColorBrush(primary);
-        ThemeSelectionPanel.BorderThickness = new Thickness(1);
-
-        AppearanceAppInfoCard.Background = new SolidColorBrush(surfaceElevated);
-        AppearanceAppInfoCard.BorderBrush = new SolidColorBrush(primary);
-        AppearanceAppInfoCard.BorderThickness = new Thickness(1);
-
-        BtnAppearanceOpenAppDir.Background = new SolidColorBrush(primaryLight);
-        BtnAppearanceOpenAppDir.BorderBrush = new SolidColorBrush(primary);
-        BtnAppearanceOpenAppDir.Foreground = new SolidColorBrush(primary);
-    }
-
-    private Color GetBrushColor(string key)
-    {
-        return FindResource(key) is SolidColorBrush brush
-            ? brush.Color
-            : Colors.Transparent;
-    }
-
-    private static Color BlendWithWhite(Color color, double amount)
-    {
-        byte Blend(byte channel) => (byte)(channel + (255 - channel) * amount);
-
-        return Color.FromArgb(
-            color.A,
-            Blend(color.R),
-            Blend(color.G),
-            Blend(color.B));
     }
 }

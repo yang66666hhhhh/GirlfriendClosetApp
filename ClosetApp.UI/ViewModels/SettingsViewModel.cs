@@ -5,6 +5,7 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.ViewModels;
@@ -330,55 +331,28 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task RefreshStatsAsync()
     {
-        var originalCount = CountFiles(AppPaths.OriginalsDir);
-        var originalSize = GetDirectorySize(AppPaths.OriginalsDir);
-        var displayCount = CountFiles(AppPaths.DisplayDir);
-        var displaySize = GetDirectorySize(AppPaths.DisplayDir);
-        var thumbnailCount = CountFiles(AppPaths.ThumbnailsDir);
-        var thumbnailSize = GetDirectorySize(AppPaths.ThumbnailsDir);
-        var logCount = CountFiles(AppPaths.LogsDir);
-        var logSize = GetDirectorySize(AppPaths.LogsDir);
+        var originalCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.OriginalsDir);
+        var originalSize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.OriginalsDir);
+        var displayCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.DisplayDir);
+        var displaySize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.DisplayDir);
+        var thumbnailCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.ThumbnailsDir);
+        var thumbnailSize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.ThumbnailsDir);
+        var logCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.LogsDir);
+        var logSize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.LogsDir);
         var missingImageCount = await _imageMaintenanceService.CountMissingImagesAsync();
         var missingThumbnailCount = await _imageMaintenanceService.CountMissingThumbnailsAsync();
         var orphanOriginals = await _imageMaintenanceService.AnalyzeOrphanOriginalsAsync();
 
-        ImageStats = $"{originalCount} 张原图 · {FormatSize(originalSize)}";
-        CacheStats = $"{displayCount} 个主视觉缓存 · {thumbnailCount} 个小预览缓存 · {FormatSize(displaySize + thumbnailSize)}";
+        ImageStats = $"{originalCount} 张原图 · {FileSizeFormatter.Format(originalSize)}";
+        CacheStats = $"{displayCount} 个主视觉缓存 · {thumbnailCount} 个小预览缓存 · {FileSizeFormatter.Format(displaySize + thumbnailSize)}";
         ThumbnailHealthStats = BuildThumbnailHealthText(missingThumbnailCount);
         OrphanOriginalStats = BuildOrphanOriginalsText(orphanOriginals);
-        LogStats = $"{logCount} 个日志文件 · {FormatSize(logSize)}";
+        LogStats = $"{logCount} 个日志文件 · {FileSizeFormatter.Format(logSize)}";
         MissingImageStats = missingImageCount == 0
             ? "没有发现缺失图片"
             : $"{missingImageCount} 件衣服的图片路径失效";
     }
 
-    public static int CountFiles(string directory)
-    {
-        if (!Directory.Exists(directory))
-            return 0;
-        return Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Count();
-    }
-
-    public static long GetDirectorySize(string directory)
-    {
-        if (!Directory.Exists(directory))
-            return 0;
-        return Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-            .Sum(file => new FileInfo(file).Length);
-    }
-
-    public static string FormatSize(long bytes)
-    {
-        string[] units = ["B", "KB", "MB", "GB"];
-        var size = (double)bytes;
-        var unitIndex = 0;
-        while (size >= 1024 && unitIndex < units.Length - 1)
-        {
-            size /= 1024;
-            unitIndex++;
-        }
-        return $"{size:0.#} {units[unitIndex]}";
-    }
 
     public static string BuildThumbnailHealthText(int missingThumbnailCount)
     {
@@ -390,7 +364,7 @@ public partial class SettingsViewModel : ObservableObject
     public static string BuildOrphanOriginalsText(OrphanOriginalsResult result)
     {
         return result.HasOrphans
-            ? $"{result.OrphanCount} 张原图未被数据库引用，占用 {FormatSize(result.TotalBytes)}。"
+            ? $"{result.OrphanCount} 张原图未被数据库引用，占用 {FileSizeFormatter.Format(result.TotalBytes)}。"
             : "没有发现孤儿原图。";
     }
 

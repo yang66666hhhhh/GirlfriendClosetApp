@@ -4,6 +4,7 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Services;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.ViewModels;
 using Xunit;
 
@@ -34,9 +35,9 @@ public class SettingsViewModelTests
     [Fact]
     public void FormatSize_UsesReadableUnits()
     {
-        Assert.Equal("512 B", SettingsViewModel.FormatSize(512));
-        Assert.Equal("2 KB", SettingsViewModel.FormatSize(2048));
-        Assert.Equal("1.5 MB", SettingsViewModel.FormatSize(1572864));
+        Assert.Equal("512 B", FileSizeFormatter.Format(512));
+        Assert.Equal("2 KB", FileSizeFormatter.Format(2048));
+        Assert.Equal("1.5 MB", FileSizeFormatter.Format(1572864));
     }
 
     [Fact]
@@ -267,6 +268,10 @@ public class SettingsViewModelTests
         public Task<int> RelinkMissingImagesAsync(string sourceDirectory) => throw new NotImplementedException();
         public Task<OrphanOriginalsResult> AnalyzeOrphanOriginalsAsync() => Task.FromResult(OrphanOriginals);
         public Task<OrphanOriginalsCleanupResult> CleanupOrphanOriginalsAsync() => throw new NotImplementedException();
+        public Task CleanupLogsAsync() => Task.CompletedTask;
+        public Task CleanupImageCacheAsync() => Task.CompletedTask;
+        public Task<int> CountFilesAsync(string directory) => Task.FromResult(0);
+        public Task<long> GetDirectorySizeAsync(string directory) => Task.FromResult(0L);
     }
 
     private sealed class FakeWeatherService : IWeatherService
