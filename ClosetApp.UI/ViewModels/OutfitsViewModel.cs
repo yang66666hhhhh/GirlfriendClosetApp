@@ -6,6 +6,7 @@ using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
+using ClosetApp.UI.Services;
 using ClosetApp.UI.States;
 using Serilog;
 
@@ -342,6 +343,34 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public Task RecordOutfitWornTodayAsync(Outfit outfit) => RecordWornDateAsync(outfit, DateTime.Now);
 
+    public async Task RecordOutfitWornWithFeedbackAsync(
+        Outfit outfit,
+        string displayName,
+        string detail = "今天的穿着记录已经更新。")
+    {
+        try
+        {
+            await RecordOutfitWornTodayAsync(outfit);
+            ToastService.Instance.ShowSuccess($"已记录穿过「{displayName}」", detail);
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForOutfitRecord(ex, displayName);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
+    [RelayCommand]
+    public Task RecordRecommendedOutfitWornAsync(RecommendedOutfitDto? recommendation)
+    {
+        return recommendation == null
+            ? Task.CompletedTask
+            : RecordOutfitWornWithFeedbackAsync(
+                recommendation.Outfit,
+                recommendation.Name,
+                "今日推荐已经同步到穿着记录。");
+    }
+
     public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();
 
     public async Task<bool> ToggleFavoriteAsync(Outfit outfit)
@@ -397,6 +426,20 @@ public partial class OutfitsViewModel : ViewModelBase
         {
             IsWeatherLoading = false;
             NotifyWeatherStateChanged();
+        }
+    }
+
+    [RelayCommand]
+    public async Task RefreshWeatherRecommendationsWithFeedbackAsync()
+    {
+        try
+        {
+            await RefreshWeatherRecommendationsAsync();
+            ToastService.Instance.ShowSuccess("已刷新天气推荐", "当前城市的天气和今日推荐已经更新。");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新天气推荐失败", ex.Message);
         }
     }
 
