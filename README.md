@@ -2,15 +2,15 @@
 
 私人数字衣橱桌面应用，面向个人衣物整理、搭配管理和本地数据治理场景。项目使用 WPF + SQLite，采用 Domain / Application / Infrastructure / UI 四层结构。
 
-> 更新时间：2026-05-26
+> 更新时间：2026-05-28
 > 当前运行时：.NET 10 / WPF
 
 ## 当前能力
 
 - 衣柜管理：新增、编辑、删除衣物，支持图片、季节、品牌、备注、收藏状态和批量导入；批量导入会提示同名/同尺寸图片风险并支持一键移除
-- 搭配管理：创建和编辑搭配，按“人体区域 + 穿搭层级”生成预览，支持穿着记录和天气驱动的今日推荐；推荐会结合季节、收藏、穿着记录、场景、标签和颜色偏好
+- 搭配管理：创建和编辑搭配，按“人体区域 + 穿搭层级”生成预览，支持穿着记录和天气驱动的今日推荐；推荐会结合季节、收藏、穿着记录、场景、标签、颜色偏好和手动推荐偏好
 - 标签管理：标签按风格 / 场景 / 季节分组整理，支持搜索、分类筛选、按使用频次排序和轻量卡片操作菜单
-- 设置中心：数据目录、日志、图片缓存、备份、导入恢复、缺失图片修复
+- 设置中心：数据目录、日志、图片缓存、备份、导入恢复、缺失图片修复、天气城市和今日推荐偏好
 - 本地数据治理：
   - ZIP 备份包：`backup.json` + `images/`
   - 兼容旧版 JSON 备份导入
@@ -22,10 +22,11 @@
 ```text
 GirlfriendClosetApp/
 ├── ClosetApp.Domain/                 # 实体、枚举、仓储接口、衣物分类模型
-├── ClosetApp.Application/            # DTO、服务接口/实现、UseCases
-├── ClosetApp.Infrastructure/         # EF Core、SQLite、图片/备份/日志等基础设施
+├── ClosetApp.Application/            # DTO、服务接口/实现、UseCases、图片资产抽象
+├── ClosetApp.Infrastructure/         # EF Core、SQLite、图片/备份/天气等基础设施
 ├── ClosetApp.UI/                     # WPF 页面、组件、状态类、主题资源
-├── ClosetApp.Tests/                  # 逻辑测试（不直接引用整个 UI 工程）
+├── ClosetApp.UI.Logic/               # UI 纯逻辑文件的共享引用工程（供测试使用）
+├── ClosetApp.Tests/                  # 逻辑测试（xUnit，不直接引用整个 UI 工程）
 ├── docs/
 │   └── ARCHITECTURE_CONVENTIONS.md   # 架构约定
 └── PROJECT_DOCUMENTATION.md          # 详细项目文档
@@ -51,9 +52,19 @@ GirlfriendClosetApp/
 ### 1.1 标签页整理体验
 
 - `TagsTabState` 负责标签搜索词、分类筛选、排序方式、分组集合和汇总文案
-- 标签页会统计每个标签当前关联的衣物数量，用于显示“已在使用 / 待整理”
+- 标签页会统计每个标签当前关联的衣物数量，用于显示"已在使用 / 待整理"
 - 标签卡片操作已收为右上角的轻量 `⋯` 菜单，避免底部操作按钮挤占信息区
 - 标签卡片 hover 会提升边框、阴影和状态胶囊，用来强调当前可整理对象
+
+### 1.2 衣物分类体系
+
+`ClosetApp.Domain/Clothing/` 定义了精细衣物分类模型，与 `ClothingType` 枚举共存：
+
+- `GarmentType`：细粒度衣物类型（T恤、衬衫、针织、外套、牛仔裤、靴子、包包等 27 种）
+- `DisplayCategory`：展示分类（Topwear / Bottom / Dress / Footwear / Accessory）
+- `LayerRole`：穿搭层级（BaseTop / MidLayer / OuterLayer / Bottom / FullBody / Footwear / Accessory）
+- `ClothingMappings`：GarmentType ↔ DisplayCategory / LayerRole / 中文名称映射
+- `ClothingTaxonomy`：按 DisplayCategory 分组查询 GarmentType
 
 ### 2. 备份与恢复
 
@@ -73,7 +84,16 @@ GirlfriendClosetApp/
 
 - `%LocalAppData%\ClosetApp\backups\backup-history.json`
 
-### 3. 图片资产体系
+### 3. 批量导入
+
+- `BatchClothingImportBuilder`：从图片文件列表构建导入预览项
+- `BatchImportDuplicateChecker`：检测同名/同尺寸图片风险
+- `BatchClothingImportSummaryBuilder`：构建导入结果摘要
+- `ImportClothesFromImages`：批量导入 UseCase
+- `CompleteClothingMetadataBatch`：批量补全衣物元数据 UseCase
+- `ClearWardrobeByTypes`：按分类批量清空衣柜 UseCase
+
+### 4. 图片资产体系
 
 - `ImageStorageService`：原图 / 主视觉 / 小预览存储
 - `ImageMaintenanceService`：检测缺失图片、统计图片缓存缺口并执行重建
@@ -94,17 +114,35 @@ GirlfriendClosetApp/
 - 选择旧图片目录批量修复
 - 清理主视觉和小预览缓存
 
-### 4. 应用层 UseCases
+### 4.1 今日推荐偏好
+
+设置页支持保存今日推荐偏好：
+
+- 默认场景：不限 / 通勤 / 约会 / 出游 / 派对 / 休闲
+- 避开今天已穿过：开启后天气推荐会过滤当天已经记录穿过的搭配
+- 轮换策略：
+  - `均衡推荐`：保持推荐服务原始排序
+  - `优先少穿`：优先穿着次数更少的搭配
+  - `优先收藏`：收藏搭配优先
+
+偏好保存于：
+
+- `%LocalAppData%\ClosetApp\recommendation-settings.json`
+
+### 5. 应用层 UseCases
 
 新业务流程优先放在 `ClosetApp.Application/UseCases`：
 
-- `GetWardrobeOverview`
-- `GetOutfitHistorySummary`
-- `RecordOutfitWorn`
-- `GetRecommendationReadinessSummary`
-- `GetTagsForSelection`
+- `Clothing/GetWardrobeOverview`
+- `Clothing/ImportClothesFromImages`
+- `Clothing/CompleteClothingMetadataBatch`
+- `Clothing/ClearWardrobeByTypes`
+- `Insights/GetOutfitHistorySummary`
+- `Outfits/RecordOutfitWorn`
+- `Outfits/GetRecommendationReadinessSummary`
+- `Tags/GetTagsForSelection`
 
-### 5. 搭配预览模型
+### 6. 搭配预览模型
 
 搭配预览不再按衣物分类简单堆叠，而是按人体区域表达：
 
@@ -114,6 +152,15 @@ GirlfriendClosetApp/
 - 配饰区域：作为角标/侧边信息展示，不参与主轴高度
 
 当前实现位于 `ClosetApp.UI/Components/Outfit/Engine/OutfitCompositionEngine.cs`，渲染由 `OutfitPreviewCanvas` 完成。
+
+### 7. 错误提示统一处理
+
+`WardrobeActionErrorPresenter` 集中处理导入、保存、删除等操作的异常分类与中文提示：
+
+- 数据库忙 → 提示关闭其他编辑窗口
+- 文件占用 → 提示关闭看图工具或同步盘
+- 权限不足 → 提示确认目录权限
+- 校验失败 → 直接展示验证消息
 
 ## 本地数据目录
 
@@ -148,21 +195,28 @@ rtk pwsh -Command "Get-ChildItem -Force"
 
 `ClosetApp.Tests` 当前主要覆盖：
 
-- `BackupService`
-- `ImageMaintenanceService`
-- `ImageStorageService`
-- `OutfitCompositionEngine`
-- `OutfitSelectionRules`
-- `BatchClothingImportBuilder`
-- `ClothesTabState` / `OutfitsTabState` / `TagsTabState`
+- 备份：`BackupServiceTests`
+- 图片治理：`ImageMaintenanceServiceTests`、`ImageStorageServiceTests`
+- 搭配引擎：`OutfitCompositionEngineTests`、`OutfitSelectionRulesTests`
+- 批量导入：`BatchClothingImportBuilderTests`、`BatchClothingImportSummaryBuilderTests`、`BatchImportDuplicateCheckerTests`、`ImportClothesFromImagesTests`、`CompleteClothingMetadataBatchTests`
+- 批量清空：`ClearWardrobeByTypesTests`
+- 页面状态：`ClothesTabStateTests`、`OutfitsTabStateTests`、`TagsTabStateTests`、`TabStateTests`
+- ViewModel：`OutfitsViewModelTests`、`SettingsViewModelTests`
+- 推荐：`OutfitRecommendationServiceTests`、`RecommendationPreferencesServiceTests`、`RecommendationReadinessSummaryTests`
+- 天气：`WeatherServiceTests`、`WeatherPreferencesServiceTests`
+- 数据层：`ClothingRepositoryTests`、`DatabaseLifecycleTests`
+- 搭配服务：`OutfitServiceTests`
+- 错误提示：`WardrobeActionErrorPresenterTests`
 
-测试工程已避免直接引用整个 `ClosetApp.UI.csproj`，而是按需链接纯逻辑源码文件，减少 WPF 生成链对测试的干扰。
+测试工程通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑文件，避免 WPF 生成链干扰。
 
 ## 当前已知说明
 
 - `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
-- `ViewModels/` 仍存在，但当前页面主要由 View + Service / UseCase / State 驱动
+- `ViewModels/` 已开始接管搭配页与设置页的业务状态，View 侧主要保留弹窗、导航、文件选择和控件事件桥接
 - `Themes/Colors.xaml` 是兼容转发层，新设计 token 位于 `Themes/Tokens` 与 `Themes/Controls`
+- `ClosetApp.UI.Logic` 是纯逻辑共享工程，通过 `<Compile Include>` 引用 UI 中的 State、Engine、Import 等文件，供测试工程独立引用
+- `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
 
 ## 文档入口
 

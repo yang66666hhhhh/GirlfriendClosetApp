@@ -22,35 +22,38 @@ dotnet run --project ClosetApp.UI
 ClosetApp.slnx
 ├── ClosetApp.Domain/          # 实体、枚举、仓储接口
 │   ├── Entities/              # Clothing, Outfit, Tag, Favorite, OutfitWornRecord
-│   ├── Enums/                 # ClothingType, Season, OutfitScene
-│   └── Interfaces/            # IRepository<T>, IClothingRepository, IOutfitRepository...
+│   ├── Enums/                 # ClothingType, Season, OutfitScene, TagCategory, AppThemeKind
+│   ├── Interfaces/            # IRepository<T>, IClothingRepository, IOutfitRepository...
+│   └── Clothing/              # GarmentType, DisplayCategory, LayerRole, ClothingMappings, ClothingTaxonomy
 ├── ClosetApp.Application/     # 服务接口、实现、DTO
-│   ├── Interfaces/            # IClothingService, IOutfitService, ITagService...
+│   ├── Interfaces/            # IClothingService, IOutfitService, ITagService, IFavoriteService...
 │   ├── Services/              # 业务逻辑实现
-│   └── DTOs/                  # CreateOutfitDto, OutfitDto...
+│   ├── DTOs/                  # CreateOutfitDto, OutfitDto, BackupDtos, BatchClothingImportDtos...
+│   ├── UseCases/              # GetWardrobeOverview, ImportClothesFromImages, RecordOutfitWorn...
+│   └── Images/                # IImageAssetResolver, ImageAsset, ImageVariant
 ├── ClosetApp.Infrastructure/  # EF Core、仓储实现、图片存储
-│   ├── Data/                  # ClosetDbContext (SQLite)
+│   ├── Data/                  # ClosetDbContext (SQLite), ClosetDatabaseInitializer
 │   ├── Repositories/          # 仓储实现
-│   ├── Services/              # ImageStorageService, WeatherService
+│   ├── Services/              # ImageStorageService, WeatherService, BackupService, RecommendationPreferencesService...
 │   └── Migrations/            # EF Core 迁移
-└── ClosetApp.UI/              # WPF 界面
-    ├── Views/                 # 页面和对话框
-    │   └── _Legacy/           # 旧版（已归档，保留备份）
-    │   └── _Deprecated/       # 废弃 Dialog（已归档）
-    ├── Components/            # 可复用组件
-    │   ├── Outfit/
-    │   │   ├── Engine/        # OutfitCompositionEngine（布局算法）
-    │   │   ├── Controls/      # OutfitPreviewCanvas, OutfitCard
-    │   │   └── Editor/        # OutfitEditorPanel（统一编辑器）
-    │   ├── Clothing/          # PremiumClothingCard
-    │   └── Shared/            # ThemeColorHelper, Modal, Form, States
-    ├── Converters/            # 值转换器
-    │   └── _Archive/          # 废弃 Converter（已归档）
-    ├── ViewModels/            # MVVM ViewModel
-    ├── Services/              # ThemeService, ModalService, ToastService
-    └── Themes/                # 设计 Token 和样式
-        ├── Tokens/            # Colors, Spacing, Radius, Shadows, Motion, Typography, Sizes
-        └── Controls/          # Buttons, Cards, Chips, Inputs, Pages
+├── ClosetApp.UI/              # WPF 界面
+│   ├── Views/                 # 页面和对话框
+│   ├── Components/            # 可复用组件
+│   │   ├── Outfit/
+│   │   │   ├── Engine/        # OutfitCompositionEngine（布局算法）
+│   │   │   ├── Controls/      # OutfitPreviewCanvas, OutfitCard
+│   │   │   └── Editor/        # OutfitEditorPanel, OutfitSelectionRules
+│   │   ├── Clothing/          # PremiumClothingCard, BatchClothingImportBuilder, BatchImportDuplicateChecker...
+│   │   ├── Tags/              # TagEditorPanel, TagSelectionSection, SelectableTag
+│   │   └── Shared/            # ThemeColorHelper, Modal, Form, States, Editor
+│   ├── Converters/            # 值转换器
+│   ├── ViewModels/            # MVVM ViewModel
+│   ├── Services/              # ThemeService, ModalService, ToastService, WardrobeActionErrorPresenter
+│   └── Themes/                # 设计 Token 和样式
+│       ├── Tokens/            # Colors, Spacing, Radius, Shadows, Motion, Typography, Sizes
+│       └── Controls/          # Buttons, Cards, Chips, Inputs, Pages
+├── ClosetApp.UI.Logic/        # UI 纯逻辑共享工程（供测试引用）
+└── ClosetApp.Tests/           # 纯逻辑测试工程（xUnit）
 ```
 
 ## Architecture
@@ -94,7 +97,16 @@ View (XAML + code-behind)
 - `ClothingType`: Top, Bottom, Outerwear, Dress, Skirt, Shoes, Accessory
 - `Season`: Spring, Summer, Autumn, Winter, AllSeason
 - `OutfitScene`: Work, Date, Travel, Party, Casual
+- `TagCategory`: Style, Scene, Season
 - `AppThemeKind`: Rose, Blue
+
+### Clothing Taxonomy
+
+- `GarmentType`: 细粒度衣物类型（TShirt, Shirt, Blouse, Knitwear, Hoodie, Jacket, Coat, Jeans, Dress, Sneakers, Bag... 共 27 种）
+- `DisplayCategory`: Topwear, Bottom, Dress, Footwear, Accessory
+- `LayerRole`: BaseTop, MidLayer, OuterLayer, Bottom, FullBody, Footwear, Accessory
+- `ClothingMappings`: GarmentType → DisplayCategory / LayerRole / 中文名称
+- `ClothingTaxonomy`: 按 DisplayCategory 分组查询 GarmentType
 
 ### ID Type
 
@@ -131,23 +143,28 @@ ThemeService (Singleton)
 
 所有 UI 组件使用 `{DynamicResource ...}` 绑定主题资源，切换时自动刷新。
 
+主题调色板包含 5 套辅助色系：Sky（天空蓝）、Mint（薄荷绿）、Rose（玫瑰粉）、Amber（琥珀）、Lavender（薰衣草），每套各有 Surface / Border / Text 三个变体。
+
 ### Color Tokens (`Themes/Tokens/Colors.xaml`)
 
 | Token | Rose | Blue | Usage |
 |-------|------|------|-------|
-| Primary | #DA94A5 | #5881D6 | 主色调 |
-| Primary.Dark | #B96C80 | #375AAA | 深色强调 |
-| Primary.Light | #FAE8ED | #E0ECFF | 浅色背景 |
+| Primary | #CA9C9F | #5881D6 | 主色调 |
+| Primary.Dark | #B08488 | #375AAA | 深色强调 |
+| Primary.Light | #F7F0EE | #E0ECFF | 浅色背景 |
 | Primary.Glow | 60%透明 | 60%透明 | 发光/标签 |
-| Surface.Page | #FCF8F5 | #F0F5FC | 页面背景 |
+| Surface.Page | #F9F5F1 | #F0F5FC | 页面背景 |
 | Surface.Card | #FFFFFF | #FFFFFF | 卡片背景 |
-| Surface.Hero | #FAF0EC | #E6EEFA | 预览区背景 |
-| Surface.Section | #FDF7F3 | #EAF1FC | 区域背景 |
-| Surface.ImageArea | #F8F1EC | #EEF4FC | 图片区背景 |
-| Border.Light | #F0E4E0 | #CDDAF0 | 边框 |
-| Shadow.Color | #30A0826E | #303C5078 | 阴影 |
-| Theme.Rose.* | 粉色系 | 蓝灰色系 | 主题辅助色 |
+| Surface.Hero | #F7F1ED | #E6EEFA | 预览区背景 |
+| Surface.Section | #FBF6F3 | #EAF1FC | 区域背景 |
+| Surface.ImageArea | #F7F2EE | #EEF4FC | 图片区背景 |
+| Border.Light | #ECE2DF | #CDDAF0 | 边框 |
+| Shadow.Color | #30927C76 | #303C5078 | 阴影 |
+| Theme.Rose.* | 玫瑰粉系 | 蓝灰色系 | 主题辅助色 |
 | Theme.Sky.* | 粉色系 | 蓝色系 | 主题辅助色 |
+| Theme.Mint.* | 暖绿色系 | 青色系 | 主题辅助色 |
+| Theme.Amber.* | 琥珀色系 | 蓝灰色系 | 主题辅助色 |
+| Theme.Lavender.* | 薰衣草色系 | 靛蓝色系 | 主题辅助色 |
 
 ### Card Design System (`Themes/Controls/Cards.xaml`)
 
@@ -375,3 +392,5 @@ ModalService (Singleton)
 - `Components/_Archive/` 保留旧版 `AddClothingPanel` 备份
 - `Views/_Deprecated/` 保留旧版 Dialog 备份
 - `Converters/_Archive/` 保留废弃 Converter 备份
+- `ClosetApp.UI.Logic` 是纯逻辑共享工程，通过 `<Compile Include>` 引用 UI 中的 State、Engine、Import 等文件，供测试工程独立引用
+- `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示

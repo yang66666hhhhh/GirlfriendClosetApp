@@ -1,6 +1,6 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-05-26
+> 最后更新时间：2026-05-28
 > 当前状态：主流程可用，近期重点已转向天气驱动的今日穿搭助手、衣柜批量导入治理、标签页整理体验与本地数据安全体验
 
 ---
@@ -47,28 +47,29 @@ View / Component / State
 GirlfriendClosetApp/
 ├── ClosetApp.Domain/
 │   ├── Entities/                 # Clothing, Outfit, Tag, Favorite, OutfitWornRecord
-│   ├── Enums/                    # ClothingType, Season, OutfitScene, TagCategory
+│   ├── Enums/                    # ClothingType, Season, OutfitScene, TagCategory, AppThemeKind
 │   ├── Interfaces/               # 仓储接口
-│   └── Clothing/                 # 服饰分类模型与映射
+│   └── Clothing/                 # GarmentType, DisplayCategory, LayerRole, ClothingMappings, ClothingTaxonomy
 ├── ClosetApp.Application/
-│   ├── DTOs/                     # Outfit DTO、Backup DTO
-│   ├── Interfaces/               # 服务接口
-│   ├── Services/                 # ClothingService, OutfitService, TagService...
-│   ├── UseCases/                 # GetWardrobeOverview, RecordOutfitWorn...
-│   └── Images/                   # 图片资产解析抽象
+│   ├── DTOs/                     # Outfit DTO、Backup DTO、BatchImport DTO...
+│   ├── Interfaces/               # 服务接口（含 IFavoriteService, IWeatherPreferencesService）
+│   ├── Services/                 # ClothingService, OutfitService, TagService, FavoriteService...
+│   ├── UseCases/                 # GetWardrobeOverview, ImportClothesFromImages, RecordOutfitWorn...
+│   └── Images/                   # 图片资产解析抽象（IImageAssetResolver, ImageAsset, ImageVariant）
 ├── ClosetApp.Infrastructure/
-│   ├── Data/                     # ClosetDbContext, DesignTimeDbContextFactory
+│   ├── Data/                     # ClosetDbContext, DesignTimeDbContextFactory, ClosetDatabaseInitializer
 │   ├── Repositories/             # 仓储实现
-│   ├── Services/                 # BackupService, ImageStorageService, ImageMaintenanceService...
+│   ├── Services/                 # BackupService, ImageStorageService, WeatherService, RecommendationPreferencesService...
 │   └── Migrations/               # EF Core 迁移
 ├── ClosetApp.UI/
-│   ├── Views/                    # ClothesTab, OutfitsTab, TagsTab, SettingsTab
-│   ├── Components/               # 服饰卡片、搭配引擎、共享弹层、标签组件
+│   ├── Views/                    # ClothesTab, OutfitsTab, TagsTab, SettingsTab, NavigationSidebar
+│   ├── Components/               # 服饰卡片、搭配引擎、批量导入、共享弹层、标签组件
 │   ├── States/                   # Tab 页面轻状态类
 │   ├── Themes/                   # Tokens / Controls / 兼容资源
-│   ├── Services/                 # ModalService, ToastService, ClothingImageLoader
+│   ├── Services/                 # ModalService, ToastService, ThemeService, WardrobeActionErrorPresenter...
 │   └── ViewModels/               # 仍保留的 VM
-├── ClosetApp.Tests/              # 纯逻辑测试工程
+├── ClosetApp.UI.Logic/           # UI 纯逻辑共享工程（供测试引用）
+├── ClosetApp.Tests/              # 纯逻辑测试工程（xUnit）
 └── docs/
 ```
 
@@ -120,7 +121,25 @@ GirlfriendClosetApp/
 - `ClothingType`: `Unspecified`, `Top`, `Bottom`, `Outerwear`, `Dress`, `Skirt`, `Shoes`, `Accessory`
 - `Season`: `Unspecified`, `Spring`, `Summer`, `Autumn`, `Winter`, `AllSeason`
 - `OutfitScene`: `Work`, `Date`, `Travel`, `Party`, `Casual`
-- `TagCategory`: 用于标签选择与复用
+- `TagCategory`: `Style`, `Scene`, `Season` — 用于标签选择与复用
+- `AppThemeKind`: `Rose`, `Blue` — 应用主题
+
+### 4.3 衣物分类体系
+
+`ClosetApp.Domain/Clothing/` 定义了精细的衣物分类模型，与 `ClothingType` 枚举共存：
+
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| `GarmentType` | 细粒度衣物类型（27 种） | TShirt, Shirt, Blouse, Knitwear, Hoodie, Jacket, Coat, Jeans, Dress, Sneakers, Bag... |
+| `DisplayCategory` | 展示分类 | Topwear, Bottom, Dress, Footwear, Accessory |
+| `LayerRole` | 穿搭层级 | BaseTop, MidLayer, OuterLayer, Bottom, FullBody, Footwear, Accessory |
+
+映射关系：
+
+- `ClothingMappings`：GarmentType → DisplayCategory / LayerRole / 中文名称，以及 ClothingType → GarmentType 旧版推断
+- `ClothingTaxonomy`：按 DisplayCategory 分组查询 GarmentType，提供分类标签和查询方法
+
+GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`ClothingType` 是旧版兼容枚举。`ClothingMappings.InferGarmentType(ClothingType)` 可从旧枚举推断 GarmentType。
 
 ---
 
@@ -153,7 +172,7 @@ GirlfriendClosetApp/
 - 展示搭配列表
 - 创建 / 编辑 / 删除搭配
 - 记录穿着行为
-- 根据天气、季节、收藏、最近穿着、穿着频次、场景、标签和颜色偏好给出今日推荐
+- 根据天气、季节、收藏、最近穿着、穿着频次、场景、标签、颜色偏好和手动推荐偏好给出今日推荐
 - 推荐不足时提示缺少的季节或搭配整理缺口
 - 使用 `OutfitEditorPanel` 与 `OutfitsTabState`
 
@@ -178,6 +197,16 @@ GirlfriendClosetApp/
 - 导入结果摘要卡片
 - 备份历史展示
 - 缺失图片检测与修复入口
+- 天气城市和今日推荐偏好设置
+
+今日推荐偏好当前支持：
+
+- 默认场景：不限 / 通勤 / 约会 / 出游 / 派对 / 休闲
+- 避开今天已穿过：过滤当天已经记录穿过的搭配
+- 轮换策略：
+  - `Balanced` / 均衡推荐：保持推荐服务原始排序
+  - `PreferLessWorn` / 优先少穿：优先穿着次数更少的搭配
+  - `PreferFavorites` / 优先收藏：收藏搭配优先
 
 ### 5.3 状态类约定
 
@@ -206,6 +235,10 @@ GirlfriendClosetApp/
 #### Clothing
 
 - `Components/Clothing/ClothingEditorPanel`
+- `Components/Clothing/BatchClothingImportPanel`
+- `Components/Clothing/BatchClothingCompletionPanel`
+- `Components/Clothing/BatchClothingImportSummaryDialog`
+- `Components/Clothing/BatchWardrobeClearPanel`
 - `PremiumClothingCard`
 
 #### Outfit
@@ -239,8 +272,43 @@ GirlfriendClosetApp/
 #### Shared / Tags
 
 - `Components/Shared/Modal/*`
+- `Components/Shared/Editor/*`
+- `Components/Shared/Form/*`
 - `Components/Shared/States/EmptyState`
-- `Components/Tags/Controls/*`
+- `Components/Shared/ThemeColorHelper`
+- `Components/Tags/Controls/TagEditorPanel`
+- `Components/Tags/Controls/TagSelectionSection`
+- `Components/Tags/Models/SelectableTag`
+
+### 6.3 批量导入工作流
+
+批量导入允许用户从本地图片目录快速导入衣物到衣柜：
+
+1. 用户选择图片目录 → `BatchClothingImportBuilder` 扫描图片文件
+2. `BatchImportDuplicateChecker` 检测同名/同尺寸图片风险，标记可疑重复项
+3. `BatchClothingImportPanel` 展示导入预览，支持一键移除可疑项
+4. 用户确认后调用 `ImportClothesFromImages` UseCase 执行导入
+5. `BatchClothingImportSummaryBuilder` 构建导入结果摘要
+6. `BatchClothingImportSummaryDialog` 展示导入结果
+
+相关 DTO：
+
+- `BatchClothingImportDtos`：导入预览项、导入选项
+- `BatchClothingCompletionDtos`：批量补全元数据
+- `BatchWardrobeClearDtos`：按分类批量清空
+
+### 6.4 错误提示统一处理
+
+`WardrobeActionErrorPresenter` 集中处理以下场景的异常分类与中文提示：
+
+- 导入失败：校验失败、数据库忙、文件占用、权限不足
+- 批量补全失败：校验失败、数据库忙
+- 批量清空失败：校验失败、数据库忙、文件占用、权限不足
+- 单件删除失败：校验失败、数据库忙、文件占用
+- 编辑面板初始化失败：数据库忙
+- 图片加载失败：文件占用、权限不足
+- 保存失败：校验失败、数据库忙、文件占用、权限不足
+- 搭配删除/记录穿着失败、标签删除失败
 
 ### 6.4 标签页状态与交互约定
 
@@ -268,18 +336,24 @@ GirlfriendClosetApp/
 - `IClothingService`
 - `IOutfitService`
 - `ITagService`
+- `IFavoriteService`
 - `IOutfitRecommendationService`
 - `IBackupService`
 - `IImageMaintenanceService`
 - `IImageStorageService`
 - `IImageAssetResolver`
 - `IWeatherService`
+- `IWeatherPreferencesService`
+- `IRecommendationPreferencesService`
 
 ### 7.2 UseCase 目录
 
 新的业务流程优先放在 `ClosetApp.Application/UseCases`：
 
 - `Clothing/GetWardrobeOverview`
+- `Clothing/ImportClothesFromImages`
+- `Clothing/CompleteClothingMetadataBatch`
+- `Clothing/ClearWardrobeByTypes`
 - `Insights/GetOutfitHistorySummary`
 - `Outfits/GetRecommendationReadinessSummary`
 - `Outfits/RecordOutfitWorn`
@@ -343,6 +417,17 @@ string BuildDefaultBackupPath();
 - `BackupImportResult` 提供导入结果摘要、恢复图片数、缺失文件名、修复建议
 - `BackupHistoryItem` 提供 UI 可直接展示的时间、状态、文件名与摘要
 
+### 8.4 其他 DTO
+
+| 文件 | 用途 |
+|------|------|
+| `CreateOutfitDto` / `UpdateOutfitDto` / `OutfitDto` / `OutfitSummaryDto` | 搭配 CRUD |
+| `RecommendedOutfitDto` / `RecommendationReadinessSummaryDto` | 推荐相关 |
+| `ImageMaintenanceDtos` | 图片维护 |
+| `BatchClothingImportDtos` | 批量导入预览与选项 |
+| `BatchClothingCompletionDtos` | 批量补全元数据 |
+| `BatchWardrobeClearDtos` | 按分类批量清空 |
+
 ### 8.4 SettingsTab 中的数据治理体验
 
 设置页当前已经落地：
@@ -367,6 +452,34 @@ string BuildDefaultBackupPath();
 ```
 
 历史最多保留 24 条，UI 默认读取最近 8 条。
+
+### 8.6 今日推荐偏好
+
+推荐偏好由 `ClosetApp.Infrastructure/Services/RecommendationPreferencesService.cs` 管理，默认保存到：
+
+```text
+%LocalAppData%\ClosetApp\recommendation-settings.json
+```
+
+当前模型：
+
+```csharp
+public class RecommendationPreferences
+{
+    public OutfitScene? DefaultScene { get; set; }
+    public bool AvoidWornToday { get; set; } = true;
+    public RecommendationRotationStrategy RotationStrategy { get; set; } = RecommendationRotationStrategy.Balanced;
+}
+```
+
+`OutfitsViewModel.RefreshWeatherRecommendationsAsync()` 会：
+
+1. 读取天气城市偏好
+2. 读取推荐偏好
+3. 使用 `DefaultScene` 调用 `IOutfitRecommendationService.GetRecommendationsByRuleAsync(...)`
+4. 如果 `AvoidWornToday = true`，过滤当天已穿过的推荐
+5. 按 `RotationStrategy` 对推荐结果做二次排序
+6. 取前 3 套展示到今日推荐区
 
 ---
 
@@ -432,6 +545,25 @@ Task<int> RelinkMissingImagesAsync(string sourceDirectory);
 - 控件样式在 `ClosetApp.UI/Themes/Controls`
 - `Themes/Colors.xaml` 为兼容转发层
 
+主题通过 `ThemeService` 全局切换，支持 `Rose`（柔粉）和 `Blue`（清蓝）两套主题。切换时通过 `ThemePalette.Create(AppThemeKind)` 生成完整调色板，然后更新 `Application.Resources` 中所有 Color/Brush。
+
+### 10.1 主题调色板
+
+每套主题包含以下色系：
+
+| 色系 | 用途 |
+|------|------|
+| Primary / PrimaryDark / PrimaryLight / PrimaryGlow | 主色调及变体 |
+| Surface.Page / Card / Hero / Section / Elevated / ImageArea / Modal | 表面色 |
+| Border.Light / Divider | 边框色 |
+| Sidebar.Background / SidebarBorder | 侧边栏 |
+| Shadow.Color | 阴影色 |
+| Theme.Sky.* | 天空蓝辅助色 |
+| Theme.Mint.* | 薄荷绿辅助色 |
+| Theme.Rose.* | 玫瑰粉辅助色 |
+| Theme.Amber.* | 琥珀辅助色 |
+| Theme.Lavender.* | 薰衣草辅助色 |
+
 现有资源包括：
 
 - `Tokens/Colors.xaml`
@@ -460,19 +592,20 @@ Task<int> RelinkMissingImagesAsync(string sourceDirectory);
 
 - `AddDbContextFactory<ClosetDbContext>()`
 - 仓储：`IClothingRepository`、`IOutfitRepository`、`ITagRepository`、`IFavoriteRepository`、`IOutfitWornRecordRepository`
-- 服务：衣物 / 搭配 / 标签 / 推荐 / 备份 / 图片治理 / 图片存储 / 天气
-- UseCase：衣柜概览、穿着记录、标签选择、历史摘要
-- UI 服务：`ToastService`、`ModalService`
+- 服务：衣物 / 搭配 / 标签 / 收藏 / 推荐 / 备份 / 图片治理 / 图片存储 / 天气 / 天气偏好 / 推荐偏好
+- UseCase：`GetWardrobeOverview`、`ImportClothesFromImages`、`CompleteClothingMetadataBatch`、`ClearWardrobeByTypes`、`GetOutfitHistorySummary`、`RecordOutfitWorn`、`GetRecommendationReadinessSummary`、`GetTagsForSelection`
+- UI 服务：`ToastService`、`ModalService`、`ThemeService`、`ThemePreferencesService`
 
 ### 11.2 启动行为
 
 启动流程大致为：
 
 1. 初始化 Serilog 日志目录与文件输出
-2. 注册全局异常处理
+2. 注册全局异常处理（AppDomain / Dispatcher / TaskScheduler）
 3. 构建 DI 容器
-4. `EnsureCreated()` 初始化 SQLite 数据库
-5. 打开主窗口
+4. `ThemeService.InitializeAsync()` 加载保存的主题偏好
+5. `ClosetDatabaseInitializer.InitializeAsync()` 初始化 SQLite 数据库（含迁移链）
+6. 打开主窗口
 
 ---
 
@@ -483,7 +616,8 @@ Task<int> RelinkMissingImagesAsync(string sourceDirectory);
 `ClosetApp.Tests` 当前是纯逻辑测试工程：
 
 - 直接引用 `ClosetApp.Infrastructure`
-- 按需链接 `ClosetApp.UI` 中的纯逻辑源码文件
+- 通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑源码文件
+- `ClosetApp.UI.Logic` 通过 `<Compile Include>` 链接 UI 中的 State、Engine、Import 等文件
 - 不直接引用整个 `ClosetApp.UI.csproj`
 
 这样可以避免：
@@ -493,14 +627,20 @@ Task<int> RelinkMissingImagesAsync(string sourceDirectory);
 
 ### 12.2 当前覆盖范围
 
-- `BackupServiceTests`
-- `ImageMaintenanceServiceTests`
-- `ImageStorageServiceTests`
-- `OutfitCompositionEngineTests`
-- `OutfitSelectionRulesTests`
-- `BatchClothingImportBuilderTests`
-- `ClothesTabStateTests`
-- `TabStateTests`
+| 领域 | 测试文件 |
+|------|---------|
+| 备份 | `BackupServiceTests` |
+| 图片治理 | `ImageMaintenanceServiceTests`、`ImageStorageServiceTests` |
+| 搭配引擎 | `OutfitCompositionEngineTests`、`OutfitSelectionRulesTests` |
+| 批量导入 | `BatchClothingImportBuilderTests`、`BatchClothingImportSummaryBuilderTests`、`BatchImportDuplicateCheckerTests`、`ImportClothesFromImagesTests`、`CompleteClothingMetadataBatchTests` |
+| 批量清空 | `ClearWardrobeByTypesTests` |
+| 页面状态 | `ClothesTabStateTests`、`OutfitsTabStateTests`、`TagsTabStateTests`、`TabStateTests` |
+| ViewModel | `OutfitsViewModelTests`、`SettingsViewModelTests` |
+| 推荐 | `OutfitRecommendationServiceTests`、`RecommendationPreferencesServiceTests`、`RecommendationReadinessSummaryTests` |
+| 天气 | `WeatherServiceTests`、`WeatherPreferencesServiceTests` |
+| 数据层 | `ClothingRepositoryTests`、`DatabaseLifecycleTests` |
+| 搭配服务 | `OutfitServiceTests` |
+| 错误提示 | `WardrobeActionErrorPresenterTests` |
 
 ### 12.3 常用命令
 
@@ -525,9 +665,18 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 标签页 | `ClosetApp.UI/Views/TagsTab.xaml` |
 | 设置页 | `ClosetApp.UI/Views/SettingsTab.xaml` |
 | 衣物编辑器 | `ClosetApp.UI/Components/Clothing/ClothingEditorPanel.xaml` |
+| 批量导入面板 | `ClosetApp.UI/Components/Clothing/BatchClothingImportPanel.xaml` |
+| 批量补全面板 | `ClosetApp.UI/Components/Clothing/BatchClothingCompletionPanel.xaml` |
+| 批量清空面板 | `ClosetApp.UI/Components/Clothing/BatchWardrobeClearPanel.xaml` |
 | 搭配编辑器 | `ClosetApp.UI/Components/Outfit/Editor/OutfitEditorPanel.xaml` |
 | 搭配布局引擎 | `ClosetApp.UI/Components/Outfit/Engine/OutfitCompositionEngine.cs` |
+| 标签编辑器 | `ClosetApp.UI/Components/Tags/Controls/TagEditorPanel.xaml` |
+| 标签选择组件 | `ClosetApp.UI/Components/Tags/Controls/TagSelectionSection.xaml` |
+| 穿着历史弹窗 | `ClosetApp.UI/Components/Shared/Modal/OutfitHistoryDialog.xaml` |
+| 确认弹窗 | `ClosetApp.UI/Components/Shared/Modal/ConfirmDialog.xaml` |
+| 错误提示器 | `ClosetApp.UI/Services/WardrobeActionErrorPresenter.cs` |
 | 页面状态类 | `ClosetApp.UI/States/` |
+| UI 逻辑共享工程 | `ClosetApp.UI.Logic/ClosetApp.UI.Logic.csproj` |
 | 备份接口 | `ClosetApp.Application/Interfaces/IBackupService.cs` |
 | 备份 DTO | `ClosetApp.Application/DTOs/BackupDtos.cs` |
 | 备份实现 | `ClosetApp.Infrastructure/Services/BackupService.cs` |
@@ -545,6 +694,8 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - `ViewModels` 仍存在，但不是当前页面交互的唯一主轴
 - 仓库里保留 `_Archive` / `_Deprecated` 目录作为历史备份
+- `ClosetApp.UI.Logic` 是纯逻辑共享工程，通过 `<Compile Include>` 引用 UI 中的 State、Engine、Import 等文件，供测试工程独立引用
+- `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
 
 ### 14.2 风险与后续方向
 
@@ -559,13 +710,13 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 ### 2026-05 中旬
 
-- 增加天气驱动的今日穿搭推荐，支持推荐理由、准备度诊断和一键记录“穿了”
+- 增加天气驱动的今日穿搭推荐，支持推荐理由、准备度诊断和一键记录"穿了"
 - 今日推荐增加场景、标签和颜色偏好权重，会从穿着历史与收藏中自动推断常用偏好
 - 批量导入增加同名/同尺寸图片风险原因提示，并支持一键移除可疑重复项
 - 完成 `SettingsTab` 数据治理体验增强
-- 增加衣柜批量导入，默认名称为“未命名”，未设置字段保持空值或待整理状态
+- 增加衣柜批量导入，默认名称为"未命名"，未设置字段保持空值或待整理状态
 - 衣柜分类补齐半裙，并将外套、半裙从上衣/裤装大类中拆出精确筛选
-- 搭配预览升级为“人体区域 + 穿搭层级”模型，外套和上衣在同一上半身区域表达层级关系
+- 搭配预览升级为"人体区域 + 穿搭层级"模型，外套和上衣在同一上半身区域表达层级关系
 - 图片资产升级为 `Original / Display / Thumbnail` 三层，衣柜主瀑布流改用 Display 主视觉缓存
 - 设置页增加孤儿原图扫描与确认清理，避免原图资产无限增长
 - 备份从纯 JSON 升级为 ZIP + JSON 双格式
@@ -573,7 +724,13 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - 增加缺失图片检测与目录重连修复
 - 引入 `States/` 页面轻状态类结构
 - 应用层新增 `UseCases/`
-- 测试工程与整个 WPF UI 工程解耦，逻辑测试可独立运行
+- 测试工程通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑文件，避免 WPF 生成链干扰
+- 引入 `GarmentType` / `DisplayCategory` / `LayerRole` 精细衣物分类体系
+- 引入 `WardrobeActionErrorPresenter` 统一错误提示
+- 引入 `ThemePreferencesService` 和 `WeatherPreferencesService` 持久化偏好
+- 引入 `TagEditorPanel`、`TagSelectionSection`、`SelectableTag` 标签组件
+- 引入 `ConfirmDialog`、`OutfitHistoryDialog`、`WornDayDetailsDialog` 共享弹窗
+- 主题调色板扩展为 5 套辅助色系（Sky / Mint / Rose / Amber / Lavender）
 
 ---
 

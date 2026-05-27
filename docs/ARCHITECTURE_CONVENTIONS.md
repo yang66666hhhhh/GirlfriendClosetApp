@@ -39,3 +39,27 @@
 - Tags are platform metadata, not clothing-only details.
 - Reusable tag UI belongs under `Components/Tags`.
 - Tag selection APIs should take a `TagCategory` so they can be reused by clothing, outfits, scenes, and future calendar features.
+
+## Error Presentation
+
+- Use `WardrobeActionErrorPresenter` for all user-facing error messages.
+- It classifies exceptions into: database busy, file occupied, permission denied, validation failure, and unknown.
+- Each method returns `(string Title, string Detail)` for direct display in toast or modal.
+- Prefer this over raw exception messages in UI code.
+
+## Batch Import
+
+- Batch import logic lives in `Components/Clothing/Batch*` files.
+- `BatchClothingImportBuilder` scans images and builds preview items.
+- `BatchImportDuplicateChecker` detects same-name/same-size risks before import.
+- `BatchClothingImportSummaryBuilder` builds result summaries after import.
+- The UseCase `ImportClothesFromImages` orchestrates the actual import.
+- These files are also linked into `ClosetApp.UI.Logic` for testability.
+
+## Preferences Services
+
+- User preferences (theme, weather city, recommendation settings) are persisted as JSON in `%LocalAppData%\ClosetApp\`.
+- `ThemePreferencesService` manages theme selection (Rose/Blue).
+- `WeatherPreferencesService` manages weather city preference.
+- `RecommendationPreferencesService` manages recommendation rotation strategy and scene preference.
+- All are registered as Singletons in DI.
