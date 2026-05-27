@@ -182,11 +182,13 @@ public class SettingsViewModelTests
         var viewModel = CreateViewModel(new FakeImageMaintenanceService(), recommendationPreferences: recommendationPreferences);
         viewModel.RecommendationDefaultScene = OutfitScene.Work;
         viewModel.RecommendationAvoidWornToday = false;
+        viewModel.RecommendationRotationStrategy = RecommendationRotationStrategy.PreferLessWorn;
 
         await viewModel.SaveRecommendationPreferencesAsync();
 
         Assert.Equal(OutfitScene.Work, recommendationPreferences.SavedPreferences.DefaultScene);
         Assert.False(recommendationPreferences.SavedPreferences.AvoidWornToday);
+        Assert.Equal(RecommendationRotationStrategy.PreferLessWorn, recommendationPreferences.SavedPreferences.RotationStrategy);
         Assert.True(viewModel.IsRecommendationStatusVisible);
     }
 

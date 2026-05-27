@@ -103,6 +103,58 @@ public class OutfitsViewModelTests
     }
 
     [Fact]
+    public async Task RefreshWeatherRecommendationsAsync_WithBalancedStrategy_KeepsRecommendationOrder()
+    {
+        var highWear = CreateOutfit("高分常穿", OutfitScene.Work, Season.Spring, withClothes: true);
+        highWear.WearCount = 8;
+        var lowWear = CreateOutfit("低分少穿", OutfitScene.Work, Season.Spring, withClothes: true);
+        lowWear.WearCount = 0;
+        var preferences = new FakeRecommendationPreferencesService(new RecommendationPreferences
+        {
+            RotationStrategy = RecommendationRotationStrategy.Balanced
+        });
+        var viewModel = CreateViewModel([highWear, lowWear], recommendationPreferencesService: preferences);
+
+        await viewModel.RefreshWeatherRecommendationsAsync();
+
+        Assert.Equal(["高分常穿", "低分少穿"], viewModel.WeatherRecommendations.Select(item => item.Name));
+    }
+
+    [Fact]
+    public async Task RefreshWeatherRecommendationsAsync_WithPreferLessWornStrategy_PrioritizesLowWearCount()
+    {
+        var highWear = CreateOutfit("常穿", OutfitScene.Work, Season.Spring, withClothes: true);
+        highWear.WearCount = 8;
+        var lowWear = CreateOutfit("少穿", OutfitScene.Work, Season.Spring, withClothes: true);
+        lowWear.WearCount = 0;
+        var preferences = new FakeRecommendationPreferencesService(new RecommendationPreferences
+        {
+            RotationStrategy = RecommendationRotationStrategy.PreferLessWorn
+        });
+        var viewModel = CreateViewModel([highWear, lowWear], recommendationPreferencesService: preferences);
+
+        await viewModel.RefreshWeatherRecommendationsAsync();
+
+        Assert.Equal("少穿", viewModel.WeatherRecommendations[0].Name);
+    }
+
+    [Fact]
+    public async Task RefreshWeatherRecommendationsAsync_WithPreferFavoritesStrategy_PrioritizesFavorites()
+    {
+        var plain = CreateOutfit("普通搭配", OutfitScene.Work, Season.Spring, withClothes: true);
+        var favorite = CreateOutfit("收藏搭配", OutfitScene.Work, Season.Spring, isFavorite: true, withClothes: true);
+        var preferences = new FakeRecommendationPreferencesService(new RecommendationPreferences
+        {
+            RotationStrategy = RecommendationRotationStrategy.PreferFavorites
+        });
+        var viewModel = CreateViewModel([plain, favorite], recommendationPreferencesService: preferences);
+
+        await viewModel.RefreshWeatherRecommendationsAsync();
+
+        Assert.Equal("收藏搭配", viewModel.WeatherRecommendations[0].Name);
+    }
+
+    [Fact]
     public async Task RecordRecommendedOutfitWornCommand_RecordsOutfitAndRefreshesState()
     {
         var outfit = CreateOutfit("今日通勤", OutfitScene.Work, Season.Spring, withClothes: true);

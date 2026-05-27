@@ -3,10 +3,18 @@ using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.Infrastructure.Services;
 
+public enum RecommendationRotationStrategy
+{
+    Balanced,
+    PreferLessWorn,
+    PreferFavorites
+}
+
 public class RecommendationPreferences
 {
     public OutfitScene? DefaultScene { get; set; }
     public bool AvoidWornToday { get; set; } = true;
+    public RecommendationRotationStrategy RotationStrategy { get; set; } = RecommendationRotationStrategy.Balanced;
 }
 
 public interface IRecommendationPreferencesService
@@ -82,7 +90,8 @@ public class RecommendationPreferencesService : IRecommendationPreferencesServic
         return new RecommendationPreferences
         {
             DefaultScene = preferences?.DefaultScene,
-            AvoidWornToday = preferences?.AvoidWornToday ?? true
+            AvoidWornToday = preferences?.AvoidWornToday ?? true,
+            RotationStrategy = preferences?.RotationStrategy ?? RecommendationRotationStrategy.Balanced
         };
     }
 }

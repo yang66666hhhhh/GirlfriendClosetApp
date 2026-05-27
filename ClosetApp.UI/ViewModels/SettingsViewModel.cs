@@ -82,6 +82,9 @@ public partial class SettingsViewModel : ObservableObject
     private bool _recommendationAvoidWornToday = true;
 
     [ObservableProperty]
+    private RecommendationRotationStrategy _recommendationRotationStrategy = RecommendationRotationStrategy.Balanced;
+
+    [ObservableProperty]
     private string _recommendationStatus = "";
 
     [ObservableProperty]
@@ -168,6 +171,12 @@ public partial class SettingsViewModel : ObservableObject
         new("派对", OutfitScene.Party),
         new("休闲", OutfitScene.Casual)
     ];
+    public IReadOnlyList<RecommendationRotationStrategyOption> RecommendationRotationStrategyOptions { get; } =
+    [
+        new("均衡推荐", RecommendationRotationStrategy.Balanced),
+        new("优先少穿", RecommendationRotationStrategy.PreferLessWorn),
+        new("优先收藏", RecommendationRotationStrategy.PreferFavorites)
+    ];
 
     public async Task InitializeAsync()
     {
@@ -204,6 +213,7 @@ public partial class SettingsViewModel : ObservableObject
         var preferences = await _recommendationPreferencesService.GetAsync();
         RecommendationDefaultScene = preferences.DefaultScene;
         RecommendationAvoidWornToday = preferences.AvoidWornToday;
+        RecommendationRotationStrategy = preferences.RotationStrategy;
     }
 
     public async Task SaveRecommendationPreferencesAsync()
@@ -211,7 +221,8 @@ public partial class SettingsViewModel : ObservableObject
         await _recommendationPreferencesService.SaveAsync(new RecommendationPreferences
         {
             DefaultScene = RecommendationDefaultScene,
-            AvoidWornToday = RecommendationAvoidWornToday
+            AvoidWornToday = RecommendationAvoidWornToday,
+            RotationStrategy = RecommendationRotationStrategy
         });
 
         RecommendationStatus = "今日推荐偏好已保存。";
@@ -506,3 +517,5 @@ public partial class SettingsViewModel : ObservableObject
         return version == null ? "开发版" : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 }
+
+public sealed record RecommendationRotationStrategyOption(string Label, RecommendationRotationStrategy Value);

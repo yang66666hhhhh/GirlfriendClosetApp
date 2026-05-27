@@ -20,13 +20,15 @@ public class RecommendationPreferencesServiceTests
             await service.SaveAsync(new RecommendationPreferences
             {
                 DefaultScene = OutfitScene.Work,
-                AvoidWornToday = false
+                AvoidWornToday = false,
+                RotationStrategy = RecommendationRotationStrategy.PreferFavorites
             });
 
             var saved = await service.GetAsync();
 
             Assert.Equal(OutfitScene.Work, saved.DefaultScene);
             Assert.False(saved.AvoidWornToday);
+            Assert.Equal(RecommendationRotationStrategy.PreferFavorites, saved.RotationStrategy);
         }
         finally
         {
@@ -47,6 +49,7 @@ public class RecommendationPreferencesServiceTests
 
             Assert.Null(preferences.DefaultScene);
             Assert.True(preferences.AvoidWornToday);
+            Assert.Equal(RecommendationRotationStrategy.Balanced, preferences.RotationStrategy);
         }
         finally
         {

@@ -457,7 +457,7 @@ public partial class OutfitsViewModel : ViewModelBase
             if (recommendationPreferences.AvoidWornToday)
                 recommendations = recommendations.Where(recommendation => !recommendation.IsWornToday);
 
-            WeatherRecommendations = recommendations
+            WeatherRecommendations = ApplyRotationStrategy(recommendations, recommendationPreferences.RotationStrategy)
                 .Take(3)
                 .ToList();
             RecommendationReadiness = await _getRecommendationReadinessSummary.ExecuteAsync(WeatherTemperature);
@@ -587,6 +587,23 @@ public partial class OutfitsViewModel : ViewModelBase
             Season.Winter => "冬季",
             Season.AllSeason => "四季",
             _ => "当前"
+        };
+    }
+
+    private static IEnumerable<RecommendedOutfitDto> ApplyRotationStrategy(
+        IEnumerable<RecommendedOutfitDto> recommendations,
+        RecommendationRotationStrategy strategy)
+    {
+        return strategy switch
+        {
+            RecommendationRotationStrategy.PreferLessWorn => recommendations
+                .OrderBy(recommendation => recommendation.WearCount)
+                .ThenBy(recommendation => recommendation.WornDate ?? DateTime.MinValue)
+                .ThenByDescending(recommendation => recommendation.Score),
+            RecommendationRotationStrategy.PreferFavorites => recommendations
+                .OrderByDescending(recommendation => recommendation.Outfit.Favorites.Count > 0)
+                .ThenByDescending(recommendation => recommendation.Score),
+            _ => recommendations
         };
     }
 
