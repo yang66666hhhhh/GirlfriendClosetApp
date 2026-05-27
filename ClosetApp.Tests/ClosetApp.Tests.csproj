@@ -18,6 +18,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\ClosetApp.Infrastructure\ClosetApp.Infrastructure.csproj" />
+    <ProjectReference Include="..\ClosetApp.UI\ClosetApp.UI.csproj" />
     <ProjectReference Include="..\ClosetApp.UI.Logic\ClosetApp.UI.Logic.csproj" />
   </ItemGroup>
 

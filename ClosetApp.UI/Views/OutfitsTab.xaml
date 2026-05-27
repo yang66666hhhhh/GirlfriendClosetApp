@@ -196,6 +196,8 @@
                                                 Padding="18,10"
                                                 Margin="0,0,12,0"
                                                 HorizontalAlignment="Left"
+                                                Command="{Binding RecordRecommendedOutfitWornCommand}"
+                                                CommandParameter="{Binding PrimaryWeatherRecommendation}"
                                                 Click="TodayHeroPrimaryAction_Click"/>
 
                                         <StackPanel Orientation="Horizontal"
@@ -213,7 +215,7 @@
                                                     Style="{StaticResource TodayHeroSecondaryActionButton}"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
-                                                    Click="RefreshWeatherRecommendations_Click"/>
+                                                    Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"/>
                                             <TextBlock Text="·"
                                                        Foreground="{DynamicResource TextPlaceholderBrush}"
                                                        Margin="8,0"
@@ -392,7 +394,8 @@
                                                     Padding="14,8"
                                                     Margin="0,12,0,0"
                                                     HorizontalAlignment="Left"
-                                                    Click="RecommendedOutfitWorn_Click"/>
+                                                    Command="{Binding DataContext.RecordRecommendedOutfitWornCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                    CommandParameter="{Binding}"/>
                                         </StackPanel>
                                     </Grid>
                                 </Border>

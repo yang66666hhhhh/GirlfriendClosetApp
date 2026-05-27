@@ -335,6 +335,20 @@ public partial class OutfitsViewModel : ViewModelBase
         await LoadOutfitsAsync();
     }
 
+    public async Task DeleteOutfitWithFeedbackAsync(Outfit outfit)
+    {
+        try
+        {
+            await DeleteOutfitAsync(outfit);
+            ToastService.Instance.ShowSuccess($"已删除「{outfit.Name}」", "这套搭配已经从列表移除。");
+        }
+        catch (Exception ex)
+        {
+            var feedback = WardrobeActionErrorPresenter.ForOutfitDelete(ex, outfit.Name);
+            ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+        }
+    }
+
     public async Task RecordWornDateAsync(Outfit outfit, DateTime date)
     {
         await _outfitService.RecordWornDateAsync(outfit.Id, date);
@@ -373,11 +387,39 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();
 
+    public async Task RefreshAfterOutfitSavedWithFeedbackAsync(string title, string detail)
+    {
+        try
+        {
+            await RefreshAfterOutfitSavedAsync();
+            ToastService.Instance.ShowSuccess(title, detail);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+        }
+    }
+
     public async Task<bool> ToggleFavoriteAsync(Outfit outfit)
     {
         var isFav = await _outfitService.ToggleFavoriteAsync(outfit.Id);
         await LoadOutfitsAsync();
         return isFav;
+    }
+
+    public async Task<bool?> ToggleFavoriteWithFeedbackAsync(Outfit outfit)
+    {
+        try
+        {
+            var isFav = await ToggleFavoriteAsync(outfit);
+            ToastService.Instance.ShowSuccess(isFav ? "已收藏" : "已取消收藏");
+            return isFav;
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("操作失败", ex.Message);
+            return null;
+        }
     }
 
     public async Task RefreshWeatherRecommendationsAsync()
