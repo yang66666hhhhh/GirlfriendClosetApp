@@ -1,4 +1,4 @@
-namespace ClosetApp.Application.Interfaces;
+﻿namespace ClosetApp.Application.Interfaces;
 
 public interface IImageStorageService
 {
@@ -9,6 +9,12 @@ public interface IImageStorageService
     Task RestoreImageAsync(string sourcePath, string storedFileName);
     Task DeleteImageAsync(string imagePath);
     Task DeleteImageWithThumbnailAsync(string imagePath);
+
+    /// <summary>
+    /// 尝试删除图片及其缩略图，忽略空路径和删除异常。
+    /// </summary>
+    Task TryDeleteImageAsync(string? imagePath);
+
     string GetImageFullPath(string relativePath);
     string GetDisplayFullPath(string relativePath);
     string GetThumbnailFullPath(string relativePath);

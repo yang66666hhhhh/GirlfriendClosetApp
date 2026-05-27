@@ -1,4 +1,4 @@
-using SixLabors.ImageSharp;
+﻿using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats;
 using SixLabors.ImageSharp.Formats.Bmp;
 using SixLabors.ImageSharp.Formats.Gif;
@@ -220,6 +220,21 @@ public class ImageStorageService : IImageStorageService
             Log.Information("Deleted clothing image asset {ImagePath}", fullPath);
         }
         return Task.CompletedTask;
+    }
+
+    public async Task TryDeleteImageAsync(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return;
+
+        try
+        {
+            await DeleteImageWithThumbnailAsync(imagePath);
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to delete stored clothing image {ImagePath}", imagePath);
+        }
     }
 
     public string GetImageFullPath(string relativePath)

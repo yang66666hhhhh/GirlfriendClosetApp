@@ -131,6 +131,13 @@ public class ClearWardrobeByTypesTests
             return Task.CompletedTask;
         }
 
+        public async Task TryDeleteImageAsync(string? imagePath)
+        {
+            if (string.IsNullOrWhiteSpace(imagePath))
+                return;
+            await DeleteImageWithThumbnailAsync(imagePath);
+        }
+
         public string GetImageFullPath(string relativePath) => relativePath;
         public string GetDisplayFullPath(string relativePath) => relativePath;
         public string GetThumbnailFullPath(string relativePath) => relativePath;

@@ -1,7 +1,8 @@
-using ClosetApp.Application.DTOs;
+﻿using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Clothing;
 using ClosetApp.UI.Components.Clothing;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Tags.Models;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -37,6 +38,7 @@ public partial class WardrobeViewModel : ViewModelBase
         nameof(FavoriteOnly),
         nameof(FilterHint),
         nameof(FilterToggleText),
+        // Radio button properties - notified by EnumRadioGroup
         nameof(IsCategoryAllSelected),
         nameof(IsCategoryTopSelected),
         nameof(IsCategoryOuterwearSelected),
@@ -181,195 +183,121 @@ public partial class WardrobeViewModel : ViewModelBase
     public string FilterHint => HasActiveFilters
         ? "当前已应用组合筛选；点「清除」可以回到完整衣柜。"
         : "分类、季节、标签和收藏都可以叠加筛选。";
+
+    // ── EnumRadioGroup：集中管理 RadioButton 选择状态 ──
+
+    public EnumRadioGroup<ClothingType> CategoryFilter { get; }
+    public EnumRadioGroup<Season> SeasonFilter { get; }
+    public EnumRadioGroup<WardrobeQueueFilter> QueueFilter { get; }
+
+    // ── 委托属性：保持 XAML 绑定兼容 ──
+
     public bool IsCategoryAllSelected
     {
-        get => SelectedType == null;
-        set
-        {
-            if (value)
-                SetSelectedType(null);
-        }
+        get => CategoryFilter.IsAllSelected;
+        set => CategoryFilter.IsAllSelected = value;
     }
     public bool IsCategoryTopSelected
     {
-        get => SelectedType == ClothingType.Top;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Top);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Top);
+        set { if (value) CategoryFilter.Select(ClothingType.Top); }
     }
     public bool IsCategoryOuterwearSelected
     {
-        get => SelectedType == ClothingType.Outerwear;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Outerwear);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Outerwear);
+        set { if (value) CategoryFilter.Select(ClothingType.Outerwear); }
     }
     public bool IsCategoryBottomSelected
     {
-        get => SelectedType == ClothingType.Bottom;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Bottom);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Bottom);
+        set { if (value) CategoryFilter.Select(ClothingType.Bottom); }
     }
     public bool IsCategorySkirtSelected
     {
-        get => SelectedType == ClothingType.Skirt;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Skirt);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Skirt);
+        set { if (value) CategoryFilter.Select(ClothingType.Skirt); }
     }
     public bool IsCategoryDressSelected
     {
-        get => SelectedType == ClothingType.Dress;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Dress);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Dress);
+        set { if (value) CategoryFilter.Select(ClothingType.Dress); }
     }
     public bool IsCategoryShoesSelected
     {
-        get => SelectedType == ClothingType.Shoes;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Shoes);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Shoes);
+        set { if (value) CategoryFilter.Select(ClothingType.Shoes); }
     }
     public bool IsCategoryAccessorySelected
     {
-        get => SelectedType == ClothingType.Accessory;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Accessory);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Accessory);
+        set { if (value) CategoryFilter.Select(ClothingType.Accessory); }
     }
     public bool IsCategoryUnspecifiedSelected
     {
-        get => SelectedType == ClothingType.Unspecified;
-        set
-        {
-            if (value)
-                SetSelectedType(ClothingType.Unspecified);
-        }
+        get => CategoryFilter.IsSelected(ClothingType.Unspecified);
+        set { if (value) CategoryFilter.Select(ClothingType.Unspecified); }
     }
     public bool IsSeasonAllSelected
     {
-        get => SelectedSeason == null;
-        set
-        {
-            if (value)
-                SetSelectedSeason(null);
-        }
+        get => SeasonFilter.IsAllSelected;
+        set => SeasonFilter.IsAllSelected = value;
     }
     public bool IsSeasonSpringSelected
     {
-        get => SelectedSeason == Season.Spring;
-        set
-        {
-            if (value)
-                SetSelectedSeason(Season.Spring);
-        }
+        get => SeasonFilter.IsSelected(Season.Spring);
+        set { if (value) SeasonFilter.Select(Season.Spring); }
     }
     public bool IsSeasonSummerSelected
     {
-        get => SelectedSeason == Season.Summer;
-        set
-        {
-            if (value)
-                SetSelectedSeason(Season.Summer);
-        }
+        get => SeasonFilter.IsSelected(Season.Summer);
+        set { if (value) SeasonFilter.Select(Season.Summer); }
     }
     public bool IsSeasonAutumnSelected
     {
-        get => SelectedSeason == Season.Autumn;
-        set
-        {
-            if (value)
-                SetSelectedSeason(Season.Autumn);
-        }
+        get => SeasonFilter.IsSelected(Season.Autumn);
+        set { if (value) SeasonFilter.Select(Season.Autumn); }
     }
     public bool IsSeasonWinterSelected
     {
-        get => SelectedSeason == Season.Winter;
-        set
-        {
-            if (value)
-                SetSelectedSeason(Season.Winter);
-        }
+        get => SeasonFilter.IsSelected(Season.Winter);
+        set { if (value) SeasonFilter.Select(Season.Winter); }
     }
     public bool IsQueueAllSelected
     {
-        get => ActiveQueueFilter == null;
-        set
-        {
-            if (value)
-                SetQueueFilter(null);
-        }
+        get => QueueFilter.IsAllSelected;
+        set => QueueFilter.IsAllSelected = value;
     }
     public bool IsQueueUnnamedSelected
     {
-        get => ActiveQueueFilter == WardrobeQueueFilter.Unnamed;
-        set
-        {
-            if (value)
-                SetQueueFilter(WardrobeQueueFilter.Unnamed);
-        }
+        get => QueueFilter.IsSelected(WardrobeQueueFilter.Unnamed);
+        set { if (value) QueueFilter.Select(WardrobeQueueFilter.Unnamed); }
     }
     public bool IsQueueUncategorizedSelected
     {
-        get => ActiveQueueFilter == WardrobeQueueFilter.Uncategorized;
-        set
-        {
-            if (value)
-                SetQueueFilter(WardrobeQueueFilter.Uncategorized);
-        }
+        get => QueueFilter.IsSelected(WardrobeQueueFilter.Uncategorized);
+        set { if (value) QueueFilter.Select(WardrobeQueueFilter.Uncategorized); }
     }
     public bool IsQueueUnseasonedSelected
     {
-        get => ActiveQueueFilter == WardrobeQueueFilter.Unseasoned;
-        set
-        {
-            if (value)
-                SetQueueFilter(WardrobeQueueFilter.Unseasoned);
-        }
+        get => QueueFilter.IsSelected(WardrobeQueueFilter.Unseasoned);
+        set { if (value) QueueFilter.Select(WardrobeQueueFilter.Unseasoned); }
     }
     public bool IsQueueUntaggedSelected
     {
-        get => ActiveQueueFilter == WardrobeQueueFilter.Untagged;
-        set
-        {
-            if (value)
-                SetQueueFilter(WardrobeQueueFilter.Untagged);
-        }
+        get => QueueFilter.IsSelected(WardrobeQueueFilter.Untagged);
+        set { if (value) QueueFilter.Select(WardrobeQueueFilter.Untagged); }
     }
     public bool IsQueueMissingBrandOrColorSelected
     {
-        get => ActiveQueueFilter == WardrobeQueueFilter.MissingBrandOrColor;
-        set
-        {
-            if (value)
-                SetQueueFilter(WardrobeQueueFilter.MissingBrandOrColor);
-        }
+        get => QueueFilter.IsSelected(WardrobeQueueFilter.MissingBrandOrColor);
+        set { if (value) QueueFilter.Select(WardrobeQueueFilter.MissingBrandOrColor); }
     }
     public bool IsQueueRecentlyImportedSelected
     {
-        get => ActiveQueueFilter == WardrobeQueueFilter.RecentlyImported;
-        set
-        {
-            if (value)
-                SetQueueFilter(WardrobeQueueFilter.RecentlyImported);
-        }
+        get => QueueFilter.IsSelected(WardrobeQueueFilter.RecentlyImported);
+        set { if (value) QueueFilter.Select(WardrobeQueueFilter.RecentlyImported); }
     }
+
     public string QueueAllText => "全部";
     public string QueueUnnamedText => BuildQueueText("未命名", WardrobeQueueFilter.Unnamed);
     public string QueueUncategorizedText => BuildQueueText("未分类", WardrobeQueueFilter.Uncategorized);
@@ -427,6 +355,30 @@ public partial class WardrobeViewModel : ViewModelBase
         _completeClothingMetadataBatch = completeClothingMetadataBatch;
         _clearWardrobeByTypes = clearWardrobeByTypes;
         _importClothesFromImages = importClothesFromImages;
+
+        CategoryFilter = new EnumRadioGroup<ClothingType>(OnCategoryFilterChanged);
+        SeasonFilter = new EnumRadioGroup<Season>(OnSeasonFilterChanged);
+        QueueFilter = new EnumRadioGroup<WardrobeQueueFilter>(OnQueueFilterChanged);
+    }
+
+    // ── EnumRadioGroup 回调 ──
+
+    private void OnCategoryFilterChanged(ClothingType? value)
+    {
+        _state.SetSelectedType(value);
+        NotifyStateChanged();
+    }
+
+    private void OnSeasonFilterChanged(Season? value)
+    {
+        _state.SetSelectedSeason(value);
+        NotifyStateChanged();
+    }
+
+    private void OnQueueFilterChanged(WardrobeQueueFilter? value)
+    {
+        _state.SetQueueFilter(value);
+        NotifyStateChanged();
     }
 
     public async Task LoadClothesAsync()
@@ -455,20 +407,17 @@ public partial class WardrobeViewModel : ViewModelBase
 
     public void SetSelectedType(ClothingType? type)
     {
-        _state.SetSelectedType(type);
-        NotifyStateChanged();
+        CategoryFilter.Selected = type;
     }
 
     public void SetSelectedSeason(Season? season)
     {
-        _state.SetSelectedSeason(season);
-        NotifyStateChanged();
+        SeasonFilter.Selected = season;
     }
 
     public void SetQueueFilter(WardrobeQueueFilter? queueFilter)
     {
-        _state.SetQueueFilter(queueFilter);
-        NotifyStateChanged();
+        QueueFilter.Selected = queueFilter;
     }
 
     public void ToggleTag(Guid tagId, bool isSelected)
@@ -486,9 +435,9 @@ public partial class WardrobeViewModel : ViewModelBase
 
     public void ClearFilters()
     {
-        _state.SetQueueFilter(null);
-        _state.SetSelectedType(null);
-        _state.SetSelectedSeason(null);
+        QueueFilter.Selected = null;
+        CategoryFilter.Selected = null;
+        SeasonFilter.Selected = null;
         _state.SetSelectedTagIds([]);
         _state.SetFavoriteOnly(false);
         SearchText = string.Empty;
@@ -571,7 +520,7 @@ public partial class WardrobeViewModel : ViewModelBase
     {
         Log.Information("Deleting clothing {ClothingId} ({ClothingName})", clothing.Id, clothing.Name);
         await _clothingService.DeleteClothingAsync(clothing.Id);
-        await DeleteStoredImageAsync(clothing.ImagePath);
+        await _imageStorageService.TryDeleteImageAsync(clothing.ImagePath);
         await LoadClothesAsync();
     }
 
@@ -580,22 +529,7 @@ public partial class WardrobeViewModel : ViewModelBase
         if (string.Equals(oldImagePath, newImagePath, StringComparison.OrdinalIgnoreCase))
             return;
 
-        await DeleteStoredImageAsync(oldImagePath);
-    }
-
-    private async Task DeleteStoredImageAsync(string? imagePath)
-    {
-        if (string.IsNullOrWhiteSpace(imagePath))
-            return;
-
-        try
-        {
-            await _imageStorageService.DeleteImageWithThumbnailAsync(imagePath);
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to delete stored clothing image {ImagePath}", imagePath);
-        }
+        await _imageStorageService.TryDeleteImageAsync(oldImagePath);
     }
 
     private void NotifyStateChanged()
