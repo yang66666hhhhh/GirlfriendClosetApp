@@ -401,32 +401,7 @@ public partial class SettingsTab : UserControl
 
     private async Task RefreshBackupStateAsync(BackupImportResult? latestImport = null)
     {
-        var previewPath = Path.Combine(AppPaths.BackupsDir, $"preview-{Guid.NewGuid():N}.zip");
-        var validation = await _backupService.ValidateExportAsync(previewPath);
-        UpdateBackupValidationCard(validation);
-
-        var history = await _backupService.GetHistoryAsync();
-        BackupHistoryList.ItemsSource = history;
-        TxtBackupHistoryEmpty.Visibility = history.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-
-        if (latestImport != null)
-        {
-            UpdateLatestImportCard(latestImport);
-            return;
-        }
-
-        var latestImportHistory = history.FirstOrDefault(item => item.Operation == "Import" && item.Success);
-        if (latestImportHistory == null)
-        {
-            ResetLatestImportCard();
-            return;
-        }
-
-        TxtLastImportSummary.Text = latestImportHistory.Summary;
-        TxtLastImportDetail.Text = $"{latestImportHistory.TimestampText} · {latestImportHistory.FileName}";
-        LastImportWarningCard.Visibility = Visibility.Collapsed;
-        LastImportMissingCard.Visibility = Visibility.Collapsed;
-        BtnRepairAfterImport.Visibility = Visibility.Collapsed;
+        await _viewModel.RefreshBackupStateAsync(latestImport);
     }
 
     private static bool ConfirmExport(BackupValidationResult validation)
@@ -440,17 +415,6 @@ public partial class SettingsTab : UserControl
             "确认导出备份",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Warning) == MessageBoxResult.OK;
-    }
-
-    private static string BuildValidationHint(BackupValidationResult validation)
-    {
-        if (validation.IsEmptyBackup)
-            return validation.ReadinessSummary;
-
-        if (!validation.HasWarnings)
-            return "当前可以直接导出 ZIP 备份包，建议优先使用 ZIP 保留图片。";
-
-        return string.Join(" ", validation.Warnings);
     }
 
     private static string BuildExportMessage(BackupExportResult result)
@@ -476,69 +440,6 @@ public partial class SettingsTab : UserControl
 
         foreach (var file in Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories))
             File.Delete(file);
-    }
-
-    // 导出前校验卡片集中在这里组装，避免散落的文本更新让状态变得难追踪。
-    private void UpdateBackupValidationCard(BackupValidationResult validation)
-    {
-        TxtBackupValidation.Text = validation.ReadinessSummary;
-        TxtBackupValidationData.Text = validation.DataSummary;
-        TxtBackupValidationImages.Text = validation.ImageSummary;
-        TxtBackupValidationHint.Text = BuildValidationHint(validation);
-
-        if (validation.HasWarnings)
-        {
-            BackupValidationWarningCard.Visibility = Visibility.Visible;
-            TxtBackupValidationWarnings.Text = string.Join("\n", validation.Warnings);
-        }
-        else
-        {
-            BackupValidationWarningCard.Visibility = Visibility.Collapsed;
-            TxtBackupValidationWarnings.Text = string.Empty;
-        }
-    }
-
-    private void UpdateLatestImportCard(BackupImportResult result)
-    {
-        TxtLastImportSummary.Text = result.Summary;
-        TxtLastImportDetail.Text =
-            $"{result.ImportedAt:yyyy-MM-dd HH:mm} · {Path.GetFileName(result.FilePath)}\n" +
-            $"衣服 {result.ClothingCount} · 搭配 {result.OutfitCount} · 标签 {result.TagCount} · 恢复图片 {result.RestoredImageCount}";
-
-        if (result.Warnings.Count > 0)
-        {
-            LastImportWarningCard.Visibility = Visibility.Visible;
-            TxtLastImportWarning.Text = string.Join(" ", result.Warnings);
-            BtnRepairAfterImport.Visibility = result.ShouldSuggestRepair ? Visibility.Visible : Visibility.Collapsed;
-        }
-        else
-        {
-            LastImportWarningCard.Visibility = Visibility.Collapsed;
-            BtnRepairAfterImport.Visibility = Visibility.Collapsed;
-        }
-
-        if (result.MissingImageFiles.Count > 0)
-        {
-            LastImportMissingCard.Visibility = Visibility.Visible;
-            TxtLastImportMissingFiles.Text = string.Join("、", result.MissingImageFiles.Take(6)) +
-                (result.MissingImageFiles.Count > 6 ? $" 等 {result.MissingImageFiles.Count} 个文件" : string.Empty);
-        }
-        else
-        {
-            LastImportMissingCard.Visibility = Visibility.Collapsed;
-            TxtLastImportMissingFiles.Text = string.Empty;
-        }
-    }
-
-    private void ResetLatestImportCard()
-    {
-        TxtLastImportSummary.Text = "还没有导入记录。";
-        TxtLastImportDetail.Text = "导入完成后，这里会显示恢复结果和后续建议。";
-        LastImportWarningCard.Visibility = Visibility.Collapsed;
-        LastImportMissingCard.Visibility = Visibility.Collapsed;
-        BtnRepairAfterImport.Visibility = Visibility.Collapsed;
-        TxtLastImportWarning.Text = string.Empty;
-        TxtLastImportMissingFiles.Text = string.Empty;
     }
 
     private void ApplyThemeSelectionState(AppThemeKind theme)

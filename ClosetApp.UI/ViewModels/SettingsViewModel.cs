@@ -119,6 +119,12 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _backupHistoryEmptyText = "还没有备份记录。";
 
+    [ObservableProperty]
+    private bool _isBackupHistoryEmpty = true;
+
+    [ObservableProperty]
+    private IReadOnlyList<BackupHistoryItem> _backupHistory = [];
+
     private bool _isRefreshingWeather;
 
     public SettingsViewModel(
@@ -329,6 +335,89 @@ public partial class SettingsViewModel : ObservableObject
         return result.HasOrphans
             ? $"{result.OrphanCount} 张原图未被数据库引用，占用 {FormatSize(result.TotalBytes)}。"
             : "没有发现孤儿原图。";
+    }
+
+    public async Task<BackupValidationResult> RefreshBackupStateAsync(BackupImportResult? latestImport = null)
+    {
+        var previewPath = Path.Combine(AppPaths.BackupsDir, $"preview-{Guid.NewGuid():N}.zip");
+        var validation = await _backupService.ValidateExportAsync(previewPath);
+        ApplyBackupValidation(validation);
+
+        BackupHistory = await _backupService.GetHistoryAsync();
+        IsBackupHistoryEmpty = BackupHistory.Count == 0;
+        BackupHistoryEmptyText = IsBackupHistoryEmpty ? "还没有备份记录。" : string.Empty;
+
+        if (latestImport != null)
+        {
+            ApplyLatestImport(latestImport);
+            return validation;
+        }
+
+        var latestImportHistory = BackupHistory.FirstOrDefault(item => item.Operation == "Import" && item.Success);
+        if (latestImportHistory == null)
+        {
+            ResetLatestImport();
+            return validation;
+        }
+
+        LastImportSummary = latestImportHistory.Summary;
+        LastImportDetail = $"{latestImportHistory.TimestampText} · {latestImportHistory.FileName}";
+        LastImportWarning = string.Empty;
+        LastImportMissingFiles = string.Empty;
+        IsLastImportWarningVisible = false;
+        IsLastImportMissingCardVisible = false;
+        IsRepairAfterImportVisible = false;
+        return validation;
+    }
+
+    public static string BuildValidationHint(BackupValidationResult validation)
+    {
+        if (validation.IsEmptyBackup)
+            return validation.ReadinessSummary;
+
+        if (!validation.HasWarnings)
+            return "当前可以直接导出 ZIP 备份包，建议优先使用 ZIP 保留图片。";
+
+        return string.Join(" ", validation.Warnings);
+    }
+
+    private void ApplyBackupValidation(BackupValidationResult validation)
+    {
+        BackupValidation = validation.ReadinessSummary;
+        BackupValidationData = validation.DataSummary;
+        BackupValidationImages = validation.ImageSummary;
+        BackupValidationHint = BuildValidationHint(validation);
+        IsBackupValidationWarningVisible = validation.HasWarnings;
+        BackupValidationWarnings = validation.HasWarnings ? string.Join("\n", validation.Warnings) : string.Empty;
+    }
+
+    private void ApplyLatestImport(BackupImportResult result)
+    {
+        LastImportSummary = result.Summary;
+        LastImportDetail =
+            $"{result.ImportedAt:yyyy-MM-dd HH:mm} · {Path.GetFileName(result.FilePath)}\n" +
+            $"衣服 {result.ClothingCount} · 搭配 {result.OutfitCount} · 标签 {result.TagCount} · 恢复图片 {result.RestoredImageCount}";
+
+        IsLastImportWarningVisible = result.Warnings.Count > 0;
+        LastImportWarning = result.Warnings.Count > 0 ? string.Join(" ", result.Warnings) : string.Empty;
+        IsRepairAfterImportVisible = result.ShouldSuggestRepair && result.Warnings.Count > 0;
+
+        IsLastImportMissingCardVisible = result.MissingImageFiles.Count > 0;
+        LastImportMissingFiles = result.MissingImageFiles.Count == 0
+            ? string.Empty
+            : string.Join("、", result.MissingImageFiles.Take(6)) +
+                (result.MissingImageFiles.Count > 6 ? $" 等 {result.MissingImageFiles.Count} 个文件" : string.Empty);
+    }
+
+    private void ResetLatestImport()
+    {
+        LastImportSummary = "还没有导入记录。";
+        LastImportDetail = "导入完成后，这里会显示恢复结果和后续建议。";
+        LastImportWarning = string.Empty;
+        LastImportMissingFiles = string.Empty;
+        IsLastImportWarningVisible = false;
+        IsLastImportMissingCardVisible = false;
+        IsRepairAfterImportVisible = false;
     }
 
     private static string BuildTimezoneSuffix(string timezone)

@@ -794,30 +794,35 @@
                                             <TextBlock Text="导出前校验"
                                                        Style="{StaticResource PageFieldLabelText}"/>
                                             <TextBlock x:Name="TxtBackupValidation"
+                                                       Text="{Binding BackupValidation}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        FontWeight="SemiBold"
                                                        Margin="0,8,0,0"/>
                                             <TextBlock x:Name="TxtBackupValidationData"
+                                                       Text="{Binding BackupValidationData}"
                                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                                        TextWrapping="Wrap"
                                                        Margin="0,8,0,0"/>
                                             <TextBlock x:Name="TxtBackupValidationImages"
+                                                       Text="{Binding BackupValidationImages}"
                                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                                        TextWrapping="Wrap"
                                                        Margin="0,6,0,0"/>
                                             <TextBlock x:Name="TxtBackupValidationHint"
+                                                       Text="{Binding BackupValidationHint}"
                                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                                        TextWrapping="Wrap"
                                                        Margin="0,6,0,0"/>
                                             <Border x:Name="BackupValidationWarningCard"
                                                     Style="{StaticResource PageWarningCard}"
                                                     Margin="0,10,0,0"
-                                                    Visibility="Collapsed">
+                                                    Visibility="{Binding IsBackupValidationWarningVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                 <StackPanel>
                                                     <TextBlock Text="导出提醒"
                                                                Foreground="{DynamicResource TextPrimaryBrush}"
                                                                FontWeight="SemiBold"/>
                                                     <TextBlock x:Name="TxtBackupValidationWarnings"
+                                                               Text="{Binding BackupValidationWarnings}"
                                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                                TextWrapping="Wrap"
                                                                Margin="0,6,0,0"/>
@@ -831,23 +836,26 @@
                                             <TextBlock Text="最近一次导入"
                                                        Style="{StaticResource PageFieldLabelText}"/>
                                             <TextBlock x:Name="TxtLastImportSummary"
+                                                       Text="{Binding LastImportSummary}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        FontWeight="SemiBold"
                                                        TextWrapping="Wrap"
                                                        Margin="0,8,0,0"/>
                                             <TextBlock x:Name="TxtLastImportDetail"
+                                                       Text="{Binding LastImportDetail}"
                                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                                        TextWrapping="Wrap"
                                                        Margin="0,8,0,0"/>
                                             <Border x:Name="LastImportWarningCard"
                                                     Style="{StaticResource PageWarningCard}"
                                                     Margin="0,10,0,0"
-                                                    Visibility="Collapsed">
+                                                    Visibility="{Binding IsLastImportWarningVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                 <StackPanel>
                                                     <TextBlock Text="建议处理"
                                                                Foreground="{DynamicResource TextPrimaryBrush}"
                                                                FontWeight="SemiBold"/>
                                                     <TextBlock x:Name="TxtLastImportWarning"
+                                                               Text="{Binding LastImportWarning}"
                                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                                TextWrapping="Wrap"
                                                                Margin="0,6,0,0"/>
@@ -857,7 +865,7 @@
                                                             HorizontalAlignment="Left"
                                                             Margin="0,10,0,0"
                                                             Click="RepairMissingImages_Click"
-                                                            Visibility="Collapsed"/>
+                                                            Visibility="{Binding IsRepairAfterImportVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                                 </StackPanel>
                                             </Border>
                                             <Border x:Name="LastImportMissingCard"
@@ -865,12 +873,13 @@
                                                     Background="{DynamicResource SurfacePageBrush}"
                                                     Padding="12"
                                                     Margin="0,10,0,0"
-                                                    Visibility="Collapsed">
+                                                    Visibility="{Binding IsLastImportMissingCardVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                 <StackPanel>
                                                     <TextBlock Text="缺失图片"
                                                                Foreground="{DynamicResource TextPrimaryBrush}"
                                                                FontWeight="SemiBold"/>
                                                     <TextBlock x:Name="TxtLastImportMissingFiles"
+                                                               Text="{Binding LastImportMissingFiles}"
                                                                Foreground="{DynamicResource TextSecondaryBrush}"
                                                                TextWrapping="Wrap"
                                                                Margin="0,6,0,0"/>
@@ -892,7 +901,9 @@
                                                     Click="ClearBackupHistory_Click"/>
                                         </DockPanel>
 
-                                        <ItemsControl x:Name="BackupHistoryList" Margin="0,10,0,0">
+                                        <ItemsControl x:Name="BackupHistoryList"
+                                                      ItemsSource="{Binding BackupHistory}"
+                                                      Margin="0,10,0,0">
                                             <ItemsControl.ItemTemplate>
                                                 <DataTemplate DataType="{x:Type dto:BackupHistoryItem}">
                                                     <Border Background="{DynamicResource SurfacePageBrush}"
@@ -937,9 +948,10 @@
                                             </ItemsControl.ItemTemplate>
                                         </ItemsControl>
                                         <TextBlock x:Name="TxtBackupHistoryEmpty"
-                                                   Text="还没有备份记录。"
+                                                   Text="{Binding BackupHistoryEmptyText}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   Margin="0,8,0,0"/>
+                                                   Margin="0,8,0,0"
+                                                   Visibility="{Binding IsBackupHistoryEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     </StackPanel>
                                 </Border>
                             </StackPanel>

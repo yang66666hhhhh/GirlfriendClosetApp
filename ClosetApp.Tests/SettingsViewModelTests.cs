@@ -38,14 +38,95 @@ public class SettingsViewModelTests
         Assert.Equal("1.5 MB", SettingsViewModel.FormatSize(1572864));
     }
 
-    private static SettingsViewModel CreateViewModel(FakeImageMaintenanceService imageMaintenance)
+    [Fact]
+    public async Task RefreshBackupStateAsync_UpdatesValidationHistoryAndLatestImport()
+    {
+        var backup = new FakeBackupService
+        {
+            Validation = CreateValidation(warnings: ["有 1 张图片缺失。"]),
+            History =
+            [
+                new BackupHistoryItem(
+                    new DateTime(2026, 5, 28, 9, 30, 0),
+                    "Import",
+                    "zip",
+                    @"D:\backup\closet.zip",
+                    4096,
+                    true,
+                    "导入 2 件衣服、1 套搭配、3 个标签，恢复 2 张图片。")
+            ]
+        };
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), backup);
+
+        await viewModel.RefreshBackupStateAsync();
+
+        Assert.Equal("导出前建议先看下面的提醒，确认后再继续。", viewModel.BackupValidation);
+        Assert.Equal("有 1 张图片缺失。", viewModel.BackupValidationWarnings);
+        Assert.True(viewModel.IsBackupValidationWarningVisible);
+        Assert.Single(viewModel.BackupHistory);
+        Assert.False(viewModel.IsBackupHistoryEmpty);
+        Assert.Contains("closet.zip", viewModel.LastImportDetail);
+        Assert.False(viewModel.IsLastImportWarningVisible);
+    }
+
+    [Fact]
+    public async Task RefreshBackupStateAsync_WithLatestImport_UpdatesWarningAndMissingCards()
+    {
+        var backup = new FakeBackupService
+        {
+            Validation = CreateValidation(),
+            History = []
+        };
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), backup);
+        var latestImport = new BackupImportResult(
+            @"D:\backup\latest.zip",
+            "zip",
+            new DateTime(2026, 5, 28, 10, 0, 0),
+            2,
+            1,
+            3,
+            4,
+            5,
+            6,
+            2,
+            ["a.jpg", "b.jpg", "c.jpg", "d.jpg", "e.jpg", "f.jpg", "g.jpg"],
+            ["有图片没有恢复。"]);
+
+        await viewModel.RefreshBackupStateAsync(latestImport);
+
+        Assert.Contains("导入 2 件衣服", viewModel.LastImportSummary);
+        Assert.Contains("latest.zip", viewModel.LastImportDetail);
+        Assert.True(viewModel.IsLastImportWarningVisible);
+        Assert.True(viewModel.IsRepairAfterImportVisible);
+        Assert.True(viewModel.IsLastImportMissingCardVisible);
+        Assert.Contains("等 7 个文件", viewModel.LastImportMissingFiles);
+    }
+
+    private static SettingsViewModel CreateViewModel(
+        FakeImageMaintenanceService imageMaintenance,
+        FakeBackupService? backup = null)
     {
         return new SettingsViewModel(
-            new FakeBackupService(),
+            backup ?? new FakeBackupService(),
             imageMaintenance,
             new FakeWeatherService(),
             new FakeWeatherPreferencesService(),
             new ThemeService(new ThemePreferencesService(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json"))));
+    }
+
+    private static BackupValidationResult CreateValidation(IReadOnlyList<string>? warnings = null)
+    {
+        return new BackupValidationResult(
+            "zip",
+            2,
+            1,
+            3,
+            4,
+            5,
+            6,
+            5,
+            1,
+            warnings ?? []);
     }
 
     private sealed class FakeImageMaintenanceService : IImageMaintenanceService
@@ -75,10 +156,13 @@ public class SettingsViewModelTests
 
     private sealed class FakeBackupService : IBackupService
     {
-        public Task<BackupValidationResult> ValidateExportAsync(string filePath) => throw new NotImplementedException();
+        public BackupValidationResult Validation { get; set; } = CreateValidation();
+        public IReadOnlyList<BackupHistoryItem> History { get; set; } = [];
+
+        public Task<BackupValidationResult> ValidateExportAsync(string filePath) => Task.FromResult(Validation);
         public Task<BackupExportResult> ExportAsync(string filePath) => throw new NotImplementedException();
         public Task<BackupImportResult> ImportAsync(string filePath) => throw new NotImplementedException();
-        public Task<IReadOnlyList<BackupHistoryItem>> GetHistoryAsync(int maxCount = 8) => throw new NotImplementedException();
+        public Task<IReadOnlyList<BackupHistoryItem>> GetHistoryAsync(int maxCount = 8) => Task.FromResult(History);
         public Task ClearHistoryAsync() => throw new NotImplementedException();
         public string BuildDefaultBackupPath() => throw new NotImplementedException();
     }
