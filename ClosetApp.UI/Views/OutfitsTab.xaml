@@ -481,7 +481,7 @@
                                         Content="清除筛选"
                                         Style="{StaticResource PageToolbarCapsuleButton}"
                                         Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                        Click="ClearFilters_Click"/>
+                                        Command="{Binding ClearFiltersCommand}"/>
                             </Grid>
 
                             <WrapPanel Margin="0,10,0,0">
@@ -500,14 +500,10 @@
                                     <ComboBox x:Name="SceneFilterComboBox"
                                               MinHeight="36"
                                               Margin="0,6,0,0"
-                                              SelectionChanged="SceneFilterComboBox_SelectionChanged">
-                                        <ComboBoxItem Content="全部场景" IsSelected="True"/>
-                                        <ComboBoxItem Content="通勤" Tag="Work"/>
-                                        <ComboBoxItem Content="约会" Tag="Date"/>
-                                        <ComboBoxItem Content="出游" Tag="Travel"/>
-                                        <ComboBoxItem Content="派对" Tag="Party"/>
-                                        <ComboBoxItem Content="休闲" Tag="Casual"/>
-                                    </ComboBox>
+                                              ItemsSource="{Binding SceneFilterOptions}"
+                                              DisplayMemberPath="Label"
+                                              SelectedValuePath="Value"
+                                              SelectedValue="{Binding SelectedScene, Mode=TwoWay}"/>
                                 </StackPanel>
 
                                 <StackPanel Width="122" Margin="0,0,10,8">
@@ -516,14 +512,10 @@
                                     <ComboBox x:Name="SeasonFilterComboBox"
                                               MinHeight="36"
                                               Margin="0,6,0,0"
-                                              SelectionChanged="SeasonFilterComboBox_SelectionChanged">
-                                        <ComboBoxItem Content="全部季节" IsSelected="True"/>
-                                        <ComboBoxItem Content="春季" Tag="Spring"/>
-                                        <ComboBoxItem Content="夏季" Tag="Summer"/>
-                                        <ComboBoxItem Content="秋季" Tag="Autumn"/>
-                                        <ComboBoxItem Content="冬季" Tag="Winter"/>
-                                        <ComboBoxItem Content="四季" Tag="AllSeason"/>
-                                    </ComboBox>
+                                              ItemsSource="{Binding SeasonFilterOptions}"
+                                              DisplayMemberPath="Label"
+                                              SelectedValuePath="Value"
+                                              SelectedValue="{Binding SelectedSeason, Mode=TwoWay}"/>
                                 </StackPanel>
 
                                 <Border Style="{StaticResource PageInsetCard}"
@@ -592,7 +584,7 @@
                                 HorizontalAlignment="Left"
                                 Margin="0,12,0,0"
                                 Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                Click="ClearFilters_Click"/>
+                                Command="{Binding ClearFiltersCommand}"/>
                     </StackPanel>
                 </Border>
 

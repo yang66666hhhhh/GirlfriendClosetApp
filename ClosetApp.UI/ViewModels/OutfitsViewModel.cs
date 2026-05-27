@@ -1,4 +1,5 @@
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Outfits;
@@ -31,6 +32,8 @@ public partial class OutfitsViewModel : ViewModelBase
         nameof(CollectionSectionTitle),
         nameof(CollectionSectionBody),
         nameof(FavoriteOnly),
+        nameof(SelectedScene),
+        nameof(SelectedSeason),
         nameof(SearchText),
         nameof(HistoryQuickText),
         nameof(HistorySummaryText),
@@ -121,6 +124,24 @@ public partial class OutfitsViewModel : ViewModelBase
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
+    public IReadOnlyList<OutfitSceneFilterOption> SceneFilterOptions { get; } =
+    [
+        new("全部场景", null),
+        new("通勤", OutfitScene.Work),
+        new("约会", OutfitScene.Date),
+        new("出游", OutfitScene.Travel),
+        new("派对", OutfitScene.Party),
+        new("休闲", OutfitScene.Casual)
+    ];
+    public IReadOnlyList<SeasonFilterOption> SeasonFilterOptions { get; } =
+    [
+        new("全部季节", null),
+        new("春季", Season.Spring),
+        new("夏季", Season.Summer),
+        new("秋季", Season.Autumn),
+        new("冬季", Season.Winter),
+        new("四季", Season.AllSeason)
+    ];
     public IReadOnlyList<RecentWornListItem> RecentWornRecords => _state.RecentWornRecords;
     public RecentWornListItem? SelectedRecentWornRecord => _state.SelectedRecentWornRecord;
     public IReadOnlyList<CalendarDayItem> CalendarDays => _state.CalendarDays;
@@ -151,6 +172,18 @@ public partial class OutfitsViewModel : ViewModelBase
             _state.SetFavoriteOnly(value);
             NotifyStateChanged();
         }
+    }
+
+    public OutfitScene? SelectedScene
+    {
+        get => _state.SelectedScene;
+        set => SetSelectedScene(value);
+    }
+
+    public Season? SelectedSeason
+    {
+        get => _state.SelectedSeason;
+        set => SetSelectedSeason(value);
     }
 
     public string SearchText
@@ -269,22 +302,29 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public void SetSelectedScene(OutfitScene? scene)
     {
+        if (_state.SelectedScene == scene)
+            return;
+
         _state.SetSelectedScene(scene);
         NotifyStateChanged();
     }
 
     public void SetSelectedSeason(Season? season)
     {
+        if (_state.SelectedSeason == season)
+            return;
+
         _state.SetSelectedSeason(season);
         NotifyStateChanged();
     }
 
+    [RelayCommand]
     public void ClearFilters()
     {
-        _state.SetSelectedScene(null);
-        _state.SetSelectedSeason(null);
-        _state.SetFavoriteOnly(false);
         SearchText = string.Empty;
+        SetSelectedScene(null);
+        SetSelectedSeason(null);
+        FavoriteOnly = false;
         NotifyStateChanged();
     }
 
@@ -476,3 +516,7 @@ public partial class OutfitsViewModel : ViewModelBase
         return string.IsNullOrWhiteSpace(primary) ? "今天先穿这套。" : primary;
     }
 }
+
+public sealed record OutfitSceneFilterOption(string Label, OutfitScene? Value);
+
+public sealed record SeasonFilterOption(string Label, Season? Value);
