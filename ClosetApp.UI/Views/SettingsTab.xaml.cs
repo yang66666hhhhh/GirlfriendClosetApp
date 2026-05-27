@@ -11,6 +11,7 @@ using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI;
 using ClosetApp.UI.Services;
+using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
@@ -20,19 +21,17 @@ public partial class SettingsTab : UserControl
 {
     private readonly IBackupService _backupService;
     private readonly IImageMaintenanceService _imageMaintenanceService;
-    private readonly IWeatherService _weatherService;
-    private readonly IWeatherPreferencesService _weatherPreferencesService;
     private readonly ThemeService _themeService;
-    private bool _isRefreshingWeather;
+    private readonly SettingsViewModel _viewModel;
 
     public SettingsTab()
     {
         _backupService = App.Services.GetRequiredService<IBackupService>();
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
-        _weatherService = App.Services.GetRequiredService<IWeatherService>();
-        _weatherPreferencesService = App.Services.GetRequiredService<IWeatherPreferencesService>();
         _themeService = App.Services.GetRequiredService<ThemeService>();
+        _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
         InitializeComponent();
+        DataContext = _viewModel;
         Loaded += async (_, _) => await RefreshAsync();
     }
 
@@ -44,11 +43,11 @@ public partial class SettingsTab : UserControl
             TxtImagesDir.Text = AppPaths.ImagesDir;
             TxtLogDir.Text = AppPaths.LogsDir;
             TxtVersion.Text = $"版本 {GetVersion()}";
-            await LoadWeatherPreferencesAsync();
+            await _viewModel.InitializeAsync();
             ApplyThemeSelectionState(_themeService.CurrentTheme);
             await RefreshStatsAsync();
             await RefreshBackupStateAsync();
-            await RefreshWeatherAsync(showStatus: false);
+            await _viewModel.RefreshWeatherAsync(showStatus: false);
         }
         catch (Exception ex)
         {
@@ -64,54 +63,7 @@ public partial class SettingsTab : UserControl
 
     private async Task RefreshStatsAsync()
     {
-        var originalCount = CountFiles(AppPaths.OriginalsDir);
-        var originalSize = GetDirectorySize(AppPaths.OriginalsDir);
-        var displayCount = CountFiles(AppPaths.DisplayDir);
-        var displaySize = GetDirectorySize(AppPaths.DisplayDir);
-        var thumbnailCount = CountFiles(AppPaths.ThumbnailsDir);
-        var thumbnailSize = GetDirectorySize(AppPaths.ThumbnailsDir);
-        var logCount = CountFiles(AppPaths.LogsDir);
-        var logSize = GetDirectorySize(AppPaths.LogsDir);
-        var missingImageCount = await _imageMaintenanceService.CountMissingImagesAsync();
-        var missingThumbnailCount = await _imageMaintenanceService.CountMissingThumbnailsAsync();
-        var orphanOriginals = await _imageMaintenanceService.AnalyzeOrphanOriginalsAsync();
-
-        TxtImageStats.Text = $"{originalCount} 张原图 · {FormatSize(originalSize)}";
-        TxtCacheStats.Text = $"{displayCount} 个主视觉缓存 · {thumbnailCount} 个小预览缓存 · {FormatSize(displaySize + thumbnailSize)}";
-        TxtThumbnailHealthStats.Text = BuildThumbnailHealthText(missingThumbnailCount);
-        TxtOrphanOriginalStats.Text = BuildOrphanOriginalsText(orphanOriginals);
-        TxtLogStats.Text = $"{logCount} 个日志文件 · {FormatSize(logSize)}";
-        TxtMissingImageStats.Text = missingImageCount == 0
-            ? "没有发现缺失图片"
-            : $"{missingImageCount} 件衣服的图片路径失效";
-    }
-
-    private static int CountFiles(string directory)
-    {
-        if (!Directory.Exists(directory))
-            return 0;
-        return Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories).Count();
-    }
-
-    private static long GetDirectorySize(string directory)
-    {
-        if (!Directory.Exists(directory))
-            return 0;
-        return Directory.EnumerateFiles(directory, "*", SearchOption.AllDirectories)
-            .Sum(file => new FileInfo(file).Length);
-    }
-
-    private static string FormatSize(long bytes)
-    {
-        string[] units = ["B", "KB", "MB", "GB"];
-        var size = (double)bytes;
-        var unitIndex = 0;
-        while (size >= 1024 && unitIndex < units.Length - 1)
-        {
-            size /= 1024;
-            unitIndex++;
-        }
-        return $"{size:0.#} {units[unitIndex]}";
+        await _viewModel.RefreshStatsAsync();
     }
 
     private static void OpenPath(string path)
@@ -168,39 +120,30 @@ public partial class SettingsTab : UserControl
 
     private async void RefreshWeather_Click(object sender, RoutedEventArgs e)
     {
-        await RefreshWeatherAsync(showStatus: true);
+        await _viewModel.RefreshWeatherAsync(showStatus: true);
     }
 
     private async void SaveWeatherCity_Click(object sender, RoutedEventArgs e)
     {
-        var city = TxtWeatherCity.Text.Trim();
+        var city = _viewModel.WeatherCity.Trim();
+        await _viewModel.SaveWeatherCityAsync(city);
+
         if (string.IsNullOrWhiteSpace(city))
-        {
-            ShowWeatherStatus("请先输入默认城市。");
             TxtWeatherCity.Focus();
-            return;
-        }
 
-        await _weatherPreferencesService.SaveAsync(new WeatherPreferences
-        {
-            DefaultCity = city
-        });
-
-        ShowWeatherStatus($"默认城市已保存为 {city}。");
-        ToastService.Instance.ShowSuccess("已保存默认城市", city);
         await RequestAppRefreshAsync(outfits: true);
     }
 
     private async void UseRoseTheme_Click(object sender, RoutedEventArgs e)
     {
-        await _themeService.ApplyThemeAsync(AppThemeKind.Rose);
+        await _viewModel.ApplyThemeAsync(AppThemeKind.Rose);
         ApplyThemeSelectionState(AppThemeKind.Rose);
         ToastService.Instance.ShowSuccess("已切换到柔粉主题");
     }
 
     private async void UseBlueTheme_Click(object sender, RoutedEventArgs e)
     {
-        await _themeService.ApplyThemeAsync(AppThemeKind.Blue);
+        await _viewModel.ApplyThemeAsync(AppThemeKind.Blue);
         ApplyThemeSelectionState(AppThemeKind.Blue);
         ToastService.Instance.ShowSuccess("已切换到清蓝主题");
     }
@@ -247,7 +190,7 @@ public partial class SettingsTab : UserControl
         }
 
         var confirm = MessageBox.Show(
-            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FormatSize(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物引用的图片。确定继续吗？",
+            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {SettingsViewModel.FormatSize(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物引用的图片。确定继续吗？",
             "清理孤儿原图",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Warning);
@@ -410,61 +353,6 @@ public partial class SettingsTab : UserControl
         ToastService.Instance.ShowInfo("备份状态已刷新。");
     }
 
-    private async Task LoadWeatherPreferencesAsync()
-    {
-        var preferences = await _weatherPreferencesService.GetAsync();
-        TxtWeatherCity.Text = preferences.DefaultCity;
-    }
-
-    private async Task RefreshWeatherAsync(bool showStatus)
-    {
-        if (_isRefreshingWeather)
-            return;
-
-        var city = TxtWeatherCity.Text.Trim();
-        if (string.IsNullOrWhiteSpace(city))
-        {
-            UpdateWeatherCard(null, "请输入城市后再刷新。");
-            return;
-        }
-
-        _isRefreshingWeather = true;
-        BtnRefreshWeather.IsEnabled = false;
-        BtnSaveWeatherCity.IsEnabled = false;
-        TxtWeatherSummary.Text = "正在获取天气...";
-        TxtWeatherDetails.Text = "稍等一下，我正在请求实时天气。";
-        TxtWeatherObservedAt.Text = string.Empty;
-        if (showStatus)
-            ShowWeatherStatus("正在刷新天气...");
-
-        try
-        {
-            await _weatherPreferencesService.SaveAsync(new WeatherPreferences
-            {
-                DefaultCity = city
-            });
-
-            var weather = await _weatherService.GetCurrentWeatherAsync(city);
-            if (weather == null)
-            {
-                UpdateWeatherCard(null, $"没有找到“{city}”的天气数据，请试试中文全名、英文城市名，或带上省/州名。");
-                return;
-            }
-
-            UpdateWeatherCard(weather, showStatus ? $"已刷新 {weather.City} 的实时天气。" : null);
-        }
-        catch (Exception ex)
-        {
-            UpdateWeatherCard(null, $"天气刷新失败：{ex.Message}");
-        }
-        finally
-        {
-            _isRefreshingWeather = false;
-            BtnRefreshWeather.IsEnabled = true;
-            BtnSaveWeatherCity.IsEnabled = true;
-        }
-    }
-
     private async void ClearBackupHistory_Click(object sender, RoutedEventArgs e)
     {
         var confirm = MessageBox.Show(
@@ -581,20 +469,6 @@ public partial class SettingsTab : UserControl
         return message;
     }
 
-    private static string BuildThumbnailHealthText(int missingThumbnailCount)
-    {
-        return missingThumbnailCount == 0
-            ? "所有已存在的原图都已经生成主视觉和小预览缓存。"
-            : $"{missingThumbnailCount} 张图片缺少主视觉或小预览缓存，可一键重建。";
-    }
-
-    private static string BuildOrphanOriginalsText(OrphanOriginalsResult result)
-    {
-        return result.HasOrphans
-            ? $"{result.OrphanCount} 张原图未被数据库引用，占用 {FormatSize(result.TotalBytes)}。"
-            : "没有发现孤儿原图。";
-    }
-
     private static void DeleteFilesInDirectory(string directory)
     {
         if (!Directory.Exists(directory))
@@ -667,52 +541,6 @@ public partial class SettingsTab : UserControl
         TxtLastImportMissingFiles.Text = string.Empty;
     }
 
-    private void UpdateWeatherCard(WeatherInfo? weather, string? status)
-    {
-        if (weather == null)
-        {
-            TxtWeatherSummary.Text = "暂时没有可用天气。";
-            TxtWeatherDetails.Text = "你可以检查网络，或者换一个更完整的城市名重新试一次。";
-            TxtWeatherObservedAt.Text = string.Empty;
-            ShowWeatherStatus(status);
-            return;
-        }
-
-        TxtWeatherSummary.Text = $"{weather.City} · {weather.Temperature}°C · {weather.Condition}";
-        TxtWeatherDetails.Text = $"湿度 {weather.Humidity}%{BuildTimezoneSuffix(weather.Timezone)}";
-        TxtWeatherObservedAt.Text = weather.ObservedAt.HasValue
-            ? $"观测时间 {weather.ObservedAt:yyyy-MM-dd HH:mm}"
-            : string.Empty;
-
-        if (!string.IsNullOrWhiteSpace(status))
-            ShowWeatherStatus(status);
-        else
-            HideWeatherStatus();
-    }
-
-    private static string BuildTimezoneSuffix(string timezone)
-    {
-        return string.IsNullOrWhiteSpace(timezone) ? string.Empty : $" · {timezone}";
-    }
-
-    private void ShowWeatherStatus(string? message)
-    {
-        if (string.IsNullOrWhiteSpace(message))
-        {
-            HideWeatherStatus();
-            return;
-        }
-
-        WeatherStatusCard.Visibility = Visibility.Visible;
-        TxtWeatherStatus.Text = message;
-    }
-
-    private void HideWeatherStatus()
-    {
-        WeatherStatusCard.Visibility = Visibility.Collapsed;
-        TxtWeatherStatus.Text = string.Empty;
-    }
-
     private void ApplyThemeSelectionState(AppThemeKind theme)
     {
         bool isRose = theme == AppThemeKind.Rose;
@@ -760,10 +588,6 @@ public partial class SettingsTab : UserControl
 
         ApplyAppearanceSectionState(primary, primaryLight, primaryText);
 
-        TxtThemeSummary.Text = isRose ? "当前使用柔粉主题" : "当前使用清蓝主题";
-        TxtThemeDescription.Text = isRose
-            ? "柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。"
-            : "清蓝更克制、清爽，页面会更冷静，也更偏中性工具感。";
     }
 
     private void ApplyThemeCardState(

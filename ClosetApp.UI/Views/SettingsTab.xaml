@@ -1,8 +1,10 @@
 <UserControl x:Class="ClosetApp.UI.Views.SettingsTab"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
              xmlns:dto="clr-namespace:ClosetApp.Application.DTOs;assembly=ClosetApp.Application">
     <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         
         
         
@@ -184,13 +186,13 @@
                             <Border Style="{StaticResource SettingsStatCard}">
                                 <StackPanel>
                                     <TextBlock Text="原图规模" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock x:Name="TxtImageStats" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock x:Name="TxtImageStats" Text="{Binding ImageStats}" Style="{StaticResource SettingsStatValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource SettingsStatCard}">
                                 <StackPanel>
                                     <TextBlock Text="缓存状态" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock x:Name="TxtCacheStats" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock x:Name="TxtCacheStats" Text="{Binding CacheStats}" Style="{StaticResource SettingsStatValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource SettingsStatCard}">
@@ -202,7 +204,7 @@
                             <Border Style="{StaticResource SettingsStatCard}" Margin="0,0,0,10">
                                 <StackPanel>
                                     <TextBlock Text="日志状态" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock x:Name="TxtLogStats" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock x:Name="TxtLogStats" Text="{Binding LogStats}" Style="{StaticResource SettingsStatValue}"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
@@ -338,19 +340,19 @@
                                     <Border Style="{StaticResource SettingsStatCard}">
                                         <StackPanel>
                                             <TextBlock Text="原图规模" Style="{StaticResource SettingsStatLabel}"/>
-                                            <TextBlock Text="{Binding Text, ElementName=TxtImageStats}" Style="{StaticResource SettingsStatValue}"/>
+                                            <TextBlock Text="{Binding ImageStats}" Style="{StaticResource SettingsStatValue}"/>
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource SettingsStatCard}">
                                         <StackPanel>
                                             <TextBlock Text="缓存体量" Style="{StaticResource SettingsStatLabel}"/>
-                                            <TextBlock Text="{Binding Text, ElementName=TxtCacheStats}" Style="{StaticResource SettingsStatValue}"/>
+                                            <TextBlock Text="{Binding CacheStats}" Style="{StaticResource SettingsStatValue}"/>
                                         </StackPanel>
                                     </Border>
                                     <Border Style="{StaticResource SettingsStatCard}" Margin="0,0,0,10">
                                         <StackPanel>
                                             <TextBlock Text="缺失状态" Style="{StaticResource SettingsStatLabel}"/>
-                                            <TextBlock x:Name="TxtMissingImageStats" Style="{StaticResource SettingsStatValue}"/>
+                                            <TextBlock x:Name="TxtMissingImageStats" Text="{Binding MissingImageStats}" Style="{StaticResource SettingsStatValue}"/>
                                         </StackPanel>
                                     </Border>
                                 </UniformGrid>
@@ -366,6 +368,7 @@
                                         <StackPanel>
                                             <TextBlock Text="缓存健康" Style="{StaticResource PageFieldLabelText}"/>
                                             <TextBlock x:Name="TxtThumbnailHealthStats"
+                                                       Text="{Binding ThumbnailHealthStats}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        TextWrapping="Wrap"
                                                        Margin="0,6,0,0"/>
@@ -376,6 +379,7 @@
                                         <StackPanel>
                                             <TextBlock Text="原图治理" Style="{StaticResource PageFieldLabelText}"/>
                                             <TextBlock x:Name="TxtOrphanOriginalStats"
+                                                       Text="{Binding OrphanOriginalStats}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        TextWrapping="Wrap"
                                                        Margin="0,6,0,0"/>
@@ -433,7 +437,7 @@
 
                                 <Border Style="{StaticResource SettingsInsetCard}">
                                     <StackPanel>
-                                        <TextBlock Text="{Binding Text, ElementName=TxtLogStats}"
+                                        <TextBlock Text="{Binding LogStats}"
                                                    Foreground="{DynamicResource TextPrimaryBrush}"
                                                    FontWeight="SemiBold"/>
                                         <TextBlock x:Name="TxtLogDir"
@@ -482,33 +486,36 @@
                                              Grid.Column="0"
                                              MinHeight="40"
                                              Padding="12,9"
-                                             Text="Shanghai"/>
+                                             Text="{Binding WeatherCity, UpdateSourceTrigger=PropertyChanged}"/>
                                     <Button x:Name="BtnSaveWeatherCity"
                                             Grid.Column="1"
                                             Content="保存"
                                             Style="{StaticResource SettingsButton}"
                                             Click="SaveWeatherCity_Click"
-                                            Margin="8,0,0,0"/>
+                                            Margin="8,0,0,0"
+                                            IsEnabled="{Binding CanEditWeather}"/>
                                     <Button x:Name="BtnRefreshWeather"
                                             Grid.Column="2"
                                             Content="刷新天气"
                                             Style="{StaticResource SettingsButton}"
                                             Click="RefreshWeather_Click"
-                                            Margin="8,0,0,0"/>
+                                            Margin="8,0,0,0"
+                                            IsEnabled="{Binding CanEditWeather}"/>
                                 </Grid>
 
                                 <Border Style="{StaticResource SettingsInsetCard}">
                                     <StackPanel>
                                         <TextBlock x:Name="TxtWeatherSummary"
-                                                   Text="还没有获取天气。"
+                                                   Text="{Binding WeatherSummary}"
                                                    Foreground="{DynamicResource TextPrimaryBrush}"
                                                    FontWeight="SemiBold"/>
                                         <TextBlock x:Name="TxtWeatherDetails"
-                                                   Text="保存城市后，点一次刷新就可以验证天气接口是否接通。"
+                                                   Text="{Binding WeatherDetails}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                    Margin="0,6,0,0"
                                                    TextWrapping="Wrap"/>
                                         <TextBlock x:Name="TxtWeatherObservedAt"
+                                                   Text="{Binding WeatherObservedAt}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                    Margin="0,6,0,0"/>
                                         <Border x:Name="WeatherStatusCard"
@@ -516,8 +523,9 @@
                                                 Background="{DynamicResource SurfacePageBrush}"
                                                 Padding="12"
                                                 Margin="0,12,0,0"
-                                                Visibility="Collapsed">
+                                                Visibility="{Binding IsWeatherStatusVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
                                             <TextBlock x:Name="TxtWeatherStatus"
+                                                       Text="{Binding WeatherStatus}"
                                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                                        TextWrapping="Wrap"/>
                                         </Border>
@@ -665,12 +673,12 @@
                                                 </Border>
                                             </Grid>
                                             <TextBlock x:Name="TxtThemeSummary"
-                                                       Text="当前使用柔粉主题"
+                                                       Text="{Binding ThemeSummary}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        FontWeight="SemiBold"
                                                        Margin="0,12,0,0"/>
                                             <TextBlock x:Name="TxtThemeDescription"
-                                                       Text="柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。"
+                                                       Text="{Binding ThemeDescription}"
                                                        Style="{StaticResource PageMutedBodyText}"
                                                        Margin="0,6,0,0"/>
                                         </StackPanel>
