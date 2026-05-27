@@ -125,6 +125,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IImageStorageService, ImageStorageService>();
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
         services.AddSingleton<IWeatherPreferencesService, WeatherPreferencesService>();
+        services.AddSingleton<IRecommendationPreferencesService, RecommendationPreferencesService>();
         services.AddHttpClient<IWeatherService, WeatherService>(client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);

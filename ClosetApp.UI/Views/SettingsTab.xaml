@@ -531,6 +531,54 @@
                                         </Border>
                                     </StackPanel>
                                 </Border>
+
+                                <Border Style="{StaticResource SettingsInsetCard}"
+                                        Margin="0,14,0,0">
+                                    <StackPanel>
+                                        <TextBlock Text="今日推荐偏好"
+                                                   Style="{StaticResource PageFieldLabelText}"/>
+                                        <TextBlock Text="这里会影响搭配页的天气推荐，先把常用场景和是否避开今天已穿过设好。"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,6,0,0"/>
+
+                                        <Grid Margin="0,12,0,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+
+                                            <ComboBox Grid.Column="0"
+                                                      MinHeight="36"
+                                                      ItemsSource="{Binding RecommendationSceneOptions}"
+                                                      DisplayMemberPath="Label"
+                                                      SelectedValuePath="Value"
+                                                      SelectedValue="{Binding RecommendationDefaultScene, Mode=TwoWay}"/>
+                                            <CheckBox Grid.Column="2"
+                                                      Content="避开今天已穿过"
+                                                      IsChecked="{Binding RecommendationAvoidWornToday, Mode=TwoWay}"
+                                                      Foreground="{DynamicResource TextSecondaryBrush}"
+                                                      VerticalAlignment="Center"/>
+                                        </Grid>
+
+                                        <WrapPanel Margin="0,12,0,0">
+                                            <Button Content="保存推荐偏好"
+                                                    Style="{StaticResource SettingsButton}"
+                                                    Click="SaveRecommendationPreferences_Click"/>
+                                        </WrapPanel>
+
+                                        <Border Style="{StaticResource PageInsetCard}"
+                                                Background="{DynamicResource SurfacePageBrush}"
+                                                Padding="12"
+                                                Margin="0,12,0,0"
+                                                Visibility="{Binding IsRecommendationStatusVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="{Binding RecommendationStatus}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       TextWrapping="Wrap"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                         </Border>
 

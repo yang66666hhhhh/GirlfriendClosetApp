@@ -1,6 +1,7 @@
 using System.IO;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
@@ -174,15 +175,32 @@ public class SettingsViewModelTests
         Assert.True(viewModel.IsBackupHistoryEmpty);
     }
 
+    [Fact]
+    public async Task SaveRecommendationPreferencesAsync_PersistsRecommendationPreferences()
+    {
+        var recommendationPreferences = new FakeRecommendationPreferencesService();
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), recommendationPreferences: recommendationPreferences);
+        viewModel.RecommendationDefaultScene = OutfitScene.Work;
+        viewModel.RecommendationAvoidWornToday = false;
+
+        await viewModel.SaveRecommendationPreferencesAsync();
+
+        Assert.Equal(OutfitScene.Work, recommendationPreferences.SavedPreferences.DefaultScene);
+        Assert.False(recommendationPreferences.SavedPreferences.AvoidWornToday);
+        Assert.True(viewModel.IsRecommendationStatusVisible);
+    }
+
     private static SettingsViewModel CreateViewModel(
         FakeImageMaintenanceService imageMaintenance,
-        FakeBackupService? backup = null)
+        FakeBackupService? backup = null,
+        FakeRecommendationPreferencesService? recommendationPreferences = null)
     {
         return new SettingsViewModel(
             backup ?? new FakeBackupService(),
             imageMaintenance,
             new FakeWeatherService(),
             new FakeWeatherPreferencesService(),
+            recommendationPreferences ?? new FakeRecommendationPreferencesService(),
             new ThemeService(new ThemePreferencesService(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json"))));
     }
 
@@ -258,6 +276,19 @@ public class SettingsViewModelTests
     {
         public Task<WeatherPreferences> GetAsync() => Task.FromResult(new WeatherPreferences());
         public Task SaveAsync(WeatherPreferences preferences) => Task.CompletedTask;
+    }
+
+    private sealed class FakeRecommendationPreferencesService : IRecommendationPreferencesService
+    {
+        public RecommendationPreferences SavedPreferences { get; private set; } = new();
+
+        public Task<RecommendationPreferences> GetAsync() => Task.FromResult(SavedPreferences);
+
+        public Task SaveAsync(RecommendationPreferences preferences)
+        {
+            SavedPreferences = preferences;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeBackupService : IBackupService

@@ -64,6 +64,45 @@ public class OutfitsViewModelTests
     }
 
     [Fact]
+    public async Task RefreshWeatherRecommendationsAsync_UsesPreferredScene()
+    {
+        var work = CreateOutfit("通勤搭配", OutfitScene.Work, Season.Spring, withClothes: true);
+        var date = CreateOutfit("约会搭配", OutfitScene.Date, Season.Spring, withClothes: true);
+        var recommendationService = new FakeRecommendationService([work, date]);
+        var preferences = new FakeRecommendationPreferencesService(new RecommendationPreferences
+        {
+            DefaultScene = OutfitScene.Work,
+            AvoidWornToday = false
+        });
+        var viewModel = CreateViewModel([work, date], recommendationPreferencesService: preferences, recommendationService: recommendationService);
+
+        await viewModel.RefreshWeatherRecommendationsAsync();
+
+        Assert.Equal(OutfitScene.Work, recommendationService.RequestedScene);
+        var result = Assert.Single(viewModel.WeatherRecommendations);
+        Assert.Equal("通勤搭配", result.Name);
+    }
+
+    [Fact]
+    public async Task RefreshWeatherRecommendationsAsync_WhenEnabled_AvoidsWornToday()
+    {
+        var wornToday = CreateOutfit("今天穿过", OutfitScene.Work, Season.Spring, withClothes: true);
+        wornToday.WornDate = DateTime.Today;
+        wornToday.WearCount = 1;
+        var fresh = CreateOutfit("还没穿", OutfitScene.Work, Season.Spring, withClothes: true);
+        var preferences = new FakeRecommendationPreferencesService(new RecommendationPreferences
+        {
+            AvoidWornToday = true
+        });
+        var viewModel = CreateViewModel([wornToday, fresh], recommendationPreferencesService: preferences);
+
+        await viewModel.RefreshWeatherRecommendationsAsync();
+
+        var result = Assert.Single(viewModel.WeatherRecommendations);
+        Assert.Equal("还没穿", result.Name);
+    }
+
+    [Fact]
     public async Task RecordRecommendedOutfitWornCommand_RecordsOutfitAndRefreshesState()
     {
         var outfit = CreateOutfit("今日通勤", OutfitScene.Work, Season.Spring, withClothes: true);
@@ -128,14 +167,17 @@ public class OutfitsViewModelTests
     private static OutfitsViewModel CreateViewModel(
         IReadOnlyList<Outfit> outfits,
         FakeOutfitService? outfitService = null,
-        IWeatherService? weatherService = null)
+        IWeatherService? weatherService = null,
+        FakeRecommendationPreferencesService? recommendationPreferencesService = null,
+        FakeRecommendationService? recommendationService = null)
     {
         var resolvedOutfitService = outfitService ?? new FakeOutfitService(outfits);
         return new OutfitsViewModel(
             resolvedOutfitService,
-            new FakeRecommendationService(outfits),
+            recommendationService ?? new FakeRecommendationService(outfits),
             weatherService ?? new FakeWeatherService(null),
             new FakeWeatherPreferencesService("Shanghai"),
+            recommendationPreferencesService ?? new FakeRecommendationPreferencesService(),
             new GetRecommendationReadinessSummary(resolvedOutfitService));
     }
 
@@ -259,6 +301,8 @@ public class OutfitsViewModelTests
             _outfits = outfits;
         }
 
+        public OutfitScene? RequestedScene { get; private set; }
+
         public Task<RecommendedOutfitDto?> GetRecommendationAsync(int temperature, OutfitScene? scene = null)
         {
             return Task.FromResult(GetRecommendations(temperature, scene).FirstOrDefault());
@@ -266,6 +310,7 @@ public class OutfitsViewModelTests
 
         public Task<IEnumerable<RecommendedOutfitDto>> GetRecommendationsByRuleAsync(int temperature, OutfitScene? scene = null)
         {
+            RequestedScene = scene;
             return Task.FromResult(GetRecommendations(temperature, scene).AsEnumerable());
         }
 
@@ -315,5 +360,18 @@ public class OutfitsViewModelTests
 
         public Task<WeatherPreferences> GetAsync() => Task.FromResult(new WeatherPreferences { DefaultCity = _city });
         public Task SaveAsync(WeatherPreferences preferences) => Task.CompletedTask;
+    }
+
+    private sealed class FakeRecommendationPreferencesService : IRecommendationPreferencesService
+    {
+        private readonly RecommendationPreferences _preferences;
+
+        public FakeRecommendationPreferencesService(RecommendationPreferences? preferences = null)
+        {
+            _preferences = preferences ?? new RecommendationPreferences();
+        }
+
+        public Task<RecommendationPreferences> GetAsync() => Task.FromResult(_preferences);
+        public Task SaveAsync(RecommendationPreferences preferences) => Task.CompletedTask;
     }
 }

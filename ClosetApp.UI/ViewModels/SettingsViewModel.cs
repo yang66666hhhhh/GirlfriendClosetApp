@@ -2,6 +2,7 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Services;
@@ -14,6 +15,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IImageMaintenanceService _imageMaintenanceService;
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
+    private readonly IRecommendationPreferencesService _recommendationPreferencesService;
     private readonly ThemeService _themeService;
 
     [ObservableProperty]
@@ -74,6 +76,18 @@ public partial class SettingsViewModel : ObservableObject
     private bool _isWeatherStatusVisible;
 
     [ObservableProperty]
+    private OutfitScene? _recommendationDefaultScene;
+
+    [ObservableProperty]
+    private bool _recommendationAvoidWornToday = true;
+
+    [ObservableProperty]
+    private string _recommendationStatus = "";
+
+    [ObservableProperty]
+    private bool _isRecommendationStatusVisible;
+
+    [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEditWeather))]
     private bool _isWeatherBusy;
 
@@ -132,21 +146,33 @@ public partial class SettingsViewModel : ObservableObject
         IImageMaintenanceService imageMaintenanceService,
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
+        IRecommendationPreferencesService recommendationPreferencesService,
         ThemeService themeService)
     {
         _backupService = backupService;
         _imageMaintenanceService = imageMaintenanceService;
         _weatherService = weatherService;
         _weatherPreferencesService = weatherPreferencesService;
+        _recommendationPreferencesService = recommendationPreferencesService;
         _themeService = themeService;
     }
 
     public AppThemeKind CurrentThemeValue => _themeService.CurrentTheme;
     public bool CanEditWeather => !IsWeatherBusy;
+    public IReadOnlyList<OutfitSceneFilterOption> RecommendationSceneOptions { get; } =
+    [
+        new("不限场景", null),
+        new("通勤", OutfitScene.Work),
+        new("约会", OutfitScene.Date),
+        new("出游", OutfitScene.Travel),
+        new("派对", OutfitScene.Party),
+        new("休闲", OutfitScene.Casual)
+    ];
 
     public async Task InitializeAsync()
     {
         await LoadWeatherPreferencesAsync();
+        await LoadRecommendationPreferencesAsync();
         CurrentTheme = _themeService.CurrentTheme;
         UpdateThemeText();
     }
@@ -171,6 +197,26 @@ public partial class SettingsViewModel : ObservableObject
     {
         var preferences = await _weatherPreferencesService.GetAsync();
         WeatherCity = preferences.DefaultCity;
+    }
+
+    private async Task LoadRecommendationPreferencesAsync()
+    {
+        var preferences = await _recommendationPreferencesService.GetAsync();
+        RecommendationDefaultScene = preferences.DefaultScene;
+        RecommendationAvoidWornToday = preferences.AvoidWornToday;
+    }
+
+    public async Task SaveRecommendationPreferencesAsync()
+    {
+        await _recommendationPreferencesService.SaveAsync(new RecommendationPreferences
+        {
+            DefaultScene = RecommendationDefaultScene,
+            AvoidWornToday = RecommendationAvoidWornToday
+        });
+
+        RecommendationStatus = "今日推荐偏好已保存。";
+        IsRecommendationStatusVisible = true;
+        ToastService.Instance.ShowSuccess("已保存推荐偏好");
     }
 
     public async Task SaveWeatherCityAsync(string city)

@@ -84,6 +84,7 @@ public partial class OutfitsViewModel : ViewModelBase
     private readonly IOutfitRecommendationService _recommendationService;
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
+    private readonly IRecommendationPreferencesService _recommendationPreferencesService;
     private readonly GetRecommendationReadinessSummary _getRecommendationReadinessSummary;
     private readonly OutfitsTabState _state = new();
 
@@ -115,12 +116,14 @@ public partial class OutfitsViewModel : ViewModelBase
         IOutfitRecommendationService recommendationService,
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
+        IRecommendationPreferencesService recommendationPreferencesService,
         GetRecommendationReadinessSummary getRecommendationReadinessSummary)
     {
         _outfitService = outfitService;
         _recommendationService = recommendationService;
         _weatherService = weatherService;
         _weatherPreferencesService = weatherPreferencesService;
+        _recommendationPreferencesService = recommendationPreferencesService;
         _getRecommendationReadinessSummary = getRecommendationReadinessSummary;
     }
 
@@ -430,6 +433,7 @@ public partial class OutfitsViewModel : ViewModelBase
         try
         {
             var preferences = await _weatherPreferencesService.GetAsync();
+            var recommendationPreferences = await _recommendationPreferencesService.GetAsync();
             WeatherCity = preferences.DefaultCity;
 
             var weather = await _weatherService.GetCurrentWeatherAsync(WeatherCity);
@@ -446,7 +450,14 @@ public partial class OutfitsViewModel : ViewModelBase
                 WeatherStatusText = $"暂时拿不到 {WeatherCity} 的天气，先按 {WeatherTemperature}°C 的季节体感继续推荐。";
             }
 
-            WeatherRecommendations = (await _recommendationService.GetRecommendationsByRuleAsync(WeatherTemperature, null))
+            var recommendations = await _recommendationService.GetRecommendationsByRuleAsync(
+                WeatherTemperature,
+                recommendationPreferences.DefaultScene);
+
+            if (recommendationPreferences.AvoidWornToday)
+                recommendations = recommendations.Where(recommendation => !recommendation.IsWornToday);
+
+            WeatherRecommendations = recommendations
                 .Take(3)
                 .ToList();
             RecommendationReadiness = await _getRecommendationReadinessSummary.ExecuteAsync(WeatherTemperature);

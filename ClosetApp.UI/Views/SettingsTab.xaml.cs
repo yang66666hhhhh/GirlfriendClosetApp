@@ -132,6 +132,12 @@ public partial class SettingsTab : UserControl
         await RequestAppRefreshAsync(outfits: true);
     }
 
+    private async void SaveRecommendationPreferences_Click(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.SaveRecommendationPreferencesAsync();
+        await RequestAppRefreshAsync(outfits: true);
+    }
+
     private async void UseRoseTheme_Click(object sender, RoutedEventArgs e)
     {
         await _viewModel.ApplyThemeAsync(AppThemeKind.Rose);
