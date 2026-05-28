@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Application.UseCases.Insights;
 using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -86,6 +87,7 @@ public partial class OutfitsViewModel : ViewModelBase
     private readonly IWeatherPreferencesService _weatherPreferencesService;
     private readonly IRecommendationPreferencesService _recommendationPreferencesService;
     private readonly GetTodayRecommendations _getTodayRecommendations;
+    private readonly GetWardrobeInsights _getWardrobeInsights;
     private readonly OutfitsTabState _state = new();
 
     [ObservableProperty]
@@ -117,7 +119,8 @@ public partial class OutfitsViewModel : ViewModelBase
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
-        GetTodayRecommendations getTodayRecommendations)
+        GetTodayRecommendations getTodayRecommendations,
+        GetWardrobeInsights getWardrobeInsights)
     {
         _outfitService = outfitService;
         _outfitRecommendationService = outfitRecommendationService;
@@ -125,6 +128,7 @@ public partial class OutfitsViewModel : ViewModelBase
         _weatherPreferencesService = weatherPreferencesService;
         _recommendationPreferencesService = recommendationPreferencesService;
         _getTodayRecommendations = getTodayRecommendations;
+        _getWardrobeInsights = getWardrobeInsights;
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
@@ -446,6 +450,20 @@ public partial class OutfitsViewModel : ViewModelBase
         OutfitScene? scene = recommendationPreferences.DefaultScene;
 
         return (temperature, scene);
+    }
+
+    [RelayCommand]
+    public async Task ShowWardrobeInsightsAsync()
+    {
+        try
+        {
+            var insights = await _getWardrobeInsights.ExecuteAsync();
+            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.WardrobeInsightsDialog(insights));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("加载统计数据失败", ex.Message);
+        }
     }
 
     public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();

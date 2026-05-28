@@ -116,6 +116,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<ClearWardrobeByTypes>();
         services.AddScoped<ImportClothesFromImages>();
         services.AddScoped<GetOutfitHistorySummary>();
+        services.AddScoped<GetWardrobeInsights>();
         services.AddScoped<RecordOutfitWorn>();
         services.AddScoped<GetRecommendationReadinessSummary>();
         services.AddScoped<GetTodayRecommendations>();

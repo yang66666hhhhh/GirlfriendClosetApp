@@ -1,5 +1,6 @@
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
+using ClosetApp.Application.UseCases.Insights;
 using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -228,13 +229,15 @@ public class OutfitsViewModelTests
         var getTodayRecommendations = new GetTodayRecommendations(
             resolvedRecommendationService,
             new GetRecommendationReadinessSummary(resolvedOutfitService));
+        var getWardrobeInsights = new GetWardrobeInsights(resolvedOutfitService);
         return new OutfitsViewModel(
             resolvedOutfitService,
             resolvedRecommendationService,
             weatherService ?? new FakeWeatherService(null),
             new FakeWeatherPreferencesService("Shanghai"),
             recommendationPreferencesService ?? new FakeRecommendationPreferencesService(),
-            getTodayRecommendations);
+            getTodayRecommendations,
+            getWardrobeInsights);
     }
 
     private static Outfit CreateOutfit(

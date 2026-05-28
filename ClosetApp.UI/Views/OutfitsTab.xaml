@@ -234,6 +234,15 @@
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
                                                     Click="OpenSettings_Click"/>
+                                            <TextBlock Text="·"
+                                                       Foreground="{DynamicResource TextPlaceholderBrush}"
+                                                       Margin="8,0"
+                                                       VerticalAlignment="Center"/>
+                                            <Button Content="数据洞察"
+                                                    Style="{StaticResource TodayHeroSecondaryActionButton}"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding ShowWardrobeInsightsCommand}"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
