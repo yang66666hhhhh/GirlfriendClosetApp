@@ -122,7 +122,8 @@ GirlfriendClosetApp/
 - `Season`: `Unspecified`, `Spring`, `Summer`, `Autumn`, `Winter`, `AllSeason`
 - `OutfitScene`: `Work`, `Date`, `Travel`, `Party`, `Casual`
 - `TagCategory`: `Style`, `Scene`, `Season` — 用于标签选择与复用
-- `AppThemeKind`: `Rose`, `Blue` — 应用主题
+- `RecommendationRotationStrategy`: `Balanced`, `PreferLessWorn`, `PreferFavorites` — 推荐轮换策略
+- `AppThemeKind`: `Rose`, `Blue` — 应用主题（位于 `ClosetApp.UI/Services/`）
 
 ### 4.3 衣物分类体系
 
@@ -276,6 +277,10 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Shared/Form/*`
 - `Components/Shared/States/EmptyState`
 - `Components/Shared/ThemeColorHelper`
+- `Components/Shared/EnumRadioGroup` — 泛型 RadioButton 选择组，含 `IEnumRadioGroup` 接口
+- `Components/Shared/ThemeCard` — 主题选择卡片自定义控件
+- `Components/Shared/FileSizeFormatter` — 文件大小格式化工具
+- `Components/Shared/AnimationHelper` — 可复用动画工具（Shake）
 - `Components/Tags/Controls/TagEditorPanel`
 - `Components/Tags/Controls/TagSelectionSection`
 - `Components/Tags/Models/SelectableTag`
@@ -356,6 +361,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Clothing/ClearWardrobeByTypes`
 - `Insights/GetOutfitHistorySummary`
 - `Outfits/GetRecommendationReadinessSummary`
+- `Outfits/GetTodayRecommendations`
 - `Outfits/RecordOutfitWorn`
 - `Tags/GetTagsForSelection`
 
@@ -423,6 +429,7 @@ string BuildDefaultBackupPath();
 |------|------|
 | `CreateOutfitDto` / `UpdateOutfitDto` / `OutfitDto` / `OutfitSummaryDto` | 搭配 CRUD |
 | `RecommendedOutfitDto` / `RecommendationReadinessSummaryDto` | 推荐相关 |
+| `TodayRecommendationResult` / `TodayRecommendationRequest` | 今日推荐编排结果与请求 |
 | `ImageMaintenanceDtos` | 图片维护 |
 | `BatchClothingImportDtos` | 批量导入预览与选项 |
 | `BatchClothingCompletionDtos` | 批量补全元数据 |
@@ -474,12 +481,12 @@ public class RecommendationPreferences
 
 `OutfitsViewModel.RefreshWeatherRecommendationsAsync()` 会：
 
-1. 读取天气城市偏好
-2. 读取推荐偏好
-3. 使用 `DefaultScene` 调用 `IOutfitRecommendationService.GetRecommendationsByRuleAsync(...)`
-4. 如果 `AvoidWornToday = true`，过滤当天已穿过的推荐
-5. 按 `RotationStrategy` 对推荐结果做二次排序
-6. 取前 3 套展示到今日推荐区
+1. 读取天气城市偏好和推荐偏好
+2. 调用 `IWeatherService.GetCurrentWeatherAsync()` 获取天气，失败时使用 `GetFallbackTemperature()` 按季节推算
+3. 构造 `TodayRecommendationRequest` 并调用 `GetTodayRecommendations.ExecuteAsync()`
+4. UseCase 内部：调用 `IOutfitRecommendationService.GetRecommendationsByRuleAsync()`，过滤当天已穿过的，按 `RotationStrategy` 排序，取前 3 套
+5. UseCase 返回 `TodayRecommendationResult`（含天气、推荐、准备度、状态文本）
+6. ViewModel 更新 UI 状态
 
 ---
 
@@ -519,13 +526,21 @@ public class RecommendationPreferences
 
 原图不会随普通缓存清理删除；只有在删除衣物、更换图片或用户确认“孤儿原图清理”时，才会删除数据库未引用的原图及其同名派生缓存。
 
-### 9.3 图片修复
+### 9.3 图片修复与维护
 
 `ImageMaintenanceService` 提供：
 
 ```csharp
 Task<int> CountMissingImagesAsync();
+Task<int> CountMissingThumbnailsAsync();
+Task<ThumbnailRebuildResult> RebuildMissingThumbnailsAsync(int maxSize = 200);
 Task<int> RelinkMissingImagesAsync(string sourceDirectory);
+Task<OrphanOriginalsResult> AnalyzeOrphanOriginalsAsync();
+Task<OrphanOriginalsCleanupResult> CleanupOrphanOriginalsAsync();
+Task CleanupLogsAsync();
+Task CleanupImageCacheAsync();
+Task<int> CountFilesAsync(string directory);
+Task<long> GetDirectorySizeAsync(string directory);
 ```
 
 修复策略：
@@ -593,7 +608,7 @@ Task<int> RelinkMissingImagesAsync(string sourceDirectory);
 - `AddDbContextFactory<ClosetDbContext>()`
 - 仓储：`IClothingRepository`、`IOutfitRepository`、`ITagRepository`、`IFavoriteRepository`、`IOutfitWornRecordRepository`
 - 服务：衣物 / 搭配 / 标签 / 收藏 / 推荐 / 备份 / 图片治理 / 图片存储 / 天气 / 天气偏好 / 推荐偏好
-- UseCase：`GetWardrobeOverview`、`ImportClothesFromImages`、`CompleteClothingMetadataBatch`、`ClearWardrobeByTypes`、`GetOutfitHistorySummary`、`RecordOutfitWorn`、`GetRecommendationReadinessSummary`、`GetTagsForSelection`
+- UseCase：`GetWardrobeOverview`、`ImportClothesFromImages`、`CompleteClothingMetadataBatch`、`ClearWardrobeByTypes`、`GetOutfitHistorySummary`、`RecordOutfitWorn`、`GetRecommendationReadinessSummary`、`GetTodayRecommendations`、`GetTagsForSelection`
 - UI 服务：`ToastService`、`ModalService`、`ThemeService`、`ThemePreferencesService`
 
 ### 11.2 启动行为
@@ -677,6 +692,13 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 错误提示器 | `ClosetApp.UI/Services/WardrobeActionErrorPresenter.cs` |
 | 页面状态类 | `ClosetApp.UI/States/` |
 | UI 逻辑共享工程 | `ClosetApp.UI.Logic/ClosetApp.UI.Logic.csproj` |
+| 泛型 RadioButton 选择组 | `ClosetApp.UI/Components/Shared/EnumRadioGroup.cs` |
+| 主题选择卡片控件 | `ClosetApp.UI/Components/Shared/ThemeCard.xaml` |
+| 文件大小格式化 | `ClosetApp.UI/Components/Shared/FileSizeFormatter.cs` |
+| 动画工具 | `ClosetApp.UI/Components/Shared/AnimationHelper.cs` |
+| 今日推荐 UseCase | `ClosetApp.Application/UseCases/Outfits/GetTodayRecommendations.cs` |
+| 今日推荐结果 DTO | `ClosetApp.Application/DTOs/TodayRecommendationResult.cs` |
+| 推荐轮换策略枚举 | `ClosetApp.Domain/Enums/RecommendationRotationStrategy.cs` |
 | 备份接口 | `ClosetApp.Application/Interfaces/IBackupService.cs` |
 | 备份 DTO | `ClosetApp.Application/DTOs/BackupDtos.cs` |
 | 备份实现 | `ClosetApp.Infrastructure/Services/BackupService.cs` |
@@ -731,6 +753,19 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - 引入 `TagEditorPanel`、`TagSelectionSection`、`SelectableTag` 标签组件
 - 引入 `ConfirmDialog`、`OutfitHistoryDialog`、`WornDayDetailsDialog` 共享弹窗
 - 主题调色板扩展为 5 套辅助色系（Sky / Mint / Rose / Amber / Lavender）
+
+### 2026-05-28
+
+- 提取 `GetTodayRecommendations` UseCase，`OutfitsViewModel` 天气推荐编排逻辑独立为可复用 UseCase
+- `RecommendationRotationStrategy` 枚举从 Infrastructure 迁移到 Domain 层，解除 Application → Infrastructure 依赖
+- `IWeatherService` 新增 `GetFallbackTemperature()`，季节温度推算逻辑集中管理
+- `IImageStorageService` 新增 `TryDeleteImageAsync()`，安全删除模式（忽略空路径和异常）
+- `IImageMaintenanceService` 新增 `CleanupLogsAsync()`、`CleanupImageCacheAsync()`、`CountFilesAsync()`、`GetDirectorySizeAsync()`
+- `SettingsTab` 重构：新建 `ThemeCard` 自定义控件驱动主题选择视觉状态，文件操作迁移到 Service 层
+- `WardrobeViewModel` 重构：引入 `EnumRadioGroup<TEnum>` 泛型 RadioButton 选择组，减少 ~160 行样板代码
+- `ClothingEditorPanel` 重构：`Save_Click` 提取 `BuildClothingFromFormAsync` + `ApplyTagChanges`，`ShakeElement` 迁移到 `AnimationHelper`
+- 新建共享组件：`EnumRadioGroup`、`ThemeCard`、`FileSizeFormatter`、`AnimationHelper`
+- 搭配编辑器名称字段改为选填，留空自动命名为"未命名"
 
 ---
 

@@ -66,6 +66,16 @@ GirlfriendClosetApp/
 - `ClothingMappings`：GarmentType ↔ DisplayCategory / LayerRole / 中文名称映射
 - `ClothingTaxonomy`：按 DisplayCategory 分组查询 GarmentType
 
+### 1.3 共享组件
+
+`ClosetApp.UI/Components/Shared/` 下的可复用组件：
+
+- `EnumRadioGroup<TEnum>`：泛型 RadioButton 选择组，将 nullable enum 映射为布尔属性，含 `IEnumRadioGroup` 非泛型接口
+- `ThemeCard`：主题选择卡片自定义控件，通过 `IsSelected` 属性驱动视觉状态
+- `FileSizeFormatter`：文件大小格式化工具（B/KB/MB/GB）
+- `AnimationHelper`：可复用动画工具（Shake 抖动效果）
+- `ThemeColorHelper`：主题感知的颜色解析和混合工具
+
 ### 2. 备份与恢复
 
 - `ClosetApp.Application/Interfaces/IBackupService.cs`
@@ -96,7 +106,7 @@ GirlfriendClosetApp/
 ### 4. 图片资产体系
 
 - `ImageStorageService`：原图 / 主视觉 / 小预览存储
-- `ImageMaintenanceService`：检测缺失图片、统计图片缓存缺口并执行重建
+- `ImageMaintenanceService`：检测缺失图片、统计图片缓存缺口并执行重建、清理日志/缓存、统计文件数量和大小
 - `ImageAssetResolver`：统一图片解析
 
 图片按视觉用途分层：
@@ -140,6 +150,7 @@ GirlfriendClosetApp/
 - `Insights/GetOutfitHistorySummary`
 - `Outfits/RecordOutfitWorn`
 - `Outfits/GetRecommendationReadinessSummary`
+- `Outfits/GetTodayRecommendations`
 - `Tags/GetTagsForSelection`
 
 ### 6. 搭配预览模型

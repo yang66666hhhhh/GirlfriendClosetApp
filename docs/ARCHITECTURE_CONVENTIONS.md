@@ -24,6 +24,7 @@
 - Existing services remain available for CRUD and repository-facing operations.
 - New business workflows should start in `ClosetApp.Application/UseCases`.
 - Use cases should be named in product language, such as `GetWardrobeOverview`, `RecordOutfitWorn`, or `GetTagsForSelection`.
+- Use cases that orchestrate multiple services (e.g. `GetTodayRecommendations`) should accept a request DTO and return a result DTO.
 
 ## Namespace Safety
 
@@ -62,4 +63,19 @@
 - `ThemePreferencesService` manages theme selection (Rose/Blue).
 - `WeatherPreferencesService` manages weather city preference.
 - `RecommendationPreferencesService` manages recommendation rotation strategy and scene preference.
+- `RecommendationRotationStrategy` is a Domain enum (`ClosetApp.Domain/Enums/`), not an Infrastructure type.
 - All are registered as Singletons in DI.
+
+## Shared Components
+
+- `EnumRadioGroup<TEnum>` — generic RadioButton selection group with `IEnumRadioGroup` non-generic interface for WPF binding.
+- `ThemeCard` — custom UserControl for theme selection with `IsSelected` DependencyProperty driving visual state.
+- `FileSizeFormatter` — static utility for human-readable file sizes (B/KB/MB/GB).
+- `AnimationHelper` — static `Shake(UIElement)` method for validation error feedback.
+- `ThemeColorHelper` — theme-aware color resolution and blending utilities.
+- Place reusable UI utilities in `Components/Shared/`; prefer DependencyProperties over imperative code-behind for custom controls.
+
+## Safe Delete Pattern
+
+- `IImageStorageService.TryDeleteImageAsync(string?)` follows a safe-delete pattern: ignores null/empty paths and swallows exceptions with a warning log.
+- Use this pattern in ViewModels and UseCases where image deletion is a side effect, not the primary action.

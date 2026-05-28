@@ -22,14 +22,14 @@ dotnet run --project ClosetApp.UI
 ClosetApp.slnx
 ├── ClosetApp.Domain/          # 实体、枚举、仓储接口
 │   ├── Entities/              # Clothing, Outfit, Tag, Favorite, OutfitWornRecord
-│   ├── Enums/                 # ClothingType, Season, OutfitScene, TagCategory, AppThemeKind
+│   ├── Enums/                 # ClothingType, Season, OutfitScene, TagCategory, RecommendationRotationStrategy
 │   ├── Interfaces/            # IRepository<T>, IClothingRepository, IOutfitRepository...
 │   └── Clothing/              # GarmentType, DisplayCategory, LayerRole, ClothingMappings, ClothingTaxonomy
 ├── ClosetApp.Application/     # 服务接口、实现、DTO
 │   ├── Interfaces/            # IClothingService, IOutfitService, ITagService, IFavoriteService...
 │   ├── Services/              # 业务逻辑实现
 │   ├── DTOs/                  # CreateOutfitDto, OutfitDto, BackupDtos, BatchClothingImportDtos...
-│   ├── UseCases/              # GetWardrobeOverview, ImportClothesFromImages, RecordOutfitWorn...
+│   ├── UseCases/              # GetWardrobeOverview, ImportClothesFromImages, GetTodayRecommendations, RecordOutfitWorn...
 │   └── Images/                # IImageAssetResolver, ImageAsset, ImageVariant
 ├── ClosetApp.Infrastructure/  # EF Core、仓储实现、图片存储
 │   ├── Data/                  # ClosetDbContext (SQLite), ClosetDatabaseInitializer
@@ -45,7 +45,7 @@ ClosetApp.slnx
 │   │   │   └── Editor/        # OutfitEditorPanel, OutfitSelectionRules
 │   │   ├── Clothing/          # PremiumClothingCard, BatchClothingImportBuilder, BatchImportDuplicateChecker...
 │   │   ├── Tags/              # TagEditorPanel, TagSelectionSection, SelectableTag
-│   │   └── Shared/            # ThemeColorHelper, Modal, Form, States, Editor
+│   │   └── Shared/            # ThemeColorHelper, EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, Modal, Form, States, Editor
 │   ├── Converters/            # 值转换器
 │   ├── ViewModels/            # MVVM ViewModel
 │   ├── Services/              # ThemeService, ModalService, ToastService, WardrobeActionErrorPresenter
@@ -74,6 +74,7 @@ View (XAML + code-behind)
 - `ClosetDbContext` — Scoped
 - 仓储 — Scoped (`IClothingRepository`, `IOutfitRepository`, `ITagRepository`...)
 - 服务 — Scoped (`IClothingService`, `IOutfitService`...)
+- UseCase — Scoped (`GetWardrobeOverview`, `GetTodayRecommendations`, `RecordOutfitWorn`...)
 - `IImageStorageService` — Singleton
 - `ThemeService` — Singleton
 - `ModalService`, `ToastService` — Singleton
@@ -98,7 +99,8 @@ View (XAML + code-behind)
 - `Season`: Spring, Summer, Autumn, Winter, AllSeason
 - `OutfitScene`: Work, Date, Travel, Party, Casual
 - `TagCategory`: Style, Scene, Season
-- `AppThemeKind`: Rose, Blue
+- `RecommendationRotationStrategy`: Balanced, PreferLessWorn, PreferFavorites
+- `AppThemeKind`: Rose, Blue（位于 `ClosetApp.UI/Services/`）
 
 ### Clothing Taxonomy
 
@@ -387,7 +389,7 @@ ModalService (Singleton)
 ## Known Issues / Notes
 
 - `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
-- ViewModels 目前未被 Views 使用（Views 直接调用 Services）
+- ViewModels 已开始接管搭配页与设置页的业务状态，View 侧主要保留弹窗、导航、文件选择和控件事件桥接
 - 命名空间歧义：文件目录 `Components/Outfit/` 和 `Components/Clothing/` 被编译器视为 namespace，与 `Domain.Entities.Outfit/Clothing` 冲突。使用 `global::ClosetApp.Domain.Entities.Outfit/Clothing` 显式引用实体类型
 - `Components/_Archive/` 保留旧版 `AddClothingPanel` 备份
 - `Views/_Deprecated/` 保留旧版 Dialog 备份
