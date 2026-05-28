@@ -634,7 +634,12 @@ public partial class OutfitsViewModel : ViewModelBase
     {
         var recentRecords = await _outfitService.GetRecentWornRecordsAsync(6);
         _state.SetRecentWornRecords(recentRecords);
-        await RefreshCalendarAsync();
+    }
+
+    public async Task EnsureCalendarLoadedAsync()
+    {
+        if (_state.CalendarDays.Count == 0)
+            await RefreshCalendarAsync();
     }
 
     private async Task RefreshCalendarAsync()

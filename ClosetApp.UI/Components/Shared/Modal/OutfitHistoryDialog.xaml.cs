@@ -20,8 +20,9 @@ public partial class OutfitHistoryDialog : UserControl
         Loaded += OutfitHistoryDialog_Loaded;
     }
 
-    private void OutfitHistoryDialog_Loaded(object sender, RoutedEventArgs e)
+    private async void OutfitHistoryDialog_Loaded(object sender, RoutedEventArgs e)
     {
+        await _viewModel.EnsureCalendarLoadedAsync();
         SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
         UpdateRecentSectionState();
     }
