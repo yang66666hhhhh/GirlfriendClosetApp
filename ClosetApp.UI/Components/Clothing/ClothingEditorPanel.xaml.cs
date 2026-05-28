@@ -1,4 +1,4 @@
-using System.IO;
+﻿using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -9,6 +9,7 @@ using ClosetApp.Application.Images;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
@@ -399,10 +400,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private async void Delete_Click(object sender, RoutedEventArgs e)
     {
-        if (_isSubmitting)
-            return;
-
-        if (_existingClothing == null)
+        if (_isSubmitting || _existingClothing == null)
             return;
 
         var confirmed = await ConfirmModal.ShowDeleteAsync(
@@ -421,7 +419,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
         if (string.IsNullOrWhiteSpace(TxtName.Text))
         {
-            ShakeElement(TxtName);
+            AnimationHelper.Shake(TxtName);
             TxtName.Focus();
             ToastService.Instance.ShowInfo("先给这件衣服起个名字吧。");
             return;
@@ -430,67 +428,11 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         try
         {
             SetSubmitting(true);
-            global::ClosetApp.Domain.Entities.Clothing clothing;
-            if (_isEditMode && _existingClothing != null)
-            {
-                clothing = _existingClothing;
-                clothing.Name = TxtName.Text.Trim();
-                clothing.Type = _selectedType;
-                clothing.Season = _selectedSeason;
-                clothing.Color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim();
-                clothing.Brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim();
-                clothing.Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
-                clothing.FavoriteLevel = _favoriteLevel;
-
-                if (_imageChanged && !string.IsNullOrEmpty(_selectedImagePath))
-                {
-                    clothing.ImagePath = await SaveSelectedImageAsync(_selectedImagePath);
-                }
-                else if (_imageChanged && string.IsNullOrEmpty(_selectedImagePath))
-                {
-                    clothing.ImagePath = null;
-                }
-
-                var tagExistingIds = clothing.ClothingTags.Select(x => x.TagId).ToHashSet();
-                var tagSelectedIds = TagSelection.SelectedTags.Select(t => t.Id).ToHashSet();
-                var toRemove = clothing.ClothingTags
-                    .Where(x => !tagSelectedIds.Contains(x.TagId)).ToList();
-                foreach (var item in toRemove)
-                    clothing.ClothingTags.Remove(item);
-                foreach (var id in tagSelectedIds.Except(tagExistingIds))
-                    clothing.ClothingTags.Add(new ClothingTag { ClothingId = clothing.Id, TagId = id });
-            }
-            else
-            {
-                string imagePath = string.Empty;
-                if (!string.IsNullOrEmpty(_selectedImagePath) && File.Exists(_selectedImagePath))
-                {
-                    imagePath = await SaveSelectedImageAsync(_selectedImagePath);
-                }
-
-                clothing = new global::ClosetApp.Domain.Entities.Clothing
-                {
-                    Name = TxtName.Text.Trim(),
-                    Type = _selectedType,
-                    Color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim(),
-                    Brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim(),
-                    Notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim(),
-                    Season = _selectedSeason,
-                    ImagePath = imagePath,
-                    FavoriteLevel = _favoriteLevel,
-                    ClothingTags = TagSelection.SelectedTags
-                        .Select(t => new ClothingTag { TagId = t.Id })
-                        .ToList()
-                };
-            }
-
-            System.Diagnostics.Debug.WriteLine($"[Save_Click] Invoking EditorCompleted, Name={clothing.Name}, Tags={clothing.ClothingTags.Count}");
+            var clothing = await BuildClothingFromFormAsync();
             EditorCompleted?.Invoke(this, new EditorResult<global::ClosetApp.Domain.Entities.Clothing>(EditorResultType.Saved, clothing));
-            System.Diagnostics.Debug.WriteLine("[Save_Click] EditorCompleted invoked");
         }
         catch (Exception ex)
         {
-            System.Diagnostics.Debug.WriteLine($"[Save_Click] Exception: {ex}");
             var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, _isEditMode);
             ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
         }
@@ -500,9 +442,68 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         }
     }
 
-    private Task<string> SaveSelectedImageAsync(string selectedImagePath)
+    private async Task<global::ClosetApp.Domain.Entities.Clothing> BuildClothingFromFormAsync()
     {
-        return _imageStorage.SaveImageAsync(selectedImagePath);
+        var name = TxtName.Text.Trim();
+        var color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim();
+        var brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim();
+        var notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
+        var selectedTagIds = TagSelection.SelectedTags.Select(t => t.Id).ToHashSet();
+
+        if (_isEditMode && _existingClothing != null)
+        {
+            _existingClothing.Name = name;
+            _existingClothing.Type = _selectedType;
+            _existingClothing.Season = _selectedSeason;
+            _existingClothing.Color = color;
+            _existingClothing.Brand = brand;
+            _existingClothing.Notes = notes;
+            _existingClothing.FavoriteLevel = _favoriteLevel;
+
+            if (_imageChanged)
+                _existingClothing.ImagePath = await ResolveImagePathAsync();
+
+            ApplyTagChanges(_existingClothing, selectedTagIds);
+            return _existingClothing;
+        }
+
+        return new global::ClosetApp.Domain.Entities.Clothing
+        {
+            Name = name,
+            Type = _selectedType,
+            Season = _selectedSeason,
+            Color = color,
+            Brand = brand,
+            Notes = notes,
+            ImagePath = await ResolveImagePathAsync(),
+            FavoriteLevel = _favoriteLevel,
+            ClothingTags = selectedTagIds
+                .Select(id => new ClothingTag { TagId = id })
+                .ToList()
+        };
+    }
+
+    private async Task<string> ResolveImagePathAsync()
+    {
+        if (string.IsNullOrEmpty(_selectedImagePath) || !File.Exists(_selectedImagePath))
+            return _isEditMode ? (_existingClothing?.ImagePath ?? "") : "";
+
+        return await _imageStorage.SaveImageAsync(_selectedImagePath);
+    }
+
+    private static void ApplyTagChanges(
+        global::ClosetApp.Domain.Entities.Clothing clothing,
+        HashSet<Guid> selectedTagIds)
+    {
+        var toRemove = clothing.ClothingTags
+            .Where(ct => !selectedTagIds.Contains(ct.TagId))
+            .ToList();
+        foreach (var item in toRemove)
+            clothing.ClothingTags.Remove(item);
+
+        var existingIds = clothing.ClothingTags.Select(ct => ct.TagId).ToHashSet();
+        foreach (var id in selectedTagIds.Except(existingIds))
+            clothing.ClothingTags.Add(new ClothingTag { ClothingId = clothing.Id, TagId = id });
     }
 
     private void SetSubmitting(bool isSubmitting)
@@ -513,21 +514,5 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         BtnFooterCancel.IsEnabled = !isSubmitting;
         BtnDelete.IsEnabled = !isSubmitting;
         BtnSave.Content = isSubmitting ? "正在保存..." : "保存衣服 ♥";
-    }
-
-    private void ShakeElement(UIElement element)
-    {
-        var transform = element.RenderTransform as TranslateTransform ?? new TranslateTransform();
-        element.RenderTransform = transform;
-
-        var anim = new DoubleAnimationUsingKeyFrames();
-        anim.KeyFrames.Add(new LinearDoubleKeyFrame(0, KeyTime.FromPercent(0)));
-        anim.KeyFrames.Add(new EasingDoubleKeyFrame(-5, KeyTime.FromPercent(0.15)) { EasingFunction = new QuadraticEase() });
-        anim.KeyFrames.Add(new EasingDoubleKeyFrame(5, KeyTime.FromPercent(0.35)) { EasingFunction = new QuadraticEase() });
-        anim.KeyFrames.Add(new EasingDoubleKeyFrame(-3, KeyTime.FromPercent(0.55)) { EasingFunction = new QuadraticEase() });
-        anim.KeyFrames.Add(new EasingDoubleKeyFrame(3, KeyTime.FromPercent(0.75)) { EasingFunction = new QuadraticEase() });
-        anim.KeyFrames.Add(new LinearDoubleKeyFrame(0, KeyTime.FromPercent(1)));
-
-        transform.BeginAnimation(TranslateTransform.XProperty, anim);
     }
 }
