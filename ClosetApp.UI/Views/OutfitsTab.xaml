@@ -211,6 +211,15 @@
                                                        Foreground="{DynamicResource TextPlaceholderBrush}"
                                                        Margin="8,0"
                                                        VerticalAlignment="Center"/>
+                                            <Button Content="推荐详情"
+                                                    Style="{StaticResource TodayHeroSecondaryActionButton}"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding ShowRecommendationDebugCommand}"/>
+                                            <TextBlock Text="·"
+                                                       Foreground="{DynamicResource TextPlaceholderBrush}"
+                                                       Margin="8,0"
+                                                       VerticalAlignment="Center"/>
                                             <Button Content="刷新推荐"
                                                     Style="{StaticResource TodayHeroSecondaryActionButton}"
                                                     HorizontalAlignment="Left"

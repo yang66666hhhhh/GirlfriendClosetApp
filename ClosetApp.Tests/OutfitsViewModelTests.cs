@@ -230,6 +230,7 @@ public class OutfitsViewModelTests
             new GetRecommendationReadinessSummary(resolvedOutfitService));
         return new OutfitsViewModel(
             resolvedOutfitService,
+            resolvedRecommendationService,
             weatherService ?? new FakeWeatherService(null),
             new FakeWeatherPreferencesService("Shanghai"),
             recommendationPreferencesService ?? new FakeRecommendationPreferencesService(),
@@ -371,6 +372,7 @@ public class OutfitsViewModelTests
 
         public Task<IEnumerable<Outfit>> GetLowWearOutfitsAsync(int count = 5) => throw new NotImplementedException();
         public Task<IEnumerable<Outfit>> GetUnwornOutfitsAsync() => throw new NotImplementedException();
+        public Task<RecommendationDebugDto?> GetRecommendationDebugAsync(int temperature, OutfitScene? scene = null) => Task.FromResult<RecommendationDebugDto?>(null);
 
         private List<RecommendedOutfitDto> GetRecommendations(int temperature, OutfitScene? scene)
         {

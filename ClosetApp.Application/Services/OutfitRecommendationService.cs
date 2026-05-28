@@ -49,6 +49,135 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         return outfits.Where(o => o.WearCount == 0);
     }
 
+    public async Task<RecommendationDebugDto?> GetRecommendationDebugAsync(int temperature, OutfitScene? scene = null)
+    {
+        var outfits = (await _outfitRepository.GetAllAsync()).ToList();
+        var wardrobeProfile = BuildWardrobeProfile(outfits);
+
+        var best = outfits
+            .Where(outfit => outfit.OutfitClothes.Count > 0)
+            .Select(outfit => BuildDebugRecommendation(outfit, temperature, scene, wardrobeProfile))
+            .OrderByDescending(r => r.TotalScore)
+            .ThenBy(r => r.Reasons.Count)
+            .FirstOrDefault();
+
+        if (best == null)
+            return null;
+
+        return new RecommendationDebugDto(
+            best.OutfitName,
+            best.TotalScore,
+            best.BaseScore,
+            best.SeasonScore,
+            best.FavoriteScore,
+            best.RecentWearScore,
+            best.WearCountScore,
+            best.SceneScore,
+            best.PreferenceSceneScore,
+            best.PreferenceTagScore,
+            best.PreferenceColorScore,
+            best.Reasons,
+            wardrobeProfile.SceneWeights,
+            wardrobeProfile.TagWeights,
+            wardrobeProfile.ColorWeights,
+            wardrobeProfile.TotalPreferenceWeight);
+    }
+
+    private static RecommendationDebugDto BuildDebugRecommendation(
+        Outfit outfit,
+        int temperature,
+        OutfitScene? scene,
+        WardrobePreferenceProfile wardrobeProfile)
+    {
+        var baseScore = outfit.Rating * 12;
+        var reasons = new List<string>();
+
+        var seasonScore = ScoreSeason(outfit.Season, temperature, reasons);
+        var favoriteScore = ScoreFavorite(outfit, reasons);
+        var recentWearScore = ScoreRecentWear(outfit, reasons);
+        var wearCountScore = ScoreWearCount(outfit, reasons);
+        var preferenceResult = ScorePreferenceDebug(outfit, wardrobeProfile, reasons);
+
+        var sceneScore = 0;
+        if (scene.HasValue)
+            sceneScore = ScoreScene(outfit, scene.Value, reasons);
+
+        if (reasons.Count == 0)
+            reasons.Add("按当前天气和穿着记录看，它今天比较顺手。");
+
+        var totalScore = baseScore + seasonScore + favoriteScore + recentWearScore
+            + wearCountScore + sceneScore + preferenceResult.Total;
+
+        return new RecommendationDebugDto(
+            outfit.Name,
+            totalScore,
+            baseScore,
+            seasonScore,
+            favoriteScore,
+            recentWearScore,
+            wearCountScore,
+            sceneScore,
+            preferenceResult.Scene,
+            preferenceResult.Tag,
+            preferenceResult.Color,
+            reasons,
+            wardrobeProfile.SceneWeights,
+            wardrobeProfile.TagWeights,
+            wardrobeProfile.ColorWeights,
+            wardrobeProfile.TotalPreferenceWeight);
+    }
+
+    private static PreferenceScoreResult ScorePreferenceDebug(
+        Outfit outfit,
+        WardrobePreferenceProfile profile,
+        List<string> reasons)
+    {
+        if (profile.TotalPreferenceWeight <= 0)
+            return PreferenceScoreResult.Zero;
+
+        var sceneScore = 0;
+        var tagScore = 0;
+        var colorScore = 0;
+
+        if (profile.SceneWeights.TryGetValue(outfit.Scene, out var sceneWeight) && sceneWeight >= 3)
+        {
+            sceneScore = 8;
+            reasons.Add("它贴近你最近常穿/收藏的场景。");
+        }
+
+        var tagNames = outfit.OutfitClothes
+            .SelectMany(link => link.Clothing.ClothingTags)
+            .Select(link => link.Tag.Name)
+            .Where(name => !string.IsNullOrWhiteSpace(name))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (tagNames.Any(tag => profile.TagWeights.TryGetValue(tag, out var weight) && weight >= 2))
+        {
+            tagScore = 7;
+            reasons.Add("风格标签也比较贴近你的常用偏好。");
+        }
+
+        var colors = outfit.OutfitClothes
+            .Select(link => NormalizeColor(link.Clothing.Color))
+            .Where(color => color != null)
+            .Select(color => color!)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+        if (colors.Any(color => profile.ColorWeights.TryGetValue(color, out var weight) && weight >= 2))
+        {
+            colorScore = 5;
+            reasons.Add("颜色也接近你常选的那一类。");
+        }
+
+        return new PreferenceScoreResult(sceneScore, tagScore, colorScore);
+    }
+
+    private sealed record PreferenceScoreResult(int Scene, int Tag, int Color)
+    {
+        public int Total => Scene + Tag + Color;
+        public static PreferenceScoreResult Zero => new(0, 0, 0);
+    }
+
     private static RecommendedOutfitDto BuildRecommendation(
         Outfit outfit,
         int temperature,

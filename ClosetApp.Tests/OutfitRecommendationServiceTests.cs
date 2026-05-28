@@ -114,6 +114,64 @@ public class OutfitRecommendationServiceTests
         Assert.Contains(reasons, reason => reason.Contains("颜色"));
     }
 
+    [Fact]
+    public async Task GetRecommendationDebugAsync_ReturnsDebugInfoForBestOutfit()
+    {
+        var summer = Outfit("Summer Look", Season.Summer, rating: 3);
+        var winter = Outfit("Winter Look", Season.Winter, rating: 5);
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([winter, summer]));
+
+        var debug = await service.GetRecommendationDebugAsync(30);
+
+        Assert.NotNull(debug);
+        Assert.Equal("Summer Look", debug.OutfitName);
+        Assert.True(debug.TotalScore > 0);
+        Assert.Equal(36, debug.BaseScore / 12 * 12);
+        Assert.True(debug.SeasonScore >= 30);
+        Assert.NotEmpty(debug.Reasons);
+        Assert.NotEmpty(debug.Breakdown);
+    }
+
+    [Fact]
+    public async Task GetRecommendationDebugAsync_IncludesPreferenceWeights()
+    {
+        var history = Outfit("History", Season.Spring, rating: 3, wearCount: 5, tagNames: ["韩系"], color: "白色");
+        var candidate = Outfit("Candidate", Season.Spring, rating: 3, tagNames: ["韩系"], color: "白色");
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([candidate, history]));
+
+        var debug = await service.GetRecommendationDebugAsync(20);
+
+        Assert.NotNull(debug);
+        Assert.True(debug.TotalPreferenceWeight > 0);
+        Assert.NotEmpty(debug.TagWeights);
+        Assert.NotEmpty(debug.ColorWeights);
+    }
+
+    [Fact]
+    public async Task GetRecommendationDebugAsync_ReturnsNullWhenNoOutfits()
+    {
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([]));
+
+        var debug = await service.GetRecommendationDebugAsync(20);
+
+        Assert.Null(debug);
+    }
+
+    [Fact]
+    public async Task GetRecommendationDebugAsync_ScoreBreakdownMatchesTotal()
+    {
+        var outfit = Outfit("Test", Season.Spring, rating: 3, isFavorite: true);
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([outfit]));
+
+        var debug = await service.GetRecommendationDebugAsync(20);
+
+        Assert.NotNull(debug);
+        var breakdownTotal = debug.BaseScore + debug.SeasonScore + debug.FavoriteScore
+            + debug.RecentWearScore + debug.WearCountScore + debug.SceneScore
+            + debug.PreferenceSceneScore + debug.PreferenceTagScore + debug.PreferenceColorScore;
+        Assert.Equal(debug.TotalScore, breakdownTotal);
+    }
+
     private static Outfit Outfit(
         string name,
         Season season,

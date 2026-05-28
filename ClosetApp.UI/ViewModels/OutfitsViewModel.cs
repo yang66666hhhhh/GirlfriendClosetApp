@@ -81,6 +81,7 @@ public partial class OutfitsViewModel : ViewModelBase
     ];
 
     private readonly IOutfitService _outfitService;
+    private readonly IOutfitRecommendationService _outfitRecommendationService;
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
     private readonly IRecommendationPreferencesService _recommendationPreferencesService;
@@ -112,12 +113,14 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public OutfitsViewModel(
         IOutfitService outfitService,
+        IOutfitRecommendationService outfitRecommendationService,
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
         GetTodayRecommendations getTodayRecommendations)
     {
         _outfitService = outfitService;
+        _outfitRecommendationService = outfitRecommendationService;
         _weatherService = weatherService;
         _weatherPreferencesService = weatherPreferencesService;
         _recommendationPreferencesService = recommendationPreferencesService;
@@ -383,6 +386,34 @@ public partial class OutfitsViewModel : ViewModelBase
                 recommendation.Outfit,
                 recommendation.Name,
                 "今日推荐已经同步到穿着记录。");
+    }
+
+    [RelayCommand]
+    public async Task ShowRecommendationDebugAsync()
+    {
+        try
+        {
+            var weatherPreferences = await _weatherPreferencesService.GetAsync();
+            var recommendationPreferences = await _recommendationPreferencesService.GetAsync();
+            var city = weatherPreferences.DefaultCity;
+
+            var weather = await _weatherService.GetCurrentWeatherAsync(city);
+            int temperature = weather?.Temperature ?? _weatherService.GetFallbackTemperature();
+            OutfitScene? scene = recommendationPreferences.DefaultScene;
+
+            var debug = await _outfitRecommendationService.GetRecommendationDebugAsync(temperature, scene);
+            if (debug == null)
+            {
+                ToastService.Instance.ShowInfo("暂无推荐数据", "先建几套搭配后再查看详情。");
+                return;
+            }
+
+            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.RecommendationDebugDialog(debug));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("加载推荐详情失败", ex.Message);
+        }
     }
 
     public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();

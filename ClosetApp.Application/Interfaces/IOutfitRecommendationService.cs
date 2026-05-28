@@ -10,4 +10,5 @@ public interface IOutfitRecommendationService
     Task<IEnumerable<RecommendedOutfitDto>> GetRecommendationsByRuleAsync(int temperature, OutfitScene? scene = null);
     Task<IEnumerable<Outfit>> GetLowWearOutfitsAsync(int count = 5);
     Task<IEnumerable<Outfit>> GetUnwornOutfitsAsync();
+    Task<RecommendationDebugDto?> GetRecommendationDebugAsync(int temperature, OutfitScene? scene = null);
 }

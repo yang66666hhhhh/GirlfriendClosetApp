@@ -1,22 +1,49 @@
-# GirlfriendClosetApp — 私人数字衣橱
+﻿# GirlfriendClosetApp — AI 编码规范
 
 WPF 桌面端穿搭管理应用。Clean Architecture 分层，SQLite 持久化，Masonry 瀑布流布局。
 
-## Tech Stack
+> 本文档约束 AI 编码行为。修改代码前必须阅读。
 
-- **UI**: WPF (.NET 10), HandyControl, CommunityToolkit.Mvvm
-- **Architecture**: Clean Architecture (Domain / Application / Infrastructure / UI)
-- **Database**: SQLite via EF Core
-- **Images**: SixLabors.ImageSharp，图片资产分为 Original / Display / Thumbnail，存储于 `%LocalAppData%\ClosetApp\images\`
+---
 
-## Build & Run
+## 1. 项目概述
+
+私人数字衣橱桌面应用，管理个人衣物、搭配、标签、穿着记录和本地图片资产。
+
+核心功能：衣柜管理、搭配创建与预览、标签管理、天气驱动今日推荐、批量导入、备份与恢复。
+
+---
+
+## 2. 技术栈
+
+| 层 | 技术 | 说明 |
+|---|---|---|
+| UI | WPF (.NET 10) | 桌面端界面 |
+| UI 组件 | HandyControl | 基础控件与样式 |
+| MVVM | CommunityToolkit.Mvvm | ViewModel 框架 |
+| 数据访问 | EF Core + SQLite | 本地数据库 |
+| 图片处理 | SixLabors.ImageSharp | 原图/缓存处理 |
+| 日志 | Serilog | 本地滚动日志 |
+| 测试 | xUnit | 单元测试框架 |
+
+---
+
+## 3. 构建与运行
 
 ```bash
+# 构建
 dotnet build ClosetApp.slnx
+
+# 运行
 dotnet run --project ClosetApp.UI
+
+# 测试
+dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 ```
 
-## Project Structure
+---
+
+## 4. 项目结构
 
 ```
 ClosetApp.slnx
@@ -25,117 +52,145 @@ ClosetApp.slnx
 │   ├── Enums/                 # ClothingType, Season, OutfitScene, TagCategory, RecommendationRotationStrategy
 │   ├── Interfaces/            # IRepository<T>, IClothingRepository, IOutfitRepository...
 │   └── Clothing/              # GarmentType, DisplayCategory, LayerRole, ClothingMappings, ClothingTaxonomy
-├── ClosetApp.Application/     # 服务接口、实现、DTO
+├── ClosetApp.Application/     # 服务接口、实现、DTO、UseCases
 │   ├── Interfaces/            # IClothingService, IOutfitService, ITagService, IFavoriteService...
 │   ├── Services/              # 业务逻辑实现
-│   ├── DTOs/                  # CreateOutfitDto, OutfitDto, BackupDtos, BatchClothingImportDtos...
-│   ├── UseCases/              # GetWardrobeOverview, ImportClothesFromImages, GetTodayRecommendations, RecordOutfitWorn...
+│   ├── DTOs/                  # CreateOutfitDto, OutfitDto, BackupDtos, TodayRecommendationResult...
+│   ├── UseCases/              # GetWardrobeOverview, GetTodayRecommendations, RecordOutfitWorn...
 │   └── Images/                # IImageAssetResolver, ImageAsset, ImageVariant
 ├── ClosetApp.Infrastructure/  # EF Core、仓储实现、图片存储
 │   ├── Data/                  # ClosetDbContext (SQLite), ClosetDatabaseInitializer
 │   ├── Repositories/          # 仓储实现
-│   ├── Services/              # ImageStorageService, WeatherService, BackupService, RecommendationPreferencesService...
+│   ├── Services/              # ImageStorageService, WeatherService, BackupService...
 │   └── Migrations/            # EF Core 迁移
 ├── ClosetApp.UI/              # WPF 界面
-│   ├── Views/                 # 页面和对话框
-│   ├── Components/            # 可复用组件
-│   │   ├── Outfit/
-│   │   │   ├── Engine/        # OutfitCompositionEngine（布局算法）
-│   │   │   ├── Controls/      # OutfitPreviewCanvas, OutfitCard
-│   │   │   └── Editor/        # OutfitEditorPanel, OutfitSelectionRules
-│   │   ├── Clothing/          # PremiumClothingCard, BatchClothingImportBuilder, BatchImportDuplicateChecker...
+│   ├── Views/                 # ClothesTab, OutfitsTab, TagsTab, SettingsTab
+│   ├── Components/
+│   │   ├── Outfit/            # OutfitCompositionEngine, OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel
+│   │   ├── Clothing/          # PremiumClothingCard, BatchClothingImport*, ClothingEditorPanel
 │   │   ├── Tags/              # TagEditorPanel, TagSelectionSection, SelectableTag
-│   │   └── Shared/            # ThemeColorHelper, EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, Modal, Form, States, Editor
-│   ├── Converters/            # 值转换器
-│   ├── ViewModels/            # MVVM ViewModel
+│   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
+│   ├── Converters/            # ImagePathConverter, BoolToFavoriteColorConverter...
+│   ├── ViewModels/            # WardrobeViewModel, OutfitsViewModel, SettingsViewModel, TagsViewModel
 │   ├── Services/              # ThemeService, ModalService, ToastService, WardrobeActionErrorPresenter
-│   └── Themes/                # 设计 Token 和样式
+│   ├── States/                # ClothesTabState, OutfitsTabState, TagsTabState
+│   └── Themes/
 │       ├── Tokens/            # Colors, Spacing, Radius, Shadows, Motion, Typography, Sizes
 │       └── Controls/          # Buttons, Cards, Chips, Inputs, Pages
 ├── ClosetApp.UI.Logic/        # UI 纯逻辑共享工程（供测试引用）
 └── ClosetApp.Tests/           # 纯逻辑测试工程（xUnit）
 ```
 
-## Architecture
+---
 
-### Data Flow
+## 5. 架构
+
+### 5.1 数据流
 
 ```
 View (XAML + code-behind)
-  → Service (IClothingService / IOutfitService)
-    → Repository (IClothingRepository)
-      → EF Core (ClosetDbContext)
-        → SQLite
+  → ViewModel (状态管理)
+    → Service (IClothingService / IOutfitService)
+      → Repository (IClothingRepository)
+        → EF Core (ClosetDbContext)
+          → SQLite
 ```
 
-### DI Registration (`App.xaml.cs`)
+### 5.2 依赖方向
 
-所有服务在 `ConfigureServices()` 中注册：
-- `ClosetDbContext` — Scoped
-- 仓储 — Scoped (`IClothingRepository`, `IOutfitRepository`, `ITagRepository`...)
-- 服务 — Scoped (`IClothingService`, `IOutfitService`...)
-- UseCase — Scoped (`GetWardrobeOverview`, `GetTodayRecommendations`, `RecordOutfitWorn`...)
-- `IImageStorageService` — Singleton
-- `ThemeService` — Singleton
-- `ModalService`, `ToastService` — Singleton
+```
+Domain ← Application ← Infrastructure
+                      ← UI
+                      ← UI.Logic
+                      ← Tests
+```
+
+**禁止**：Domain 引用任何其他层；Application 引用 Infrastructure 或 UI。
+
+### 5.3 DI 注册（App.xaml.cs）
+
+| 类型 | 生命周期 | 示例 |
+|------|----------|------|
+| DbContext | Scoped | `AddDbContextFactory<ClosetDbContext>()` |
+| Repository | Scoped | `IClothingRepository`, `IOutfitRepository` |
+| Service | Scoped | `IClothingService`, `IOutfitService` |
+| UseCase | Scoped | `GetWardrobeOverview`, `GetTodayRecommendations` |
+| 图片服务 | Singleton | `IImageStorageService`, `IImageMaintenanceService` |
+| UI 服务 | Singleton | `ThemeService`, `ModalService`, `ToastService` |
+| 偏好服务 | Singleton | `IWeatherPreferencesService`, `IRecommendationPreferencesService` |
+| 天气服务 | HttpClient | `IWeatherService` 通过 `AddHttpClient` 注册 |
 
 使用方式：`App.Services.GetRequiredService<T>()`
 
-## Domain Model
+---
 
-### Entities
+## 6. 领域模型
+
+### 6.1 实体
 
 | Entity | Key Fields | Relationships |
 |--------|-----------|---------------|
-| `Clothing` | Name, Type, ImagePath, Color, Brand, Season, FavoriteLevel, IsFavorite | M:N with Outfit (via OutfitClothing), M:N with Tag (via ClothingTag) |
-| `Outfit` | Name, Scene, Season, Rating, WearCount | M:N with Clothing, 1:N Favorite, 1:N OutfitWornRecord |
-| `Tag` | Name, Color | M:N with Clothing (via ClothingTag) |
+| `Clothing` | Name, Type, GarmentType, ImagePath, Color, Brand, Season, FavoriteLevel | M:N with Outfit (via OutfitClothing), M:N with Tag (via ClothingTag) |
+| `Outfit` | Name, Scene, Season, Rating, WearCount, WornDate | M:N with Clothing, 1:N Favorite, 1:N OutfitWornRecord |
+| `Tag` | Name, Color, Category | M:N with Clothing (via ClothingTag) |
 | `Favorite` | OutfitId | FK to Outfit |
 | `OutfitWornRecord` | OutfitId, WornDate | FK to Outfit |
 
-### Enums
-
-- `ClothingType`: Top, Bottom, Outerwear, Dress, Skirt, Shoes, Accessory
-- `Season`: Spring, Summer, Autumn, Winter, AllSeason
-- `OutfitScene`: Work, Date, Travel, Party, Casual
-- `TagCategory`: Style, Scene, Season
-- `RecommendationRotationStrategy`: Balanced, PreferLessWorn, PreferFavorites
-- `AppThemeKind`: Rose, Blue（位于 `ClosetApp.UI/Services/`）
-
-### Clothing Taxonomy
-
-- `GarmentType`: 细粒度衣物类型（TShirt, Shirt, Blouse, Knitwear, Hoodie, Jacket, Coat, Jeans, Dress, Sneakers, Bag... 共 27 种）
-- `DisplayCategory`: Topwear, Bottom, Dress, Footwear, Accessory
-- `LayerRole`: BaseTop, MidLayer, OuterLayer, Bottom, FullBody, Footwear, Accessory
-- `ClothingMappings`: GarmentType → DisplayCategory / LayerRole / 中文名称
-- `ClothingTaxonomy`: 按 DisplayCategory 分组查询 GarmentType
-
-### ID Type
-
 所有实体继承 `BaseEntity`，使用 `Guid Id`（非 int）。
 
-## UI Architecture
+### 6.2 枚举
 
-### Navigation
+| Enum | Values | 位置 |
+|------|--------|------|
+| `ClothingType` | Unspecified, Top, Bottom, Outerwear, Dress, Skirt, Shoes, Accessory | Domain/Enums |
+| `Season` | Unspecified, Spring, Summer, Autumn, Winter, AllSeason | Domain/Enums |
+| `OutfitScene` | Work, Date, Travel, Party, Casual | Domain/Enums |
+| `TagCategory` | Style, Scene, Season | Domain/Enums |
+| `RecommendationRotationStrategy` | Balanced, PreferLessWorn, PreferFavorites | Domain/Enums |
+| `AppThemeKind` | Rose, Blue | UI/Services |
+
+### 6.3 衣物分类体系
+
+| 类型 | 说明 | 示例 |
+|------|------|------|
+| `GarmentType` | 细粒度衣物类型（27 种） | TShirt, Shirt, Blouse, Jacket, Jeans, Dress, Sneakers, Bag |
+| `DisplayCategory` | 展示分类 | Topwear, Bottom, Dress, Footwear, Accessory |
+| `LayerRole` | 穿搭层级 | BaseTop, MidLayer, OuterLayer, Bottom, FullBody, Footwear, Accessory |
+
+映射关系：`ClothingMappings.GetDisplayCategory(GarmentType)` / `ClothingMappings.GetLayerRole(GarmentType)`
+
+---
+
+## 7. UI 架构
+
+### 7.1 导航
 
 MainWindow 2 列布局：
 - 左侧 `NavigationSidebar`（220px，可折叠到 72px）
 - 右侧内容区：`ClothesTab`（默认）/ `OutfitsTab` / `TagsTab` / `SettingsTab`
 
-### Tab Pages
+### 7.2 页面职责
 
-| Tab | File | Description |
-|-----|------|-------------|
-| 衣柜 | `ClothesTab.xaml` | Masonry 瀑布流 + 搜索 + 分类筛选 |
-| 搭配 | `OutfitsTab.xaml` | 搭配卡片列表 + 创建/编辑/删除 |
-| 标签 | `TagsTab.xaml` | 标签管理 |
-| 设置 | `SettingsTab.xaml` | 主题切换 + 天气 + 备份 + 维护 |
+| Tab | 职责 | State 类 |
+|-----|------|----------|
+| ClothesTab | 瀑布流展示、搜索、分类筛选、批量导入 | `ClothesTabState` |
+| OutfitsTab | 搭配列表、创建/编辑/删除、天气推荐、穿着记录 | `OutfitsTabState` |
+| TagsTab | 标签管理、分组整理、使用频次统计 | `TagsTabState` |
+| SettingsTab | 主题切换、天气、备份、图片维护 | 无（使用 ViewModel） |
 
-## Design System
+### 7.3 状态类约定
 
-### Theme System
+- 页面轻状态放在 `ClosetApp.UI/States`
+- State 负责：搜索文本、筛选器、加载标记、空状态、当前集合
+- Code-behind 负责：点击处理、动画、弹窗编排
 
-双主题（柔粉 / 清蓝），通过 `ThemeService` 全局切换。
+---
+
+## 8. 设计系统
+
+### 8.1 主题系统
+
+双主题（柔粉 Rose / 清蓝 Blue），通过 `ThemeService` 全局切换。
 
 ```
 ThemeService (Singleton)
@@ -143,164 +198,68 @@ ThemeService (Singleton)
   → ApplyPalette() → 更新 Application.Resources 中所有 Color/Brush
 ```
 
-所有 UI 组件使用 `{DynamicResource ...}` 绑定主题资源，切换时自动刷新。
+主题调色板包含 5 套辅助色系：Sky、Mint、Rose、Amber、Lavender。
 
-主题调色板包含 5 套辅助色系：Sky（天空蓝）、Mint（薄荷绿）、Rose（玫瑰粉）、Amber（琥珀）、Lavender（薰衣草），每套各有 Surface / Border / Text 三个变体。
+### 8.2 Color Tokens
 
-### Color Tokens (`Themes/Tokens/Colors.xaml`)
-
-| Token | Rose | Blue | Usage |
-|-------|------|------|-------|
+| Token | Rose | Blue | 用途 |
+|-------|------|------|------|
 | Primary | #CA9C9F | #5881D6 | 主色调 |
 | Primary.Dark | #B08488 | #375AAA | 深色强调 |
 | Primary.Light | #F7F0EE | #E0ECFF | 浅色背景 |
-| Primary.Glow | 60%透明 | 60%透明 | 发光/标签 |
 | Surface.Page | #F9F5F1 | #F0F5FC | 页面背景 |
 | Surface.Card | #FFFFFF | #FFFFFF | 卡片背景 |
 | Surface.Hero | #F7F1ED | #E6EEFA | 预览区背景 |
-| Surface.Section | #FBF6F3 | #EAF1FC | 区域背景 |
-| Surface.ImageArea | #F7F2EE | #EEF4FC | 图片区背景 |
 | Border.Light | #ECE2DF | #CDDAF0 | 边框 |
-| Shadow.Color | #30927C76 | #303C5078 | 阴影 |
-| Theme.Rose.* | 玫瑰粉系 | 蓝灰色系 | 主题辅助色 |
-| Theme.Sky.* | 粉色系 | 蓝色系 | 主题辅助色 |
-| Theme.Mint.* | 暖绿色系 | 青色系 | 主题辅助色 |
-| Theme.Amber.* | 琥珀色系 | 蓝灰色系 | 主题辅助色 |
-| Theme.Lavender.* | 薰衣草色系 | 靛蓝色系 | 主题辅助色 |
 
-### Card Design System (`Themes/Controls/Cards.xaml`)
-
-统一卡片设计语言，OutfitCard 和 PremiumClothingCard 共用。
-
-#### Tokens
+### 8.3 Card Design System
 
 ```xml
 Card.Radius = 20
-Card.InfoPadding = 16,12,16,14
-Card.TitleFontSize = 15
-Card.SubtitleFontSize = 11
-Card.ChipFontSize = 10
-Card.FavoriteFontSize = 18
-```
-
-#### Motion Tokens — Soft Elevation
-
-```xml
 Card.HoverTranslateY = -4
 Card.HoverScale = 1.01
 Card.HoverShadowBlur = 28
-Card.HoverShadowOpacity = 0.12
-Card.HoverImageScale = 1.02    <!-- 仅衣服卡片 -->
 Card.HoverDurationMs = 220
-Card.IdleShadowBlur = 16
-Card.IdleShadowOpacity = 0.06
 ```
 
-#### Shared Styles
+### 8.4 Button Styles
 
-| Style | Target | Usage |
-|-------|--------|-------|
-| `Card.Container` | Border | 卡片外壳（背景、圆角、光标） |
-| `Card.PreviewArea` | Border | 预览区（上半圆角、主题背景） |
-| `Card.InfoArea` | Border | 信息区（底部背景、内边距） |
-| `Card.Title` | TextBlock | 标题（15px SemiBold） |
-| `Card.Subtitle` | TextBlock | 副标题（11px Secondary） |
-| `Card.Tertiary` | TextBlock | 三级文字（11px Tertiary） |
-| `Card.ChipPanel` | WrapPanel | 标签面板 |
-| `Card.FavoriteButtonBase` | Button | 收藏按钮基础 |
-| `Card.ActionOverlay` | Border | 操作覆盖层 |
-| `Card.OverlayCapsuleButton` | Button | 覆盖层按钮 |
-
-#### Chip Palette (`ThemeColorHelper.ResolveChipPalette`)
-
-标签芯片配色，主题感知，支持季节/场景/分类标签：
-- 春/夏/秋/冬/四季 — 暖色系
-- 通勤/约会/出游/派对/休闲 — 场景色系
-- 上衣/裤装/连衣裙/半裙/外套/鞋子/配饰 — 分类色系
-
-### Card Hover — Soft Elevation
-
-统一悬停效果，模拟"柔和空间抬升"：
-
-```
-Idle:   TranslateY=0, Scale=1.0, Shadow.Blur=16, Shadow.Opacity=0.06
-Hover:  TranslateY=-4, Scale=1.01, Shadow.Blur=28, Shadow.Opacity=0.12
-```
-
-衣服卡片额外效果：`ImageScale=1.02`（像被"拿起来"）
-
-动画方式：代码直接动画（`AnimateTranslate`/`AnimateScale`/`AnimateShadow`），不依赖 Storyboard Key。
-
-### Button Styles (`Themes/Controls/Buttons.xaml`)
-
-基于 `AppButtonBase` 共享模板（hover scale + press scale 动画）：
+基于 `AppButtonBase` 共享模板：
 - `PrimaryButton` — 主题色填充 + 阴影
 - `CapsuleButton` — 白底 + 边框 + CornerRadius 12
 - `SecondaryButton` — 灰色填充
 - `DangerButton` — 红色填充
 - `GhostButton` — 透明 + 白色边框
-- `IconButton` — 圆形 36px
 
-### Resource Loading Order (`App.xaml`)
+### 8.5 资源加载顺序
 
 ```
-HandyControl (SkinDefault + Theme)
-→ Tokens/Colors.xaml
-→ Tokens/Typography.xaml
-→ Tokens/Spacing.xaml
-→ Tokens/Radius.xaml
-→ Tokens/Shadows.xaml
-→ Tokens/Motion.xaml
-→ Tokens/Sizes.xaml
-→ Controls/LegacyStyles.xaml
-→ Controls/Buttons.xaml
-→ Controls/Inputs.xaml
-→ Controls/Chips.xaml
-→ Controls/Cards.xaml
-→ Controls/Pages.xaml
-→ Shared/Modal/ModalCardStyles.xaml
-→ Shared/Modal/ModalFooterStyles.xaml
-→ Shared/Form/FormStyles.xaml
+HandyControl → Tokens/* → Controls/* → Shared/Modal/* → Shared/Form/*
 ```
 
-## Key Components
+---
 
-### Outfit Engine（穿搭视觉引擎）
+## 9. 关键组件
 
-三层架构：
+### 9.1 搭配引擎
 
 ```
 OutfitCompositionEngine (布局算法)
   ↓ CalculateLayout()
 OutfitRenderMetrics (渲染参数)
   ↓
-OutfitPreviewCanvas (WPF 渲染) ← 用于 OutfitCard + OutfitEditorPanel
+OutfitPreviewCanvas (WPF 渲染)
 ```
 
-### Image Processing
+### 9.2 图片处理
 
-#### 前景提取 (`ClothingImageLoader`)
+三层资产：Original（原图）/ Display（~900px）/ Thumbnail（~200px）
 
-自动抠除图片边缘连通的浅色背景：
-- 从图片四边采样背景种子色
-- Flood-fill 标记连通的背景像素
-- 前景保护：中性衣物色（亮度 60-220、饱和度 ≤35）不被误删
-- 裁边：找最大前景连通域，收紧边界
+存储路径：`%LocalAppData%\ClosetApp\images\{originals|display|thumbnails}\`
 
-参数：
-```
-LightBackgroundThreshold = 240
-NeutralBackgroundThreshold = 232
-BackgroundSeedTolerance = 10
-ForegroundProtectionLuminanceGap = 55
-NeutralClothingMin = 60, Max = 220, SatMax = 35
-```
+前景提取：`ClothingImageLoader` 自动抠除浅色背景。
 
-#### 衣物颜色背景
-
-`ThemeColorHelper.ResolveClothingBackdrop(colorField)` — 根据衣物颜色字段计算主题感知背景色，与主题基础色混合（45% 衣物色 + 55% 主题色）。
-
-### Modal System
+### 9.3 Modal 系统
 
 ```
 ModalService (Singleton)
@@ -309,90 +268,411 @@ ModalService (Singleton)
       → shows UserControl as modal content
 ```
 
-### MasonryPanel
+### 9.4 MasonryPanel
 
-自定义 `Panel` 实现瀑布流：
-- 最短列优先放置算法
-- `ColumnWidth` / `Spacing` 依赖属性
-- `ArrangeOverride` 返回实际内容高度（修复 ScrollViewer 滚不到底）
-- 卡片在 `MeasureOverride` 中通过 `FindMasonryColumnWidth()` 获取列宽，计算图片高度
+自定义 `Panel` 实现瀑布流，最短列优先放置算法。
 
-### PremiumClothingCard
+### 9.5 共享组件
 
-- 图片高度由图片宽高比动态计算（`CalcImageHeight`）
-- 信息区高度动态计算（`CalcInfoAreaHeight`）：基础 80px + 标签 26px + 品牌 16px
-- `Stretch="Uniform"` 不裁切
-- 前景提取：`extractForeground: true` 自动抠除白底/浅灰底
-- 悬停：Soft Elevation（TranslateY -4, Scale 1.01, Shadow 16→28, ImageScale 1.02）
-- 底部横条覆盖层：编辑 / 删除
-- 信息区：标题 + 品牌 + 标签芯片 + 收藏按钮
+| 组件 | 用途 |
+|------|------|
+| `EnumRadioGroup<TEnum>` | 泛型 RadioButton 选择组 |
+| `ThemeCard` | 主题选择卡片自定义控件 |
+| `FileSizeFormatter` | 文件大小格式化（B/KB/MB/GB） |
+| `AnimationHelper` | Shake 抖动动画 |
+| `ThemeColorHelper` | 主题感知颜色解析 |
 
-### OutfitCard
+---
 
-- 预览区：`OutfitPreviewCanvas` 渲染穿搭组合
-- 背景色：根据衣物颜色/季节动态计算（`ThemeColorHelper.ResolveOutfitBackdrop`）
-- 悬停：Soft Elevation（TranslateY -4, Scale 1.01, Shadow 16→28）
-- 底部横条覆盖层：编辑 / 删除 / 今天穿了
-- 信息区：标题 + 氛围描述 + 标签芯片 + 穿着信息 + 收藏按钮
+## 10. 关键模式（含代码示例）
 
-### Image Path Resolution
+### 10.1 添加新 Service
 
-三级路径查找（`ImagePathConverter` + code-behind）：
-1. 绝对路径 `File.Exists(path)`
-2. 相对路径 `AppDomain.BaseDirectory + path`
-3. LocalAppData `%LocalAppData%\ClosetApp\images\ + path`
+```csharp
+// 1. 在 Application/Interfaces/ 创建接口
+public interface IMyService
+{
+    Task<MyResult> DoSomethingAsync(string param);
+}
 
-`ImagePathConverter` 支持参数：`Variant:Width:trim:fg`（如 `Thumbnail:160:fg`）
+// 2. 在 Infrastructure/Services/ 创建实现
+public class MyService : IMyService
+{
+    public async Task<MyResult> DoSomethingAsync(string param) { ... }
+}
 
-图片存储：通过 `IImageStorageService.SaveImageAsync()` 复制到 LocalAppData，数据库存 GUID 文件名。
+// 3. 在 App.xaml.cs 注册
+services.AddScoped<IMyService, MyService>();
+// 或 Singleton: services.AddSingleton<IMyService, MyService>();
 
-## Key Patterns
+// 4. 在测试中创建 Fake
+private sealed class FakeMyService : IMyService
+{
+    public Task<MyResult> DoSomethingAsync(string param) => Task.FromResult(new MyResult());
+}
+```
 
-### XAML Resources
+### 10.2 添加新 UseCase
 
-- 全局资源在 `App.xaml` merged dictionaries 中定义
-- 页面级资源在 `UserControl.Resources` 中定义
-- 主题相关绑定使用 `{DynamicResource ...}`（确保主题切换时刷新）
-- 非主题绑定可使用 `{StaticResource ...}`
+```csharp
+// 1. 在 Application/UseCases/ 创建类
+public sealed class MyNewUseCase
+{
+    private readonly IMyService _service;
 
-### Converter Usage
+    public MyNewUseCase(IMyService service)
+    {
+        _service = service;
+    }
 
-- `ImagePathConverter` — 图片路径解析（支持三级路径 + `fg` 前景提取参数）
-- `InverseNullToVisibilityConverter` — null 时显示（用于图片 fallback）
-- `BoolToFavoriteColorConverter` — 收藏状态颜色
-- `SeasonToNameConverter` — Season 枚举转中文
-- `ClothingTypeToNameConverter` — ClothingType 枚举转中文
+    public async Task<MyResultDto> ExecuteAsync(MyRequestDto request)
+    {
+        // 业务逻辑
+    }
+}
 
-### Event Handling
+// 2. 创建 Request/Result DTO（如需要）
+public sealed record MyRequestDto(string Param);
+public sealed record MyResultDto(string Data);
 
-- `PremiumClothingCard` 和 `OutfitCard` 使用 WPF 路由事件（`CardClicked`, `EditClicked`, `DeleteClicked`）
-- 在 DataTemplate 中绑定：`<components:PremiumClothingCard EditClicked="Handler"/>`
-- 不要用 `Border.MouseLeftButtonDown` 包裹卡片（会被卡片内部事件消费）
+// 3. 在 App.xaml.cs 注册
+services.AddScoped<MyNewUseCase>();
 
-### Outfit Creation Rules
+// 4. 在 ViewModel 中调用
+var result = await _myNewUseCase.ExecuteAsync(new MyRequestDto("value"));
+```
 
-创建搭配时的衣服选择互斥规则：
-- 连衣裙 (Dress) — 选了 → 上衣 + 裤装 / 半裙禁用，可搭外套
-- 上衣 (Top) — 选了 → 连衣裙禁用
-- 外套 (Outerwear) — 不占上衣位，可与上衣或连衣裙同时选择
-- 下身 (Bottom/Skirt) — 裤装与半裙二选一，选了 → 连衣裙禁用
-- 鞋子 (Shoes) — 独立
-- 配饰 (Accessory) — 可多选
-- 待分类 (Unspecified) — 不参与搭配选择
+### 10.3 添加新 ViewModel 属性
 
-预览画布按"人体区域 + 穿搭层级"表达，不按分类简单堆叠：
-- 上半身区域：外套为外层主图，上衣/中层作为内层露出
-- 下半身区域：裤装或半裙
-- 脚部区域：鞋子
-- 配饰区域：侧边或角标小卡
+```csharp
+// 使用 CommunityToolkit.Mvvm 的 [ObservableProperty]
+[ObservableProperty]
+private string _myProperty = "default";
 
-## Known Issues / Notes
+// 如需通知其他属性变化：
+[ObservableProperty]
+[NotifyPropertyChangedFor(nameof(ComputedProperty))]
+private int _count;
 
-- `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
-- ViewModels 已开始接管搭配页与设置页的业务状态，View 侧主要保留弹窗、导航、文件选择和控件事件桥接
-- 命名空间歧义：文件目录 `Components/Outfit/` 和 `Components/Clothing/` 被编译器视为 namespace，与 `Domain.Entities.Outfit/Clothing` 冲突。使用 `global::ClosetApp.Domain.Entities.Outfit/Clothing` 显式引用实体类型
-- `Components/_Archive/` 保留旧版 `AddClothingPanel` 备份
-- `Views/_Deprecated/` 保留旧版 Dialog 备份
-- `Converters/_Archive/` 保留废弃 Converter 备份
-- `ClosetApp.UI.Logic` 是纯逻辑共享工程，通过 `<Compile Include>` 引用 UI 中的 State、Engine、Import 等文件，供测试工程独立引用
-- `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
+public string ComputedProperty => $"Count is {Count}";
+```
+
+### 10.4 添加新页面
+
+```xml
+<!-- 1. 创建 Views/MyPage.xaml -->
+<UserControl x:Class="ClosetApp.UI.Views.MyPage" ...>
+    <!-- XAML 内容 -->
+</UserControl>
+
+<!-- 2. 在 MainWindow.xaml 添加内容区 -->
+<views:MyPage x:Name="MyPageContent" Visibility="Collapsed"/>
+
+<!-- 3. 在 MainWindow.xaml.cs 添加导航逻辑 -->
+private void ShowTab(int tabIndex)
+{
+    MyPageContent.Visibility = tabIndex == 4 ? Visibility.Visible : Visibility.Collapsed;
+}
+```
+
+### 10.5 添加新共享组件
+
+```csharp
+// 在 Components/Shared/ 创建
+public partial class MyComponent : UserControl
+{
+    // 依赖属性
+    public static readonly DependencyProperty TitleProperty =
+        DependencyProperty.Register(nameof(Title), typeof(string), typeof(MyComponent));
+
+    public string Title
+    {
+        get => (string)GetValue(TitleProperty);
+        set => SetValue(TitleProperty, value);
+    }
+}
+```
+
+### 10.6 添加新测试
+
+```csharp
+// 在 ClosetApp.Tests/ 创建
+public class MyServiceTests
+{
+    [Fact]
+    public async Task DoSomethingAsync_ValidInput_ReturnsExpected()
+    {
+        // Arrange
+        var service = new MyService();
+
+        // Act
+        var result = await service.DoSomethingAsync("test");
+
+        // Assert
+        Assert.NotNull(result);
+    }
+}
+```
+
+---
+
+## 11. 编码约定
+
+### 11.1 命名约定
+
+| 类型 | 规则 | 示例 |
+|------|------|------|
+| 文件名 | PascalCase.cs | `ClothingService.cs` |
+| 类名 | PascalCase | `ClothingService` |
+| 接口 | I-prefix | `IClothingService` |
+| 方法 | PascalCase | `GetAllClothesAsync` |
+| 公共属性 | PascalCase | `SelectedType` |
+| 私有字段 | _camelCase | `_clothingService` |
+| 局部变量 | camelCase | `var result` |
+| 枚举值 | PascalCase | `ClothingType.Top` |
+| XAML x:Name | PascalCase | `TxtName`, `BtnSave` |
+| 常量 | PascalCase | `DefaultThumbnailSize` |
+
+### 11.2 异步模式
+
+```
+DO:
+  - 优先使用 async/await
+  - 事件处理器用 async void（仅此处允许）
+  - 其他方法用 async Task
+  - Infrastructure 层使用 ConfigureAwait(false)
+
+DON'T:
+  - 避免 async void（除事件处理器外）
+  - 避免 .Result 或 .Wait()（会死锁）
+  - 避免 fire-and-forget（除非有明确理由）
+```
+
+### 11.3 错误处理
+
+```csharp
+// 操作反馈：使用 ToastService
+ToastService.Instance.ShowSuccess("已保存");
+ToastService.Instance.ShowError("保存失败", ex.Message);
+
+// 确认弹窗：使用 MessageBox
+var result = MessageBox.Show("确定删除吗？", "确认", MessageBoxButton.OKCancel);
+
+// 统一错误分类：使用 WardrobeActionErrorPresenter
+var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, isEditMode);
+ToastService.Instance.ShowError(feedback.Title, feedback.Detail);
+```
+
+### 11.4 WPF/XAML 规则
+
+```
+DO:
+  - 主题相关绑定使用 {DynamicResource ...}
+  - 非主题绑定可使用 {StaticResource ...}
+  - 新控件使用 DependencyProperties（非 CLR 属性）
+  - 卡片组件使用路由事件（CardClicked, EditClicked, DeleteClicked）
+  - 图片绑定使用 ImagePathConverter
+
+DON'T:
+  - 不要硬编码颜色/尺寸（用 Token 资源）
+  - 不要用 Border.MouseLeftButtonDown 包裹卡片（会被内部事件消费）
+  - 不要在 code-behind 中直接操作文件系统（用 Service）
+  - 不要在 XAML 中使用 {Binding} 调用方法（用属性或转换器）
+```
+
+### 11.5 依赖注入规则
+
+```
+DO:
+  - 接口定义在 Application/Interfaces
+  - 实现在 Infrastructure/Services
+  - UseCase 在 Application/UseCases
+  - DI 注册在 App.xaml.cs ConfigureServices()
+
+DON'T:
+  - 不要在 Domain 层引用其他层
+  - 不要在 Application 层引用 Infrastructure
+  - 不要在 ViewModel 中 new Service（用 DI 注入）
+```
+
+### 11.6 文件组织
+
+```
+新 Service → Application/Interfaces + Infrastructure/Services
+新 UseCase → Application/UseCases/{Feature}/
+新 DTO → Application/DTOs/
+新实体 → Domain/Entities
+新枚举 → Domain/Enums
+新页面 → Views/
+新组件 → Components/{Feature}/
+共享组件 → Components/Shared/
+新状态类 → States/
+新测试 → ClosetApp.Tests/
+```
+
+---
+
+## 12. 测试
+
+### 12.1 框架与运行
+
+```bash
+# 运行所有测试
+dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
+
+# 运行指定测试
+dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj --filter "FullyQualifiedName~MyTest"
+```
+
+### 12.2 测试结构
+
+```
+ClosetApp.Tests/
+├── BackupServiceTests.cs
+├── ImageMaintenanceServiceTests.cs
+├── OutfitCompositionEngineTests.cs
+├── WardrobeViewModelTests.cs
+└── ...
+```
+
+### 12.3 测试命名约定
+
+```
+MethodName_Scenario_ExpectedResult
+
+示例：
+GetAllClothesAsync_HasData_ReturnsClothes
+SaveImageAsync_InvalidPath_ThrowsException
+FormatSize_ZeroBytes_ReturnsZeroB
+```
+
+### 12.4 Fake 模式
+
+```csharp
+// 测试中使用内部 private sealed class 作为 Fake
+private sealed class FakeClothingService : IClothingService
+{
+    public List<Clothing> Clothes { get; } = [];
+
+    public Task<IReadOnlyList<Clothing>> GetAllClothesAsync()
+        => Task.FromResult<IReadOnlyList<Clothing>>(Clothes);
+
+    public Task AddClothingAsync(Clothing clothing)
+    {
+        Clothes.Add(clothing);
+        return Task.CompletedTask;
+    }
+    // ... 其他接口方法
+}
+```
+
+### 12.5 UI 逻辑测试
+
+- UI 逻辑测试通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑文件
+- 不直接引用整个 `ClosetApp.UI.csproj`（避免 WPF 生成链干扰）
+- 测试文件放在 `ClosetApp.Tests/`，与源文件同名加 `Tests` 后缀
+
+---
+
+## 13. 常见陷阱
+
+### 13.1 命名空间冲突
+
+**问题**：`Components/Outfit/` 和 `Components/Clothing/` 被编译器视为 namespace，与 `Domain.Entities.Outfit/Clothing` 冲突。
+
+**解决**：使用 `global::` 别名：
+```csharp
+using OutfitEntity = global::ClosetApp.Domain.Entities.Outfit;
+using ClothingEntity = global::ClosetApp.Domain.Entities.Clothing;
+```
+
+### 13.2 XAML 绑定到方法
+
+**问题**：WPF 不支持 `{Binding MethodName}` 绑定到方法。
+
+**解决**：使用属性或转换器：
+```xml
+<!-- 错误 -->
+<TextBlock Text="{Binding FormatSize}" />
+
+<!-- 正确 -->
+<TextBlock Text="{Binding FileSize}" />
+```
+
+### 13.3 文件编码
+
+**问题**：PowerShell `Out-File -Encoding utf8` 会引入 BOM，导致 C# 编译错误。
+
+**解决**：使用 `[System.IO.File]::WriteAllText($file, $content)` 或直接用 Edit 工具。
+
+### 13.4 async void
+
+**问题**：`async void` 方法的异常无法被调用方捕获。
+
+**解决**：仅在事件处理器中使用 `async void`，其他地方用 `async Task`：
+```csharp
+// 事件处理器：允许 async void
+private async void Button_Click(object sender, RoutedEventArgs e) { ... }
+
+// 其他方法：必须 async Task
+public async Task DoSomethingAsync() { ... }
+```
+
+### 13.5 XAML 编辑替换失败
+
+**问题**：XAML 文件中的替换可能因缩进不匹配而失败。
+
+**解决**：先用 Read 工具读取精确内容，再用 Edit 工具替换。避免猜测缩进。
+
+### 13.6 Application 层引用 Infrastructure
+
+**问题**：Application 层不能引用 Infrastructure 层（依赖方向约束）。
+
+**解决**：接口定义在 Application，实现在 Infrastructure。UseCase 只依赖 Application 层接口。
+
+### 13.7 枚举位置
+
+**问题**：枚举如果定义在 Infrastructure，Application 层无法使用。
+
+**解决**：枚举应定义在 Domain/Enums，所有层都可引用。
+
+---
+
+## 14. 验证清单
+
+完成任务前，检查以下项目：
+
+### 编译与测试
+- [ ] `dotnet build ClosetApp.slnx /m:1` 编译通过，0 错误
+- [ ] `dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1` 全部通过
+- [ ] 测试 Fake 已更新（如新增了接口方法）
+
+### 代码质量
+- [ ] 新文件放在正确的目录（参见 11.6 文件组织）
+- [ ] 接口在 Application 层，实现在 Infrastructure 层
+- [ ] 枚举在 Domain 层
+- [ ] DI 注册在 App.xaml.cs
+- [ ] 命名符合约定（参见 11.1）
+
+### WPF/XAML
+- [ ] XAML 使用 DynamicResource 绑定主题资源
+- [ ] 没有硬编码颜色/尺寸
+- [ ] 卡片组件使用路由事件
+- [ ] 新控件使用 DependencyProperties
+
+### 错误处理
+- [ ] 使用 WardrobeActionErrorPresenter 处理用户可见错误
+- [ ] 使用 ToastService.ShowSuccess/ShowError 反馈操作结果
+- [ ] 使用 MessageBox 进行确认对话
+
+### 文档
+- [ ] 如有新组件/服务/UseCase，已更新 PROJECT_DOCUMENTATION.md
+- [ ] 如有架构变更，已更新 AGENTS.md
+
+---
+
+## 15. 参考文档
+
+- `README.md`：项目快速入口
+- `PROJECT_DOCUMENTATION.md`：详细项目文档
+- `docs/ARCHITECTURE_CONVENTIONS.md`：架构约定
