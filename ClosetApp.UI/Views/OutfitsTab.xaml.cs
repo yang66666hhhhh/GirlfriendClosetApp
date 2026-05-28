@@ -22,7 +22,7 @@ public partial class OutfitsTab : UserControl
         DataContext = _viewModel;
         _viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is nameof(OutfitsViewModel.Outfits) or nameof(OutfitsViewModel.IsEmpty))
+            if (e.PropertyName is nameof(OutfitsViewModel.DisplayedOutfits) or nameof(OutfitsViewModel.IsEmpty))
             {
                 _ = Dispatcher.BeginInvoke(AttachCardHandlers, System.Windows.Threading.DispatcherPriority.Loaded);
             }

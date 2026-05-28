@@ -18,6 +18,8 @@ public partial class OutfitsViewModel : ViewModelBase
     private static readonly string[] StatePropertyNames =
     [
         nameof(Outfits),
+        nameof(DisplayedOutfits),
+        nameof(HasMoreOutfits),
         nameof(RecentWornRecords),
         nameof(SelectedRecentWornRecord),
         nameof(CalendarDays),
@@ -92,6 +94,8 @@ public partial class OutfitsViewModel : ViewModelBase
     private WardrobeInsightsDto? _cachedInsights;
     private RecommendationDebugDto? _cachedBestDebug;
     private readonly Dictionary<Guid, RecommendationDebugDto> _cachedOutfitDebugs = new();
+    private int _displayedOutfitCount = 20;
+    private const int PageSize = 20;
 
     [ObservableProperty]
     private string _weatherCity = "Shanghai";
@@ -135,6 +139,8 @@ public partial class OutfitsViewModel : ViewModelBase
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
+    public IReadOnlyList<Outfit> DisplayedOutfits => _state.Outfits.Take(_displayedOutfitCount).ToList();
+    public bool HasMoreOutfits => _state.Outfits.Count > _displayedOutfitCount;
     public IReadOnlyList<OutfitSceneFilterOption> SceneFilterOptions { get; } =
     [
         new("全部场景", null),
@@ -338,6 +344,14 @@ public partial class OutfitsViewModel : ViewModelBase
         SetSelectedScene(null);
         SetSelectedSeason(null);
         FavoriteOnly = false;
+        _displayedOutfitCount = PageSize;
+        NotifyStateChanged();
+    }
+
+    [RelayCommand]
+    public void LoadMoreOutfits()
+    {
+        _displayedOutfitCount += PageSize;
         NotifyStateChanged();
     }
 

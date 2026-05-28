@@ -29,7 +29,7 @@ public partial class ClothesTab : UserControl
         DataContext = _viewModel;
         _viewModel.PropertyChanged += (_, e) =>
         {
-            if (e.PropertyName is nameof(WardrobeViewModel.FilteredClothes) or nameof(WardrobeViewModel.IsEmpty))
+            if (e.PropertyName is nameof(WardrobeViewModel.DisplayedClothes) or nameof(WardrobeViewModel.IsEmpty))
                 _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
 
             if (e.PropertyName == nameof(WardrobeViewModel.TotalCount))
@@ -127,6 +127,11 @@ public partial class ClothesTab : UserControl
             return;
 
         OpenClearWardrobePanel(_viewModel.SelectedType);
+    }
+
+    private void LoadMoreClothes_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.LoadMoreClothes();
     }
 
     private void OpenClearWardrobePanel(ClothingType? initialType)

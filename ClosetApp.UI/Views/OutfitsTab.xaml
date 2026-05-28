@@ -619,7 +619,7 @@
                 </Border>
 
                 <ItemsControl x:Name="OutfitsList"
-                              ItemsSource="{Binding Outfits}"
+                              ItemsSource="{Binding DisplayedOutfits}"
                               Visibility="{Binding IsFilteredEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}"
                               ItemTemplate="{StaticResource OutfitCardTemplate}">
                     <ItemsControl.ItemsPanel>
@@ -629,6 +629,13 @@
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                 </ItemsControl>
+
+                <Button Content="加载更多搭配"
+                        Style="{StaticResource PageToolbarCapsuleButton}"
+                        HorizontalAlignment="Center"
+                        Margin="0,16,0,0"
+                        Visibility="{Binding HasMoreOutfits, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Command="{Binding LoadMoreOutfitsCommand}"/>
             </StackPanel>
         </ScrollViewer>
 

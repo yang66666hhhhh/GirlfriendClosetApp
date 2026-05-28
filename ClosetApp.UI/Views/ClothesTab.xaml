@@ -680,7 +680,7 @@
                 <!-- ═══ MASONRY FLOW ═══ -->
                 <ItemsControl x:Name="ClothesList"
                               Margin="44,0,44,8"
-                              ItemsSource="{Binding FilteredClothes}"
+                              ItemsSource="{Binding DisplayedClothes}"
                               Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
@@ -696,6 +696,13 @@
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ItemsControl>
+
+                <Button Content="加载更多衣物"
+                        Style="{StaticResource PageToolbarCapsuleButton}"
+                        HorizontalAlignment="Center"
+                        Margin="0,0,0,16"
+                        Visibility="{Binding HasMoreClothes, Converter={StaticResource BooleanToVisibilityConverter}}"
+                        Click="LoadMoreClothes_Click"/>
 
                 <!-- ═══ EMPTY STATE ═══ -->
                 <states:EmptyState x:Name="EmptyState"

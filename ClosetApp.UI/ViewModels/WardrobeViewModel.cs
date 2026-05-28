@@ -22,6 +22,8 @@ public partial class WardrobeViewModel : ViewModelBase
         nameof(HasAvailableTags),
         nameof(AllClothes),
         nameof(FilteredClothes),
+        nameof(DisplayedClothes),
+        nameof(HasMoreClothes),
         nameof(IsLoading),
         nameof(IsEmpty),
         nameof(TotalCount),
@@ -96,12 +98,16 @@ public partial class WardrobeViewModel : ViewModelBase
     private string _searchText = string.Empty;
 
     private bool _isFilterExpanded;
+    private int _displayedClothingCount = 20;
+    private const int PageSize = 20;
 
     public IReadOnlyList<Tag> AvailableTags => _availableTags;
     public ObservableCollection<SelectableTag> TagFilters => _tagFilters;
     public bool HasAvailableTags => _tagFilters.Count > 0;
     public IReadOnlyList<Clothing> AllClothes => _state.AllClothes;
     public IReadOnlyList<Clothing> FilteredClothes => _state.FilteredClothes;
+    public IReadOnlyList<Clothing> DisplayedClothes => _state.FilteredClothes.Take(_displayedClothingCount).ToList();
+    public bool HasMoreClothes => _state.FilteredClothes.Count > _displayedClothingCount;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
     public int TotalCount => _state.AllClothes.Count;
@@ -441,7 +447,14 @@ public partial class WardrobeViewModel : ViewModelBase
         _state.SetSelectedTagIds([]);
         _state.SetFavoriteOnly(false);
         SearchText = string.Empty;
+        _displayedClothingCount = PageSize;
         SyncTagFiltersFromState();
+        NotifyStateChanged();
+    }
+
+    public void LoadMoreClothes()
+    {
+        _displayedClothingCount += PageSize;
         NotifyStateChanged();
     }
 
