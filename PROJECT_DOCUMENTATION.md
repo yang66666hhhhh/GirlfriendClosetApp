@@ -1,7 +1,7 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-05-28
-> 当前状态：主流程可用，近期重点已转向天气驱动的今日穿搭助手、衣柜批量导入治理、标签页整理体验与本地数据安全体验
+> 最后更新时间：2026-05-29
+> 当前状态：主流程可用，近期重点已转向推荐调试、数据洞察、性能优化与本地数据安全体验
 
 ---
 
@@ -688,6 +688,8 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 标签编辑器 | `ClosetApp.UI/Components/Tags/Controls/TagEditorPanel.xaml` |
 | 标签选择组件 | `ClosetApp.UI/Components/Tags/Controls/TagSelectionSection.xaml` |
 | 穿着历史弹窗 | `ClosetApp.UI/Components/Shared/Modal/OutfitHistoryDialog.xaml` |
+| 推荐详情弹窗 | `ClosetApp.UI/Components/Shared/Modal/RecommendationDebugDialog.xaml` |
+| 数据洞察弹窗 | `ClosetApp.UI/Components/Shared/Modal/WardrobeInsightsDialog.xaml` |
 | 确认弹窗 | `ClosetApp.UI/Components/Shared/Modal/ConfirmDialog.xaml` |
 | 错误提示器 | `ClosetApp.UI/Services/WardrobeActionErrorPresenter.cs` |
 | 页面状态类 | `ClosetApp.UI/States/` |
@@ -698,11 +700,14 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 动画工具 | `ClosetApp.UI/Components/Shared/AnimationHelper.cs` |
 | 今日推荐 UseCase | `ClosetApp.Application/UseCases/Outfits/GetTodayRecommendations.cs` |
 | 今日推荐结果 DTO | `ClosetApp.Application/DTOs/TodayRecommendationResult.cs` |
+| 推荐调试 DTO | `ClosetApp.Application/DTOs/RecommendationDebugDto.cs` |
+| 数据洞察 DTO | `ClosetApp.Application/DTOs/WardrobeInsightsDto.cs` |
 | 推荐轮换策略枚举 | `ClosetApp.Domain/Enums/RecommendationRotationStrategy.cs` |
 | 备份接口 | `ClosetApp.Application/Interfaces/IBackupService.cs` |
 | 备份 DTO | `ClosetApp.Application/DTOs/BackupDtos.cs` |
 | 备份实现 | `ClosetApp.Infrastructure/Services/BackupService.cs` |
 | 图片修复 | `ClosetApp.Infrastructure/Services/ImageMaintenanceService.cs` |
+| 数据洞察 UseCase | `ClosetApp.Application/UseCases/Insights/GetWardrobeInsights.cs` |
 | 本地路径定义 | `ClosetApp.Infrastructure/AppPaths.cs` |
 | 测试工程 | `ClosetApp.Tests/ClosetApp.Tests.csproj` |
 | 架构约定 | `docs/ARCHITECTURE_CONVENTIONS.md` |
@@ -715,7 +720,6 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 - `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - `ViewModels` 仍存在，但不是当前页面交互的唯一主轴
-- 仓库里保留 `_Archive` / `_Deprecated` 目录作为历史备份
 - `ClosetApp.UI.Logic` 是纯逻辑共享工程，通过 `<Compile Include>` 引用 UI 中的 State、Engine、Import 等文件，供测试工程独立引用
 - `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
 
@@ -724,7 +728,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - SixLabors.ImageSharp 版本告警仍需后续评估
 - 继续减少 code-behind 里的非 UI 逻辑
 - 批量导入已具备导入前重复风险提示，后续可补失败回滚的更细粒度 UI 展示
-- 推荐逻辑保持规则制和可解释，后续可继续补更细的人工偏好设置或推荐调试视图
+- MasonryPanel 虚拟化支持（当前不支持虚拟化，大量卡片时内存开销较大）
 
 ---
 
@@ -766,6 +770,41 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `ClothingEditorPanel` 重构：`Save_Click` 提取 `BuildClothingFromFormAsync` + `ApplyTagChanges`，`ShakeElement` 迁移到 `AnimationHelper`
 - 新建共享组件：`EnumRadioGroup`、`ThemeCard`、`FileSizeFormatter`、`AnimationHelper`
 - 搭配编辑器名称字段改为选填，留空自动命名为"未命名"
+
+### 2026-05-29
+
+#### 新功能
+
+- **推荐调试视图**：点击推荐搭配的"详情"按钮，查看完整评分分解
+  - 新增 `RecommendationDebugDto`：包含总分、各维度分数明细、偏好权重
+  - 新增 `IOutfitRecommendationService.GetRecommendationDebugAsync()` / `GetRecommendationDebugForOutfitAsync()`
+  - 新增 `RecommendationDebugDialog` 弹窗：展示评分明细、推荐理由、偏好权重分布
+  - Hero 区域和 secondary 推荐卡片均支持查看推荐详情
+
+- **数据洞察**：点击"数据洞察"按钮，查看衣柜使用统计
+  - 新增 `WardrobeInsightsDto`：总览、Top5、场景/季节分布、闲置预警
+  - 新增 `GetWardrobeInsights` UseCase：计算穿着率、活跃天数、连续记录天数
+  - 新增 `WardrobeInsightsDialog` 弹窗：可视化展示统计数据
+  - 包含缓存机制，避免重复计算
+
+#### 性能优化
+
+- **推荐详情缓存**：缓存推荐调试结果，避免每次打开详情重新计算
+- **数据洞察缓存**：缓存统计结果，数据变化时自动清除
+- **日历按需加载**：初始加载不再获取日历数据，打开"查看记录"弹窗时才加载
+- **图片懒加载**：
+  - `PremiumClothingCard` 添加可见性检测，卡片可见时才加载图片
+  - `OutfitPreviewCanvas` 添加懒加载支持，不可见时跳过渲染
+- **推荐详情加载优化**：直接使用 ViewModel 已有的天气数据，避免重复网络请求
+
+#### Bug 修复
+
+- 修复 `OutfitPreviewCanvas.Render()` 在 Popup 内部调用 `UpdateLayout()` 导致的 `NullReferenceException`
+
+#### 代码清理
+
+- 删除 `ClosetApp.UI/Converters/_Archive/` 目录（9 个废弃的 Converter 文件）
+- 移除未使用的 `GetRecommendationParamsAsync()` 方法
 
 ---
 

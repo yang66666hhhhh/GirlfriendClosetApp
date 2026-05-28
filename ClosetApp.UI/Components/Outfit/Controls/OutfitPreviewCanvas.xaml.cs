@@ -90,8 +90,6 @@ public partial class OutfitPreviewCanvas : UserControl
 
         if (Clothes == null || Clothes.Count == 0) return;
 
-        UpdateLayout();
-
         double cw = MeasureCanvasWidth();
         double ch = MeasureCanvasHeight();
 
