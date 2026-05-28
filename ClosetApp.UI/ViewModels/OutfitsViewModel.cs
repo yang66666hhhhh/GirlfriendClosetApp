@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
@@ -81,11 +81,10 @@ public partial class OutfitsViewModel : ViewModelBase
     ];
 
     private readonly IOutfitService _outfitService;
-    private readonly IOutfitRecommendationService _recommendationService;
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
     private readonly IRecommendationPreferencesService _recommendationPreferencesService;
-    private readonly GetRecommendationReadinessSummary _getRecommendationReadinessSummary;
+    private readonly GetTodayRecommendations _getTodayRecommendations;
     private readonly OutfitsTabState _state = new();
 
     [ObservableProperty]
@@ -113,18 +112,16 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public OutfitsViewModel(
         IOutfitService outfitService,
-        IOutfitRecommendationService recommendationService,
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
-        GetRecommendationReadinessSummary getRecommendationReadinessSummary)
+        GetTodayRecommendations getTodayRecommendations)
     {
         _outfitService = outfitService;
-        _recommendationService = recommendationService;
         _weatherService = weatherService;
         _weatherPreferencesService = weatherPreferencesService;
         _recommendationPreferencesService = recommendationPreferencesService;
-        _getRecommendationReadinessSummary = getRecommendationReadinessSummary;
+        _getTodayRecommendations = getTodayRecommendations;
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
@@ -432,42 +429,46 @@ public partial class OutfitsViewModel : ViewModelBase
 
         try
         {
-            var preferences = await _weatherPreferencesService.GetAsync();
+            var weatherPreferences = await _weatherPreferencesService.GetAsync();
             var recommendationPreferences = await _recommendationPreferencesService.GetAsync();
-            WeatherCity = preferences.DefaultCity;
+            var city = weatherPreferences.DefaultCity;
 
-            var weather = await _weatherService.GetCurrentWeatherAsync(WeatherCity);
+            var weather = await _weatherService.GetCurrentWeatherAsync(city);
+            int temperature;
+            bool isWeatherFromApi;
+            string condition;
+
             if (weather != null)
             {
-                WeatherCity = weather.City;
-                WeatherTemperature = weather.Temperature;
-                WeatherCondition = weather.Condition;
+                city = weather.City;
+                temperature = weather.Temperature;
+                condition = weather.Condition;
+                isWeatherFromApi = true;
             }
             else
             {
-                WeatherTemperature = ResolveFallbackTemperature(DateTime.Now);
-                WeatherCondition = "天气暂缺";
-                WeatherStatusText = $"暂时拿不到 {WeatherCity} 的天气，先按 {WeatherTemperature}°C 的季节体感继续推荐。";
+                temperature = _weatherService.GetFallbackTemperature();
+                condition = "天气暂缺";
+                isWeatherFromApi = false;
             }
 
-            var recommendations = await _recommendationService.GetRecommendationsByRuleAsync(
-                WeatherTemperature,
-                recommendationPreferences.DefaultScene);
+            var request = new TodayRecommendationRequest(
+                city,
+                temperature,
+                condition,
+                isWeatherFromApi,
+                recommendationPreferences.DefaultScene,
+                recommendationPreferences.AvoidWornToday,
+                recommendationPreferences.RotationStrategy);
 
-            if (recommendationPreferences.AvoidWornToday)
-                recommendations = recommendations.Where(recommendation => !recommendation.IsWornToday);
+            var result = await _getTodayRecommendations.ExecuteAsync(request);
 
-            WeatherRecommendations = ApplyRotationStrategy(recommendations, recommendationPreferences.RotationStrategy)
-                .Take(3)
-                .ToList();
-            RecommendationReadiness = await _getRecommendationReadinessSummary.ExecuteAsync(WeatherTemperature);
-
-            if (WeatherRecommendations.Count > 0 && weather != null)
-                WeatherStatusText = "已按当前天气刷新推荐。";
-            else if (WeatherRecommendations.Count > 0)
-                WeatherStatusText = "天气暂时缺席，但我还是先按体感温度帮你挑了几套。";
-            else if (weather != null)
-                WeatherStatusText = "天气已刷新，但衣橱里还没有匹配出来的搭配。";
+            WeatherCity = result.City;
+            WeatherTemperature = result.Temperature;
+            WeatherCondition = result.Condition;
+            WeatherRecommendations = result.Recommendations;
+            RecommendationReadiness = result.Readiness;
+            WeatherStatusText = result.StatusText;
         }
         catch (Exception ex)
         {
@@ -566,17 +567,6 @@ public partial class OutfitsViewModel : ViewModelBase
         return parts.Length == 0 ? city : string.Join(" · ", parts);
     }
 
-    private static int ResolveFallbackTemperature(DateTime now)
-    {
-        return now.Month switch
-        {
-            12 or 1 or 2 => 8,
-            3 or 4 or 11 => 16,
-            5 or 10 => 22,
-            _ => 28
-        };
-    }
-
     private static string GetSeasonLabel(Season season)
     {
         return season switch
@@ -587,23 +577,6 @@ public partial class OutfitsViewModel : ViewModelBase
             Season.Winter => "冬季",
             Season.AllSeason => "四季",
             _ => "当前"
-        };
-    }
-
-    private static IEnumerable<RecommendedOutfitDto> ApplyRotationStrategy(
-        IEnumerable<RecommendedOutfitDto> recommendations,
-        RecommendationRotationStrategy strategy)
-    {
-        return strategy switch
-        {
-            RecommendationRotationStrategy.PreferLessWorn => recommendations
-                .OrderBy(recommendation => recommendation.WearCount)
-                .ThenBy(recommendation => recommendation.WornDate ?? DateTime.MinValue)
-                .ThenByDescending(recommendation => recommendation.Score),
-            RecommendationRotationStrategy.PreferFavorites => recommendations
-                .OrderByDescending(recommendation => recommendation.Outfit.Favorites.Count > 0)
-                .ThenByDescending(recommendation => recommendation.Score),
-            _ => recommendations
         };
     }
 

@@ -52,6 +52,18 @@ public class WeatherService : IWeatherService
         }
     }
 
+    public int GetFallbackTemperature(DateTimeOffset? date = null)
+    {
+        var month = (date ?? DateTimeOffset.Now).Month;
+        return month switch
+        {
+            12 or 1 or 2 => 8,
+            3 or 4 or 11 => 16,
+            5 or 10 => 22,
+            _ => 28
+        };
+    }
+
     private async Task<WeatherLocation?> SearchLocationAsync(string city)
     {
         var uri =

@@ -3,13 +3,6 @@ using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.Infrastructure.Services;
 
-public enum RecommendationRotationStrategy
-{
-    Balanced,
-    PreferLessWorn,
-    PreferFavorites
-}
-
 public class RecommendationPreferences
 {
     public OutfitScene? DefaultScene { get; set; }

@@ -18,6 +18,7 @@ public class WeatherPreferences
 public interface IWeatherService
 {
     Task<WeatherInfo?> GetCurrentWeatherAsync(string city);
+    int GetFallbackTemperature(DateTimeOffset? date = null);
 }
 
 public interface IWeatherPreferencesService

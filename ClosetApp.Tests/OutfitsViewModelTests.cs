@@ -224,13 +224,16 @@ public class OutfitsViewModelTests
         FakeRecommendationService? recommendationService = null)
     {
         var resolvedOutfitService = outfitService ?? new FakeOutfitService(outfits);
+        var resolvedRecommendationService = recommendationService ?? new FakeRecommendationService(outfits);
+        var getTodayRecommendations = new GetTodayRecommendations(
+            resolvedRecommendationService,
+            new GetRecommendationReadinessSummary(resolvedOutfitService));
         return new OutfitsViewModel(
             resolvedOutfitService,
-            recommendationService ?? new FakeRecommendationService(outfits),
             weatherService ?? new FakeWeatherService(null),
             new FakeWeatherPreferencesService("Shanghai"),
             recommendationPreferencesService ?? new FakeRecommendationPreferencesService(),
-            new GetRecommendationReadinessSummary(resolvedOutfitService));
+            getTodayRecommendations);
     }
 
     private static Outfit CreateOutfit(
@@ -399,6 +402,8 @@ public class OutfitsViewModelTests
             RequestedCity = city;
             return Task.FromResult(_weather);
         }
+
+        public int GetFallbackTemperature(DateTimeOffset? date = null) => 22;
     }
 
     private sealed class FakeWeatherPreferencesService : IWeatherPreferencesService

@@ -277,6 +277,7 @@ public class SettingsViewModelTests
     private sealed class FakeWeatherService : IWeatherService
     {
         public Task<WeatherInfo?> GetCurrentWeatherAsync(string city) => Task.FromResult<WeatherInfo?>(null);
+        public int GetFallbackTemperature(DateTimeOffset? date = null) => 22;
     }
 
     private sealed class FakeWeatherPreferencesService : IWeatherPreferencesService

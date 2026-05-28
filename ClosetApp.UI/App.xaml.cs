@@ -118,6 +118,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<GetOutfitHistorySummary>();
         services.AddScoped<RecordOutfitWorn>();
         services.AddScoped<GetRecommendationReadinessSummary>();
+        services.AddScoped<GetTodayRecommendations>();
         services.AddScoped<GetTagsForSelection>();
         services.AddMemoryCache();
         services.AddSingleton<IBackupService, BackupService>();
