@@ -68,10 +68,10 @@ public partial class AnnualOutfitReportDialog : UserControl
                 var container = MonthlyStatsList.ItemContainerGenerator.ContainerFromIndex(i) as ContentPresenter;
                 if (container == null) continue;
 
-                var grid = FindVisualChild<Grid>(container);
+                var grid = VisualTreeHelperExtensions.FindVisualChild<Grid>(container);
                 if (grid == null) continue;
 
-                var monthBar = FindChildByName<Border>(grid, "MonthBar");
+                var monthBar = VisualTreeHelperExtensions.FindChildByName<Border>(grid, "MonthBar");
                 if (monthBar != null)
                 {
                     var ratio = (double)_report.MonthlyStats[i].WearCount / maxWear;
@@ -114,30 +114,6 @@ public partial class AnnualOutfitReportDialog : UserControl
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Services.ModalService.Instance.Hide();
-    }
-
-    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-    {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is T result) return result;
-            var found = FindVisualChild<T>(child);
-            if (found != null) return found;
-        }
-        return null;
-    }
-
-    private static T? FindChildByName<T>(DependencyObject parent, string name) where T : FrameworkElement
-    {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is T fe && fe.Name == name) return fe;
-            var found = FindChildByName<T>(child, name);
-            if (found != null) return found;
-        }
-        return null;
     }
 }
 

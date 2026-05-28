@@ -7,6 +7,7 @@ using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Clothing;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
@@ -19,6 +20,7 @@ namespace ClosetApp.UI.Views;
 public partial class ClothesTab : UserControl
 {
     private readonly WardrobeViewModel _viewModel;
+    private readonly DispatcherTimer _resizeTimer;
 
     public event EventHandler<int>? ClothingCountChanged;
 
@@ -27,16 +29,24 @@ public partial class ClothesTab : UserControl
         _viewModel = App.Services.GetRequiredService<WardrobeViewModel>();
         InitializeComponent();
         DataContext = _viewModel;
+
+        _resizeTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(100) };
+        _resizeTimer.Tick += (_, _) =>
+        {
+            _resizeTimer.Stop();
+            UpdateCardWidth();
+        };
+
         _viewModel.PropertyChanged += (_, e) =>
         {
             if (e.PropertyName is nameof(WardrobeViewModel.DisplayedClothes) or nameof(WardrobeViewModel.IsEmpty))
-                _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+                UpdateCardWidth();
 
             if (e.PropertyName == nameof(WardrobeViewModel.TotalCount))
                 ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
         };
         Loaded += async (_, _) => await RefreshAsync();
-        SizeChanged += (_, _) => UpdateCardWidth();
+        SizeChanged += (_, _) => _resizeTimer.Start();
     }
 
     public async Task RefreshAsync()
@@ -45,7 +55,7 @@ public partial class ClothesTab : UserControl
         {
             await _viewModel.LoadClothesAsync();
             ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
-            _ = Dispatcher.BeginInvoke(UpdateCardWidth, System.Windows.Threading.DispatcherPriority.Loaded);
+            UpdateCardWidth();
         }
         catch (Exception ex)
         {
@@ -56,7 +66,7 @@ public partial class ClothesTab : UserControl
     private void UpdateCardWidth()
     {
         if (ClothesList == null || ContentScroller == null) return;
-        var masonry = FindVisualChild<MasonryPanel>(ClothesList);
+        var masonry = VisualTreeHelperExtensions.FindVisualChild<MasonryPanel>(ClothesList);
         if (masonry == null) return;
 
         double availWidth = ContentScroller.ActualWidth - 128;
@@ -72,18 +82,6 @@ public partial class ClothesTab : UserControl
 
         masonry.ColumnWidth = cardWidth;
         masonry.Spacing = gap;
-    }
-
-    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-    {
-        for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is T typed) return typed;
-            var result = FindVisualChild<T>(child);
-            if (result != null) return result;
-        }
-        return null;
     }
 
     private void ToggleFilter_Click(object sender, RoutedEventArgs e)

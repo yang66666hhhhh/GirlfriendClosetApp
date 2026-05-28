@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.UI.Components.Outfit.Controls;
 using ClosetApp.UI.Components.Outfit.Editor;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
@@ -24,7 +25,7 @@ public partial class OutfitsTab : UserControl
         {
             if (e.PropertyName is nameof(OutfitsViewModel.DisplayedOutfits) or nameof(OutfitsViewModel.IsEmpty))
             {
-                _ = Dispatcher.BeginInvoke(AttachCardHandlers, System.Windows.Threading.DispatcherPriority.Loaded);
+                AttachCardHandlers();
             }
         };
         Loaded += async (_, _) => await RefreshAsync();
@@ -35,7 +36,7 @@ public partial class OutfitsTab : UserControl
         try
         {
             await _viewModel.LoadOutfitsAsync();
-            _ = Dispatcher.BeginInvoke(AttachCardHandlers, System.Windows.Threading.DispatcherPriority.Loaded);
+            AttachCardHandlers();
         }
         catch (Exception ex)
         {
@@ -51,7 +52,7 @@ public partial class OutfitsTab : UserControl
             if (container == null)
                 continue;
 
-            var card = FindVisualChild<OutfitCard>(container);
+            var card = VisualTreeHelperExtensions.FindVisualChild<OutfitCard>(container);
             if (card == null)
                 continue;
 
@@ -122,18 +123,6 @@ public partial class OutfitsTab : UserControl
             return;
 
         window.NavigateToSettings();
-    }
-
-    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-    {
-        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
-            if (child is T result) return result;
-            var found = FindVisualChild<T>(child);
-            if (found != null) return found;
-        }
-        return null;
     }
 
 }
