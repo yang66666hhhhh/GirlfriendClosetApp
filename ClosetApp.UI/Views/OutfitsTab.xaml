@@ -243,15 +243,6 @@
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
                                                     Command="{Binding ShowWardrobeInsightsCommand}"/>
-                                            <TextBlock Text="·"
-                                                       Foreground="{DynamicResource TextPlaceholderBrush}"
-                                                       Margin="8,0"
-                                                       VerticalAlignment="Center"/>
-                                            <Button Content="年度报告"
-                                                    Style="{StaticResource TodayHeroSecondaryActionButton}"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Command="{Binding ShowAnnualReportCommand}"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
@@ -326,6 +317,38 @@
                         </Grid>
                     </Border>
                 </Grid>
+
+                <Border Background="{DynamicResource SurfaceHeroBrush}"
+                        BorderBrush="{DynamicResource BorderLightBrush}"
+                        BorderThickness="1"
+                        CornerRadius="16"
+                        Padding="20,16"
+                        Margin="0,0,0,16"
+                        Cursor="Hand"
+                        MouseLeftButtonDown="AnnualReportBorder_Click">
+                    <Grid>
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <TextBlock Text="📊"
+                                       FontSize="20"
+                                       Margin="0,0,12,0"/>
+                            <StackPanel>
+                                <TextBlock Text="查看年度穿搭报告"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="回顾这一年的穿搭记录，发现你的穿搭习惯"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="12"
+                                           Margin="0,4,0,0"/>
+                            </StackPanel>
+                        </StackPanel>
+                        <TextBlock Text="→"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="16"
+                                   HorizontalAlignment="Right"
+                                   VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
 
                 <StackPanel Margin="0,0,0,16"
                             Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
@@ -439,65 +462,6 @@
                         </ItemsControl.ItemTemplate>
                     </ItemsControl>
                 </StackPanel>
-
-                <Grid Margin="0,0,0,16">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.15*"/>
-                        <ColumnDefinition Width="16"/>
-                        <ColumnDefinition Width="1.35*"/>
-                        <ColumnDefinition Width="16"/>
-                        <ColumnDefinition Width="0.9*"/>
-                    </Grid.ColumnDefinitions>
-
-                    <Border Grid.Column="0"
-                            Style="{StaticResource PageSummaryCard}"
-                            Padding="16,14">
-                        <StackPanel>
-                            <TextBlock Text="天气推荐状态"
-                                       Style="{StaticResource PageSummaryTitleText}"/>
-                            <TextBlock Text="{Binding WeatherStatusText}"
-                                       Style="{StaticResource PageSummaryBodyText}"
-                                       Margin="0,6,0,0"
-                                       TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="2"
-                            Style="{StaticResource PageSummaryCard}"
-                            Padding="16,14">
-                        <StackPanel>
-                            <StackPanel Orientation="Horizontal">
-                                <TextBlock Text="{Binding RecommendationReadinessTitle}"
-                                           Style="{StaticResource PageSummaryTitleText}"/>
-                                <Border Style="{StaticResource WeatherRecommendationChip}"
-                                        Margin="10,0,0,0"
-                                        Background="{StaticResource OutfitLavenderSurfaceBrush}"
-                                        BorderBrush="{StaticResource OutfitLavenderBorderBrush}">
-                                    <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
-                                               Style="{StaticResource WeatherRecommendationChipText}"
-                                               Foreground="{StaticResource OutfitLavenderTextBrush}"/>
-                                </Border>
-                            </StackPanel>
-                            <TextBlock Text="{Binding RecommendationReadinessDetail}"
-                                       Style="{StaticResource PageSummaryBodyText}"
-                                       Margin="0,6,0,0"
-                                       TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="4"
-                            Style="{StaticResource PageSummaryCard}"
-                            Padding="16,14">
-                        <StackPanel>
-                            <TextBlock Text="{Binding RecommendationReadinessCountText}"
-                                       Style="{StaticResource PageSummaryValueText}"/>
-                            <TextBlock Text="{Binding RecommendationMissingSeasonText}"
-                                       Style="{StaticResource PageSummaryHintText}"
-                                       Margin="0,6,0,0"
-                                       TextWrapping="Wrap"/>
-                        </StackPanel>
-                    </Border>
-                </Grid>
 
                 <Grid Margin="0,0,0,6">
                     <Border Style="{StaticResource PageSummaryCard}"
