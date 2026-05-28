@@ -90,6 +90,8 @@ public partial class OutfitsViewModel : ViewModelBase
     private readonly GetWardrobeInsights _getWardrobeInsights;
     private readonly OutfitsTabState _state = new();
     private WardrobeInsightsDto? _cachedInsights;
+    private RecommendationDebugDto? _cachedBestDebug;
+    private readonly Dictionary<Guid, RecommendationDebugDto> _cachedOutfitDebugs = new();
 
     [ObservableProperty]
     private string _weatherCity = "Shanghai";
@@ -399,17 +401,20 @@ public partial class OutfitsViewModel : ViewModelBase
     {
         try
         {
-            var temperature = WeatherTemperature;
-            var scene = await GetDefaultSceneAsync();
+            if (_cachedBestDebug == null)
+            {
+                var temperature = WeatherTemperature;
+                var scene = await GetDefaultSceneAsync();
+                _cachedBestDebug = await _outfitRecommendationService.GetRecommendationDebugAsync(temperature, scene);
+            }
 
-            var debug = await _outfitRecommendationService.GetRecommendationDebugAsync(temperature, scene);
-            if (debug == null)
+            if (_cachedBestDebug == null)
             {
                 ToastService.Instance.ShowInfo("暂无推荐数据", "先建几套搭配后再查看详情。");
                 return;
             }
 
-            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.RecommendationDebugDialog(debug));
+            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.RecommendationDebugDialog(_cachedBestDebug));
         }
         catch (Exception ex)
         {
@@ -424,11 +429,16 @@ public partial class OutfitsViewModel : ViewModelBase
 
         try
         {
-            var temperature = WeatherTemperature;
-            var scene = await GetDefaultSceneAsync();
+            var outfitId = recommendation.Outfit.Id;
+            if (!_cachedOutfitDebugs.TryGetValue(outfitId, out var debug))
+            {
+                var temperature = WeatherTemperature;
+                var scene = await GetDefaultSceneAsync();
+                debug = await _outfitRecommendationService.GetRecommendationDebugForOutfitAsync(outfitId, temperature, scene);
+                if (debug != null)
+                    _cachedOutfitDebugs[outfitId] = debug;
+            }
 
-            var debug = await _outfitRecommendationService.GetRecommendationDebugForOutfitAsync(
-                recommendation.Outfit.Id, temperature, scene);
             if (debug == null)
             {
                 ToastService.Instance.ShowInfo("暂无推荐数据", "先建几套搭配后再查看详情。");
@@ -473,6 +483,8 @@ public partial class OutfitsViewModel : ViewModelBase
     private void InvalidateInsightsCache()
     {
         _cachedInsights = null;
+        _cachedBestDebug = null;
+        _cachedOutfitDebugs.Clear();
     }
 
     public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();
