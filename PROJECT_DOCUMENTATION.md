@@ -698,16 +698,19 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 主题选择卡片控件 | `ClosetApp.UI/Components/Shared/ThemeCard.xaml` |
 | 文件大小格式化 | `ClosetApp.UI/Components/Shared/FileSizeFormatter.cs` |
 | 动画工具 | `ClosetApp.UI/Components/Shared/AnimationHelper.cs` |
+| 视觉树工具 | `ClosetApp.UI/Components/Shared/VisualTreeHelperExtensions.cs` |
 | 今日推荐 UseCase | `ClosetApp.Application/UseCases/Outfits/GetTodayRecommendations.cs` |
 | 今日推荐结果 DTO | `ClosetApp.Application/DTOs/TodayRecommendationResult.cs` |
 | 推荐调试 DTO | `ClosetApp.Application/DTOs/RecommendationDebugDto.cs` |
 | 数据洞察 DTO | `ClosetApp.Application/DTOs/WardrobeInsightsDto.cs` |
+| 年度报告 DTO | `ClosetApp.Application/DTOs/AnnualOutfitReportDto.cs` |
 | 推荐轮换策略枚举 | `ClosetApp.Domain/Enums/RecommendationRotationStrategy.cs` |
 | 备份接口 | `ClosetApp.Application/Interfaces/IBackupService.cs` |
 | 备份 DTO | `ClosetApp.Application/DTOs/BackupDtos.cs` |
 | 备份实现 | `ClosetApp.Infrastructure/Services/BackupService.cs` |
 | 图片修复 | `ClosetApp.Infrastructure/Services/ImageMaintenanceService.cs` |
 | 数据洞察 UseCase | `ClosetApp.Application/UseCases/Insights/GetWardrobeInsights.cs` |
+| 年度报告 UseCase | `ClosetApp.Application/UseCases/Insights/GetAnnualOutfitReport.cs` |
 | 本地路径定义 | `ClosetApp.Infrastructure/AppPaths.cs` |
 | 测试工程 | `ClosetApp.Tests/ClosetApp.Tests.csproj` |
 | 架构约定 | `docs/ARCHITECTURE_CONVENTIONS.md` |
@@ -787,6 +790,15 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
   - 新增 `WardrobeInsightsDialog` 弹窗：可视化展示统计数据
   - 包含缓存机制，避免重复计算
 
+- **年度穿搭报告**：点击"年度报告"按钮，查看当年穿搭数据总结
+  - 新增 `AnnualOutfitReportDto`：总览、Top5、月度统计、场景/季节分布、精彩瞬间
+  - 新增 `GetAnnualOutfitReport` UseCase：生成年度报告数据
+  - 新增 `AnnualOutfitReportDialog` 弹窗：可视化展示年度报告
+
+- **分页加载**：搭配页和衣柜页支持分页加载
+  - 初始只显示前 20 个卡片，点击"加载更多"按钮查看剩余内容
+  - 新增 `DisplayedOutfits` / `DisplayedClothes` 属性和 `LoadMoreOutfitsCommand` / `LoadMoreClothes()` 方法
+
 #### 性能优化
 
 - **推荐详情缓存**：缓存推荐调试结果，避免每次打开详情重新计算
@@ -796,15 +808,30 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
   - `PremiumClothingCard` 添加可见性检测，卡片可见时才加载图片
   - `OutfitPreviewCanvas` 添加懒加载支持，不可见时跳过渲染
 - **推荐详情加载优化**：直接使用 ViewModel 已有的天气数据，避免重复网络请求
+- **SizeChanged 防抖**：`ClothesTab` 添加 `DispatcherTimer` 防抖（100ms），减少窗口拖拽时的 CPU 开销
+- **移除不必要的 Dispatcher 调用**：简化 PropertyChanged 回调和 RefreshAsync 方法
+
+#### UI 优化
+
+- **搭配页面布局优化**：
+  - 简化 Hero 区域 secondary actions 按钮（只保留查看记录、推荐详情、刷新推荐）
+  - 在页面顶部添加工具栏（数据洞察、年度报告）
+  - 移除独立的年度报告卡片，改为顶部工具栏入口
+
+- **批量导入提示**：批量添加衣服成功后显示 Toast 提示消息
 
 #### Bug 修复
 
 - 修复 `OutfitPreviewCanvas.Render()` 在 Popup 内部调用 `UpdateLayout()` 导致的 `NullReferenceException`
+- 修复日历数据同步问题：记录穿着后日历自动刷新
+- 修复批量导入成功后没有提示消息的问题
 
 #### 代码清理
 
 - 删除 `ClosetApp.UI/Converters/_Archive/` 目录（9 个废弃的 Converter 文件）
+- 删除 `Themes/Chips.xaml`、`Themes/ButtonStyles.xaml`、`Themes/Styles.xaml`（与 Controls 目录下重复）
 - 移除未使用的 `GetRecommendationParamsAsync()` 方法
+- 提取 `VisualTreeHelperExtensions` 共享工具类，消除 3 个文件中的重复 `FindVisualChild<T>` 实现
 
 ---
 

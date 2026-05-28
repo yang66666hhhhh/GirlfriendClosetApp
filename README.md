@@ -11,6 +11,7 @@
 - 搭配管理：创建和编辑搭配，按"人体区域 + 穿搭层级"生成预览，支持穿着记录和天气驱动的今日推荐；推荐会结合季节、收藏、穿着记录、场景、标签、颜色偏好和手动推荐偏好
 - 推荐调试：点击推荐搭配的"详情"按钮，查看完整评分分解（季节、收藏、穿着、场景、偏好等维度）
 - 数据洞察：查看衣柜使用统计，包括穿着次数、活跃天数、连续记录、最常穿 Top5、场景/季节分布、闲置预警
+- 年度报告：查看当年穿搭数据总结，包括月度统计、Top5 搭配、场景/季节分布、精彩瞬间
 - 标签管理：标签按风格 / 场景 / 季节分组整理，支持搜索、分类筛选、按使用频次排序和轻量卡片操作菜单
 - 设置中心：数据目录、日志、图片缓存、备份、导入恢复、缺失图片修复、天气城市和今日推荐偏好
 - 本地数据治理：
@@ -221,6 +222,7 @@ rtk pwsh -Command "Get-ChildItem -Force"
 - 搭配服务：`OutfitServiceTests`
 - 错误提示：`WardrobeActionErrorPresenterTests`
 - 数据洞察：`GetWardrobeInsightsTests`
+- 推荐调试：`OutfitRecommendationServiceTests`（包含 `GetRecommendationDebugAsync` 测试）
 
 测试工程通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑文件，避免 WPF 生成链干扰。
 
