@@ -301,6 +301,7 @@ public partial class OutfitsViewModel : ViewModelBase
             _state.SetOutfits(outfits);
             InvalidateInsightsCache();
             await RefreshDerivedStateAsync();
+            await RefreshCalendarIfLoadedAsync();
             await RefreshWeatherRecommendationsAsync();
             Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
         }
@@ -639,6 +640,12 @@ public partial class OutfitsViewModel : ViewModelBase
     public async Task EnsureCalendarLoadedAsync()
     {
         if (_state.CalendarDays.Count == 0)
+            await RefreshCalendarAsync();
+    }
+
+    private async Task RefreshCalendarIfLoadedAsync()
+    {
+        if (_state.CalendarDays.Count > 0)
             await RefreshCalendarAsync();
     }
 
