@@ -89,6 +89,7 @@ public partial class OutfitsViewModel : ViewModelBase
     private readonly GetTodayRecommendations _getTodayRecommendations;
     private readonly GetWardrobeInsights _getWardrobeInsights;
     private readonly OutfitsTabState _state = new();
+    private WardrobeInsightsDto? _cachedInsights;
 
     [ObservableProperty]
     private string _weatherCity = "Shanghai";
@@ -296,6 +297,7 @@ public partial class OutfitsViewModel : ViewModelBase
         {
             var outfits = await _outfitService.GetAllOutfitsAsync();
             _state.SetOutfits(outfits);
+            InvalidateInsightsCache();
             await RefreshDerivedStateAsync();
             await RefreshWeatherRecommendationsAsync();
             Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
@@ -397,7 +399,8 @@ public partial class OutfitsViewModel : ViewModelBase
     {
         try
         {
-            var (temperature, scene) = await GetRecommendationParamsAsync();
+            var temperature = WeatherTemperature;
+            var scene = await GetDefaultSceneAsync();
 
             var debug = await _outfitRecommendationService.GetRecommendationDebugAsync(temperature, scene);
             if (debug == null)
@@ -421,7 +424,8 @@ public partial class OutfitsViewModel : ViewModelBase
 
         try
         {
-            var (temperature, scene) = await GetRecommendationParamsAsync();
+            var temperature = WeatherTemperature;
+            var scene = await GetDefaultSceneAsync();
 
             var debug = await _outfitRecommendationService.GetRecommendationDebugForOutfitAsync(
                 recommendation.Outfit.Id, temperature, scene);
@@ -439,17 +443,17 @@ public partial class OutfitsViewModel : ViewModelBase
         }
     }
 
-    private async Task<(int Temperature, OutfitScene? Scene)> GetRecommendationParamsAsync()
+    private async Task<OutfitScene?> GetDefaultSceneAsync()
     {
-        var weatherPreferences = await _weatherPreferencesService.GetAsync();
-        var recommendationPreferences = await _recommendationPreferencesService.GetAsync();
-        var city = weatherPreferences.DefaultCity;
-
-        var weather = await _weatherService.GetCurrentWeatherAsync(city);
-        int temperature = weather?.Temperature ?? _weatherService.GetFallbackTemperature();
-        OutfitScene? scene = recommendationPreferences.DefaultScene;
-
-        return (temperature, scene);
+        try
+        {
+            var preferences = await _recommendationPreferencesService.GetAsync();
+            return preferences.DefaultScene;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     [RelayCommand]
@@ -457,13 +461,18 @@ public partial class OutfitsViewModel : ViewModelBase
     {
         try
         {
-            var insights = await _getWardrobeInsights.ExecuteAsync();
-            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.WardrobeInsightsDialog(insights));
+            _cachedInsights ??= await _getWardrobeInsights.ExecuteAsync();
+            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.WardrobeInsightsDialog(_cachedInsights));
         }
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("加载统计数据失败", ex.Message);
         }
+    }
+
+    private void InvalidateInsightsCache()
+    {
+        _cachedInsights = null;
     }
 
     public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();
