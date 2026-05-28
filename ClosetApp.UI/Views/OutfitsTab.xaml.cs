@@ -124,11 +124,6 @@ public partial class OutfitsTab : UserControl
         window.NavigateToSettings();
     }
 
-    private async void AnnualReportBorder_Click(object sender, RoutedEventArgs e)
-    {
-        await _viewModel.ShowAnnualReportCommand.ExecuteAsync(null);
-    }
-
     private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
     {
         for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
