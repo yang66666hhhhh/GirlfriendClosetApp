@@ -393,13 +393,7 @@ public partial class OutfitsViewModel : ViewModelBase
     {
         try
         {
-            var weatherPreferences = await _weatherPreferencesService.GetAsync();
-            var recommendationPreferences = await _recommendationPreferencesService.GetAsync();
-            var city = weatherPreferences.DefaultCity;
-
-            var weather = await _weatherService.GetCurrentWeatherAsync(city);
-            int temperature = weather?.Temperature ?? _weatherService.GetFallbackTemperature();
-            OutfitScene? scene = recommendationPreferences.DefaultScene;
+            var (temperature, scene) = await GetRecommendationParamsAsync();
 
             var debug = await _outfitRecommendationService.GetRecommendationDebugAsync(temperature, scene);
             if (debug == null)
@@ -414,6 +408,44 @@ public partial class OutfitsViewModel : ViewModelBase
         {
             ToastService.Instance.ShowError("加载推荐详情失败", ex.Message);
         }
+    }
+
+    [RelayCommand]
+    public async Task ShowRecommendationDebugForOutfitAsync(RecommendedOutfitDto? recommendation)
+    {
+        if (recommendation == null) return;
+
+        try
+        {
+            var (temperature, scene) = await GetRecommendationParamsAsync();
+
+            var debug = await _outfitRecommendationService.GetRecommendationDebugForOutfitAsync(
+                recommendation.Outfit.Id, temperature, scene);
+            if (debug == null)
+            {
+                ToastService.Instance.ShowInfo("暂无推荐数据", "先建几套搭配后再查看详情。");
+                return;
+            }
+
+            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.RecommendationDebugDialog(debug));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("加载推荐详情失败", ex.Message);
+        }
+    }
+
+    private async Task<(int Temperature, OutfitScene? Scene)> GetRecommendationParamsAsync()
+    {
+        var weatherPreferences = await _weatherPreferencesService.GetAsync();
+        var recommendationPreferences = await _recommendationPreferencesService.GetAsync();
+        var city = weatherPreferences.DefaultCity;
+
+        var weather = await _weatherService.GetCurrentWeatherAsync(city);
+        int temperature = weather?.Temperature ?? _weatherService.GetFallbackTemperature();
+        OutfitScene? scene = recommendationPreferences.DefaultScene;
+
+        return (temperature, scene);
     }
 
     public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();

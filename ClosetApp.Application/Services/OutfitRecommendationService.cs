@@ -83,6 +83,36 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             wardrobeProfile.TotalPreferenceWeight);
     }
 
+    public async Task<RecommendationDebugDto?> GetRecommendationDebugForOutfitAsync(Guid outfitId, int temperature, OutfitScene? scene = null)
+    {
+        var outfits = (await _outfitRepository.GetAllAsync()).ToList();
+        var wardrobeProfile = BuildWardrobeProfile(outfits);
+        var outfit = outfits.FirstOrDefault(o => o.Id == outfitId);
+
+        if (outfit == null || outfit.OutfitClothes.Count == 0)
+            return null;
+
+        var debug = BuildDebugRecommendation(outfit, temperature, scene, wardrobeProfile);
+
+        return new RecommendationDebugDto(
+            debug.OutfitName,
+            debug.TotalScore,
+            debug.BaseScore,
+            debug.SeasonScore,
+            debug.FavoriteScore,
+            debug.RecentWearScore,
+            debug.WearCountScore,
+            debug.SceneScore,
+            debug.PreferenceSceneScore,
+            debug.PreferenceTagScore,
+            debug.PreferenceColorScore,
+            debug.Reasons,
+            wardrobeProfile.SceneWeights,
+            wardrobeProfile.TagWeights,
+            wardrobeProfile.ColorWeights,
+            wardrobeProfile.TotalPreferenceWeight);
+    }
+
     private static RecommendationDebugDto BuildDebugRecommendation(
         Outfit outfit,
         int temperature,

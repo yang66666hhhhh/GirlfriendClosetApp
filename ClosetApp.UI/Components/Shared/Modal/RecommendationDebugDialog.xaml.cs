@@ -1,6 +1,5 @@
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 using System.Windows.Media;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Enums;
@@ -31,49 +30,7 @@ public partial class RecommendationDebugDialog : UserControl
 
     private void BindBreakdown()
     {
-        var items = _debug.Breakdown;
-        BreakdownList.ItemsSource = items;
-
-        var maxAbs = items.Count > 0
-            ? items.Max(i => Math.Abs(i.Score))
-            : 1;
-        if (maxAbs == 0) maxAbs = 1;
-
-        BreakdownList.ItemContainerGenerator.StatusChanged += (_, _) =>
-        {
-            if (BreakdownList.ItemContainerGenerator.Status != GeneratorStatus.ContainersGenerated)
-                return;
-
-            for (var i = 0; i < items.Count; i++)
-            {
-                var container = BreakdownList.ItemContainerGenerator.ContainerFromIndex(i) as ContentPresenter;
-                if (container == null) continue;
-
-                var grid = FindVisualChild<Grid>(container);
-                if (grid == null) continue;
-
-                var barFill = FindChildByName<Border>(grid, "BarFill");
-                var scoreSign = FindChildByName<TextBlock>(grid, "ScoreSignText");
-
-                if (barFill != null)
-                {
-                    var ratio = (double)Math.Abs(items[i].Score) / maxAbs;
-                    var maxWidth = 200.0;
-                    barFill.Width = Math.Max(8, ratio * maxWidth);
-                    barFill.Background = items[i].Score >= 0
-                        ? new SolidColorBrush(ColorFromHex("#5881D6"))
-                        : new SolidColorBrush(ColorFromHex("#D65858"));
-                }
-
-                if (scoreSign != null)
-                {
-                    scoreSign.Text = items[i].Score >= 0 ? "+" : "";
-                    scoreSign.Foreground = items[i].Score >= 0
-                        ? new SolidColorBrush(ColorFromHex("#5881D6"))
-                        : new SolidColorBrush(ColorFromHex("#D65858"));
-                }
-            }
-        };
+        BreakdownList.ItemsSource = _debug.Breakdown;
     }
 
     private void BindReasons()
@@ -152,35 +109,6 @@ public partial class RecommendationDebugDialog : UserControl
     private void CloseButton_Click(object sender, RoutedEventArgs e)
     {
         Services.ModalService.Instance.Hide();
-    }
-
-    private static T? FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
-    {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is T result) return result;
-            var found = FindVisualChild<T>(child);
-            if (found != null) return found;
-        }
-        return null;
-    }
-
-    private static T? FindChildByName<T>(DependencyObject parent, string name) where T : FrameworkElement
-    {
-        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
-        {
-            var child = VisualTreeHelper.GetChild(parent, i);
-            if (child is T fe && fe.Name == name) return fe;
-            var found = FindChildByName<T>(child, name);
-            if (found != null) return found;
-        }
-        return null;
-    }
-
-    private static Color ColorFromHex(string hex)
-    {
-        return (Color)ColorConverter.ConvertFromString(hex);
     }
 }
 

@@ -373,6 +373,7 @@ public class OutfitsViewModelTests
         public Task<IEnumerable<Outfit>> GetLowWearOutfitsAsync(int count = 5) => throw new NotImplementedException();
         public Task<IEnumerable<Outfit>> GetUnwornOutfitsAsync() => throw new NotImplementedException();
         public Task<RecommendationDebugDto?> GetRecommendationDebugAsync(int temperature, OutfitScene? scene = null) => Task.FromResult<RecommendationDebugDto?>(null);
+        public Task<RecommendationDebugDto?> GetRecommendationDebugForOutfitAsync(Guid outfitId, int temperature, OutfitScene? scene = null) => Task.FromResult<RecommendationDebugDto?>(null);
 
         private List<RecommendedOutfitDto> GetRecommendations(int temperature, OutfitScene? scene)
         {
