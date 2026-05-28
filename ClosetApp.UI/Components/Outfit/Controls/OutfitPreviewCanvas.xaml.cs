@@ -14,6 +14,7 @@ namespace ClosetApp.UI.Components.Outfit.Controls;
 public partial class OutfitPreviewCanvas : UserControl
 {
     private readonly OutfitCompositionEngine _engine;
+    private bool _pendingRender;
 
     public static readonly DependencyProperty ClothesProperty =
         DependencyProperty.Register(
@@ -34,6 +35,11 @@ public partial class OutfitPreviewCanvas : UserControl
         _engine = new OutfitCompositionEngine();
         Loaded += OnLoaded;
         SizeChanged += OnSizeChanged;
+        IsVisibleChanged += (_, e) =>
+        {
+            if ((bool)e.NewValue && _pendingRender)
+                Render();
+        };
     }
 
     private void OnLoaded(object sender, RoutedEventArgs e)
@@ -73,6 +79,13 @@ public partial class OutfitPreviewCanvas : UserControl
 
     public void Render()
     {
+        if (!IsVisible)
+        {
+            _pendingRender = true;
+            return;
+        }
+        _pendingRender = false;
+
         RenderCanvas.Children.Clear();
 
         if (Clothes == null || Clothes.Count == 0) return;

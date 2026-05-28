@@ -61,6 +61,7 @@ public partial class PremiumClothingCard : UserControl
 
     private Point _mouseDownPos;
     private bool _heightApplied;
+    private bool _imageLoaded;
 
     public int LastFavoriteLevelBeforeToggle { get; private set; }
 
@@ -72,9 +73,15 @@ public partial class PremiumClothingCard : UserControl
             if (e.NewValue is global::ClosetApp.Domain.Entities.Clothing)
             {
                 _heightApplied = false;
+                _imageLoaded = false;
                 ApplyCard();
                 StartLoadAnimation();
             }
+        };
+        IsVisibleChanged += (_, e) =>
+        {
+            if ((bool)e.NewValue && !_imageLoaded)
+                LoadImage();
         };
         Unloaded += (_, _) =>
         {
@@ -90,12 +97,6 @@ public partial class PremiumClothingCard : UserControl
         if (DataContext is not global::ClosetApp.Domain.Entities.Clothing c) return;
 
         CardImage.Stretch = Stretch.Uniform;
-        CardImage.Source = ClothingImageLoader.Load(
-            c.ImagePath,
-            ImageVariant.Display,
-            720,
-            trimLightPadding: true,
-            extractForeground: true);
         ApplyMeta(c);
         ApplyStagePresentation(c);
         ApplyImageBackdrop(c);
@@ -112,6 +113,22 @@ public partial class PremiumClothingCard : UserControl
             Height = imgH + ImageStageChromeHeight + infoH;
             _heightApplied = true;
         }
+
+        if (IsVisible)
+            LoadImage();
+    }
+
+    private void LoadImage()
+    {
+        if (_imageLoaded || DataContext is not global::ClosetApp.Domain.Entities.Clothing c) return;
+        _imageLoaded = true;
+
+        CardImage.Source = ClothingImageLoader.Load(
+            c.ImagePath,
+            ImageVariant.Display,
+            720,
+            trimLightPadding: true,
+            extractForeground: true);
     }
 
     protected override Size MeasureOverride(Size constraint)
