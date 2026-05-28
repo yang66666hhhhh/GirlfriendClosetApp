@@ -90,6 +90,7 @@ public partial class OutfitsViewModel : ViewModelBase
     private readonly IRecommendationPreferencesService _recommendationPreferencesService;
     private readonly GetTodayRecommendations _getTodayRecommendations;
     private readonly GetWardrobeInsights _getWardrobeInsights;
+    private readonly GetAnnualOutfitReport _getAnnualOutfitReport;
     private readonly OutfitsTabState _state = new();
     private WardrobeInsightsDto? _cachedInsights;
     private RecommendationDebugDto? _cachedBestDebug;
@@ -127,7 +128,8 @@ public partial class OutfitsViewModel : ViewModelBase
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
         GetTodayRecommendations getTodayRecommendations,
-        GetWardrobeInsights getWardrobeInsights)
+        GetWardrobeInsights getWardrobeInsights,
+        GetAnnualOutfitReport getAnnualOutfitReport)
     {
         _outfitService = outfitService;
         _outfitRecommendationService = outfitRecommendationService;
@@ -136,6 +138,7 @@ public partial class OutfitsViewModel : ViewModelBase
         _recommendationPreferencesService = recommendationPreferencesService;
         _getTodayRecommendations = getTodayRecommendations;
         _getWardrobeInsights = getWardrobeInsights;
+        _getAnnualOutfitReport = getAnnualOutfitReport;
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
@@ -492,6 +495,21 @@ public partial class OutfitsViewModel : ViewModelBase
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("加载统计数据失败", ex.Message);
+        }
+    }
+
+    [RelayCommand]
+    public async Task ShowAnnualReportAsync()
+    {
+        try
+        {
+            var year = DateTime.Now.Year;
+            var report = await _getAnnualOutfitReport.ExecuteAsync(year);
+            ModalService.Instance.Show(new ClosetApp.UI.Components.Shared.Modal.AnnualOutfitReportDialog(report));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("加载年度报告失败", ex.Message);
         }
     }
 

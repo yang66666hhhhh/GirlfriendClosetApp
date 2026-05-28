@@ -230,6 +230,7 @@ public class OutfitsViewModelTests
             resolvedRecommendationService,
             new GetRecommendationReadinessSummary(resolvedOutfitService));
         var getWardrobeInsights = new GetWardrobeInsights(resolvedOutfitService);
+        var getAnnualOutfitReport = new GetAnnualOutfitReport(resolvedOutfitService);
         return new OutfitsViewModel(
             resolvedOutfitService,
             resolvedRecommendationService,
@@ -237,7 +238,8 @@ public class OutfitsViewModelTests
             new FakeWeatherPreferencesService("Shanghai"),
             recommendationPreferencesService ?? new FakeRecommendationPreferencesService(),
             getTodayRecommendations,
-            getWardrobeInsights);
+            getWardrobeInsights,
+            getAnnualOutfitReport);
     }
 
     private static Outfit CreateOutfit(

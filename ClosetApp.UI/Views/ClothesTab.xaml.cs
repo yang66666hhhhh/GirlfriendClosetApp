@@ -212,6 +212,7 @@ public partial class ClothesTab : UserControl
             return;
 
         var summary = await _viewModel.ImportClothesAndBuildSummaryAsync(result.Entity);
+        ToastService.Instance.ShowSuccess($"已导入 {summary.ImportedCount} 件衣物", "可以在下方查看导入结果。");
         _ = Dispatcher.BeginInvoke(
             () => ModalService.Instance.Show(new BatchClothingImportSummaryDialog(
                 summary,

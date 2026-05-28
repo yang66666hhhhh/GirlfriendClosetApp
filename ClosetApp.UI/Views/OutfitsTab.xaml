@@ -243,6 +243,15 @@
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
                                                     Command="{Binding ShowWardrobeInsightsCommand}"/>
+                                            <TextBlock Text="·"
+                                                       Foreground="{DynamicResource TextPlaceholderBrush}"
+                                                       Margin="8,0"
+                                                       VerticalAlignment="Center"/>
+                                            <Button Content="年度报告"
+                                                    Style="{StaticResource TodayHeroSecondaryActionButton}"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    Command="{Binding ShowAnnualReportCommand}"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
