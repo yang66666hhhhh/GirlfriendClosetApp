@@ -114,9 +114,6 @@ public partial class OutfitHistoryDialog : UserControl
         if (sender is not FrameworkElement element)
             return;
 
-        if (_viewModel.RecentWornRecords.Count == 0)
-            return;
-
         if (RecentWornPopup.IsOpen)
         {
             RecentWornPopup.IsOpen = false;
@@ -133,12 +130,6 @@ public partial class OutfitHistoryDialog : UserControl
 
         var recordCount = _viewModel.RecentWornRecords.Count;
         var latestItem = _viewModel.RecentWornRecords.FirstOrDefault();
-        var hasRecords = recordCount > 0;
-
-        OpenRecentSectionButton.IsEnabled = hasRecords;
-        OpenRecentSectionButton.ToolTip = hasRecords
-            ? "查看最近穿着"
-            : "记录一套穿搭后，这里会显示最近穿着。";
 
         RecentSectionSummaryText.Text = recordCount switch
         {
