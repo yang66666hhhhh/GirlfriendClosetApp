@@ -252,6 +252,8 @@ public class OutfitRecommendationServiceTests
         public Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene) => Task.FromResult(_outfits.Where(outfit => outfit.Scene == scene));
         public Task<IEnumerable<Outfit>> GetBySeasonAsync(Season season) => Task.FromResult(_outfits.Where(outfit => outfit.Season == season));
         public Task<IEnumerable<Outfit>> GetRecentlyWornAsync(int count) => Task.FromResult(_outfits.Where(outfit => outfit.WornDate.HasValue).Take(count));
+        public Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId) => Task.FromResult(_outfits.Where(o => o.OutfitClothes.Any(oc => oc.ClothingId == clothingId)));
         public Task DeleteEmptyOutfitsAsync() => throw new NotImplementedException();
+        public Task<List<OutfitUpdateResult>> DeleteInvalidOutfitsAsync(Guid excludedClothingId) => Task.FromResult(new List<OutfitUpdateResult>());
     }
 }

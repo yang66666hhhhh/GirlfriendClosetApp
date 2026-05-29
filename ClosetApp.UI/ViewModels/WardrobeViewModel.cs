@@ -529,12 +529,18 @@ public partial class WardrobeViewModel : ViewModelBase
         return clothing.FavoriteLevel >= 4 ? $"已收藏「{clothing.Name}」" : $"已取消收藏「{clothing.Name}」";
     }
 
-    public async Task DeleteClothingAsync(Clothing clothing)
+    public async Task<ClothingDeleteResult> DeleteClothingAsync(Clothing clothing)
     {
         Log.Information("Deleting clothing {ClothingId} ({ClothingName})", clothing.Id, clothing.Name);
-        await _clothingService.DeleteClothingAsync(clothing.Id);
+        var result = await _clothingService.DeleteClothingAsync(clothing.Id);
         await _imageStorageService.TryDeleteImageAsync(clothing.ImagePath);
         await LoadClothesAsync();
+        return result;
+    }
+
+    public async Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId)
+    {
+        return await _clothingService.GetOutfitsByClothingIdAsync(clothingId);
     }
 
     private async Task DeleteReplacedImageAsync(string? oldImagePath, string? newImagePath)

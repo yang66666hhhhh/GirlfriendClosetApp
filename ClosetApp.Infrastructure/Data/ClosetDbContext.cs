@@ -74,7 +74,8 @@ public class ClosetDbContext : DbContext
         modelBuilder.Entity<OutfitWornRecord>()
             .HasOne(r => r.Outfit)
             .WithMany(o => o.WornRecords)
-            .HasForeignKey(r => r.OutfitId);
+            .HasForeignKey(r => r.OutfitId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         SeedData(modelBuilder);
     }

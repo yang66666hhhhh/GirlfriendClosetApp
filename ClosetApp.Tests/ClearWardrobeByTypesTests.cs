@@ -106,12 +106,15 @@ public class ClearWardrobeByTypesTests
         public Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene) => throw new NotImplementedException();
         public Task<IEnumerable<Outfit>> GetBySeasonAsync(Season season) => throw new NotImplementedException();
         public Task<IEnumerable<Outfit>> GetRecentlyWornAsync(int count) => throw new NotImplementedException();
+        public Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId) => Task.FromResult(Enumerable.Empty<Outfit>());
 
         public Task DeleteEmptyOutfitsAsync()
         {
             DeleteEmptyOutfitsCallCount++;
             return Task.CompletedTask;
         }
+
+        public Task<List<OutfitUpdateResult>> DeleteInvalidOutfitsAsync(Guid excludedClothingId) => Task.FromResult(new List<OutfitUpdateResult>());
     }
 
     private sealed class FakeImageStorageService : IImageStorageService

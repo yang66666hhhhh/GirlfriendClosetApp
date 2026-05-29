@@ -84,6 +84,7 @@ public class OutfitService : IOutfitService
         if (duplicate != null)
         {
             duplicate.WornDate = date;
+            duplicate.OutfitNameSnapshot = outfit.Name;
             await _wornRecordRepository.UpdateAsync(duplicate);
             outfit.WornDate = date;
             await _repository.UpdateAsync(outfit);
@@ -95,6 +96,7 @@ public class OutfitService : IOutfitService
         await _wornRecordRepository.AddAsync(new OutfitWornRecord
         {
             OutfitId = outfitId,
+            OutfitNameSnapshot = outfit.Name,
             WornDate = date
         });
         await _repository.UpdateAsync(outfit);
@@ -106,16 +108,23 @@ public class OutfitService : IOutfitService
         if (record == null)
             return;
 
-        var outfit = await _repository.GetByIdAsync(record.OutfitId);
-        await _wornRecordRepository.DeleteAsync(recordId);
+        if (record.OutfitId.HasValue)
+        {
+            var outfit = await _repository.GetByIdAsync(record.OutfitId.Value);
+            await _wornRecordRepository.DeleteAsync(recordId);
 
-        if (outfit == null)
-            return;
+            if (outfit == null)
+                return;
 
-        outfit.WearCount = Math.Max(0, outfit.WearCount - 1);
-        var remainingRecords = await _wornRecordRepository.GetByOutfitIdAsync(outfit.Id);
-        outfit.WornDate = remainingRecords.FirstOrDefault()?.WornDate;
-        await _repository.UpdateAsync(outfit);
+            outfit.WearCount = Math.Max(0, outfit.WearCount - 1);
+            var remainingRecords = await _wornRecordRepository.GetByOutfitIdAsync(outfit.Id);
+            outfit.WornDate = remainingRecords.FirstOrDefault()?.WornDate;
+            await _repository.UpdateAsync(outfit);
+        }
+        else
+        {
+            await _wornRecordRepository.DeleteAsync(recordId);
+        }
     }
 
     public async Task<bool> ToggleFavoriteAsync(Guid outfitId)

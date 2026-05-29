@@ -14,16 +14,14 @@ public class TagsTabStateTests
 
         state.SetTags(
         [
-            CreateTag("秋冬", TagCategory.Season),
             CreateTag("约会", TagCategory.Scene),
             CreateTag("通勤", TagCategory.Style),
             CreateTag("极简", TagCategory.Style)
         ]);
 
-        Assert.True(new[] { "极简", "通勤", "约会", "秋冬" }.SequenceEqual(state.Tags.Select(tag => tag.Name)));
+        Assert.True(new[] { "极简", "通勤", "约会" }.SequenceEqual(state.Tags.Select(tag => tag.Name)));
         Assert.True(new[] { "极简", "通勤" }.SequenceEqual(state.StyleTags.Select(tag => tag.Name)));
         Assert.True(new[] { "约会" }.SequenceEqual(state.SceneTags.Select(tag => tag.Name)));
-        Assert.True(new[] { "秋冬" }.SequenceEqual(state.SeasonTags.Select(tag => tag.Name)));
     }
 
     [Fact]
@@ -34,8 +32,7 @@ public class TagsTabStateTests
         state.SetTags(
         [
             CreateTag("通勤", TagCategory.Style),
-            CreateTag("约会", TagCategory.Scene),
-            CreateTag("冬季", TagCategory.Season)
+            CreateTag("约会", TagCategory.Scene)
         ]);
 
         state.SetSearchText("通");
@@ -46,7 +43,6 @@ public class TagsTabStateTests
         Assert.Equal("搜索“通” · 风格标签 · 1 个结果", state.FilterSummary);
         Assert.True(state.ShowStyleSection);
         Assert.False(state.ShowSceneSection);
-        Assert.False(state.ShowSeasonSection);
     }
 
     [Fact]
@@ -65,7 +61,7 @@ public class TagsTabStateTests
         state.SetSortBy(TagSortBy.LeastUsed);
 
         Assert.True(new[] { "极简", "通勤", "韩系", "约会" }.SequenceEqual(state.Tags.Select(tag => tag.Name)));
-        Assert.Equal("已用 2 · 待整理 2", state.UsageSummaryText);
+        Assert.Equal("已使用 2 个 · 未使用 2 个，建议整理", state.UsageSummaryText);
     }
 
     private static Tag CreateTag(string name, TagCategory category, int usageCount = 0)

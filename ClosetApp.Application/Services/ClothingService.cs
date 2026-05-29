@@ -43,10 +43,26 @@ public class ClothingService : IClothingService
         await _repository.UpdateAsync(clothing);
     }
 
-    public async Task DeleteClothingAsync(Guid id)
+    public async Task<ClothingDeleteResult> DeleteClothingAsync(Guid id)
     {
+        var clothing = await _repository.GetByIdAsync(id);
+        var clothingName = clothing?.Name ?? "未知衣物";
+
+        var outfitResults = await _outfitRepository.DeleteInvalidOutfitsAsync(id);
+        
         await _repository.DeleteAsync(id);
-        await _outfitRepository.DeleteEmptyOutfitsAsync();
+
+        return new ClothingDeleteResult
+        {
+            Success = true,
+            DeletedClothingName = clothingName,
+            UpdatedOutfits = outfitResults
+        };
+    }
+
+    public async Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId)
+    {
+        return await _outfitRepository.GetOutfitsByClothingIdAsync(clothingId);
     }
 
     public async Task<IEnumerable<Clothing>> GetClothesByTypeAsync(ClothingType type)

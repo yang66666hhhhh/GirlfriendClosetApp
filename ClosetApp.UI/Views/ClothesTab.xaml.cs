@@ -240,9 +240,26 @@ public partial class ClothesTab : UserControl
 
     private async Task ConfirmAndDeleteClothingAsync(Clothing clothing)
     {
-        var confirmed = await ConfirmModal.ShowDeleteAsync(
-            $"确定删除「{clothing.Name}」吗？",
-            title: "删除衣服");
+        var affectedOutfits = await _viewModel.GetOutfitsByClothingIdAsync(clothing.Id);
+        var outfitList = affectedOutfits.ToList();
+
+        string message;
+        if (outfitList.Count > 0)
+        {
+            var outfitNames = string.Join("\n", outfitList.Select(o => $"• {o.Name}"));
+            message = $"确定删除「{clothing.Name}」吗？\n\n" +
+                      $"⚠️ 该衣服被以下 {outfitList.Count} 个搭配使用：\n" +
+                      $"{outfitNames}\n\n" +
+                      "删除后，这些搭配会自动移除该衣服。\n" +
+                      "如果搭配变得不完整，会被自动清理。\n" +
+                      "穿着记录会永久保留。";
+        }
+        else
+        {
+            message = $"确定删除「{clothing.Name}」吗？";
+        }
+
+        var confirmed = await ConfirmModal.ShowDeleteAsync(message, title: "删除衣服");
         if (!confirmed)
             return;
 
@@ -253,8 +270,30 @@ public partial class ClothesTab : UserControl
     {
         try
         {
-            await _viewModel.DeleteClothingAsync(clothing);
-            ToastService.Instance.ShowSuccess($"已删除「{clothing.Name}」", "这件衣服已经从衣柜里移除。");
+            var result = await _viewModel.DeleteClothingAsync(clothing);
+
+            if (result.UpdatedOutfits.Count > 0)
+            {
+                var details = new List<string>();
+                foreach (var outfit in result.UpdatedOutfits)
+                {
+                    if (outfit.WasDeleted)
+                        details.Add($"• {outfit.OutfitName}（已自动清理）");
+                    else
+                        details.Add($"• {outfit.OutfitName}（剩余 {outfit.RemainingClothingCount} 件）");
+                }
+
+                var detailText = string.Join("\n", details);
+                ToastService.Instance.ShowSuccess(
+                    $"已删除「{result.DeletedClothingName}」",
+                    $"以下搭配已更新：\n{detailText}");
+            }
+            else
+            {
+                ToastService.Instance.ShowSuccess(
+                    $"已删除「{result.DeletedClothingName}」",
+                    "这件衣服已经从衣柜里移除。");
+            }
         }
         catch (Exception ex)
         {

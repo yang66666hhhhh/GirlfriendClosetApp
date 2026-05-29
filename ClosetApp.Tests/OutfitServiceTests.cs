@@ -48,7 +48,9 @@ public class OutfitServiceTests
         public Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene) => Task.FromResult(Enumerable.Empty<Outfit>());
         public Task<IEnumerable<Outfit>> GetBySeasonAsync(Season season) => Task.FromResult(Enumerable.Empty<Outfit>());
         public Task<IEnumerable<Outfit>> GetRecentlyWornAsync(int count) => Task.FromResult(Enumerable.Empty<Outfit>());
+        public Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId) => Task.FromResult(Enumerable.Empty<Outfit>());
         public Task DeleteEmptyOutfitsAsync() => Task.CompletedTask;
+        public Task<List<OutfitUpdateResult>> DeleteInvalidOutfitsAsync(Guid excludedClothingId) => Task.FromResult(new List<OutfitUpdateResult>());
     }
 
     private sealed class FakeOutfitWornRecordRepository : IOutfitWornRecordRepository

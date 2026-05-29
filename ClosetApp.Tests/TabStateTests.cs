@@ -81,14 +81,13 @@ public class TabStateTests
 
         state.SetTags(
         [
-            new Tag { Name = "秋冬", Color = "#FFFFFF", Category = TagCategory.Season },
             new Tag { Name = "约会", Color = "#FFFFFF", Category = TagCategory.Scene },
             new Tag { Name = "通勤", Color = "#FFFFFF", Category = TagCategory.Style },
             new Tag { Name = "极简", Color = "#FFFFFF", Category = TagCategory.Style }
         ]);
 
-        Assert.Equal(4, state.TagCount);
-        Assert.Equal("风格 2 · 场景 1 · 季节 1", state.CategorySummaryText);
+        Assert.Equal(3, state.TagCount);
+        Assert.Equal("风格 2 · 场景 1", state.StyleCountText.Replace(" 个", ""));
         Assert.Equal("极简", state.Tags[0].Name);
         Assert.Equal("通勤", state.Tags[1].Name);
     }

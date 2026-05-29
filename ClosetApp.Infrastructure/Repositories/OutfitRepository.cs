@@ -110,6 +110,60 @@ public class OutfitRepository : IOutfitRepository
         Log.Information("Deleted empty outfits after clothing removal. Count={Count}", emptyOutfits.Count);
     }
 
+    public async Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId)
+    {
+        return await _context.Outfits
+            .Include(o => o.OutfitClothes)
+            .Where(o => o.OutfitClothes.Any(oc => oc.ClothingId == clothingId))
+            .ToListAsync();
+    }
+
+    public async Task<List<OutfitUpdateResult>> DeleteInvalidOutfitsAsync(Guid excludedClothingId)
+    {
+        var results = new List<OutfitUpdateResult>();
+        
+        var outfitsWithClothing = await _context.Outfits
+            .Include(o => o.OutfitClothes)
+            .Where(o => o.OutfitClothes.Any(oc => oc.ClothingId == excludedClothingId))
+            .ToListAsync();
+
+        foreach (var outfit in outfitsWithClothing)
+        {
+            var link = outfit.OutfitClothes.FirstOrDefault(oc => oc.ClothingId == excludedClothingId);
+            if (link != null)
+            {
+                outfit.OutfitClothes.Remove(link);
+            }
+
+            var remainingCount = outfit.OutfitClothes.Count;
+            
+            if (remainingCount < 2)
+            {
+                results.Add(new OutfitUpdateResult
+                {
+                    OutfitId = outfit.Id,
+                    OutfitName = outfit.Name,
+                    RemainingClothingCount = remainingCount,
+                    WasDeleted = true
+                });
+                _context.Outfits.Remove(outfit);
+            }
+            else
+            {
+                results.Add(new OutfitUpdateResult
+                {
+                    OutfitId = outfit.Id,
+                    OutfitName = outfit.Name,
+                    RemainingClothingCount = remainingCount,
+                    WasDeleted = false
+                });
+            }
+        }
+
+        await _context.SaveChangesAsync();
+        return results;
+    }
+
     public async Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene)
     {
         return await _context.Outfits
