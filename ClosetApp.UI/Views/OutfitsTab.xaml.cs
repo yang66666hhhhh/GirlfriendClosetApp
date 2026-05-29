@@ -46,25 +46,28 @@ public partial class OutfitsTab : UserControl
 
     private void AttachCardHandlers()
     {
-        foreach (var item in OutfitsList.Items)
+        Dispatcher.BeginInvoke(new Action(() =>
         {
-            var container = OutfitsList.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
-            if (container == null)
-                continue;
+            foreach (var item in OutfitsList.Items)
+            {
+                var container = OutfitsList.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
+                if (container == null)
+                    continue;
 
-            var card = VisualTreeHelperExtensions.FindVisualChild<OutfitCard>(container);
-            if (card == null)
-                continue;
+                var card = VisualTreeHelperExtensions.FindVisualChild<OutfitCard>(container);
+                if (card == null)
+                    continue;
 
-            card.EditCompleted -= OutfitCard_EditCompleted;
-            card.DeleteRequested -= OutfitCard_DeleteRequested;
-            card.WornRequested -= OutfitCard_WornRequested;
-            card.FavoriteToggled -= OutfitCard_FavoriteToggled;
-            card.EditCompleted += OutfitCard_EditCompleted;
-            card.DeleteRequested += OutfitCard_DeleteRequested;
-            card.WornRequested += OutfitCard_WornRequested;
-            card.FavoriteToggled += OutfitCard_FavoriteToggled;
-        }
+                card.EditCompleted -= OutfitCard_EditCompleted;
+                card.DeleteRequested -= OutfitCard_DeleteRequested;
+                card.WornRequested -= OutfitCard_WornRequested;
+                card.FavoriteToggled -= OutfitCard_FavoriteToggled;
+                card.EditCompleted += OutfitCard_EditCompleted;
+                card.DeleteRequested += OutfitCard_DeleteRequested;
+                card.WornRequested += OutfitCard_WornRequested;
+                card.FavoriteToggled += OutfitCard_FavoriteToggled;
+            }
+        }), System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     private void CreateOutfit_Click(object sender, RoutedEventArgs e)
