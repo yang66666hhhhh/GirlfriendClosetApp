@@ -5,19 +5,6 @@
     <ProjectReference Include="..\ClosetApp.Domain\ClosetApp.Domain.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Include="..\ClosetApp.UI\Services\WardrobeActionErrorPresenter.cs" Link="Services\WardrobeActionErrorPresenter.cs" />
-    <Compile Include="..\ClosetApp.UI\States\*.cs" Link="States\%(Filename)%(Extension)" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportBuilder.cs" Link="Components\Clothing\BatchClothingImportBuilder.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportOptions.cs" Link="Components\Clothing\BatchClothingImportOptions.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportPreviewItem.cs" Link="Components\Clothing\BatchClothingImportPreviewItem.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchClothingImportSummaryBuilder.cs" Link="Components\Clothing\BatchClothingImportSummaryBuilder.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchImportDuplicateCheckResult.cs" Link="Components\Clothing\BatchImportDuplicateCheckResult.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Clothing\BatchImportDuplicateChecker.cs" Link="Components\Clothing\BatchImportDuplicateChecker.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Editor\OutfitSelectionRules.cs" Link="Components\Outfit\Editor\OutfitSelectionRules.cs" />
-    <Compile Include="..\ClosetApp.UI\Components\Outfit\Engine\*.cs" Link="Components\Outfit\Engine\%(Filename)%(Extension)" />
-  </ItemGroup>
-
   <PropertyGroup>
     <TargetFramework>net8.0-windows</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

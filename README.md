@@ -3,7 +3,7 @@
 私人数字衣橱桌面应用，面向个人衣物整理、搭配管理和本地数据治理场景。项目使用 WPF + SQLite，采用 Domain / Application / Infrastructure / UI 四层结构。
 
 > 更新时间：2026-05-29
-> 当前运行时：.NET 10 / WPF
+> 当前运行时：UI 与测试工程为 .NET 10 / WPF；Domain、Application、Infrastructure 为 .NET 8 类库
 
 ## 当前能力
 
@@ -28,8 +28,8 @@ GirlfriendClosetApp/
 ├── ClosetApp.Application/            # DTO、服务接口/实现、UseCases、图片资产抽象
 ├── ClosetApp.Infrastructure/         # EF Core、SQLite、图片/备份/天气等基础设施
 ├── ClosetApp.UI/                     # WPF 页面、组件、状态类、主题资源
-├── ClosetApp.UI.Logic/               # UI 纯逻辑文件的共享引用工程（供测试使用）
-├── ClosetApp.Tests/                  # 逻辑测试（xUnit，不直接引用整个 UI 工程）
+├── ClosetApp.UI.Logic/               # UI 纯逻辑共享工程（State、Engine、Import 等逻辑源码归属处）
+├── ClosetApp.Tests/                  # xUnit 测试工程（当前同时引用 UI.Logic 与 UI 工程）
 ├── docs/
 │   └── ARCHITECTURE_CONVENTIONS.md   # 架构约定
 └── PROJECT_DOCUMENTATION.md          # 详细项目文档
@@ -49,7 +49,7 @@ GirlfriendClosetApp/
 ### 1. 统一编辑器与状态类
 
 - 衣物、搭配、标签编辑逐步统一为 Editor Panel 模式
-- Tab 页面状态下沉到 `ClosetApp.UI/States`
+- Tab 页面状态下沉到 `ClosetApp.UI.Logic/States`
 - 页面 code-behind 主要负责交互、动画和 modal 编排
 
 ### 1.1 标签页整理体验
@@ -165,7 +165,7 @@ GirlfriendClosetApp/
 - 脚部区域：鞋子位于底部
 - 配饰区域：作为角标/侧边信息展示，不参与主轴高度
 
-当前实现位于 `ClosetApp.UI/Components/Outfit/Engine/OutfitCompositionEngine.cs`，渲染由 `OutfitPreviewCanvas` 完成。
+当前布局算法位于 `ClosetApp.UI.Logic/Components/Outfit/Engine/OutfitCompositionEngine.cs`，渲染由 UI 工程中的 `OutfitPreviewCanvas` 完成。
 
 ### 7. 错误提示统一处理
 
@@ -224,14 +224,14 @@ rtk pwsh -Command "Get-ChildItem -Force"
 - 数据洞察：`GetWardrobeInsightsTests`
 - 推荐调试：`OutfitRecommendationServiceTests`（包含 `GetRecommendationDebugAsync` 测试）
 
-测试工程通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑文件，避免 WPF 生成链干扰。
+测试工程当前同时引用 `ClosetApp.UI.Logic` 与 `ClosetApp.UI`。其中 State、Engine、Import 等纯逻辑源码已归属 `ClosetApp.UI.Logic`，供 UI 与测试复用；部分 ViewModel / WPF 相关测试仍直接依赖 UI 工程。
 
 ## 当前已知说明
 
 - `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - `ViewModels/` 已开始接管搭配页与设置页的业务状态，View 侧主要保留弹窗、导航、文件选择和控件事件桥接
 - `Themes/Colors.xaml` 是兼容转发层，新设计 token 位于 `Themes/Tokens` 与 `Themes/Controls`
-- `ClosetApp.UI.Logic` 是纯逻辑共享工程，通过 `<Compile Include>` 引用 UI 中的 State、Engine、Import 等文件，供测试工程独立引用
+- `ClosetApp.UI.Logic` 是纯逻辑共享工程，承载 State、Engine、Import 等文件，供 UI 与测试工程直接引用复用
 - `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
 
 ## 文档入口

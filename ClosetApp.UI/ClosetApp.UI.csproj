@@ -18,20 +18,7 @@
     <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Compile Remove="Services\WardrobeActionErrorPresenter.cs" />
-    <Compile Remove="States\*.cs" />
-    <Compile Remove="Components\Clothing\BatchClothingImportBuilder.cs" />
-    <Compile Remove="Components\Clothing\BatchClothingImportOptions.cs" />
-    <Compile Remove="Components\Clothing\BatchClothingImportPreviewItem.cs" />
-    <Compile Remove="Components\Clothing\BatchClothingImportSummaryBuilder.cs" />
-    <Compile Remove="Components\Clothing\BatchImportDuplicateCheckResult.cs" />
-    <Compile Remove="Components\Clothing\BatchImportDuplicateChecker.cs" />
-    <Compile Remove="Components\Outfit\Editor\OutfitSelectionRules.cs" />
-    <Compile Remove="Components\Outfit\Engine\*.cs" />
-  </ItemGroup>
-
-<PropertyGroup>
+  <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFramework>net10.0-windows</TargetFramework>
     <Nullable>enable</Nullable>

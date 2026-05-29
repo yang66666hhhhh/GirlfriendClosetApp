@@ -22,6 +22,7 @@ GirlfriendClosetApp 是一款运行在 Windows 上的私人数字衣橱应用，
 | 层 | 技术 | 说明 |
 |---|---|---|
 | UI | WPF (`net10.0-windows`) | 桌面端界面 |
+| 核心类库 | .NET (`net8.0`) | Domain / Application / Infrastructure 目标框架 |
 | UI 组件 | HandyControl | 基础控件与样式能力 |
 | 应用层 | CommunityToolkit.Mvvm | 保留 ViewModel 能力，当前页面逻辑以 View + State + Service/UseCase 为主 |
 | 数据访问 | EF Core + SQLite | 本地数据库持久化 |
@@ -68,8 +69,8 @@ GirlfriendClosetApp/
 │   ├── Themes/                   # Tokens / Controls / 兼容资源
 │   ├── Services/                 # ModalService, ToastService, ThemeService, WardrobeActionErrorPresenter...
 │   └── ViewModels/               # 仍保留的 VM
-├── ClosetApp.UI.Logic/           # UI 纯逻辑共享工程（供测试引用）
-├── ClosetApp.Tests/              # 纯逻辑测试工程（xUnit）
+├── ClosetApp.UI.Logic/           # UI 纯逻辑共享工程（State、Engine、Import 等逻辑源码归属处）
+├── ClosetApp.Tests/              # xUnit 测试工程（当前同时引用 UI.Logic 与 UI 工程）
 └── docs/
 ```
 
@@ -213,7 +214,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 见 `docs/ARCHITECTURE_CONVENTIONS.md`：
 
-- 页面轻状态放在 `ClosetApp.UI/States`
+- 页面轻状态放在 `ClosetApp.UI.Logic/States`
 - State 负责搜索文本、筛选器、加载标记、当前集合与空状态
 - 当页面存在分组视图时，State 也负责分组集合、汇总计数和筛选摘要
 - 交互和 modal 编排仍可保留在 code-behind
@@ -628,17 +629,16 @@ Task<long> GetDirectorySizeAsync(string directory);
 
 ### 12.1 测试工程结构
 
-`ClosetApp.Tests` 当前是纯逻辑测试工程：
+`ClosetApp.Tests` 当前是 xUnit 测试工程：
 
 - 直接引用 `ClosetApp.Infrastructure`
-- 通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑源码文件
-- `ClosetApp.UI.Logic` 通过 `<Compile Include>` 链接 UI 中的 State、Engine、Import 等文件
-- 不直接引用整个 `ClosetApp.UI.csproj`
+- 直接引用 `ClosetApp.UI`
+- 通过 `ClosetApp.UI.Logic` 复用 State、Engine、Import 等纯逻辑源码文件
 
-这样可以避免：
+这样可以：
 
-- WPF 生成链干扰测试
-- UI 资源编译导致测试变慢或易碎
+- 让 State、Engine、Import 等纯逻辑代码归属在 `ClosetApp.UI.Logic`，并在 UI 与测试中共用同一份源码
+- 支持 ViewModel / WPF 相关测试继续覆盖 UI 工程中的实际类型
 
 ### 12.2 当前覆盖范围
 
@@ -684,15 +684,15 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 批量补全面板 | `ClosetApp.UI/Components/Clothing/BatchClothingCompletionPanel.xaml` |
 | 批量清空面板 | `ClosetApp.UI/Components/Clothing/BatchWardrobeClearPanel.xaml` |
 | 搭配编辑器 | `ClosetApp.UI/Components/Outfit/Editor/OutfitEditorPanel.xaml` |
-| 搭配布局引擎 | `ClosetApp.UI/Components/Outfit/Engine/OutfitCompositionEngine.cs` |
+| 搭配布局引擎 | `ClosetApp.UI.Logic/Components/Outfit/Engine/OutfitCompositionEngine.cs` |
 | 标签编辑器 | `ClosetApp.UI/Components/Tags/Controls/TagEditorPanel.xaml` |
 | 标签选择组件 | `ClosetApp.UI/Components/Tags/Controls/TagSelectionSection.xaml` |
 | 穿着历史弹窗 | `ClosetApp.UI/Components/Shared/Modal/OutfitHistoryDialog.xaml` |
 | 推荐详情弹窗 | `ClosetApp.UI/Components/Shared/Modal/RecommendationDebugDialog.xaml` |
 | 数据洞察弹窗 | `ClosetApp.UI/Components/Shared/Modal/WardrobeInsightsDialog.xaml` |
 | 确认弹窗 | `ClosetApp.UI/Components/Shared/Modal/ConfirmDialog.xaml` |
-| 错误提示器 | `ClosetApp.UI/Services/WardrobeActionErrorPresenter.cs` |
-| 页面状态类 | `ClosetApp.UI/States/` |
+| 错误提示器 | `ClosetApp.UI.Logic/Services/WardrobeActionErrorPresenter.cs` |
+| 页面状态类 | `ClosetApp.UI.Logic/States/` |
 | UI 逻辑共享工程 | `ClosetApp.UI.Logic/ClosetApp.UI.Logic.csproj` |
 | 泛型 RadioButton 选择组 | `ClosetApp.UI/Components/Shared/EnumRadioGroup.cs` |
 | 主题选择卡片控件 | `ClosetApp.UI/Components/Shared/ThemeCard.xaml` |
@@ -723,7 +723,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 - `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - `ViewModels` 仍存在，但不是当前页面交互的唯一主轴
-- `ClosetApp.UI.Logic` 是纯逻辑共享工程，通过 `<Compile Include>` 引用 UI 中的 State、Engine、Import 等文件，供测试工程独立引用
+- `ClosetApp.UI.Logic` 是纯逻辑共享工程，承载 State、Engine、Import 等文件，供 UI 与测试工程直接引用复用
 - `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
 
 ### 14.2 风险与后续方向
@@ -753,7 +753,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - 增加缺失图片检测与目录重连修复
 - 引入 `States/` 页面轻状态类结构
 - 应用层新增 `UseCases/`
-- 测试工程通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑文件，避免 WPF 生成链干扰
+- 测试工程同时引用 `ClosetApp.UI.Logic` 与 `ClosetApp.UI`；纯逻辑文件归属 `UI.Logic` 并被 UI/测试复用，ViewModel / WPF 相关测试直接覆盖 UI 工程类型
 - 引入 `GarmentType` / `DisplayCategory` / `LayerRole` 精细衣物分类体系
 - 引入 `WardrobeActionErrorPresenter` 统一错误提示
 - 引入 `ThemePreferencesService` 和 `WeatherPreferencesService` 持久化偏好

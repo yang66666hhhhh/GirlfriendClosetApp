@@ -8,7 +8,7 @@
 
 ## Page State
 
-- Tab pages use thin state classes in `ClosetApp.UI/States`.
+- Tab pages use thin state classes in `ClosetApp.UI.Logic/States`.
 - State classes own search text, filters, loading flags, empty state, and current item collections.
 - Code-behind may still own click handlers, animations, visual tree probing, and modal orchestration.
 
@@ -55,7 +55,7 @@
 - `BatchImportDuplicateChecker` detects same-name/same-size risks before import.
 - `BatchClothingImportSummaryBuilder` builds result summaries after import.
 - The UseCase `ImportClothesFromImages` orchestrates the actual import.
-- These files are also linked into `ClosetApp.UI.Logic` for testability.
+- These files live in `ClosetApp.UI.Logic` so the UI project and tests can reference the same pure-logic source files directly.
 
 ## Preferences Services
 

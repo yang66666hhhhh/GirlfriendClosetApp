@@ -18,7 +18,8 @@ WPF 桌面端穿搭管理应用。Clean Architecture 分层，SQLite 持久化�
 
 | 层 | 技术 | 说明 |
 |---|---|---|
-| UI | WPF (.NET 10) | 桌面端界面 |
+| UI | WPF (`net10.0-windows`) | 桌面端界面 |
+| 核心类库 | .NET (`net8.0`) | Domain / Application / Infrastructure |
 | UI 组件 | HandyControl | 基础控件与样式 |
 | MVVM | CommunityToolkit.Mvvm | ViewModel 框架 |
 | 数据访问 | EF Core + SQLite | 本地数据库 |
@@ -77,8 +78,8 @@ ClosetApp.slnx
 │   └── Themes/
 │       ├── Tokens/            # Colors, Spacing, Radius, Shadows, Motion, Typography, Sizes
 │       └── Controls/          # Buttons, Cards, Chips, Inputs, Pages
-├── ClosetApp.UI.Logic/        # UI 纯逻辑共享工程（供测试引用）
-└── ClosetApp.Tests/           # 纯逻辑测试工程（xUnit）
+├── ClosetApp.UI.Logic/        # UI 纯逻辑共享工程（State、Engine、Import 等逻辑源码归属处）
+└── ClosetApp.Tests/           # xUnit 测试工程（当前同时引用 UI.Logic 与 UI 工程）
 ```
 
 ---
@@ -180,7 +181,7 @@ MainWindow 2 列布局：
 
 ### 7.3 状态类约定
 
-- 页面轻状态放在 `ClosetApp.UI/States`
+- 页面轻状态放在 `ClosetApp.UI.Logic/States`
 - State 负责：搜索文本、筛选器、加载标记、空状态、当前集合
 - Code-behind 负责：点击处理、动画、弹窗编排
 
@@ -568,8 +569,8 @@ private sealed class FakeClothingService : IClothingService
 
 ### 12.5 UI 逻辑测试
 
-- UI 逻辑测试通过 `ClosetApp.UI.Logic` 间接引用 UI 纯逻辑文件
-- 不直接引用整个 `ClosetApp.UI.csproj`（避免 WPF 生成链干扰）
+- UI 纯逻辑文件归属 `ClosetApp.UI.Logic`，便于 UI 与测试复用 State、Engine、Import 等逻辑
+- 当前测试工程也直接引用 `ClosetApp.UI.csproj`，用于覆盖 ViewModel / WPF 相关类型
 - 测试文件放在 `ClosetApp.Tests/`，与源文件同名加 `Tests` 后缀
 
 ---
