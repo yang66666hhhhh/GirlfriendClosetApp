@@ -37,19 +37,8 @@ public partial class TagsTab : UserControl
         }
     }
 
-    private void CategoryFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    private void TagFilterPanel_CategoryChanged(object? sender, TagCategory? category)
     {
-        if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
-            return;
-
-        var category = item.Tag?.ToString() switch
-        {
-            "Style" => TagCategory.Style,
-            "Scene" => TagCategory.Scene,
-            "Season" => TagCategory.Season,
-            _ => (TagCategory?)null
-        };
-
         _viewModel.SetSelectedCategory(category);
     }
 
@@ -70,10 +59,18 @@ public partial class TagsTab : UserControl
 
     private void ClearFilters_Click(object sender, RoutedEventArgs e)
     {
-        _viewModel.ClearFilters();
+        ClearFilters();
+    }
 
-        if (CategoryFilterComboBox.Items.Count > 0)
-            CategoryFilterComboBox.SelectedIndex = 0;
+    private void TagFilterPanel_ClearFiltersRequested(object? sender, EventArgs e)
+    {
+        ClearFilters();
+    }
+
+    private void ClearFilters()
+    {
+        _viewModel.ClearFilters();
+        TagFilterPanel.ResetCategoryFilter();
 
         if (SortComboBox.Items.Count > 0)
             SortComboBox.SelectedIndex = 0;
