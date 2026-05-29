@@ -40,7 +40,7 @@ public partial class OutfitsTab : UserControl
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+            ToastService.Instance.ShowError("搭配列表刷新失败", $"无法加载最新搭配数据：{ex.Message}");
         }
     }
 

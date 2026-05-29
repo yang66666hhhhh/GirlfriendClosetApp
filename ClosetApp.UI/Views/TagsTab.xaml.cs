@@ -33,7 +33,7 @@ public partial class TagsTab : UserControl
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("刷新标签失败", ex.Message);
+            ToastService.Instance.ShowError("标签列表刷新失败", $"无法加载最新标签数据：{ex.Message}");
         }
     }
 

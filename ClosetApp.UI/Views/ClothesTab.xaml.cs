@@ -61,7 +61,7 @@ public partial class ClothesTab : UserControl
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("刷新衣柜失败", ex.Message);
+            ToastService.Instance.ShowError("衣柜列表刷新失败", $"无法加载最新衣物数据：{ex.Message}");
         }
     }
 
@@ -170,7 +170,7 @@ public partial class ClothesTab : UserControl
             clothing.FavoriteLevel = card.LastFavoriteLevelBeforeToggle;
 
             card.RefreshFavoriteVisual();
-            ToastService.Instance.ShowError("更新收藏失败", ex.Message);
+            ToastService.Instance.ShowError($"「{clothing.Name}」收藏更新失败", ex.Message);
         }
     }
 

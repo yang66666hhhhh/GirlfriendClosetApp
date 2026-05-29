@@ -433,7 +433,7 @@ public partial class OutfitsViewModel : ViewModelBase
 
             if (_cachedBestDebug == null)
             {
-                ToastService.Instance.ShowInfo("暂无推荐数据", "先建几套搭配后再查看详情。");
+                ToastService.Instance.ShowInfo("暂无推荐详情", "当前天气条件下还没有匹配的搭配数据，试试先建几套不同季节的搭配。");
                 return;
             }
 
@@ -441,7 +441,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("加载推荐详情失败", ex.Message);
+            ToastService.Instance.ShowError("推荐详情加载失败", $"无法获取当前温度 {WeatherTemperature}°C 的推荐数据：{ex.Message}");
         }
     }
 
@@ -464,7 +464,7 @@ public partial class OutfitsViewModel : ViewModelBase
 
             if (debug == null)
             {
-                ToastService.Instance.ShowInfo("暂无推荐数据", "先建几套搭配后再查看详情。");
+                ToastService.Instance.ShowInfo("暂无该搭配的推荐数据", $"「{recommendation.Name}」还没有推荐评分记录，可能需要先完成一次天气推荐刷新。");
                 return;
             }
 
@@ -472,7 +472,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("加载推荐详情失败", ex.Message);
+            ToastService.Instance.ShowError($"「{recommendation.Name}」的推荐详情加载失败", ex.Message);
         }
     }
 
@@ -499,7 +499,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("加载统计数据失败", ex.Message);
+            ToastService.Instance.ShowError("衣柜统计数据加载失败", $"无法生成当前衣柜的统计分析：{ex.Message}");
         }
     }
 
@@ -514,7 +514,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("加载年度报告失败", ex.Message);
+            ToastService.Instance.ShowError($"{DateTime.Now.Year}年度报告加载失败", $"无法生成年度穿搭报告：{ex.Message}");
         }
     }
 
@@ -536,7 +536,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("刷新搭配失败", ex.Message);
+            ToastService.Instance.ShowError("搭配列表刷新失败", $"保存成功但列表未能更新：{ex.Message}");
         }
     }
 
@@ -552,12 +552,16 @@ public partial class OutfitsViewModel : ViewModelBase
         try
         {
             var isFav = await ToggleFavoriteAsync(outfit);
-            ToastService.Instance.ShowSuccess(isFav ? "已收藏" : "已取消收藏");
+            var name = outfit.Name?.Trim();
+            var displayName = !string.IsNullOrWhiteSpace(name) ? $"「{name}」" : "该搭配";
+            ToastService.Instance.ShowSuccess(isFav ? $"已收藏{displayName}" : $"已取消收藏{displayName}");
             return isFav;
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("操作失败", ex.Message);
+            var name = outfit.Name?.Trim();
+            var displayName = !string.IsNullOrWhiteSpace(name) ? $"「{name}」" : "该搭配";
+            ToastService.Instance.ShowError($"收藏{displayName}失败", ex.Message);
             return null;
         }
     }
@@ -633,7 +637,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("刷新天气推荐失败", ex.Message);
+            ToastService.Instance.ShowError("天气推荐刷新失败", $"无法获取「{WeatherCity}」的天气数据：{ex.Message}");
         }
     }
 

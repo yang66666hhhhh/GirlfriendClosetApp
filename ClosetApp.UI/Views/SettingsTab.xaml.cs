@@ -46,7 +46,7 @@ public partial class SettingsTab : UserControl
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("刷新设置失败", ex.Message);
+            ToastService.Instance.ShowError("设置页面刷新失败", $"无法加载最新设置数据：{ex.Message}");
         }
     }
 

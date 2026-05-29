@@ -51,7 +51,7 @@ public partial class WornDayDetailsDialog : UserControl
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("加载搭配列表失败", ex.Message);
+            ToastService.Instance.ShowError("搭配选择列表加载失败", $"无法获取可选搭配数据：{ex.Message}");
         }
     }
 
@@ -135,12 +135,12 @@ public partial class WornDayDetailsDialog : UserControl
                 : _date.Date.AddHours(9);
 
             await _outfitService.RecordWornDateAsync(outfit.Id, recordTime);
-            ToastService.Instance.ShowSuccess("已添加穿搭记录");
+            ToastService.Instance.ShowSuccess($"已记录「{outfit.Name}」", $"穿搭记录已添加到 {_date:M月d日}。");
             await ReloadDayRecordsAsync();
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("添加穿搭记录失败", ex.Message);
+            ToastService.Instance.ShowError($"记录「{outfit.Name}」失败", $"无法添加到 {_date:M月d日} 的穿搭记录：{ex.Message}");
         }
     }
 
@@ -152,12 +152,12 @@ public partial class WornDayDetailsDialog : UserControl
         try
         {
             await _outfitService.DeleteWornRecordAsync(recordId);
-            ToastService.Instance.ShowSuccess("已撤销这条记录");
+            ToastService.Instance.ShowSuccess("已撤销穿搭记录", $"该条记录已从 {_date:M月d日} 中移除。");
             await ReloadDayRecordsAsync();
         }
         catch (Exception ex)
         {
-            ToastService.Instance.ShowError("撤销穿搭记录失败", ex.Message);
+            ToastService.Instance.ShowError("撤销穿搭记录失败", $"无法从 {_date:M月d日} 中移除该记录：{ex.Message}");
         }
     }
 
