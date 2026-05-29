@@ -46,7 +46,6 @@ public partial class TagsTab : UserControl
         {
             "Style" => TagCategory.Style,
             "Scene" => TagCategory.Scene,
-            "Season" => TagCategory.Season,
             _ => (TagCategory?)null
         };
 
@@ -62,10 +61,26 @@ public partial class TagsTab : UserControl
         {
             "Name" => TagSortBy.Name,
             "LeastUsed" => TagSortBy.LeastUsed,
+            "Newest" => TagSortBy.Newest,
             _ => TagSortBy.MostUsed
         };
 
         _viewModel.SetSortBy(sortBy);
+    }
+
+    private void UsageFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
+            return;
+
+        var usageFilter = item.Tag?.ToString() switch
+        {
+            "Used" => TagUsageFilter.Used,
+            "Unused" => TagUsageFilter.Unused,
+            _ => TagUsageFilter.All
+        };
+
+        _viewModel.SetUsageFilter(usageFilter);
     }
 
     private void ClearFilters_Click(object sender, RoutedEventArgs e)
@@ -77,6 +92,9 @@ public partial class TagsTab : UserControl
 
         if (SortComboBox.Items.Count > 0)
             SortComboBox.SelectedIndex = 0;
+
+        if (UsageFilterComboBox.Items.Count > 0)
+            UsageFilterComboBox.SelectedIndex = 0;
     }
 
     private void AddTag_Click(object sender, RoutedEventArgs e)

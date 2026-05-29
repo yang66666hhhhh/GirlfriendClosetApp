@@ -13,18 +13,17 @@ public partial class TagsViewModel : ViewModelBase
         nameof(Tags),
         nameof(StyleTags),
         nameof(SceneTags),
-        nameof(SeasonTags),
         nameof(IsLoading),
         nameof(IsEmpty),
         nameof(IsFilteredEmpty),
         nameof(TagCount),
         nameof(FilteredCount),
+        nameof(StyleCount),
+        nameof(SceneCount),
         nameof(UsedCount),
         nameof(UnusedCount),
-        nameof(TagCountText),
-        nameof(UsedCountText),
-        nameof(UnusedCountText),
-        nameof(CategorySummaryText),
+        nameof(StyleCountText),
+        nameof(SceneCountText),
         nameof(UsageSummaryText),
         nameof(FilterSummary),
         nameof(HasActiveFilters),
@@ -32,7 +31,6 @@ public partial class TagsViewModel : ViewModelBase
         nameof(CollectionSectionBody),
         nameof(ShowStyleSection),
         nameof(ShowSceneSection),
-        nameof(ShowSeasonSection),
         nameof(SearchText)
     ];
 
@@ -48,28 +46,26 @@ public partial class TagsViewModel : ViewModelBase
     public IReadOnlyList<TagListItem> Tags => _state.Tags;
     public IReadOnlyList<TagListItem> StyleTags => _state.StyleTags;
     public IReadOnlyList<TagListItem> SceneTags => _state.SceneTags;
-    public IReadOnlyList<TagListItem> SeasonTags => _state.SeasonTags;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
     public bool IsFilteredEmpty => _state.IsFilteredEmpty;
     public int TagCount => _state.TagCount;
     public int FilteredCount => _state.FilteredCount;
+    public int StyleCount => _state.StyleCount;
+    public int SceneCount => _state.SceneCount;
     public int UsedCount => _state.UsedCount;
     public int UnusedCount => _state.UnusedCount;
-    public string TagCountText => $"{TagCount} 个标签";
-    public string UsedCountText => $"{UsedCount} 个已在使用";
-    public string UnusedCountText => $"{UnusedCount} 个待整理";
-    public string CategorySummaryText => _state.CategorySummaryText;
+    public string StyleCountText => _state.StyleCountText;
+    public string SceneCountText => _state.SceneCountText;
     public string UsageSummaryText => _state.UsageSummaryText;
     public string FilterSummary => _state.FilterSummary;
     public bool HasActiveFilters => _state.HasActiveFilters;
     public bool ShowStyleSection => _state.ShowStyleSection;
     public bool ShowSceneSection => _state.ShowSceneSection;
-    public bool ShowSeasonSection => _state.ShowSeasonSection;
     public string CollectionSectionTitle => HasActiveFilters ? "筛选结果" : "按分类整理";
     public string CollectionSectionBody => HasActiveFilters
-        ? "现在只保留了符合条件的标签，顺手编辑或删掉不再需要的会更干净。"
-        : "把风格、场景和季节词分开看，会更容易补齐空缺，也更方便后面做筛选。";
+        ? "只显示了符合条件的标签，顺手编辑或删掉不再需要的会更干净。"
+        : "把风格和场景标签分开看，更容易找到需要处理的那个。";
     public string SearchText
     {
         get => _searchText;
@@ -127,6 +123,12 @@ public partial class TagsViewModel : ViewModelBase
     public void SetSortBy(TagSortBy sortBy)
     {
         _state.SetSortBy(sortBy);
+        NotifyStateChanged();
+    }
+
+    public void SetUsageFilter(TagUsageFilter usageFilter)
+    {
+        _state.SetUsageFilter(usageFilter);
         NotifyStateChanged();
     }
 
