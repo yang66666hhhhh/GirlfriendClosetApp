@@ -2,7 +2,8 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:outfit="clr-namespace:ClosetApp.UI.Components.Outfit.Controls"
-             xmlns:conv="clr-namespace:ClosetApp.UI.Converters">
+             xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
+             xmlns:states="clr-namespace:ClosetApp.UI.Components.Shared.States">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <conv:InverseBooleanToVisibilityConverter x:Key="InverseBooleanToVisibilityConverter"/>
@@ -284,6 +285,7 @@
                                 </UniformGrid>
 
                                 <ItemsControl Grid.Row="2"
+                                              MinHeight="432"
                                               ItemsSource="{Binding CalendarDays}">
                                     <ItemsControl.ItemsPanel>
                                         <ItemsPanelTemplate>
@@ -381,6 +383,22 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
+                                <Border Grid.Row="2"
+                                        Margin="3"
+                                        Background="#F8FFFFFF"
+                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="18"
+                                        Visibility="{Binding HasNoWornRecords, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <states:EmptyState Icon="♡"
+                                                       Title="还没有穿着记录"
+                                                       Body="记录一次今天穿了哪套，这里就会出现最近穿着和月历回顾。"
+                                                       ActionText="去记录今天"
+                                                       SecondaryActionText="稍后再说"
+                                                       SecondaryActionVisible="Visible"
+                                                       ActionClicked="EmptyRecordToday_Click"
+                                                       SecondaryActionClicked="CloseButton_Click"/>
+                                </Border>
                                 </Grid>
                             </Border>
                         </StackPanel>

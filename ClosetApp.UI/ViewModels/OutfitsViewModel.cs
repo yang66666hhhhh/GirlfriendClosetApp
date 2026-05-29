@@ -46,6 +46,8 @@ public partial class OutfitsViewModel : ViewModelBase
         nameof(HistoryToggleText),
         nameof(CalendarMonthText),
         nameof(CalendarSummaryText),
+        nameof(HasAnyWornRecords),
+        nameof(HasNoWornRecords),
         nameof(TodayWornCount),
         nameof(HasTodayWornRecords),
         nameof(TodayWornStatusText)
@@ -252,6 +254,8 @@ public partial class OutfitsViewModel : ViewModelBase
     public string HistoryToggleText => _state.HistoryToggleText;
     public string CalendarMonthText => _state.CalendarMonthText;
     public string CalendarSummaryText => _state.CalendarSummaryText;
+    public bool HasAnyWornRecords => RecentWornRecords.Count > 0;
+    public bool HasNoWornRecords => !HasAnyWornRecords;
     public string WeatherHeadlineText => $"{WeatherCity} · {WeatherTemperature}°C · {WeatherCondition}";
     public string WeatherCityCompactText => BuildCompactWeatherCity(WeatherCity);
     public string WeatherCompactSummaryText => $"{WeatherTemperature}°C · {WeatherCondition}";
@@ -672,8 +676,13 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public async Task EnsureCalendarLoadedAsync()
     {
+        if (_state.RecentWornRecords.Count == 0)
+            await RefreshDerivedStateAsync();
+
         if (_state.CalendarDays.Count == 0)
             await RefreshCalendarAsync();
+
+        NotifyStateChanged();
     }
 
     private async Task RefreshCalendarIfLoadedAsync()

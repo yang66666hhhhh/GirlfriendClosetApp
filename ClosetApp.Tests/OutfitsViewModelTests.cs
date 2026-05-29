@@ -217,6 +217,25 @@ public class OutfitsViewModelTests
         Assert.Contains(viewModel.Outfits, outfit => outfit.Name == "新搭配");
     }
 
+    [Fact]
+    public async Task EnsureCalendarLoadedAsync_LoadsCalendarAndNotifiesBindings()
+    {
+        var outfit = CreateOutfit("今日通勤", OutfitScene.Work, Season.Spring);
+        var outfitService = new FakeOutfitService([outfit]);
+        await outfitService.RecordWornDateAsync(outfit.Id, DateTime.Today);
+        var viewModel = CreateViewModel([outfit], outfitService: outfitService);
+        var changedProperties = new List<string?>();
+        viewModel.PropertyChanged += (_, e) => changedProperties.Add(e.PropertyName);
+
+        await viewModel.EnsureCalendarLoadedAsync();
+
+        Assert.Equal(42, viewModel.CalendarDays.Count);
+        Assert.Contains(viewModel.CalendarDays, day => day.Date.Date == DateTime.Today && day.HasRecords);
+        Assert.Contains(nameof(OutfitsViewModel.CalendarDays), changedProperties);
+        Assert.True(viewModel.HasAnyWornRecords);
+        Assert.False(viewModel.HasNoWornRecords);
+    }
+
     private static OutfitsViewModel CreateViewModel(
         IReadOnlyList<Outfit> outfits,
         FakeOutfitService? outfitService = null,

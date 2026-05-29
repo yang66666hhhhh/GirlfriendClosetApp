@@ -32,6 +32,21 @@ public partial class OutfitHistoryDialog : UserControl
         ModalService.Instance.Hide();
     }
 
+    private async void EmptyRecordToday_Click(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.FocusHistoryDateAsync(DateTime.Today);
+        var today = _viewModel.CalendarDays.FirstOrDefault(day => day.Date.Date == DateTime.Today);
+        var dialog = new WornDayDetailsDialog(DateTime.Today, today?.Records ?? [], isEmbedded: true);
+        dialog.RecordsChanged += async (_, _) =>
+        {
+            await _viewModel.RefreshAsync();
+            await _viewModel.EnsureCalendarLoadedAsync();
+            SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
+        };
+        dialog.CloseRequested += (_, _) => CloseDayDetailsOverlay();
+        OpenDayDetailsOverlay(dialog);
+    }
+
     private async void RecentWornItem_Click(object sender, MouseButtonEventArgs e)
     {
         if (sender is not FrameworkElement { DataContext: RecentWornListItem item })
