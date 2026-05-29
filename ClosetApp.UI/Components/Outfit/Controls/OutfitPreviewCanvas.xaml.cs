@@ -6,7 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Effects;
 using ClosetApp.Application.Images;
 using ClosetApp.Domain.Entities;
-using ClosetApp.UI.Components.Outfit.Engine;
+using ClosetApp.UI.Logic.Components.Outfit.Engine;
 using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Outfit.Controls;

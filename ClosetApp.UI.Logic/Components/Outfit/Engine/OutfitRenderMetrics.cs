@@ -1,4 +1,4 @@
-namespace ClosetApp.UI.Components.Outfit.Engine;
+namespace ClosetApp.UI.Logic.Components.Outfit.Engine;
 
 public class OutfitRenderMetrics
 {

@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using ClosetApp.UI.Logic.Components.Clothing;
 using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Clothing;

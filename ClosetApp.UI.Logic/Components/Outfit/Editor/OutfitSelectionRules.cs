@@ -2,7 +2,7 @@ using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Enums;
 using ClothingEntity = ClosetApp.Domain.Entities.Clothing;
 
-namespace ClosetApp.UI.Components.Outfit.Editor;
+namespace ClosetApp.UI.Logic.Components.Outfit.Editor;
 
 public enum OutfitSelectionSlot
 {

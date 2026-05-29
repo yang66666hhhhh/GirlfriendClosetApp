@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
@@ -7,8 +7,9 @@ using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
+using ClosetApp.UI.Logic.Services;
+using ClosetApp.UI.Logic.States;
 using ClosetApp.UI.Services;
-using ClosetApp.UI.States;
 using Serilog;
 
 namespace ClosetApp.UI.ViewModels;

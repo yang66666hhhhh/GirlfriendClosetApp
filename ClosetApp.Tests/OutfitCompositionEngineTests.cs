@@ -1,6 +1,6 @@
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Enums;
-using ClosetApp.UI.Components.Outfit.Engine;
+using ClosetApp.UI.Logic.Components.Outfit.Engine;
 using Xunit;
 using ClothingEntity = ClosetApp.Domain.Entities.Clothing;
 

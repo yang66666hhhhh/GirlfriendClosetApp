@@ -61,7 +61,7 @@ public partial class MainWindow : Window
         SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, anim);
     }
 
-    public async void NavigateToSettings()
+    public async Task NavigateToSettingsAsync()
     {
         Sidebar.SetSelectedTab(3);
         ShowTab(3);

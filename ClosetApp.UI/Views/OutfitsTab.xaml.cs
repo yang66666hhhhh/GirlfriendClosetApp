@@ -117,12 +117,12 @@ public partial class OutfitsTab : UserControl
         ModalService.Instance.Show(new OutfitHistoryDialog(_viewModel));
     }
 
-    private void OpenSettings_Click(object sender, RoutedEventArgs e)
+    private async void OpenSettings_Click(object sender, RoutedEventArgs e)
     {
         if (Window.GetWindow(this) is not MainWindow window)
             return;
 
-        window.NavigateToSettings();
+        await window.NavigateToSettingsAsync();
     }
 
 }

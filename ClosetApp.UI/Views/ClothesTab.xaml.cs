@@ -10,8 +10,10 @@ using ClosetApp.UI.Components.Clothing;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Logic.Components.Clothing;
+using ClosetApp.UI.Logic.Services;
+using ClosetApp.UI.Logic.States;
 using ClosetApp.UI.Services;
-using ClosetApp.UI.States;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 

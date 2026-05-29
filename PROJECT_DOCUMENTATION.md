@@ -215,6 +215,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 见 `docs/ARCHITECTURE_CONVENTIONS.md`：
 
 - 页面轻状态放在 `ClosetApp.UI.Logic/States`
+- `ClosetApp.UI.Logic` 中的纯逻辑类型使用 `ClosetApp.UI.Logic.*` 命名空间
 - State 负责搜索文本、筛选器、加载标记、当前集合与空状态
 - 当页面存在分组视图时，State 也负责分组集合、汇总计数和筛选摘要
 - 交互和 modal 编排仍可保留在 code-behind

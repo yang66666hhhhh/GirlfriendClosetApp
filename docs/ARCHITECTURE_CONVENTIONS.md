@@ -9,6 +9,7 @@
 ## Page State
 
 - Tab pages use thin state classes in `ClosetApp.UI.Logic/States`.
+- Pure logic types in `ClosetApp.UI.Logic` use `ClosetApp.UI.Logic.*` namespaces.
 - State classes own search text, filters, loading flags, empty state, and current item collections.
 - Code-behind may still own click handlers, animations, visual tree probing, and modal orchestration.
 

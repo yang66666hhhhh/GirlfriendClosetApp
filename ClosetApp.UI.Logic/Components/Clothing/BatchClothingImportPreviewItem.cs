@@ -1,4 +1,4 @@
-namespace ClosetApp.UI.Components.Clothing;
+namespace ClosetApp.UI.Logic.Components.Clothing;
 
 public sealed class BatchClothingImportPreviewItem
 {

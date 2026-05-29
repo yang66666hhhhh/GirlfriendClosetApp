@@ -1,5 +1,5 @@
 using System.IO;
-using ClosetApp.UI.Services;
+using ClosetApp.UI.Logic.Services;
 using Xunit;
 
 namespace ClosetApp.Tests;

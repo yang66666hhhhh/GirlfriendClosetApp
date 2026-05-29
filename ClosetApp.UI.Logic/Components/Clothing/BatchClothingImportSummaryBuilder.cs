@@ -2,7 +2,7 @@ using System.IO;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Enums;
 
-namespace ClosetApp.UI.Components.Clothing;
+namespace ClosetApp.UI.Logic.Components.Clothing;
 
 public static class BatchClothingImportSummaryBuilder
 {

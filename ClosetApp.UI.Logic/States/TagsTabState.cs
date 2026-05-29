@@ -1,7 +1,7 @@
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 
-namespace ClosetApp.UI.States;
+namespace ClosetApp.UI.Logic.States;
 
 public enum TagSortBy
 {

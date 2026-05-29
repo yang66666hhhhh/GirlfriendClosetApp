@@ -1,7 +1,7 @@
 using ClosetApp.Domain.Clothing;
 using ClothingEntity = ClosetApp.Domain.Entities.Clothing;
 
-namespace ClosetApp.UI.Components.Outfit.Engine;
+namespace ClosetApp.UI.Logic.Components.Outfit.Engine;
 
 public sealed class OutfitParts
 {

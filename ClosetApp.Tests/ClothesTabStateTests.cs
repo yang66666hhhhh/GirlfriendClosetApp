@@ -1,7 +1,7 @@
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.UI.States;
+using ClosetApp.UI.Logic.States;
 using Xunit;
 
 namespace ClosetApp.Tests;

@@ -1,12 +1,12 @@
-﻿using ClosetApp.Application.DTOs;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Clothing;
-using ClosetApp.UI.Components.Clothing;
+using ClosetApp.UI.Logic.Components.Clothing;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Tags.Models;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.UI.States;
+using ClosetApp.UI.Logic.States;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using Serilog;

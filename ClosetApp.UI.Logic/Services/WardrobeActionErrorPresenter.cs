@@ -1,6 +1,6 @@
 using System.IO;
 
-namespace ClosetApp.UI.Services;
+namespace ClosetApp.UI.Logic.Services;
 
 public static class WardrobeActionErrorPresenter
 {

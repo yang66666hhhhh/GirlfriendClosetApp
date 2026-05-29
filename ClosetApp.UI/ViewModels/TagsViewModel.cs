@@ -1,7 +1,7 @@
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.UI.States;
+using ClosetApp.UI.Logic.States;
 using Serilog;
 
 namespace ClosetApp.UI.ViewModels;

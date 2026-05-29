@@ -1,7 +1,7 @@
 using System.IO;
 using ClosetApp.Domain.Entities;
 
-namespace ClosetApp.UI.Components.Clothing;
+namespace ClosetApp.UI.Logic.Components.Clothing;
 
 public static class BatchImportDuplicateChecker
 {

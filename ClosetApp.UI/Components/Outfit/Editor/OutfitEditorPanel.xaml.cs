@@ -6,6 +6,7 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Logic.Components.Outfit.Editor;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using OutfitEntity = ClosetApp.Domain.Entities.Outfit;

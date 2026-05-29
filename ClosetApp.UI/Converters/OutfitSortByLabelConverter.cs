@@ -1,6 +1,6 @@
 using System.Globalization;
 using System.Windows.Data;
-using ClosetApp.UI.States;
+using ClosetApp.UI.Logic.States;
 
 namespace ClosetApp.UI.Converters;
 

@@ -1,4 +1,4 @@
-﻿using System.Windows;
+using System.Windows;
 using System.IO;
 using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;

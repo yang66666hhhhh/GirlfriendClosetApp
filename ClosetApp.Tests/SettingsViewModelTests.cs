@@ -3,8 +3,8 @@ using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
-using ClosetApp.UI.Services;
 using ClosetApp.UI.Components.Shared;
+using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Xunit;
 

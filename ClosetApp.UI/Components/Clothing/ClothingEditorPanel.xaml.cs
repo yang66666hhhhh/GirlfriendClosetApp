@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -12,6 +12,7 @@ using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 using Microsoft.Win32;
 using Microsoft.Extensions.DependencyInjection;

@@ -2,7 +2,7 @@ using System.Diagnostics;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Enums;
 
-namespace ClosetApp.UI.Components.Outfit.Engine;
+namespace ClosetApp.UI.Logic.Components.Outfit.Engine;
 
 public class OutfitCompositionEngine
 {

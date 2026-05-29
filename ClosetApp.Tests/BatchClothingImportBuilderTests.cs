@@ -1,6 +1,6 @@
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.UI.Components.Clothing;
+using ClosetApp.UI.Logic.Components.Clothing;
 using Xunit;
 
 namespace ClosetApp.Tests;

@@ -182,6 +182,7 @@ MainWindow 2 列布局：
 ### 7.3 状态类约定
 
 - 页面轻状态放在 `ClosetApp.UI.Logic/States`
+- `ClosetApp.UI.Logic` 中的纯逻辑类型使用 `ClosetApp.UI.Logic.*` 命名空间
 - State 负责：搜索文本、筛选器、加载标记、空状态、当前集合
 - Code-behind 负责：点击处理、动画、弹窗编排
 

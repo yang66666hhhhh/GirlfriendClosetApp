@@ -3,7 +3,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using ClosetApp.UI.Services;
-using ClosetApp.UI.States;
+using ClosetApp.UI.Logic.States;
 using ClosetApp.UI.ViewModels;
 
 namespace ClosetApp.UI.Components.Shared.Modal;

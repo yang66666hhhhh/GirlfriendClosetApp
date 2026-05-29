@@ -1,7 +1,7 @@
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 
-namespace ClosetApp.UI.Components.Clothing;
+namespace ClosetApp.UI.Logic.Components.Clothing;
 
 public sealed record BatchClothingImportOptions(
     ClothingType Type,
