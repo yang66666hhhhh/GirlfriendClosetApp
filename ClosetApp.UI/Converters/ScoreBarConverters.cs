@@ -20,7 +20,7 @@ public class ScoreToColorConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return ConverterBackResult.DoNothing;
     }
 }
 
@@ -35,6 +35,6 @@ public class ScoreToSignConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return ConverterBackResult.DoNothing;
     }
 }

@@ -18,7 +18,7 @@ public class ImagePathConverter : IValueConverter
 
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
     {
-        throw new NotImplementedException();
+        return ConverterBackResult.DoNothing;
     }
 
     private static (ImageVariant Variant, int DecodePixelWidth, bool TrimLightPadding, bool ExtractForeground) ParseParameter(object? parameter)
