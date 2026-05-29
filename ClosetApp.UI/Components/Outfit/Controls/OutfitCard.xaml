@@ -86,27 +86,48 @@
             <!-- Info Area -->
             <Border Grid.Row="1"
                     Style="{StaticResource Card.InfoArea}">
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="Auto"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel Grid.Column="0" VerticalAlignment="Center">
-                        <TextBlock x:Name="TxtName"
-                                   Style="{StaticResource Card.Title}"/>
-                        <TextBlock x:Name="TxtMoodLine"
-                                   Style="{StaticResource Card.Subtitle}"
-                                   Margin="0,4,0,0"/>
-                        <WrapPanel x:Name="MoodChipPanel"
-                                   Style="{StaticResource Card.ChipPanel}"/>
-                        <TextBlock x:Name="TxtWearInfo"
-                                   Style="{StaticResource Card.Tertiary}"
-                                   Margin="0,8,0,0"/>
-                    </StackPanel>
-                    <Button x:Name="BtnFavorite" Grid.Column="1"
-                            Style="{StaticResource Card.FavoriteButtonBase}"
-                            Content="♡" FontSize="{StaticResource Card.FavoriteFontSize}"/>
-                </Grid>
+                <StackPanel>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0" VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtName"
+                                       Style="{StaticResource Card.Title}"/>
+                            <TextBlock x:Name="TxtMoodLine"
+                                       Style="{StaticResource Card.Subtitle}"
+                                       Margin="0,4,0,0"/>
+                            <WrapPanel x:Name="MoodChipPanel"
+                                       Style="{StaticResource Card.ChipPanel}"/>
+                            <TextBlock x:Name="TxtWearInfo"
+                                       Style="{StaticResource Card.Tertiary}"
+                                       Margin="0,8,0,0"/>
+                        </StackPanel>
+                        <Button x:Name="BtnFavorite" Grid.Column="1"
+                                Style="{StaticResource Card.FavoriteButtonBase}"
+                                Content="♡" FontSize="{StaticResource Card.FavoriteFontSize}"/>
+                    </Grid>
+                    <!-- 搭配变化提示 -->
+                    <Border x:Name="ChangeWarningBorder"
+                            Background="{DynamicResource TagRoseSurfaceBrush}"
+                            BorderBrush="{DynamicResource TagRoseBorderBrush}"
+                            BorderThickness="1"
+                            CornerRadius="10"
+                            Padding="10,6"
+                            Margin="0,8,0,0"
+                            Visibility="Collapsed">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="⚠️" Margin="0,0,6,0" VerticalAlignment="Center"/>
+                            <TextBlock x:Name="ChangeWarningText"
+                                       Text="搭配已变化"
+                                       FontSize="11"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TagRoseTextBrush}"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </Border>
         </Grid>
     </Border>

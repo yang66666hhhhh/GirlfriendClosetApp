@@ -11,6 +11,7 @@ public class Outfit : BaseEntity
     public string? Notes { get; set; }
     public DateTime? WornDate { get; set; }
     public int WearCount { get; set; }
+    public int OriginalClothingCount { get; set; }
 
     public ICollection<OutfitClothing> OutfitClothes { get; set; } = new List<OutfitClothing>();
     public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();

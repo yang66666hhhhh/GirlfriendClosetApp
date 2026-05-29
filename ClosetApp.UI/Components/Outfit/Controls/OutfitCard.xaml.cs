@@ -133,6 +133,7 @@ public partial class OutfitCard : UserControl
             card.ApplyPreviewBackdrop(outfit, clothes);
             card.RenderMoodChips(chips);
             card.ApplyFavoriteVisual(outfit);
+            card.ApplyChangeWarning(outfit, clothes);
         }
     }
 
@@ -269,6 +270,23 @@ public partial class OutfitCard : UserControl
         BtnFavorite.BorderBrush = isFav
             ? (Brush)FindResource("DangerBrush")
             : (Brush)FindResource("BorderLightBrush");
+    }
+
+    private void ApplyChangeWarning(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    {
+        var currentCount = clothes?.Count ?? 0;
+        var originalCount = outfit.OriginalClothingCount;
+        var hasChanged = originalCount > 0 && currentCount < originalCount;
+
+        if (hasChanged)
+        {
+            ChangeWarningBorder.Visibility = Visibility.Visible;
+            ChangeWarningText.Text = $"搭配已变化（原 {originalCount} 件，现 {currentCount} 件）";
+        }
+        else
+        {
+            ChangeWarningBorder.Visibility = Visibility.Collapsed;
+        }
     }
 
     private void RenderMoodChips(IReadOnlyList<string> chips)

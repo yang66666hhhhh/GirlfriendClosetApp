@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Domain.Interfaces;
@@ -124,11 +126,40 @@ public class OutfitRepository : IOutfitRepository
         
         var outfitsWithClothing = await _context.Outfits
             .Include(o => o.OutfitClothes)
+            .ThenInclude(oc => oc.Clothing)
             .Where(o => o.OutfitClothes.Any(oc => oc.ClothingId == excludedClothingId))
             .ToListAsync();
 
+        var deletedOutfitIds = new List<Guid>();
+
         foreach (var outfit in outfitsWithClothing)
         {
+            // 在删除搭配之前，更新相关穿着记录的快照
+            var wornRecords = await _context.OutfitWornRecords
+                .Where(r => r.OutfitId == outfit.Id)
+                .ToListAsync();
+
+            foreach (var record in wornRecords)
+            {
+                if (!record.IsSnapshotComplete)
+                {
+                    record.OutfitNameSnapshot = outfit.Name;
+                    record.ClothingCountSnapshot = outfit.OutfitClothes.Count;
+                    record.ClothingDetailsSnapshot = JsonSerializer.Serialize(
+                        outfit.OutfitClothes
+                            .Where(oc => oc.Clothing != null)
+                            .Select(oc => new ClothingSnapshotDto
+                            {
+                                Id = oc.ClothingId,
+                                Name = oc.Clothing!.Name,
+                                ImagePath = oc.Clothing.ImagePath,
+                                Type = oc.Clothing.Type.ToString()
+                            })
+                            .ToList());
+                    record.IsSnapshotComplete = true;
+                }
+            }
+
             var link = outfit.OutfitClothes.FirstOrDefault(oc => oc.ClothingId == excludedClothingId);
             if (link != null)
             {
@@ -146,6 +177,7 @@ public class OutfitRepository : IOutfitRepository
                     RemainingClothingCount = remainingCount,
                     WasDeleted = true
                 });
+                deletedOutfitIds.Add(outfit.Id);
                 _context.Outfits.Remove(outfit);
             }
             else
@@ -157,6 +189,18 @@ public class OutfitRepository : IOutfitRepository
                     RemainingClothingCount = remainingCount,
                     WasDeleted = false
                 });
+            }
+        }
+
+        if (deletedOutfitIds.Count > 0)
+        {
+            var wornRecords = await _context.OutfitWornRecords
+                .Where(r => r.OutfitId.HasValue && deletedOutfitIds.Contains(r.OutfitId.Value))
+                .ToListAsync();
+
+            foreach (var record in wornRecords)
+            {
+                record.OutfitId = null;
             }
         }
 

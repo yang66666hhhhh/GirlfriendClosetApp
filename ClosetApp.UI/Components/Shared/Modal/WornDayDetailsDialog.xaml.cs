@@ -1,6 +1,8 @@
+using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Services;
@@ -220,28 +222,81 @@ public partial class WornDayDetailsDialog : UserControl
         string OutfitName,
         string TimeText,
         string PreviewMetaText,
-        IList<global::ClosetApp.Domain.Entities.Clothing> PreviewClothes)
+        IList<global::ClosetApp.Domain.Entities.Clothing> PreviewClothes,
+        string? StatusText)
     {
         public bool HasPreviewClothes => PreviewClothes.Count > 0;
+        public bool HasStatus => !string.IsNullOrEmpty(StatusText);
 
         public static WornDayRecordItem FromRecord(OutfitWornRecord record)
         {
-            var previewClothes = record.Outfit?.OutfitClothes
-                .Select(link => link.Clothing)
-                .Where(clothing => clothing != null)
-                .Cast<global::ClosetApp.Domain.Entities.Clothing>()
-                .ToList() ?? [];
-            var metaParts = new List<string> { record.WornDate.ToString("HH:mm") };
+            var isDeleted = record.Outfit == null;
+            var isChanged = false;
+            var originalCount = record.ClothingCountSnapshot;
+            var currentCount = 0;
 
-            if (previewClothes.Count > 0)
-                metaParts.Add($"{previewClothes.Count} 件单品");
+            IList<global::ClosetApp.Domain.Entities.Clothing> previewClothes = [];
+
+            if (!isDeleted)
+            {
+                previewClothes = record.Outfit!.OutfitClothes
+                    .Select(link => link.Clothing)
+                    .Where(clothing => clothing != null)
+                    .Cast<global::ClosetApp.Domain.Entities.Clothing>()
+                    .ToList();
+                currentCount = previewClothes.Count;
+                isChanged = originalCount > 0 && currentCount != originalCount;
+            }
+
+            var statusText = (isDeleted, isChanged, record.IsSnapshotComplete) switch
+            {
+                (true, _, true) => "搭配已删除",
+                (true, _, false) => "搭配已删除（快照不完整）",
+                (_, true, true) => "搭配已变化",
+                (_, true, false) => "搭配已变化（快照不完整）",
+                _ => null
+            };
+
+            var displayName = isDeleted
+                ? record.OutfitNameSnapshot
+                : record.Outfit!.Name;
+
+            var metaParts = new List<string> { record.WornDate.ToString("HH:mm") };
+            if (isDeleted || isChanged)
+                metaParts.Add($"原 {originalCount} 件");
+            else if (currentCount > 0)
+                metaParts.Add($"{currentCount} 件单品");
+
+            if ((isDeleted || isChanged) && record.IsSnapshotComplete && !string.IsNullOrEmpty(record.ClothingDetailsSnapshot))
+            {
+                try
+                {
+                    var snapshotClothes = JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(record.ClothingDetailsSnapshot);
+                    if (snapshotClothes != null && snapshotClothes.Count > 0)
+                    {
+                        previewClothes = snapshotClothes
+                            .Select(dto => new global::ClosetApp.Domain.Entities.Clothing
+                            {
+                                Id = dto.Id,
+                                Name = dto.Name,
+                                ImagePath = dto.ImagePath
+                            })
+                            .ToList();
+                    }
+                }
+                catch
+                {
+                    // 快照解析失败时使用当前衣服
+                }
+            }
 
             return new WornDayRecordItem(
                 record.Id,
-                record.Outfit?.Name ?? "未命名搭配",
+                displayName,
                 record.WornDate.ToString("HH:mm"),
                 string.Join(" · ", metaParts),
-                previewClothes);
+                previewClothes,
+                statusText);
         }
     }
 

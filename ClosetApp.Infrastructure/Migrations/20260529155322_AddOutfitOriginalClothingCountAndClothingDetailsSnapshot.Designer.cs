@@ -3,6 +3,7 @@ using System;
 using ClosetApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClosetApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ClosetDbContext))]
-    partial class ClosetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260529155322_AddOutfitOriginalClothingCountAndClothingDetailsSnapshot")]
+    partial class AddOutfitOriginalClothingCountAndClothingDetailsSnapshot
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -170,9 +173,6 @@ namespace ClosetApp.Infrastructure.Migrations
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("TEXT");
-
-                    b.Property<bool>("IsSnapshotComplete")
-                        .HasColumnType("INTEGER");
 
                     b.Property<string>("OutfitClothingIdsSnapshot")
                         .HasColumnType("TEXT");

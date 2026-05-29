@@ -1,8 +1,10 @@
 <UserControl x:Class="ClosetApp.UI.Components.Shared.Modal.WornDayDetailsDialog"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:outfit="clr-namespace:ClosetApp.UI.Components.Outfit.Controls">
+             xmlns:outfit="clr-namespace:ClosetApp.UI.Components.Outfit.Controls"
+             xmlns:conv="clr-namespace:ClosetApp.UI.Converters">
     <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
         <Style x:Key="RecordPreviewButtonStyle"
                TargetType="Button"
                BasedOn="{StaticResource IconButton}">
@@ -175,6 +177,20 @@
                                                            FontSize="11.5"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                                            Margin="0,6,0,0"/>
+                                                <!-- 状态提示 -->
+                                                <Border Background="{DynamicResource TagRoseSurfaceBrush}"
+                                                        BorderBrush="{DynamicResource TagRoseBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="8,3"
+                                                        Margin="0,6,0,0"
+                                                        HorizontalAlignment="Left"
+                                                        Visibility="{Binding HasStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <TextBlock Text="{Binding StatusText}"
+                                                               FontSize="11"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource TagRoseTextBrush}"/>
+                                                </Border>
                                             </StackPanel>
 
                                             <Button Grid.Column="3"

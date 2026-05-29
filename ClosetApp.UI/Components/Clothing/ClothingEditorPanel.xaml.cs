@@ -30,7 +30,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private string? _selectedImagePath;
     private bool _imageChanged;
-    private ClothingType _selectedType = ClothingType.Top;
+    private ClothingType _selectedType = ClothingType.Unspecified;
     private Season _selectedSeason = Season.AllSeason;
     private int _favoriteLevel;
     private bool _isSubmitting;
@@ -145,6 +145,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
                 var tag = rb.Tag?.ToString();
                 var matches = tag switch
                 {
+                    "Unspecified" => type == ClothingType.Unspecified,
                     "Top" => type == ClothingType.Top,
                     "Bottom" => type == ClothingType.Bottom,
                     "Outerwear" => type == ClothingType.Outerwear,
@@ -341,6 +342,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
         _selectedType = btn.Tag?.ToString() switch
         {
+            "Unspecified" => ClothingType.Unspecified,
             "Top" => ClothingType.Top,
             "Bottom" => ClothingType.Bottom,
             "Outerwear" => ClothingType.Outerwear,
@@ -348,7 +350,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
             "Skirt" => ClothingType.Skirt,
             "Shoes" => ClothingType.Shoes,
             "Accessory" => ClothingType.Accessory,
-            _ => ClothingType.Top
+            _ => ClothingType.Unspecified
         };
         IsDirty = true;
     }
@@ -418,14 +420,6 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
         if (_isSubmitting)
             return;
 
-        if (string.IsNullOrWhiteSpace(TxtName.Text))
-        {
-            AnimationHelper.Shake(TxtName);
-            TxtName.Focus();
-            ToastService.Instance.ShowInfo("先给这件衣服起个名字吧。");
-            return;
-        }
-
         try
         {
             SetSubmitting(true);
@@ -445,7 +439,7 @@ public partial class ClothingEditorPanel : UserControl, IEditorPanel<global::Clo
 
     private async Task<global::ClosetApp.Domain.Entities.Clothing> BuildClothingFromFormAsync()
     {
-        var name = TxtName.Text.Trim();
+        var name = string.IsNullOrWhiteSpace(TxtName.Text) ? "未命名" : TxtName.Text.Trim();
         var color = string.IsNullOrWhiteSpace(TxtColor.Text) ? null : TxtColor.Text.Trim();
         var brand = string.IsNullOrWhiteSpace(TxtBrand.Text) ? null : TxtBrand.Text.Trim();
         var notes = string.IsNullOrWhiteSpace(TxtNotes.Text) ? null : TxtNotes.Text.Trim();
