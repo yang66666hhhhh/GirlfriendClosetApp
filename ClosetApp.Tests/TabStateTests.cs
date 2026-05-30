@@ -87,7 +87,8 @@ public class TabStateTests
         ]);
 
         Assert.Equal(3, state.TagCount);
-        Assert.Equal("风格 2 · 场景 1", state.StyleCountText.Replace(" 个", ""));
+        Assert.Equal("2 个", state.StyleCountText);
+        Assert.Equal("1 个", state.SceneCountText);
         Assert.Equal("极简", state.Tags[0].Name);
         Assert.Equal("通勤", state.Tags[1].Name);
     }

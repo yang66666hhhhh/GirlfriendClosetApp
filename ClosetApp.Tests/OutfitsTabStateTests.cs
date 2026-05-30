@@ -1,6 +1,7 @@
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Logic.States;
+using System.Text.Json;
 using Xunit;
 
 namespace ClosetApp.Tests;
@@ -125,6 +126,63 @@ public class OutfitsTabStateTests
 
         Assert.True(state.IsHistoryExpanded);
         Assert.Equal("收起记录日历", state.HistoryToggleText);
+    }
+
+    [Fact]
+    public void SetRecentWornRecords_WithChangedOutfit_UsesSnapshotPreviewAndName()
+    {
+        var skirtId = Guid.NewGuid();
+        var outfit = CreateOutfit("现在的搭配", OutfitScene.Date, Season.Autumn);
+        outfit.OutfitClothes.Add(new OutfitClothing
+        {
+            ClothingId = Guid.NewGuid(),
+            Clothing = new Clothing { Name = "白衬衫", Type = ClothingType.Top }
+        });
+
+        var record = new OutfitWornRecord
+        {
+            Id = Guid.NewGuid(),
+            Outfit = outfit,
+            OutfitNameSnapshot = "当天约会搭配",
+            ClothingCountSnapshot = 2,
+            IsSnapshotComplete = true,
+            WornDate = new DateTime(2026, 5, 20, 9, 0, 0),
+            ClothingDetailsSnapshot = JsonSerializer.Serialize(new[]
+            {
+                new { Id = Guid.NewGuid(), Name = "白衬衫", Type = nameof(ClothingType.Top), ImagePath = (string?)null },
+                new { Id = skirtId, Name = "黑色半裙", Type = nameof(ClothingType.Skirt), ImagePath = (string?)null }
+            })
+        };
+
+        var state = new OutfitsTabState();
+        state.SetRecentWornRecords([record]);
+
+        var item = Assert.Single(state.RecentWornRecords);
+        Assert.Equal("当天约会搭配", item.OutfitName);
+        Assert.Contains("原 2 件", item.MetaText);
+        Assert.Contains("搭配已变化", item.MetaText);
+        Assert.Equal(2, item.PreviewClothes.Count);
+        Assert.Contains(item.PreviewClothes, clothing => clothing.Id == skirtId && clothing.Type == ClothingType.Skirt);
+    }
+
+    [Fact]
+    public void SetCalendarRecords_WithDeletedOutfit_UsesSnapshotName()
+    {
+        var record = new OutfitWornRecord
+        {
+            Id = Guid.NewGuid(),
+            Outfit = null,
+            OutfitNameSnapshot = "已经删除的旅行搭配",
+            ClothingCountSnapshot = 2,
+            IsSnapshotComplete = true,
+            WornDate = new DateTime(2026, 5, 21, 9, 0, 0)
+        };
+
+        var state = new OutfitsTabState();
+        state.SetCalendarRecords([record]);
+
+        var day = state.CalendarDays.Single(day => day.Date == record.WornDate.Date);
+        Assert.Equal("已经删除的旅行搭配", day.FirstOutfitName);
     }
 
     private static Outfit CreateOutfit(

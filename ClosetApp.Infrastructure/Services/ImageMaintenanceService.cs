@@ -3,6 +3,7 @@ using ClosetApp.Application.Images;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace ClosetApp.Infrastructure.Services;
 
@@ -157,12 +158,48 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
     private async Task<List<string>> GetTrackedImagePathsAsync()
     {
         await using var context = await _dbContextFactory.CreateDbContextAsync();
-        return await context.Clothes
+        var clothingImagePaths = await context.Clothes
             .AsNoTracking()
             .Where(c => c.ImagePath != null && c.ImagePath != "")
             .Select(c => c.ImagePath!)
             .Distinct()
             .ToListAsync();
+        var snapshotImagePaths = await GetSnapshotImagePathsAsync(context);
+
+        return clothingImagePaths
+            .Concat(snapshotImagePaths)
+            .Where(path => !string.IsNullOrWhiteSpace(path))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static async Task<List<string>> GetSnapshotImagePathsAsync(ClosetDbContext context)
+    {
+        var snapshots = await context.OutfitWornRecords
+            .AsNoTracking()
+            .Where(record => record.ClothingDetailsSnapshot != null && record.ClothingDetailsSnapshot != "")
+            .Select(record => record.ClothingDetailsSnapshot!)
+            .ToListAsync();
+
+        var imagePaths = new List<string>();
+        foreach (var snapshot in snapshots)
+        {
+            try
+            {
+                var clothes = JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(snapshot);
+                if (clothes == null)
+                    continue;
+
+                imagePaths.AddRange(clothes
+                    .Select(clothing => clothing.ImagePath)
+                    .Where(path => !string.IsNullOrWhiteSpace(path))!);
+            }
+            catch
+            {
+            }
+        }
+
+        return imagePaths;
     }
 
     private async Task<HashSet<string>> GetReferencedImageFileNamesAsync()

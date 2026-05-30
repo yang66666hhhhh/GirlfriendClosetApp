@@ -34,8 +34,9 @@ public class ClearWardrobeByTypesTests
 
         var clothingRepository = new FakeClothingRepository([top, dress, shoes]);
         var outfitRepository = new FakeOutfitRepository();
+        var wornRecordRepository = new FakeOutfitWornRecordRepository();
         var imageStorage = new FakeImageStorageService();
-        var useCase = new ClearWardrobeByTypes(clothingRepository, outfitRepository, imageStorage);
+        var useCase = new ClearWardrobeByTypes(clothingRepository, outfitRepository, wornRecordRepository, imageStorage);
 
         var result = await useCase.ExecuteAsync(new BatchWardrobeClearRequest([ClothingType.Top, ClothingType.Dress]));
 
@@ -53,9 +54,31 @@ public class ClearWardrobeByTypesTests
         var useCase = new ClearWardrobeByTypes(
             new FakeClothingRepository([]),
             new FakeOutfitRepository(),
+            new FakeOutfitWornRecordRepository(),
             new FakeImageStorageService());
 
         await Assert.ThrowsAsync<InvalidOperationException>(() => useCase.ExecuteAsync(new BatchWardrobeClearRequest([])));
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenImageReferencedByHistory_DoesNotDeleteImage()
+    {
+        var skirt = new Clothing
+        {
+            Name = "黑色半裙",
+            Type = ClothingType.Skirt,
+            ImagePath = "skirt.png"
+        };
+        var clothingRepository = new FakeClothingRepository([skirt]);
+        var outfitRepository = new FakeOutfitRepository();
+        var wornRecordRepository = new FakeOutfitWornRecordRepository();
+        wornRecordRepository.ReferencedImagePaths.Add("skirt.png");
+        var imageStorage = new FakeImageStorageService();
+        var useCase = new ClearWardrobeByTypes(clothingRepository, outfitRepository, wornRecordRepository, imageStorage);
+
+        await useCase.ExecuteAsync(new BatchWardrobeClearRequest([ClothingType.Skirt]));
+
+        Assert.Empty(imageStorage.DeletedImagePaths);
     }
 
     private sealed class FakeClothingRepository : IClothingRepository
@@ -116,6 +139,22 @@ public class ClearWardrobeByTypesTests
         }
 
         public Task<List<OutfitUpdateResult>> DeleteInvalidOutfitsAsync(Guid excludedClothingId) => Task.FromResult(new List<OutfitUpdateResult>());
+    }
+
+    private sealed class FakeOutfitWornRecordRepository : IOutfitWornRecordRepository
+    {
+        public HashSet<string> ReferencedImagePaths { get; } = new(StringComparer.OrdinalIgnoreCase);
+
+        public Task<IEnumerable<OutfitWornRecord>> GetAllAsync() => throw new NotImplementedException();
+        public Task<OutfitWornRecord?> GetByIdAsync(Guid id) => throw new NotImplementedException();
+        public Task AddAsync(OutfitWornRecord entity) => throw new NotImplementedException();
+        public Task UpdateAsync(OutfitWornRecord entity) => throw new NotImplementedException();
+        public Task DeleteAsync(Guid id) => throw new NotImplementedException();
+        public Task<IEnumerable<OutfitWornRecord>> GetByDateRangeAsync(DateTime start, DateTime end) => throw new NotImplementedException();
+        public Task<IEnumerable<OutfitWornRecord>> GetByOutfitIdAsync(Guid outfitId) => throw new NotImplementedException();
+        public Task<IEnumerable<OutfitWornRecord>> GetRecentAsync(int count) => throw new NotImplementedException();
+        public Task<bool> IsImageReferencedBySnapshotAsync(string imagePath) =>
+            Task.FromResult(ReferencedImagePaths.Contains(imagePath));
     }
 
     private sealed class FakeImageStorageService : IImageStorageService

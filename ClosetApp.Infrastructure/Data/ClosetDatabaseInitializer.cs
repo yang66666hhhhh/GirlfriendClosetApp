@@ -24,7 +24,14 @@ public static class ClosetDatabaseInitializer
         }
 
         await EnsureMigrationHistoryTableAsync(dbContext, cancellationToken);
-        await InsertInitialMigrationHistoryAsync(dbContext, ResolveInitialMigrationId(dbContext), cancellationToken);
+        var migrationIds = ResolveMigrationIds(dbContext).ToList();
+        if (await HasCurrentModelSchemaAsync(dbContext, cancellationToken))
+        {
+            await InsertMigrationHistoryAsync(dbContext, migrationIds, cancellationToken);
+            return;
+        }
+
+        await InsertMigrationHistoryAsync(dbContext, migrationIds.Take(1), cancellationToken);
         await dbContext.Database.MigrateAsync(cancellationToken);
     }
 
@@ -70,47 +77,78 @@ public static class ClosetDatabaseInitializer
         await dbContext.Database.ExecuteSqlRawAsync(sql, cancellationToken);
     }
 
-    private static async Task InsertInitialMigrationHistoryAsync(
-        ClosetDbContext dbContext,
-        string initialMigrationId,
-        CancellationToken cancellationToken)
+    private static async Task<bool> HasCurrentModelSchemaAsync(ClosetDbContext dbContext, CancellationToken cancellationToken)
     {
-        const string existsSql = """
-            SELECT COUNT(1)
-            FROM "__EFMigrationsHistory"
-            WHERE "MigrationId" = $migrationId;
-            """;
-
-        var existingCount = await ExecuteScalarAsync(
-            dbContext,
-            existsSql,
-            cancellationToken,
-            ("$migrationId", initialMigrationId));
-
-        if (existingCount > 0)
-            return;
-
-        const string insertSql = """
-            INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
-            VALUES ($migrationId, $productVersion);
-            """;
-
-        await ExecuteNonQueryAsync(
-            dbContext,
-            insertSql,
-            cancellationToken,
-            ("$migrationId", initialMigrationId),
-            ("$productVersion", EfCoreProductVersion));
+        return await ColumnExistsAsync(dbContext, "Outfits", "OriginalClothingCount", cancellationToken)
+            && await ColumnExistsAsync(dbContext, "OutfitWornRecords", "OutfitNameSnapshot", cancellationToken)
+            && await ColumnExistsAsync(dbContext, "OutfitWornRecords", "ClothingDetailsSnapshot", cancellationToken)
+            && await ColumnExistsAsync(dbContext, "OutfitWornRecords", "IsSnapshotComplete", cancellationToken);
     }
 
-    private static string ResolveInitialMigrationId(ClosetDbContext dbContext)
+    private static async Task<bool> ColumnExistsAsync(
+        ClosetDbContext dbContext,
+        string tableName,
+        string columnName,
+        CancellationToken cancellationToken)
+    {
+        const string sql = """
+            SELECT COUNT(1)
+            FROM pragma_table_info($tableName)
+            WHERE name = $columnName;
+            """;
+
+        return await ExecuteScalarAsync(
+            dbContext,
+            sql,
+            cancellationToken,
+            ("$tableName", tableName),
+            ("$columnName", columnName)) > 0;
+    }
+
+    private static async Task InsertMigrationHistoryAsync(
+        ClosetDbContext dbContext,
+        IEnumerable<string> migrationIds,
+        CancellationToken cancellationToken)
+    {
+        foreach (var migrationId in migrationIds)
+        {
+            const string existsSql = """
+                SELECT COUNT(1)
+                FROM "__EFMigrationsHistory"
+                WHERE "MigrationId" = $migrationId;
+                """;
+
+            var existingCount = await ExecuteScalarAsync(
+                dbContext,
+                existsSql,
+                cancellationToken,
+                ("$migrationId", migrationId));
+
+            if (existingCount > 0)
+                continue;
+
+            const string insertSql = """
+                INSERT INTO "__EFMigrationsHistory" ("MigrationId", "ProductVersion")
+                VALUES ($migrationId, $productVersion);
+                """;
+
+            await ExecuteNonQueryAsync(
+                dbContext,
+                insertSql,
+                cancellationToken,
+                ("$migrationId", migrationId),
+                ("$productVersion", EfCoreProductVersion));
+        }
+    }
+
+    private static IEnumerable<string> ResolveMigrationIds(ClosetDbContext dbContext)
     {
         var migrationsAssembly = dbContext.GetService<IMigrationsAssembly>();
-        var migrationId = migrationsAssembly.Migrations.Keys.OrderBy(id => id, StringComparer.Ordinal).FirstOrDefault();
-        if (string.IsNullOrWhiteSpace(migrationId))
+        var migrationIds = migrationsAssembly.Migrations.Keys.OrderBy(id => id, StringComparer.Ordinal).ToList();
+        if (migrationIds.Count == 0)
             throw new InvalidOperationException("当前数据库项目没有可用的 EF 迁移，无法建立迁移历史。");
 
-        return migrationId;
+        return migrationIds;
     }
 
     private static async Task<long> ExecuteScalarAsync(

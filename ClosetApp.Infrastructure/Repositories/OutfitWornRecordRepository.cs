@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Interfaces;
+using System.IO;
 
 namespace ClosetApp.Infrastructure.Repositories;
 
@@ -17,6 +18,8 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
+            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(oc => oc.Clothing)
             .ToListAsync();
     }
 
@@ -51,6 +54,8 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
+            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(oc => oc.Clothing)
             .Where(r => r.WornDate >= start && r.WornDate <= end)
             .OrderByDescending(r => r.WornDate)
             .ToListAsync();
@@ -60,6 +65,8 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
+            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(oc => oc.Clothing)
             .Where(r => r.OutfitId == outfitId)
             .OrderByDescending(r => r.WornDate)
             .ToListAsync();
@@ -74,5 +81,20 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
             .OrderByDescending(r => r.WornDate)
             .Take(count)
             .ToListAsync();
+    }
+
+    public async Task<bool> IsImageReferencedBySnapshotAsync(string imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return false;
+
+        var fileName = Path.GetFileName(imagePath);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return false;
+
+        return await _context.OutfitWornRecords
+            .AsNoTracking()
+            .Where(record => record.ClothingDetailsSnapshot != null)
+            .AnyAsync(record => EF.Functions.Like(record.ClothingDetailsSnapshot!, $"%{fileName}%"));
     }
 }

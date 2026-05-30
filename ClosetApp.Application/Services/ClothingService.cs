@@ -9,11 +9,16 @@ public class ClothingService : IClothingService
 {
     private readonly IClothingRepository _repository;
     private readonly IOutfitRepository _outfitRepository;
+    private readonly IOutfitWornRecordRepository _wornRecordRepository;
 
-    public ClothingService(IClothingRepository repository, IOutfitRepository outfitRepository)
+    public ClothingService(
+        IClothingRepository repository,
+        IOutfitRepository outfitRepository,
+        IOutfitWornRecordRepository wornRecordRepository)
     {
         _repository = repository;
         _outfitRepository = outfitRepository;
+        _wornRecordRepository = wornRecordRepository;
     }
 
     public async Task<IEnumerable<Clothing>> GetAllClothesAsync()
@@ -47,8 +52,11 @@ public class ClothingService : IClothingService
     {
         var clothing = await _repository.GetByIdAsync(id);
         var clothingName = clothing?.Name ?? "未知衣物";
+        var imagePath = clothing?.ImagePath;
 
         var outfitResults = await _outfitRepository.DeleteInvalidOutfitsAsync(id);
+        var preserveImageForHistory = !string.IsNullOrWhiteSpace(imagePath) &&
+            await _wornRecordRepository.IsImageReferencedBySnapshotAsync(imagePath);
         
         await _repository.DeleteAsync(id);
 
@@ -56,6 +64,7 @@ public class ClothingService : IClothingService
         {
             Success = true,
             DeletedClothingName = clothingName,
+            PreserveDeletedImageForHistory = preserveImageForHistory,
             UpdatedOutfits = outfitResults
         };
     }

@@ -63,7 +63,9 @@ public class OutfitService : IOutfitService
                 Id = oc.ClothingId,
                 Name = oc.Clothing!.Name,
                 ImagePath = oc.Clothing.ImagePath,
-                Type = oc.Clothing.Type.ToString()
+                Color = oc.Clothing.Color,
+                Type = oc.Clothing.Type.ToString(),
+                GarmentType = oc.Clothing.GarmentType?.ToString()
             })
             .ToList();
         var allClothingDetailsJson = JsonSerializer.Serialize(allClothingDetails);
@@ -72,7 +74,7 @@ public class OutfitService : IOutfitService
         var wornRecords = await _wornRecordRepository.GetByOutfitIdAsync(id);
         foreach (var record in wornRecords)
         {
-            if (!record.IsSnapshotComplete)
+            if (ShouldRefreshSnapshot(record, allClothingDetails.Count))
             {
                 record.OutfitNameSnapshot = outfit.Name;
                 record.ClothingCountSnapshot = outfit.OutfitClothes.Count;
@@ -123,7 +125,9 @@ public class OutfitService : IOutfitService
                 Id = oc.ClothingId,
                 Name = oc.Clothing!.Name,
                 ImagePath = oc.Clothing.ImagePath,
-                Type = oc.Clothing.Type.ToString()
+                Color = oc.Clothing.Color,
+                Type = oc.Clothing.Type.ToString(),
+                GarmentType = oc.Clothing.GarmentType?.ToString()
             })
             .ToList();
         var clothingDetailsJson = JsonSerializer.Serialize(clothingDetails);
@@ -204,5 +208,12 @@ public class OutfitService : IOutfitService
     {
         var trimmed = name?.Trim();
         return string.IsNullOrWhiteSpace(trimmed) ? DefaultOutfitName : trimmed;
+    }
+
+    private static bool ShouldRefreshSnapshot(OutfitWornRecord record, int currentSnapshotItemCount)
+    {
+        return !record.IsSnapshotComplete ||
+            string.IsNullOrWhiteSpace(record.ClothingDetailsSnapshot) ||
+            record.ClothingCountSnapshot < currentSnapshotItemCount;
     }
 }

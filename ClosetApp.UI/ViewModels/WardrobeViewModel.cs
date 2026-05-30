@@ -533,7 +533,8 @@ public partial class WardrobeViewModel : ViewModelBase
     {
         Log.Information("Deleting clothing {ClothingId} ({ClothingName})", clothing.Id, clothing.Name);
         var result = await _clothingService.DeleteClothingAsync(clothing.Id);
-        await _imageStorageService.TryDeleteImageAsync(clothing.ImagePath);
+        if (!result.PreserveDeletedImageForHistory)
+            await _imageStorageService.TryDeleteImageAsync(clothing.ImagePath);
         await LoadClothesAsync();
         return result;
     }

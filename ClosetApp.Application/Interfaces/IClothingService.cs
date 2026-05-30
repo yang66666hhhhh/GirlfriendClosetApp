@@ -21,5 +21,6 @@ public class ClothingDeleteResult
 {
     public bool Success { get; set; }
     public string DeletedClothingName { get; set; } = string.Empty;
+    public bool PreserveDeletedImageForHistory { get; set; }
     public List<OutfitUpdateResult> UpdatedOutfits { get; set; } = new();
 }

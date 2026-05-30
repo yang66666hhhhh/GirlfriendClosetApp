@@ -144,6 +144,10 @@ public class OutfitRepository : IOutfitRepository
 
         foreach (var outfit in outfitsWithClothing)
         {
+            var originalClothingCount = outfit.OutfitClothes.Count;
+            if (outfit.OriginalClothingCount < originalClothingCount)
+                outfit.OriginalClothingCount = originalClothingCount;
+
             // 在删除搭配之前，更新相关穿着记录的快照
             // 必须在删除衣服之前保存快照，否则衣服信息会丢失
             var wornRecords = await _context.OutfitWornRecords
@@ -158,17 +162,19 @@ public class OutfitRepository : IOutfitRepository
                     Id = oc.ClothingId,
                     Name = oc.Clothing!.Name,
                     ImagePath = oc.Clothing.ImagePath,
-                    Type = oc.Clothing.Type.ToString()
+                    Color = oc.Clothing.Color,
+                    Type = oc.Clothing.Type.ToString(),
+                    GarmentType = oc.Clothing.GarmentType?.ToString()
                 })
                 .ToList();
             var allClothingDetailsJson = JsonSerializer.Serialize(allClothingDetails);
 
             foreach (var record in wornRecords)
             {
-                if (!record.IsSnapshotComplete)
+                if (ShouldRefreshSnapshot(record, allClothingDetails.Count))
                 {
                     record.OutfitNameSnapshot = outfit.Name;
-                    record.ClothingCountSnapshot = outfit.OutfitClothes.Count;
+                    record.ClothingCountSnapshot = originalClothingCount;
                     record.ClothingDetailsSnapshot = allClothingDetailsJson;
                     record.IsSnapshotComplete = true;
                 }
@@ -220,6 +226,13 @@ public class OutfitRepository : IOutfitRepository
 
         await _context.SaveChangesAsync();
         return results;
+    }
+
+    private static bool ShouldRefreshSnapshot(OutfitWornRecord record, int currentSnapshotItemCount)
+    {
+        return !record.IsSnapshotComplete ||
+            string.IsNullOrWhiteSpace(record.ClothingDetailsSnapshot) ||
+            record.ClothingCountSnapshot < currentSnapshotItemCount;
     }
 
     public async Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene)

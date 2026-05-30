@@ -8,15 +8,18 @@ public sealed class ClearWardrobeByTypes
 {
     private readonly IClothingRepository _clothingRepository;
     private readonly IOutfitRepository _outfitRepository;
+    private readonly IOutfitWornRecordRepository _wornRecordRepository;
     private readonly IImageStorageService _imageStorageService;
 
     public ClearWardrobeByTypes(
         IClothingRepository clothingRepository,
         IOutfitRepository outfitRepository,
+        IOutfitWornRecordRepository wornRecordRepository,
         IImageStorageService imageStorageService)
     {
         _clothingRepository = clothingRepository;
         _outfitRepository = outfitRepository;
+        _wornRecordRepository = wornRecordRepository;
         _imageStorageService = imageStorageService;
     }
 
@@ -41,6 +44,9 @@ public sealed class ClearWardrobeByTypes
         {
             try
             {
+                if (await _wornRecordRepository.IsImageReferencedBySnapshotAsync(imagePath!))
+                    continue;
+
                 await _imageStorageService.DeleteImageWithThumbnailAsync(imagePath!);
             }
             catch

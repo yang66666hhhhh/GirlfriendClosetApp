@@ -30,6 +30,60 @@ public class OutfitServiceTests
         Assert.Equal("未命名", Assert.Single(repository.AddedOutfits).Name);
     }
 
+    [Fact]
+    public async Task DeleteClothingAsync_WhenImageReferencedByHistory_PreservesImage()
+    {
+        var clothingId = Guid.NewGuid();
+        var wornRecordRepository = new FakeOutfitWornRecordRepository
+        {
+            IsImageReferencedBySnapshot = true
+        };
+        var clothingRepository = new FakeClothingRepository(new Clothing
+        {
+            Id = clothingId,
+            Name = "黑色半裙",
+            Type = ClothingType.Skirt,
+            ImagePath = "skirt.jpg"
+        });
+        var service = new ClothingService(
+            clothingRepository,
+            new FakeOutfitRepository(),
+            wornRecordRepository);
+
+        var result = await service.DeleteClothingAsync(clothingId);
+
+        Assert.True(result.PreserveDeletedImageForHistory);
+        Assert.Equal(clothingId, clothingRepository.DeletedId);
+        Assert.Equal("skirt.jpg", wornRecordRepository.CheckedImagePath);
+    }
+
+    private sealed class FakeClothingRepository : IClothingRepository
+    {
+        private readonly Clothing _clothing;
+
+        public FakeClothingRepository(Clothing clothing)
+        {
+            _clothing = clothing;
+        }
+
+        public Guid? DeletedId { get; private set; }
+
+        public Task<IEnumerable<Clothing>> GetAllAsync() => Task.FromResult<IEnumerable<Clothing>>([_clothing]);
+        public Task<Clothing?> GetByIdAsync(Guid id) => Task.FromResult(id == _clothing.Id ? _clothing : null);
+        public Task AddAsync(Clothing entity) => throw new NotImplementedException();
+        public Task UpdateAsync(Clothing entity) => throw new NotImplementedException();
+        public Task DeleteAsync(Guid id)
+        {
+            DeletedId = id;
+            return Task.CompletedTask;
+        }
+
+        public Task<IEnumerable<Clothing>> GetByTypeAsync(ClothingType type) => throw new NotImplementedException();
+        public Task<IEnumerable<Clothing>> GetByTypesAsync(IEnumerable<ClothingType> types) => throw new NotImplementedException();
+        public Task AddRangeAsync(IEnumerable<Clothing> clothes) => throw new NotImplementedException();
+        public Task DeleteRangeAsync(IEnumerable<Guid> ids) => throw new NotImplementedException();
+    }
+
     private sealed class FakeOutfitRepository : IOutfitRepository
     {
         public List<Outfit> AddedOutfits { get; } = [];
@@ -56,6 +110,9 @@ public class OutfitServiceTests
 
     private sealed class FakeOutfitWornRecordRepository : IOutfitWornRecordRepository
     {
+        public bool IsImageReferencedBySnapshot { get; init; }
+        public string? CheckedImagePath { get; private set; }
+
         public Task<IEnumerable<OutfitWornRecord>> GetAllAsync() => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
         public Task<OutfitWornRecord?> GetByIdAsync(Guid id) => Task.FromResult<OutfitWornRecord?>(null);
         public Task AddAsync(OutfitWornRecord entity) => Task.CompletedTask;
@@ -64,6 +121,11 @@ public class OutfitServiceTests
         public Task<IEnumerable<OutfitWornRecord>> GetByDateRangeAsync(DateTime start, DateTime end) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
         public Task<IEnumerable<OutfitWornRecord>> GetByOutfitIdAsync(Guid outfitId) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
         public Task<IEnumerable<OutfitWornRecord>> GetRecentAsync(int count) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
+        public Task<bool> IsImageReferencedBySnapshotAsync(string imagePath)
+        {
+            CheckedImagePath = imagePath;
+            return Task.FromResult(IsImageReferencedBySnapshot);
+        }
     }
 
     private sealed class FakeFavoriteRepository : IFavoriteRepository

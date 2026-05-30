@@ -364,24 +364,25 @@ public sealed record RecentWornListItem(
 
     public static RecentWornListItem FromRecord(OutfitWornRecord record)
     {
+        var display = WornRecordSnapshotDisplayFactory.FromRecord(record);
         var date = record.WornDate.Date;
         var dateText = date == DateTime.Today
             ? "今天"
             : date == DateTime.Today.AddDays(-1)
                 ? "昨天"
                 : date.ToString("M月d日");
-        var previewClothes = record.Outfit?.OutfitClothes
-            .Select(link => link.Clothing)
-            .Where(clothing => clothing != null)
-            .Cast<Clothing>()
-            .ToList() ?? [];
         var metaParts = new List<string>();
 
-        if (previewClothes.Count > 0)
-            metaParts.Add($"{previewClothes.Count} 件单品");
+        if (display.ShouldShowSnapshotStatus && display.SnapshotCount > 0)
+            metaParts.Add($"原 {display.SnapshotCount} 件");
+        else if (display.PreviewClothes.Count > 0)
+            metaParts.Add($"{display.PreviewClothes.Count} 件单品");
 
         if (record.Outfit?.Season is { } season && season != Season.Unspecified)
             metaParts.Add(GetSeasonLabel(season));
+
+        if (display.ShouldShowSnapshotStatus)
+            metaParts.Add(display.IsDeleted ? "搭配已删除" : "搭配已变化");
 
         var metaText = metaParts.Count > 0
             ? string.Join(" · ", metaParts)
@@ -404,19 +405,13 @@ public sealed record RecentWornListItem(
             record.Id,
             record.WornDate,
             dateText,
-            ResolveOutfitName(record.Outfit),
+            display.OutfitName,
             record.WornDate.ToString("HH:mm"),
             metaText,
-            previewClothes,
+            display.PreviewClothes,
             focusSummaryText,
             focusNoteText,
             focusSyncText);
-    }
-
-    private static string ResolveOutfitName(Outfit? outfit)
-    {
-        var name = outfit?.Name?.Trim();
-        return string.IsNullOrWhiteSpace(name) ? "未命名搭配" : name;
     }
 
     private static string GetSeasonLabel(Season season) => season switch
@@ -482,7 +477,10 @@ public sealed record CalendarDayItem(
         if (records.Count == 0)
             return string.Empty;
 
-        var firstName = records.FirstOrDefault()?.Outfit?.Name ?? string.Empty;
+        var firstRecord = records.FirstOrDefault();
+        var firstName = firstRecord == null
+            ? string.Empty
+            : WornRecordSnapshotDisplayFactory.FromRecord(firstRecord).OutfitName;
         if (records.Count == 1)
             return firstName;
 

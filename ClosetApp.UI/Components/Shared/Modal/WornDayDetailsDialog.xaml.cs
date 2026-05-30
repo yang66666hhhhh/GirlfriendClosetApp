@@ -1,10 +1,9 @@
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
+using ClosetApp.UI.Logic.States;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using OutfitEntity = global::ClosetApp.Domain.Entities.Outfit;
@@ -230,25 +229,9 @@ public partial class WornDayDetailsDialog : UserControl
 
         public static WornDayRecordItem FromRecord(OutfitWornRecord record)
         {
-            var isDeleted = record.Outfit == null;
-            var isChanged = false;
-            var originalCount = record.ClothingCountSnapshot;
-            var currentCount = 0;
+            var display = WornRecordSnapshotDisplayFactory.FromRecord(record);
 
-            IList<global::ClosetApp.Domain.Entities.Clothing> previewClothes = [];
-
-            if (!isDeleted)
-            {
-                previewClothes = record.Outfit!.OutfitClothes
-                    .Select(link => link.Clothing)
-                    .Where(clothing => clothing != null)
-                    .Cast<global::ClosetApp.Domain.Entities.Clothing>()
-                    .ToList();
-                currentCount = previewClothes.Count;
-                isChanged = originalCount > 0 && currentCount != originalCount;
-            }
-
-            var statusText = (isDeleted, isChanged, record.IsSnapshotComplete) switch
+            var statusText = (display.IsDeleted, display.IsChanged, display.HasUsableSnapshot) switch
             {
                 (true, _, true) => "搭配已删除",
                 (true, _, false) => "搭配已删除（快照不完整）",
@@ -257,45 +240,18 @@ public partial class WornDayDetailsDialog : UserControl
                 _ => null
             };
 
-            var displayName = isDeleted
-                ? record.OutfitNameSnapshot
-                : record.Outfit!.Name;
-
             var metaParts = new List<string> { record.WornDate.ToString("HH:mm") };
-            if (isDeleted || isChanged)
-                metaParts.Add($"原 {originalCount} 件");
-            else if (currentCount > 0)
-                metaParts.Add($"{currentCount} 件单品");
-
-            if ((isDeleted || isChanged) && record.IsSnapshotComplete && !string.IsNullOrEmpty(record.ClothingDetailsSnapshot))
-            {
-                try
-                {
-                    var snapshotClothes = JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(record.ClothingDetailsSnapshot);
-                    if (snapshotClothes != null && snapshotClothes.Count > 0)
-                    {
-                        previewClothes = snapshotClothes
-                            .Select(dto => new global::ClosetApp.Domain.Entities.Clothing
-                            {
-                                Id = dto.Id,
-                                Name = dto.Name,
-                                ImagePath = dto.ImagePath
-                            })
-                            .ToList();
-                    }
-                }
-                catch
-                {
-                    // 快照解析失败时使用当前衣服
-                }
-            }
+            if (display.ShouldShowSnapshotStatus && display.SnapshotCount > 0)
+                metaParts.Add($"原 {display.SnapshotCount} 件");
+            else if (display.PreviewClothes.Count > 0)
+                metaParts.Add($"{display.PreviewClothes.Count} 件单品");
 
             return new WornDayRecordItem(
                 record.Id,
-                displayName,
+                display.OutfitName,
                 record.WornDate.ToString("HH:mm"),
                 string.Join(" · ", metaParts),
-                previewClothes,
+                display.PreviewClothes,
                 statusText);
         }
     }
