@@ -175,8 +175,9 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             reasons.Add("它贴近你最近常穿/收藏的场景。");
         }
 
-        var tagNames = outfit.OutfitClothes
-            .SelectMany(link => link.Clothing.ClothingTags)
+        var clothes = GetValidClothes(outfit);
+        var tagNames = clothes
+            .SelectMany(clothing => clothing.ClothingTags)
             .Select(link => link.Tag.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -187,8 +188,8 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             reasons.Add("风格标签也比较贴近你的常用偏好。");
         }
 
-        var colors = outfit.OutfitClothes
-            .Select(link => NormalizeColor(link.Clothing.Color))
+        var colors = clothes
+            .Select(clothing => NormalizeColor(clothing.Color))
             .Where(color => color != null)
             .Select(color => color!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -348,8 +349,9 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             reasons.Add("它贴近你最近常穿/收藏的场景。");
         }
 
-        var tagNames = outfit.OutfitClothes
-            .SelectMany(link => link.Clothing.ClothingTags)
+        var clothes = GetValidClothes(outfit);
+        var tagNames = clothes
+            .SelectMany(clothing => clothing.ClothingTags)
             .Select(link => link.Tag.Name)
             .Where(name => !string.IsNullOrWhiteSpace(name))
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -360,8 +362,8 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             reasons.Add("风格标签也比较贴近你的常用偏好。");
         }
 
-        var colors = outfit.OutfitClothes
-            .Select(link => NormalizeColor(link.Clothing.Color))
+        var colors = clothes
+            .Select(clothing => NormalizeColor(clothing.Color))
             .Where(color => color != null)
             .Select(color => color!)
             .Distinct(StringComparer.OrdinalIgnoreCase)
@@ -391,8 +393,9 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             totalWeight += weight;
             AddWeight(sceneWeights, outfit.Scene, weight);
 
-            foreach (var tagName in outfit.OutfitClothes
-                .SelectMany(link => link.Clothing.ClothingTags)
+            var clothes = GetValidClothes(outfit);
+            foreach (var tagName in clothes
+                .SelectMany(clothing => clothing.ClothingTags)
                 .Select(link => link.Tag.Name)
                 .Where(name => !string.IsNullOrWhiteSpace(name))
                 .Distinct(StringComparer.OrdinalIgnoreCase))
@@ -400,8 +403,8 @@ public class OutfitRecommendationService : IOutfitRecommendationService
                 AddWeight(tagWeights, tagName, weight);
             }
 
-            foreach (var color in outfit.OutfitClothes
-                .Select(link => NormalizeColor(link.Clothing.Color))
+            foreach (var color in clothes
+                .Select(clothing => NormalizeColor(clothing.Color))
                 .Where(color => color != null)
                 .Select(color => color!)
                 .Distinct(StringComparer.OrdinalIgnoreCase))
@@ -411,6 +414,15 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         }
 
         return new WardrobePreferenceProfile(sceneWeights, tagWeights, colorWeights, totalWeight);
+    }
+
+    private static List<Clothing> GetValidClothes(Outfit outfit)
+    {
+        return outfit.OutfitClothes
+            .Select(link => link.Clothing)
+            .Where(clothing => clothing != null)
+            .Cast<Clothing>()
+            .ToList();
     }
 
     private static string? NormalizeColor(string? color)

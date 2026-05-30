@@ -61,6 +61,7 @@
 - Live outfits with at least two remaining clothing items stay visible and use `OriginalClothingCount` to show changed-state warnings.
 - A snapshot that is marked complete can still be stale. Refresh it before destructive changes when details are empty or the snapshot count is lower than the current outfit item count.
 - History previews must prefer snapshot clothing over live outfit clothing. Live data is only for status comparison and current outfit navigation.
+- Consumers of live `Outfit.OutfitClothes` must tolerate stale or unloaded links. UI previews, outfit cards, and recommendation scoring should filter out links whose `Clothing` navigation is null before reading color, tags, type, or image data.
 
 ## Image Retention
 

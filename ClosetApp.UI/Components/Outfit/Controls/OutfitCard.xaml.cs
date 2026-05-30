@@ -16,6 +16,7 @@ using ClosetApp.UI.Components.Shared.Modal;
 namespace ClosetApp.UI.Components.Outfit.Controls;
 
 using OutfitEntity = global::ClosetApp.Domain.Entities.Outfit;
+using ClothingEntity = global::ClosetApp.Domain.Entities.Clothing;
 
 public partial class OutfitCard : UserControl
 {
@@ -120,7 +121,7 @@ public partial class OutfitCard : UserControl
     {
         if (d is OutfitCard card && e.NewValue is OutfitEntity outfit)
         {
-            var clothes = outfit.OutfitClothes?.Select(oc => oc.Clothing).ToList();
+            var clothes = GetValidClothes(outfit);
             var chips = BuildMoodChips(outfit, clothes);
             card.TxtName.Text = BuildDisplayName(outfit, clothes);
             card.TxtMoodLine.Text = string.Empty;
@@ -137,7 +138,7 @@ public partial class OutfitCard : UserControl
         }
     }
 
-    private void ApplyPreviewHeight(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private void ApplyPreviewHeight(IList<ClothingEntity>? clothes)
     {
         double height = ResolvePreviewHeight(clothes);
         PreviewRow.Height = new GridLength(height);
@@ -204,7 +205,7 @@ public partial class OutfitCard : UserControl
         CardShadow.BeginAnimation(DropShadowEffect.OpacityProperty, opacityAnim);
     }
 
-    private static double ResolvePreviewHeight(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private static double ResolvePreviewHeight(IList<ClothingEntity>? clothes)
     {
         if (clothes == null || clothes.Count == 0)
             return 312;
@@ -225,7 +226,7 @@ public partial class OutfitCard : UserControl
         };
     }
 
-    private static string BuildDisplayName(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private static string BuildDisplayName(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
         var currentName = outfit.Name?.Trim();
         if (!string.IsNullOrWhiteSpace(currentName) &&
@@ -251,7 +252,7 @@ public partial class OutfitCard : UserControl
         return "今日穿搭";
     }
 
-    private void ApplyPreviewBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private void ApplyPreviewBackdrop(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
         var backdrop = ResolveBackdrop(outfit, clothes);
         PreviewShell.Background = new SolidColorBrush(backdrop);
@@ -272,7 +273,7 @@ public partial class OutfitCard : UserControl
             : (Brush)FindResource("BorderLightBrush");
     }
 
-    private void ApplyChangeWarning(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private void ApplyChangeWarning(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
         var currentCount = clothes?.Count ?? 0;
         var originalCount = outfit.OriginalClothingCount;
@@ -327,13 +328,13 @@ public partial class OutfitCard : UserControl
         return ThemeColorHelper.ResolveChipPalette(chip);
     }
 
-    private static Color ResolveBackdrop(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private static Color ResolveBackdrop(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
         var colors = clothes?.Select(c => c.Color) ?? Enumerable.Empty<string?>();
         return ThemeColorHelper.ResolveOutfitBackdrop(outfit.Season.ToString(), colors);
     }
 
-    private static IReadOnlyList<string> BuildMoodChips(OutfitEntity outfit, IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private static IReadOnlyList<string> BuildMoodChips(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
         var chips = new List<string>();
         var season = ResolveSeasonChip(outfit.Season);
@@ -405,7 +406,7 @@ public partial class OutfitCard : UserControl
         };
     }
 
-    private static string? ResolveSilhouetteChip(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private static string? ResolveSilhouetteChip(IList<ClothingEntity>? clothes)
     {
         if (clothes == null || clothes.Count == 0)
             return null;
@@ -424,7 +425,7 @@ public partial class OutfitCard : UserControl
         return "轻搭";
     }
 
-    private static string? ResolveColorTone(IList<global::ClosetApp.Domain.Entities.Clothing>? clothes)
+    private static string? ResolveColorTone(IList<ClothingEntity>? clothes)
     {
         var colorTokens = clothes?
             .Select(c => c.Color?.ToLowerInvariant())
@@ -452,7 +453,16 @@ public partial class OutfitCard : UserControl
         return null;
     }
 
-    private static bool IsType(global::ClosetApp.Domain.Entities.Clothing clothing, global::ClosetApp.Domain.Enums.ClothingType type, params string[] garmentHints)
+    private static List<ClothingEntity> GetValidClothes(OutfitEntity outfit)
+    {
+        return outfit.OutfitClothes?
+            .Select(link => link.Clothing)
+            .Where(clothing => clothing != null)
+            .Cast<ClothingEntity>()
+            .ToList() ?? [];
+    }
+
+    private static bool IsType(ClothingEntity clothing, global::ClosetApp.Domain.Enums.ClothingType type, params string[] garmentHints)
     {
         if (clothing.Type == type)
             return true;

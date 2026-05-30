@@ -432,6 +432,12 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 8. 删除衣服记录
 9. 如果该衣服图片仍被任意穿着历史快照引用，则保留图片资产；否则才允许删除原图和派生缓存
 
+删除衣服后，live 搭配、推荐服务和 UI 组件都不能假设 `OutfitClothes -> Clothing` 导航对象永远非空。读取 live 搭配衣服时应先过滤无效链接：
+
+- 搭配卡片、预览和颜色/轮廓标签只使用 `Clothing != null` 的衣服
+- 今日推荐的标签偏好和颜色偏好统计只使用有效衣服
+- 历史记录仍以 `ClothingDetailsSnapshot` 为准，不用 live 导航补历史内容
+
 ### 8.4 删除搭配算法
 
 `OutfitService.DeleteOutfitAsync(outfitId)`：
