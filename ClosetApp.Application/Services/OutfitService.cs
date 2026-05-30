@@ -51,8 +51,22 @@ public class OutfitService : IOutfitService
 
     public async Task DeleteOutfitAsync(Guid id)
     {
-        var outfit = await _repository.GetByIdAsync(id);
+        // 获取搭配及其衣服信息（不使用 AsNoTracking，以便后续删除）
+        var outfit = await _repository.GetByIdForUpdateAsync(id);
         if (outfit == null) return;
+
+        // 保存当前搭配的所有衣服信息
+        var allClothingDetails = outfit.OutfitClothes
+            .Where(oc => oc.Clothing != null)
+            .Select(oc => new ClothingSnapshotDto
+            {
+                Id = oc.ClothingId,
+                Name = oc.Clothing!.Name,
+                ImagePath = oc.Clothing.ImagePath,
+                Type = oc.Clothing.Type.ToString()
+            })
+            .ToList();
+        var allClothingDetailsJson = JsonSerializer.Serialize(allClothingDetails);
 
         // 更新相关穿着记录的快照
         var wornRecords = await _wornRecordRepository.GetByOutfitIdAsync(id);
@@ -62,17 +76,7 @@ public class OutfitService : IOutfitService
             {
                 record.OutfitNameSnapshot = outfit.Name;
                 record.ClothingCountSnapshot = outfit.OutfitClothes.Count;
-                record.ClothingDetailsSnapshot = JsonSerializer.Serialize(
-                    outfit.OutfitClothes
-                        .Where(oc => oc.Clothing != null)
-                        .Select(oc => new ClothingSnapshotDto
-                        {
-                            Id = oc.ClothingId,
-                            Name = oc.Clothing!.Name,
-                            ImagePath = oc.Clothing.ImagePath,
-                            Type = oc.Clothing.Type.ToString()
-                        })
-                        .ToList());
+                record.ClothingDetailsSnapshot = allClothingDetailsJson;
                 record.IsSnapshotComplete = true;
             }
             record.OutfitId = null;

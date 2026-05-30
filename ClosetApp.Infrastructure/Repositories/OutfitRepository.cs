@@ -43,6 +43,16 @@ public class OutfitRepository : IOutfitRepository
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
+    public async Task<Outfit?> GetByIdForUpdateAsync(Guid id)
+    {
+        return await _context.Outfits
+            .Include(o => o.OutfitClothes)
+            .ThenInclude(oc => oc.Clothing)
+            .Include(o => o.Favorites)
+            .Include(o => o.WornRecords)
+            .FirstOrDefaultAsync(o => o.Id == id);
+    }
+
     public async Task AddAsync(Outfit entity)
     {
         _context.Outfits.Add(entity);
@@ -135,9 +145,23 @@ public class OutfitRepository : IOutfitRepository
         foreach (var outfit in outfitsWithClothing)
         {
             // 在删除搭配之前，更新相关穿着记录的快照
+            // 必须在删除衣服之前保存快照，否则衣服信息会丢失
             var wornRecords = await _context.OutfitWornRecords
                 .Where(r => r.OutfitId == outfit.Id)
                 .ToListAsync();
+
+            // 保存当前搭配的所有衣服信息（包括即将被删除的衣服）
+            var allClothingDetails = outfit.OutfitClothes
+                .Where(oc => oc.Clothing != null)
+                .Select(oc => new ClothingSnapshotDto
+                {
+                    Id = oc.ClothingId,
+                    Name = oc.Clothing!.Name,
+                    ImagePath = oc.Clothing.ImagePath,
+                    Type = oc.Clothing.Type.ToString()
+                })
+                .ToList();
+            var allClothingDetailsJson = JsonSerializer.Serialize(allClothingDetails);
 
             foreach (var record in wornRecords)
             {
@@ -145,17 +169,7 @@ public class OutfitRepository : IOutfitRepository
                 {
                     record.OutfitNameSnapshot = outfit.Name;
                     record.ClothingCountSnapshot = outfit.OutfitClothes.Count;
-                    record.ClothingDetailsSnapshot = JsonSerializer.Serialize(
-                        outfit.OutfitClothes
-                            .Where(oc => oc.Clothing != null)
-                            .Select(oc => new ClothingSnapshotDto
-                            {
-                                Id = oc.ClothingId,
-                                Name = oc.Clothing!.Name,
-                                ImagePath = oc.Clothing.ImagePath,
-                                Type = oc.Clothing.Type.ToString()
-                            })
-                            .ToList());
+                    record.ClothingDetailsSnapshot = allClothingDetailsJson;
                     record.IsSnapshotComplete = true;
                 }
             }

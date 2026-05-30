@@ -9,6 +9,7 @@ public interface IOutfitRepository : IRepository<Outfit>
     Task<IEnumerable<Outfit>> GetBySeasonAsync(Season season);
     Task<IEnumerable<Outfit>> GetRecentlyWornAsync(int count);
     Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId);
+    Task<Outfit?> GetByIdForUpdateAsync(Guid id);
     Task DeleteEmptyOutfitsAsync();
     Task<List<OutfitUpdateResult>> DeleteInvalidOutfitsAsync(Guid excludedClothingId);
 }

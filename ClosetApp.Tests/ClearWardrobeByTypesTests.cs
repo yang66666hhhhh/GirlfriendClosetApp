@@ -100,6 +100,7 @@ public class ClearWardrobeByTypesTests
 
         public Task<IEnumerable<Outfit>> GetAllAsync() => throw new NotImplementedException();
         public Task<Outfit?> GetByIdAsync(Guid id) => throw new NotImplementedException();
+        public Task<Outfit?> GetByIdForUpdateAsync(Guid id) => throw new NotImplementedException();
         public Task AddAsync(Outfit entity) => throw new NotImplementedException();
         public Task UpdateAsync(Outfit entity) => throw new NotImplementedException();
         public Task DeleteAsync(Guid id) => throw new NotImplementedException();

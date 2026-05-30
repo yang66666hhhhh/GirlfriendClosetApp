@@ -246,6 +246,7 @@ public class OutfitRecommendationServiceTests
 
         public Task<IEnumerable<Outfit>> GetAllAsync() => Task.FromResult(_outfits.AsEnumerable());
         public Task<Outfit?> GetByIdAsync(Guid id) => Task.FromResult(_outfits.FirstOrDefault(outfit => outfit.Id == id));
+        public Task<Outfit?> GetByIdForUpdateAsync(Guid id) => Task.FromResult(_outfits.FirstOrDefault(outfit => outfit.Id == id));
         public Task AddAsync(Outfit entity) => throw new NotImplementedException();
         public Task UpdateAsync(Outfit entity) => throw new NotImplementedException();
         public Task DeleteAsync(Guid id) => throw new NotImplementedException();

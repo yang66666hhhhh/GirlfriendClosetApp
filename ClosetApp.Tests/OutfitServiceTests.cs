@@ -36,6 +36,7 @@ public class OutfitServiceTests
 
         public Task<IEnumerable<Outfit>> GetAllAsync() => Task.FromResult(Enumerable.Empty<Outfit>());
         public Task<Outfit?> GetByIdAsync(Guid id) => Task.FromResult<Outfit?>(null);
+        public Task<Outfit?> GetByIdForUpdateAsync(Guid id) => Task.FromResult<Outfit?>(null);
 
         public Task AddAsync(Outfit entity)
         {
