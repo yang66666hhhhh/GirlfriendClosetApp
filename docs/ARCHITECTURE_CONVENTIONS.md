@@ -41,10 +41,20 @@
 - Tags are platform metadata, not clothing-only details.
 - Reusable tag UI belongs under `Components/Tags`.
 - Tag selection APIs should take a `TagCategory` so they can be reused by clothing, outfits, scenes, and future calendar features.
+- `TagCategory.Season` is system-managed metadata. Tags pages should hide season tags from ordinary management views and only show user-managed `Style` / `Scene` tags.
+- Tags page filtering should keep name search, category filter, usage filter, and sorting in `TagsTabState`, not in XAML code-behind.
+
+## Worn Record Snapshots
+
+- `OutfitWornRecord.OutfitId` is nullable so outfit history survives outfit deletion.
+- Recording a worn outfit must persist snapshots for outfit name, clothing ids, clothing count, clothing details, preview path, and snapshot completeness.
+- Before deleting an outfit or clothing item, update related worn-record snapshots while the full outfit/clothing data is still available.
+- History UI should distinguish deleted outfits, changed outfits, and incomplete snapshots; prefer snapshot data over live navigation properties for historical display.
 
 ## Error Presentation
 
 - Use `WardrobeActionErrorPresenter` for all user-facing error messages.
+- The presenter lives in `ClosetApp.UI.Logic/Services` so UI and tests share the same classification rules.
 - It classifies exceptions into: database busy, file occupied, permission denied, validation failure, and unknown.
 - Each method returns `(string Title, string Detail)` for direct display in toast or modal.
 - Prefer this over raw exception messages in UI code.

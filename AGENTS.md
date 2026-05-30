@@ -33,13 +33,13 @@ WPF 桌面端穿搭管理应用。Clean Architecture 分层，SQLite 持久化�
 
 ```bash
 # 构建
-dotnet build ClosetApp.slnx
+rtk dotnet build ClosetApp.slnx /m:1
 
 # 运行
-dotnet run --project ClosetApp.UI
+rtk dotnet run --project ClosetApp.UI
 
 # 测试
-dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
+rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 ```
 
 ---
@@ -67,18 +67,17 @@ ClosetApp.slnx
 ├── ClosetApp.UI/              # WPF 界面
 │   ├── Views/                 # ClothesTab, OutfitsTab, TagsTab, SettingsTab
 │   ├── Components/
-│   │   ├── Outfit/            # OutfitCompositionEngine, OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel
-│   │   ├── Clothing/          # PremiumClothingCard, BatchClothingImport*, ClothingEditorPanel
+│   │   ├── Outfit/            # OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel 等 WPF 控件
+│   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel 等 WPF 控件
 │   │   ├── Tags/              # TagEditorPanel, TagSelectionSection, SelectableTag
 │   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
 │   ├── Converters/            # ImagePathConverter, BoolToFavoriteColorConverter...
 │   ├── ViewModels/            # WardrobeViewModel, OutfitsViewModel, SettingsViewModel, TagsViewModel
-│   ├── Services/              # ThemeService, ModalService, ToastService, WardrobeActionErrorPresenter
-│   ├── States/                # ClothesTabState, OutfitsTabState, TagsTabState
+│   ├── Services/              # ThemeService, ModalService, ToastService
 │   └── Themes/
 │       ├── Tokens/            # Colors, Spacing, Radius, Shadows, Motion, Typography, Sizes
 │       └── Controls/          # Buttons, Cards, Chips, Inputs, Pages
-├── ClosetApp.UI.Logic/        # UI 纯逻辑共享工程（State、Engine、Import 等逻辑源码归属处）
+├── ClosetApp.UI.Logic/        # UI 纯逻辑共享工程（State、Engine、Import、错误提示等逻辑源码归属处）
 └── ClosetApp.Tests/           # xUnit 测试工程（当前同时引用 UI.Logic 与 UI 工程）
 ```
 
@@ -132,10 +131,10 @@ Domain ← Application ← Infrastructure
 | Entity | Key Fields | Relationships |
 |--------|-----------|---------------|
 | `Clothing` | Name, Type, GarmentType, ImagePath, Color, Brand, Season, FavoriteLevel | M:N with Outfit (via OutfitClothing), M:N with Tag (via ClothingTag) |
-| `Outfit` | Name, Scene, Season, Rating, WearCount, WornDate | M:N with Clothing, 1:N Favorite, 1:N OutfitWornRecord |
+| `Outfit` | Name, Scene, Season, Rating, WearCount, WornDate, OriginalClothingCount | M:N with Clothing, 1:N Favorite, 1:N OutfitWornRecord |
 | `Tag` | Name, Color, Category | M:N with Clothing (via ClothingTag) |
 | `Favorite` | OutfitId | FK to Outfit |
-| `OutfitWornRecord` | OutfitId, WornDate | FK to Outfit |
+| `OutfitWornRecord` | OutfitId(nullable), WornDate, OutfitNameSnapshot, OutfitClothingIdsSnapshot, ClothingCountSnapshot, ClothingDetailsSnapshot, IsSnapshotComplete, PreviewSnapshotPath | Optional FK to Outfit; snapshot keeps history after outfit/clothing deletion |
 
 所有实体继承 `BaseEntity`，使用 `Guid Id`（非 int）。
 
@@ -176,7 +175,7 @@ MainWindow 2 列布局：
 |-----|------|----------|
 | ClothesTab | 瀑布流展示、搜索、分类筛选、批量导入 | `ClothesTabState` |
 | OutfitsTab | 搭配列表、创建/编辑/删除、天气推荐、穿着记录 | `OutfitsTabState` |
-| TagsTab | 标签管理、分组整理、使用频次统计 | `TagsTabState` |
+| TagsTab | 风格/场景标签管理、使用状态筛选、使用频次统计；季节标签由系统管理 | `TagsTabState` |
 | SettingsTab | 主题切换、天气、备份、图片维护 | 无（使用 ViewModel） |
 
 ### 7.3 状态类约定
@@ -185,6 +184,19 @@ MainWindow 2 列布局：
 - `ClosetApp.UI.Logic` 中的纯逻辑类型使用 `ClosetApp.UI.Logic.*` 命名空间
 - State 负责：搜索文本、筛选器、加载标记、空状态、当前集合
 - Code-behind 负责：点击处理、动画、弹窗编排
+
+### 7.4 穿着记录快照约定
+
+- `OutfitWornRecord.OutfitId` 可空，不能把搭配删除视为历史记录删除
+- 记录穿着时保存搭配名称、衣服 ID 列表、衣服数量、衣服明细和预览图快照
+- 删除衣服或搭配前，先补齐相关穿着记录快照，并用 `IsSnapshotComplete` 标记完整性
+- 历史弹窗需区分搭配已删除、搭配已变化和快照不完整状态，优先用快照展示历史内容
+
+### 7.5 标签约定
+
+- `TagCategory.Season` 是系统预设标签，不在标签页作为普通标签展示或整理
+- 标签页只展示 `Style` / `Scene` 标签，并支持名称搜索、分类筛选、使用状态筛选与排序
+- 标签使用统计同时关注衣物关联数和搭配使用次数
 
 ---
 
@@ -508,7 +520,7 @@ DON'T:
 新页面 → Views/
 新组件 → Components/{Feature}/
 共享组件 → Components/Shared/
-新状态类 → States/
+新状态类 → ClosetApp.UI.Logic/States/
 新测试 → ClosetApp.Tests/
 ```
 
@@ -520,10 +532,10 @@ DON'T:
 
 ```bash
 # 运行所有测试
-dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
+rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 # 运行指定测试
-dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj --filter "FullyQualifiedName~MyTest"
+rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj --filter "FullyQualifiedName~MyTest"
 ```
 
 ### 12.2 测试结构
@@ -645,8 +657,8 @@ public async Task DoSomethingAsync() { ... }
 完成任务前，检查以下项目：
 
 ### 编译与测试
-- [ ] `dotnet build ClosetApp.slnx /m:1` 编译通过，0 错误
-- [ ] `dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1` 全部通过
+- [ ] `rtk dotnet build ClosetApp.slnx /m:1` 编译通过，0 错误
+- [ ] `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1` 全部通过
 - [ ] 测试 Fake 已更新（如新增了接口方法）
 
 ### 代码质量

@@ -64,12 +64,11 @@ GirlfriendClosetApp/
 │   └── Migrations/               # EF Core 迁移
 ├── ClosetApp.UI/
 │   ├── Views/                    # ClothesTab, OutfitsTab, TagsTab, SettingsTab, NavigationSidebar
-│   ├── Components/               # 服饰卡片、搭配引擎、批量导入、共享弹层、标签组件
-│   ├── States/                   # Tab 页面轻状态类
+│   ├── Components/               # 服饰卡片、穿搭预览、编辑器、共享弹层、标签组件
 │   ├── Themes/                   # Tokens / Controls / 兼容资源
-│   ├── Services/                 # ModalService, ToastService, ThemeService, WardrobeActionErrorPresenter...
+│   ├── Services/                 # ModalService, ToastService, ThemeService...
 │   └── ViewModels/               # 仍保留的 VM
-├── ClosetApp.UI.Logic/           # UI 纯逻辑共享工程（State、Engine、Import 等逻辑源码归属处）
+├── ClosetApp.UI.Logic/           # UI 纯逻辑共享工程（State、Engine、Import、错误提示等逻辑源码归属处）
 ├── ClosetApp.Tests/              # xUnit 测试工程（当前同时引用 UI.Logic 与 UI 工程）
 └── docs/
 ```
@@ -301,7 +300,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Tags/Controls/TagSelectionSection`
 - `Components/Tags/Models/SelectableTag`
 
-### 6.3 批量导入工作流
+### 6.4 批量导入工作流
 
 批量导入允许用户从本地图片目录快速导入衣物到衣柜：
 
@@ -318,7 +317,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `BatchClothingCompletionDtos`：批量补全元数据
 - `BatchWardrobeClearDtos`：按分类批量清空
 
-### 6.4 错误提示统一处理
+### 6.5 错误提示统一处理
 
 `WardrobeActionErrorPresenter` 集中处理以下场景的异常分类与中文提示：
 
@@ -331,12 +330,14 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 保存失败：校验失败、数据库忙、文件占用、权限不足
 - 搭配删除/记录穿着失败、标签删除失败
 
-### 6.4 标签页状态与交互约定
+该提示器位于 `ClosetApp.UI.Logic/Services`，供 UI 与测试工程共用同一套异常分类规则。
+
+### 6.6 标签页状态与交互约定
 
 `TagsTab` 当前采用“View + ViewModel + State”的轻组合：
 
 - `TagsViewModel` 负责把 `ITagService` 返回的数据映射到页面可绑定属性
-- `TagsTabState` 负责标签搜索、分类筛选、排序、分组集合和汇总文案
+- `TagsTabState` 负责标签搜索、分类筛选、使用状态筛选、排序、分组集合和汇总文案，并过滤系统季节标签
 - `TagRepository` 查询标签列表时会一并加载 `ClothingTags`，用于计算每个标签的当前使用次数
 - `TagsTab.xaml.cs` 主要保留分类切换、排序切换、清空筛选和卡片菜单事件
 
@@ -703,6 +704,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 标签编辑器 | `ClosetApp.UI/Components/Tags/Controls/TagEditorPanel.xaml` |
 | 标签选择组件 | `ClosetApp.UI/Components/Tags/Controls/TagSelectionSection.xaml` |
 | 穿着历史弹窗 | `ClosetApp.UI/Components/Shared/Modal/OutfitHistoryDialog.xaml` |
+| 穿着日期详情弹窗 | `ClosetApp.UI/Components/Shared/Modal/WornDayDetailsDialog.xaml` |
 | 推荐详情弹窗 | `ClosetApp.UI/Components/Shared/Modal/RecommendationDebugDialog.xaml` |
 | 数据洞察弹窗 | `ClosetApp.UI/Components/Shared/Modal/WardrobeInsightsDialog.xaml` |
 | 确认弹窗 | `ClosetApp.UI/Components/Shared/Modal/ConfirmDialog.xaml` |
@@ -727,7 +729,9 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 数据洞察 UseCase | `ClosetApp.Application/UseCases/Insights/GetWardrobeInsights.cs` |
 | 年度报告 UseCase | `ClosetApp.Application/UseCases/Insights/GetAnnualOutfitReport.cs` |
 | 本地路径定义 | `ClosetApp.Infrastructure/AppPaths.cs` |
+| 穿着记录实体 | `ClosetApp.Domain/Entities/OutfitWornRecord.cs` |
 | 衣服快照 DTO | `ClosetApp.Application/DTOs/ClothingSnapshotDto.cs` |
+| 穿着记录快照迁移 | `ClosetApp.Infrastructure/Migrations/*AddOutfitWornRecord*Snapshot*.cs` |
 | 测试工程 | `ClosetApp.Tests/ClosetApp.Tests.csproj` |
 | 架构约定 | `docs/ARCHITECTURE_CONVENTIONS.md` |
 
