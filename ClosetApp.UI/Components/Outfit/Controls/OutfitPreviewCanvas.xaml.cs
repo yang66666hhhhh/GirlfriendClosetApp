@@ -13,6 +13,8 @@ using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Outfit.Controls;
 
+using ClothingEntity = global::ClosetApp.Domain.Entities.Clothing;
+
 public partial class OutfitPreviewCanvas : UserControl
 {
     private readonly OutfitCompositionEngine _engine;
@@ -206,13 +208,13 @@ public partial class OutfitPreviewCanvas : UserControl
         RenderCanvas.Children.Add(border);
     }
 
-    private static string ResolveClothingName(Clothing clothing)
+    private static string ResolveClothingName(ClothingEntity clothing)
     {
         var name = clothing.Name?.Trim();
         return string.IsNullOrWhiteSpace(name) ? "历史单品" : name;
     }
 
-    private static string ResolveClothingTypeName(Clothing clothing)
+    private static string ResolveClothingTypeName(ClothingEntity clothing)
     {
         if (clothing.GarmentType.HasValue)
             return ClothingMappings.GetDisplayName(clothing.GarmentType.Value);
@@ -232,6 +234,6 @@ public partial class OutfitPreviewCanvas : UserControl
 
     private static Brush ResolveBrush(string resourceKey, Brush fallback)
     {
-        return Application.Current?.TryFindResource(resourceKey) as Brush ?? fallback;
+        return System.Windows.Application.Current?.TryFindResource(resourceKey) as Brush ?? fallback;
     }
 }
