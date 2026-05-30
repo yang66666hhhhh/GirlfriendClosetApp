@@ -166,6 +166,43 @@ public class OutfitsTabStateTests
     }
 
     [Fact]
+    public void SetRecentWornRecords_WithMissingSnapshotImage_KeepsSnapshotClothingMetadata()
+    {
+        var skirtId = Guid.NewGuid();
+        var record = new OutfitWornRecord
+        {
+            Id = Guid.NewGuid(),
+            OutfitNameSnapshot = "当天约会搭配",
+            ClothingCountSnapshot = 1,
+            IsSnapshotComplete = true,
+            WornDate = new DateTime(2026, 5, 30, 9, 0, 0),
+            ClothingDetailsSnapshot = JsonSerializer.Serialize(new[]
+            {
+                new
+                {
+                    Id = skirtId,
+                    Name = "黑色半裙",
+                    Type = nameof(ClothingType.Skirt),
+                    GarmentType = "Skirt",
+                    ImagePath = "missing-skirt.jpg",
+                    Color = "黑色"
+                }
+            })
+        };
+
+        var state = new OutfitsTabState();
+        state.SetRecentWornRecords([record]);
+
+        var item = Assert.Single(state.RecentWornRecords);
+        var clothing = Assert.Single(item.PreviewClothes);
+        Assert.Equal(skirtId, clothing.Id);
+        Assert.Equal("黑色半裙", clothing.Name);
+        Assert.Equal("missing-skirt.jpg", clothing.ImagePath);
+        Assert.Equal("黑色", clothing.Color);
+        Assert.Equal(ClothingType.Skirt, clothing.Type);
+    }
+
+    [Fact]
     public void SetCalendarRecords_WithDeletedOutfit_UsesSnapshotName()
     {
         var record = new OutfitWornRecord

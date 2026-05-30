@@ -1,5 +1,6 @@
 using System.IO;
 using System.IO.Compression;
+using System.Text.Json;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -199,6 +200,95 @@ public class BackupServiceTests
             catch
             {
                 // SQLite may briefly hold the file handle after the test completes.
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExportAndImport_Zip_IncludesImagesReferencedOnlyByWornRecordSnapshot()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var storageDir = Path.Combine(tempDir, "storage");
+        var historyDir = Path.Combine(tempDir, "history");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+            var imageStorage = new ImageStorageService(storageDir);
+            var sourceImagePath = Path.Combine(tempDir, "snapshot-source.png");
+            await CreateSourceImageAsync(sourceImagePath);
+            var snapshotFileName = await imageStorage.SaveImageAsync(sourceImagePath);
+
+            var snapshotClothingId = Guid.NewGuid();
+            await using (var setupContext = new ClosetDbContext(options))
+            {
+                await setupContext.Database.EnsureDeletedAsync();
+                await setupContext.Database.EnsureCreatedAsync();
+                setupContext.OutfitWornRecords.Add(new OutfitWornRecord
+                {
+                    WornDate = new DateTime(2026, 5, 30),
+                    OutfitNameSnapshot = "历史半裙搭配",
+                    ClothingCountSnapshot = 1,
+                    IsSnapshotComplete = true,
+                    ClothingDetailsSnapshot = JsonSerializer.Serialize(new[]
+                    {
+                        new ClothingSnapshotDto
+                        {
+                            Id = snapshotClothingId,
+                            Name = "黑色半裙",
+                            ImagePath = snapshotFileName,
+                            Type = nameof(ClothingType.Skirt)
+                        }
+                    })
+                });
+                await setupContext.SaveChangesAsync();
+            }
+
+            var service = new BackupService(new TestDbContextFactory(options), imageStorage, historyDir);
+            var backupPath = Path.Combine(tempDir, "snapshot-image-backup.zip");
+
+            var exportResult = await service.ExportAsync(backupPath);
+
+            using (var archive = ZipFile.OpenRead(backupPath))
+            {
+                Assert.NotNull(archive.GetEntry($"images/{snapshotFileName}"));
+            }
+
+            await using (var resetContext = new ClosetDbContext(options))
+            {
+                resetContext.OutfitWornRecords.RemoveRange(await resetContext.OutfitWornRecords.ToListAsync());
+                await resetContext.SaveChangesAsync();
+            }
+
+            await imageStorage.DeleteImageWithThumbnailAsync(snapshotFileName);
+            Assert.False(File.Exists(imageStorage.GetImageFullPath(snapshotFileName)));
+
+            var importResult = await service.ImportAsync(backupPath);
+
+            await using var assertContext = new ClosetDbContext(options);
+            var restoredRecord = Assert.Single(await assertContext.OutfitWornRecords.ToListAsync());
+            var restoredSnapshot = JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(restoredRecord.ClothingDetailsSnapshot!);
+            var restoredClothing = Assert.Single(restoredSnapshot!);
+
+            Assert.Equal(snapshotFileName, restoredClothing.ImagePath);
+            Assert.True(File.Exists(imageStorage.GetImageFullPath(snapshotFileName)));
+            Assert.Equal(1, exportResult.IncludedImageCount);
+            Assert.Equal(1, importResult.RestoredImageCount);
+            Assert.Empty(importResult.MissingImageFiles);
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
             }
         }
     }

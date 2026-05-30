@@ -112,7 +112,7 @@
                                 Margin="0,0,0,18">
                             <StackPanel>
                                 <TextBlock x:Name="TxtSummary"
-                                           Text="会删除选中分类里的衣服，并一起清掉对应图片。"
+                                           Text="会删除选中分类里的衣服，只清理未被穿着历史引用的图片。"
                                            FontSize="14"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
@@ -163,7 +163,7 @@
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 <CheckBox x:Name="ChkUnderstand"
-                                          Content="我知道这个操作不可撤销，会同时删除图片和可能变空的搭配"
+                                          Content="我知道这个操作不可撤销，会清理未被穿着历史引用的图片和可能变空的搭配"
                                           Margin="0,10,0,0"
                                           Foreground="{DynamicResource TextSecondaryBrush}"
                                           Checked="Acknowledge_Checked"

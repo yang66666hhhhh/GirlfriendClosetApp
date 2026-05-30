@@ -71,7 +71,7 @@ public partial class BatchWardrobeClearPanel : UserControl, IEditorPanel<BatchWa
         ChkSelectAll.IsEnabled = false;
         ChkUnderstand.IsEnabled = false;
         BtnSave.Content = "正在清空...";
-        TxtFooterHint.Text = "正在删除衣服和图片，请稍等。";
+        TxtFooterHint.Text = "正在删除衣服并清理未被历史引用的图片，请稍等。";
 
         EditorCompleted?.Invoke(
             this,
@@ -132,7 +132,7 @@ public partial class BatchWardrobeClearPanel : UserControl, IEditorPanel<BatchWa
             ? $"会一次清空全部 {totalCount} 件衣服。"
             : "不勾这里的话，就只会清空你选中的分类。";
         TxtSummary.Text = selectedCount == 0
-            ? "会删除选中分类里的衣服，并一起清掉对应图片。"
+            ? "会删除选中分类里的衣服，只清理未被穿着历史引用的图片。"
             : $"当前会清空 {selectedClothingCount} 件衣服，覆盖 {selectedCount} 个分类。";
         TxtFooterHint.Text = selectedCount == 0
             ? "先选要清空的分类，再做最后确认。"

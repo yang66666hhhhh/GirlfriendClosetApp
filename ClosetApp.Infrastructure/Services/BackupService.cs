@@ -41,7 +41,7 @@ public sealed class BackupService : IBackupService
     public async Task<BackupValidationResult> ValidateExportAsync(string filePath)
     {
         var document = await BuildBackupDocumentAsync();
-        var imageAnalysis = AnalyzeImages(document.Clothes);
+        var imageAnalysis = AnalyzeImages(document);
         var format = GetBackupFormat(filePath);
         var warnings = BuildExportWarnings(filePath, format, document, imageAnalysis);
 
@@ -140,9 +140,8 @@ public sealed class BackupService : IBackupService
                 var json = await File.ReadAllTextAsync(filePath);
                 document = JsonSerializer.Deserialize<ClosetBackupDocument>(json, JsonOptions)
                     ?? throw new InvalidOperationException("备份文件格式无效。");
-                missingImageFiles = document.Clothes
-                    .Where(c => !string.IsNullOrWhiteSpace(c.ImagePath))
-                    .Select(c => Path.GetFileName(c.ImagePath) ?? c.ImagePath!)
+                missingImageFiles = GetDistinctImageReferences(document)
+                    .Select(reference => reference.FileName)
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                     .ToList();
@@ -305,6 +304,7 @@ public sealed class BackupService : IBackupService
     private List<PackagedImage> PreparePackagedImages(ClosetBackupDocument document)
     {
         var usedNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var packagedBySource = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var packagedImages = new List<PackagedImage>();
 
         foreach (var clothing in document.Clothes)
@@ -313,9 +313,40 @@ public sealed class BackupService : IBackupService
             if (sourcePath == null)
                 continue;
 
-            var packagedFileName = BuildPackagedImageFileName(clothing, sourcePath, usedNames);
+            var packagedFileName = GetOrCreatePackagedImageFileName(
+                packagedBySource,
+                sourcePath,
+                clothing.ImagePath,
+                clothing.Id,
+                usedNames);
             clothing.ImagePath = packagedFileName;
-            packagedImages.Add(new PackagedImage(sourcePath, packagedFileName));
+            AddPackagedImage(packagedImages, sourcePath, packagedFileName);
+        }
+
+        foreach (var wornRecord in document.WornRecords)
+        {
+            var snapshotClothes = DeserializeSnapshotClothes(wornRecord.ClothingDetailsSnapshot);
+            var changed = false;
+
+            foreach (var snapshotClothing in snapshotClothes)
+            {
+                var sourcePath = ResolveImageSourcePath(snapshotClothing.ImagePath);
+                if (sourcePath == null)
+                    continue;
+
+                var packagedFileName = GetOrCreatePackagedImageFileName(
+                    packagedBySource,
+                    sourcePath,
+                    snapshotClothing.ImagePath,
+                    snapshotClothing.Id,
+                    usedNames);
+                snapshotClothing.ImagePath = packagedFileName;
+                AddPackagedImage(packagedImages, sourcePath, packagedFileName);
+                changed = true;
+            }
+
+            if (changed)
+                wornRecord.ClothingDetailsSnapshot = JsonSerializer.Serialize(snapshotClothes, JsonOptions);
         }
 
         return packagedImages;
@@ -341,16 +372,25 @@ public sealed class BackupService : IBackupService
 
         try
         {
-            foreach (var clothing in document.Clothes.Where(c => !string.IsNullOrWhiteSpace(c.ImagePath)))
+            var restoredImages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var imageReference in GetImageReferences(document))
             {
-                var imageFileName = Path.GetFileName(clothing.ImagePath);
+                var imageFileName = imageReference.FileName;
                 if (string.IsNullOrWhiteSpace(imageFileName))
                     continue;
+
+                if (restoredImages.Contains(imageFileName))
+                {
+                    imageReference.ApplyRestoredPath(imageFileName);
+                    continue;
+                }
 
                 var imageEntry = FindZipEntry(archive, $"{ImagesEntryFolder}{imageFileName}");
                 if (imageEntry == null)
                 {
                     missingImageFiles.Add(imageFileName);
+                    imageReference.ApplyRestoredPath(imageFileName);
                     continue;
                 }
 
@@ -358,7 +398,8 @@ public sealed class BackupService : IBackupService
                 Directory.CreateDirectory(Path.GetDirectoryName(tempImagePath)!);
                 imageEntry.ExtractToFile(tempImagePath, overwrite: true);
                 await _imageStorageService!.RestoreImageAsync(tempImagePath, imageFileName);
-                clothing.ImagePath = imageFileName;
+                imageReference.ApplyRestoredPath(imageFileName);
+                restoredImages.Add(imageFileName);
                 restoredImageCount++;
             }
 
@@ -473,18 +514,35 @@ public sealed class BackupService : IBackupService
         return File.Exists(storedImagePath) ? storedImagePath : null;
     }
 
+    private static string GetOrCreatePackagedImageFileName(
+        IDictionary<string, string> packagedBySource,
+        string sourcePath,
+        string? currentImagePath,
+        Guid ownerId,
+        ISet<string> usedNames)
+    {
+        var normalizedSourcePath = Path.GetFullPath(sourcePath);
+        if (packagedBySource.TryGetValue(normalizedSourcePath, out var existingName))
+            return existingName;
+
+        var packagedFileName = BuildPackagedImageFileName(currentImagePath, ownerId, sourcePath, usedNames);
+        packagedBySource[normalizedSourcePath] = packagedFileName;
+        return packagedFileName;
+    }
+
     private static string BuildPackagedImageFileName(
-        ClothingBackupItem clothing,
+        string? imagePath,
+        Guid ownerId,
         string sourcePath,
         ISet<string> usedNames)
     {
         var extension = Path.GetExtension(sourcePath);
-        var currentName = string.IsNullOrWhiteSpace(clothing.ImagePath)
+        var currentName = string.IsNullOrWhiteSpace(imagePath)
             ? null
-            : Path.GetFileName(clothing.ImagePath);
+            : Path.GetFileName(imagePath);
 
         var candidate = string.IsNullOrWhiteSpace(currentName)
-            ? $"{clothing.Id}{extension}"
+            ? $"{ownerId}{extension}"
             : currentName;
 
         if (usedNames.Add(candidate))
@@ -498,24 +556,35 @@ public sealed class BackupService : IBackupService
         return $"{baseName}_{suffix}{extension}";
     }
 
+    private static void AddPackagedImage(
+        ICollection<PackagedImage> packagedImages,
+        string sourcePath,
+        string packagedFileName)
+    {
+        if (packagedImages.Any(image =>
+                string.Equals(image.EntryFileName, packagedFileName, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        packagedImages.Add(new PackagedImage(sourcePath, packagedFileName));
+    }
+
     private static ZipArchiveEntry? FindZipEntry(ZipArchive archive, string entryName)
     {
         return archive.Entries.FirstOrDefault(entry =>
             string.Equals(entry.FullName, entryName, StringComparison.OrdinalIgnoreCase));
     }
 
-    private BackupImageAnalysis AnalyzeImages(IEnumerable<ClothingBackupItem> clothes)
+    private BackupImageAnalysis AnalyzeImages(ClosetBackupDocument document)
     {
         var referencedCount = 0;
         var availableCount = 0;
 
-        foreach (var clothing in clothes)
+        foreach (var imageReference in GetDistinctImageReferences(document))
         {
-            if (string.IsNullOrWhiteSpace(clothing.ImagePath))
-                continue;
-
             referencedCount++;
-            if (ResolveImageSourcePath(clothing.ImagePath) != null)
+            if (ResolveImageSourcePath(imageReference.ImagePath) != null)
                 availableCount++;
         }
 
@@ -559,16 +628,84 @@ public sealed class BackupService : IBackupService
     {
         var warnings = new List<string>();
 
-        if (format == "json" && document.Clothes.Any(c => !string.IsNullOrWhiteSpace(c.ImagePath)))
+        if (format == "json" && HasImageReferences(document))
             warnings.Add("JSON 备份不会附带图片文件，导入后如出现缺图，可使用“图片修复”。");
 
         if (format == "zip" && missingImageCount > 0)
             warnings.Add($"备份包里有 {missingImageCount} 张图片缺失，相关衣物会保留原图片文件名。");
 
-        if (format == "zip" && restoredImageCount == 0 && document.Clothes.Any(c => !string.IsNullOrWhiteSpace(c.ImagePath)))
+        if (format == "zip" && restoredImageCount == 0 && HasImageReferences(document))
             warnings.Add("备份里有图片路径，但没有恢复到任何图片文件。");
 
         return warnings;
+    }
+
+    private static bool HasImageReferences(ClosetBackupDocument document)
+    {
+        return GetImageReferences(document).Any();
+    }
+
+    private static IEnumerable<ImageReference> GetDistinctImageReferences(ClosetBackupDocument document)
+    {
+        return GetImageReferences(document)
+            .GroupBy(reference => reference.FileName, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First());
+    }
+
+    private static List<ImageReference> GetImageReferences(ClosetBackupDocument document)
+    {
+        var references = new List<ImageReference>();
+
+        foreach (var clothing in document.Clothes)
+            AddReference(references, clothing.ImagePath, fileName => clothing.ImagePath = fileName);
+
+        foreach (var wornRecord in document.WornRecords)
+        {
+            var snapshotClothes = DeserializeSnapshotClothes(wornRecord.ClothingDetailsSnapshot);
+            if (snapshotClothes.Count == 0)
+                continue;
+
+            foreach (var snapshotClothing in snapshotClothes)
+            {
+                AddReference(references, snapshotClothing.ImagePath, fileName =>
+                {
+                    snapshotClothing.ImagePath = fileName;
+                    wornRecord.ClothingDetailsSnapshot = JsonSerializer.Serialize(snapshotClothes, JsonOptions);
+                });
+            }
+        }
+
+        return references;
+    }
+
+    private static void AddReference(
+        ICollection<ImageReference> references,
+        string? imagePath,
+        Action<string> applyRestoredPath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return;
+
+        var fileName = Path.GetFileName(imagePath);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return;
+
+        references.Add(new ImageReference(imagePath, fileName, applyRestoredPath));
+    }
+
+    private static List<ClothingSnapshotDto> DeserializeSnapshotClothes(string? snapshotJson)
+    {
+        if (string.IsNullOrWhiteSpace(snapshotJson))
+            return [];
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(snapshotJson, JsonOptions) ?? [];
+        }
+        catch
+        {
+            return [];
+        }
     }
 
     private async Task<List<BackupHistoryItem>> LoadHistoryAsync()
@@ -592,6 +729,8 @@ public sealed class BackupService : IBackupService
     }
 
     private sealed record PackagedImage(string SourcePath, string EntryFileName);
+
+    private sealed record ImageReference(string ImagePath, string FileName, Action<string> ApplyRestoredPath);
 
     private sealed record BackupImageAnalysis(int ReferencedCount, int AvailableCount, int MissingCount);
 

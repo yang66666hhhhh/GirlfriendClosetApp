@@ -182,7 +182,7 @@ public partial class SettingsTab : UserControl
         }
 
         var confirm = MessageBox.Show(
-            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FileSizeFormatter.Format(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物引用的图片。确定继续吗？",
+            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FileSizeFormatter.Format(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物或穿着历史引用的图片。确定继续吗？",
             "清理孤儿原图",
             MessageBoxButton.OKCancel,
             MessageBoxImage.Warning);
