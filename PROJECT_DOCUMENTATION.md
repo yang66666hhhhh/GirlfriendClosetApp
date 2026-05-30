@@ -386,9 +386,92 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 ---
 
-## 8. 备份与数据治理
+## 8. 业务规则与算法
 
-### 8.1 备份接口
+### 8.1 穿着记录永久保留规则
+
+穿着记录是用户历史数据，不跟随衣物或搭配删除而删除。
+
+`OutfitWornRecord` 使用快照字段保存当时状态：
+
+- `OutfitNameSnapshot`：记录当时的搭配名称
+- `OutfitClothingIdsSnapshot`：记录当时的衣服 ID 列表
+- `ClothingCountSnapshot`：记录当时的衣服数量
+- `ClothingDetailsSnapshot`：记录当时的衣服明细 JSON，包含 `Id`、`Name`、`ImagePath`、`Color`、`Type`、`GarmentType`
+- `IsSnapshotComplete`：标记快照是否可用于历史展示
+
+历史展示算法：
+
+1. `WornRecordSnapshotDisplayFactory.FromRecord()` 优先解析 `ClothingDetailsSnapshot`
+2. 如果快照可用，历史名称、衣服列表和预览都使用快照
+3. 当前 live `Outfit` 只用于判断状态：搭配已删除、搭配已变化、快照不完整
+4. 旧快照缺少 `GarmentType` 时，先用 `Type` 推断；`Type` 也不可用时，可按名称兜底识别半裙、裤装、鞋、包、连衣裙、外套等常见类型
+5. 快照图片路径失效时，历史仍保留文字和数量，但预览无法画出该单品图片；需要通过备份或缺失图片修复找回同名图片
+
+### 8.2 记录穿着算法
+
+`OutfitService.RecordWornDateAsync(outfitId, date)`：
+
+1. 读取搭配及其 `OutfitClothes -> Clothing`
+2. 生成衣服 ID 快照和衣服详情快照
+3. 如果当天已经记录过同一搭配，则更新该记录时间和快照
+4. 否则新增 `OutfitWornRecord`
+5. 更新 live `Outfit.WornDate` 和 `Outfit.WearCount`
+
+### 8.3 删除衣服算法
+
+删除单件衣服时，顺序很重要：
+
+1. 读取将被删除的衣服和图片路径
+2. `OutfitRepository.DeleteInvalidOutfitsAsync(clothingId)` 找出包含该衣服的搭配
+3. 在移除衣服链接前，使用当前完整搭配补齐相关穿着记录快照
+4. 如果旧记录被错误标记为完整，但 `ClothingDetailsSnapshot` 为空或快照数量小于当前完整搭配数量，也要刷新快照
+5. 删除搭配中的衣服链接
+6. 如果搭配剩余衣服少于 2 件，删除 live 搭配，并把相关 `OutfitWornRecord.OutfitId` 置空
+7. 如果搭配仍有 2 件以上，保留 live 搭配，并保留 `OriginalClothingCount` 用于显示“搭配已变化”
+8. 删除衣服记录
+9. 如果该衣服图片仍被任意穿着历史快照引用，则保留图片资产；否则才允许删除原图和派生缓存
+
+### 8.4 删除搭配算法
+
+`OutfitService.DeleteOutfitAsync(outfitId)`：
+
+1. 用可更新查询读取搭配、衣服、收藏和穿着记录
+2. 删除 live 搭配前，补齐所有关联穿着记录快照
+3. 对旧的空快照或数量不足快照执行刷新
+4. 将关联穿着记录的 `OutfitId` 置空
+5. 删除 live 搭配
+
+删除搭配不删除穿着记录，也不应删除历史快照引用的图片资产。
+
+### 8.5 图片保留与清理规则
+
+图片文件不是单纯跟随衣物生命周期删除。判断规则：
+
+- 衣物列表中仍引用的图片：保留
+- 穿着历史快照中引用的图片：保留
+- 删除衣物或批量清空衣柜时，如果图片被历史快照引用，跳过物理删除
+- 设置页“清理孤儿原图”会把衣物引用和历史快照引用都视为有效引用
+- 普通缓存清理只清理 `display/` 和 `thumbnails/`，不删除 `originals/`
+- 缺失缓存可由 `ImageStorageService.EnsureDisplayAsync()` / `EnsureThumbnailAsync()` 从原图重建
+
+### 8.6 批量清空算法
+
+`ClearWardrobeByTypes.ExecuteAsync(request)`：
+
+1. 校验至少选择一个 `ClothingType`
+2. 查询命中的衣物集合
+3. 批量删除衣物记录
+4. 删除空搭配
+5. 对每个待删图片去重
+6. 如果图片被历史快照引用，则跳过删除
+7. 否则 best-effort 删除原图、主视觉和缩略图
+
+---
+
+## 9. 备份与数据治理
+
+### 9.1 备份接口
 
 `IBackupService` 当前提供：
 
@@ -401,7 +484,7 @@ Task ClearHistoryAsync();
 string BuildDefaultBackupPath();
 ```
 
-### 8.2 支持格式
+### 9.2 支持格式
 
 #### ZIP 备份包
 
@@ -425,7 +508,7 @@ string BuildDefaultBackupPath();
 - 可用于轻量导出
 - 导入后可能需要配合“缺失图片修复”
 
-### 8.3 备份 DTO
+### 9.3 备份 DTO
 
 位于 `ClosetApp.Application/DTOs/BackupDtos.cs`：
 
@@ -440,7 +523,7 @@ string BuildDefaultBackupPath();
 - `BackupImportResult` 提供导入结果摘要、恢复图片数、缺失文件名、修复建议
 - `BackupHistoryItem` 提供 UI 可直接展示的时间、状态、文件名与摘要
 
-### 8.4 其他 DTO
+### 9.4 其他 DTO
 
 | 文件 | 用途 |
 |------|------|
@@ -452,7 +535,7 @@ string BuildDefaultBackupPath();
 | `BatchClothingCompletionDtos` | 批量补全元数据 |
 | `BatchWardrobeClearDtos` | 按分类批量清空 |
 
-### 8.4 SettingsTab 中的数据治理体验
+### 9.5 SettingsTab 中的数据治理体验
 
 设置页当前已经落地：
 
@@ -467,7 +550,7 @@ string BuildDefaultBackupPath();
 - 孤儿原图扫描与确认清理
 - 导入后根据缺失图片情况给出修复建议
 
-### 8.5 备份历史
+### 9.6 备份历史
 
 默认保存位置：
 
@@ -477,7 +560,7 @@ string BuildDefaultBackupPath();
 
 历史最多保留 24 条，UI 默认读取最近 8 条。
 
-### 8.6 今日推荐偏好
+### 9.7 今日推荐偏好
 
 推荐偏好由 `ClosetApp.Infrastructure/Services/RecommendationPreferencesService.cs` 管理，默认保存到：
 
@@ -507,9 +590,9 @@ public class RecommendationPreferences
 
 ---
 
-## 9. 图片存储与修复
+## 10. 图片存储与修复
 
-### 9.1 目录
+### 10.1 目录
 
 由 `AppPaths` 统一管理：
 
@@ -524,7 +607,7 @@ public class RecommendationPreferences
 └── backups/
 ```
 
-### 9.2 图片解析
+### 10.2 图片解析
 
 图片链路的关键组件：
 
@@ -541,9 +624,9 @@ public class RecommendationPreferences
 
 当前图片解析只面向三层资产目录；历史旧目录兼容已移除，缺图时通过“图片修复”按文件名从用户选择的目录重新导入。
 
-原图不会随普通缓存清理删除；只有在删除衣物、更换图片或用户确认“孤儿原图清理”时，才会删除数据库未引用的原图及其同名派生缓存。
+原图不会随普通缓存清理删除；只有在删除衣物、更换图片或用户确认“孤儿原图清理”时，才会删除数据库未引用的原图及其同名派生缓存。这里的“引用”同时包括衣物表中的 `ImagePath` 和穿着历史快照 `ClothingDetailsSnapshot` 中的 `ImagePath`。
 
-### 9.3 图片修复与维护
+### 10.3 图片修复与维护
 
 `ImageMaintenanceService` 提供：
 
@@ -569,7 +652,7 @@ Task<long> GetDirectorySizeAsync(string directory);
 
 ---
 
-## 10. 主题与设计系统
+## 11. 主题与设计系统
 
 按照当前约定：
 
@@ -579,7 +662,7 @@ Task<long> GetDirectorySizeAsync(string directory);
 
 主题通过 `ThemeService` 全局切换，支持 `Rose`（柔粉）和 `Blue`（清蓝）两套主题。切换时通过 `ThemePalette.Create(AppThemeKind)` 生成完整调色板，然后更新 `Application.Resources` 中所有 Color/Brush。
 
-### 10.1 主题调色板
+### 11.1 主题调色板
 
 每套主题包含以下色系：
 
@@ -616,9 +699,9 @@ Task<long> GetDirectorySizeAsync(string directory);
 
 ---
 
-## 11. DI 与启动流程
+## 12. DI 与启动流程
 
-### 11.1 依赖注册
+### 12.1 依赖注册
 
 在 `ClosetApp.UI/App.xaml.cs` 中注册：
 
@@ -628,7 +711,7 @@ Task<long> GetDirectorySizeAsync(string directory);
 - UseCase：`GetWardrobeOverview`、`ImportClothesFromImages`、`CompleteClothingMetadataBatch`、`ClearWardrobeByTypes`、`GetOutfitHistorySummary`、`RecordOutfitWorn`、`GetRecommendationReadinessSummary`、`GetTodayRecommendations`、`GetTagsForSelection`
 - UI 服务：`ToastService`、`ModalService`、`ThemeService`、`ThemePreferencesService`
 
-### 11.2 启动行为
+### 12.2 启动行为
 
 启动流程大致为：
 
@@ -641,9 +724,9 @@ Task<long> GetDirectorySizeAsync(string directory);
 
 ---
 
-## 12. 测试与验证
+## 13. 测试与验证
 
-### 12.1 测试工程结构
+### 13.1 测试工程结构
 
 `ClosetApp.Tests` 当前是 xUnit 测试工程：
 
@@ -656,7 +739,7 @@ Task<long> GetDirectorySizeAsync(string directory);
 - 让 State、Engine、Import 等纯逻辑代码归属在 `ClosetApp.UI.Logic`，并在 UI 与测试中共用同一份源码
 - 支持 ViewModel / WPF 相关测试继续覆盖 UI 工程中的实际类型
 
-### 12.2 当前覆盖范围
+### 13.2 当前覆盖范围
 
 | 领域 | 测试文件 |
 |------|---------|
@@ -673,7 +756,7 @@ Task<long> GetDirectorySizeAsync(string directory);
 | 搭配服务 | `OutfitServiceTests` |
 | 错误提示 | `WardrobeActionErrorPresenterTests` |
 
-### 12.3 常用命令
+### 13.3 常用命令
 
 仓库约定命令优先走 `rtk`：
 
@@ -685,7 +768,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 ---
 
-## 13. 文件路径速查
+## 14. 文件路径速查
 
 | 功能 | 路径 |
 |---|---|
@@ -737,9 +820,9 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 ---
 
-## 14. 已知说明
+## 15. 已知说明
 
-### 14.1 当前保留项
+### 15.1 当前保留项
 
 - `WeatherService` 已完整实现（Open-Meteo API，支持城市搜索、15 分钟缓存、天气代码映射）
 - `ViewModels` 仍存在，但不是当前页面交互的唯一主轴
@@ -747,7 +830,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
 - 穿着记录快照系统：记录穿着时保存完整搭配快照，删除衣服或搭配时自动更新快照，确保历史记录永久保留
 
-### 14.2 风险与后续方向
+### 15.2 风险与后续方向
 
 - SixLabors.ImageSharp 版本告警仍需后续评估
 - 继续减少 code-behind 里的非 UI 逻辑
@@ -756,7 +839,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 ---
 
-## 15. 近期变更摘要
+## 16. 近期变更摘要
 
 ### 2026-05 中旬
 
@@ -932,7 +1015,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 ---
 
-## 16. 相关文档
+## 17. 相关文档
 
 - `README.md`：项目快速入口
 - `docs/ARCHITECTURE_CONVENTIONS.md`：架构约定

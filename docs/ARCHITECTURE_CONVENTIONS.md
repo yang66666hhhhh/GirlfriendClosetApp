@@ -50,6 +50,25 @@
 - Recording a worn outfit must persist snapshots for outfit name, clothing ids, clothing count, clothing details, preview path, and snapshot completeness.
 - Before deleting an outfit or clothing item, update related worn-record snapshots while the full outfit/clothing data is still available.
 - History UI should distinguish deleted outfits, changed outfits, and incomplete snapshots; prefer snapshot data over live navigation properties for historical display.
+- Snapshot clothing details must include enough rendering data: `Id`, `Name`, `ImagePath`, `Color`, `Type`, and `GarmentType` when available.
+- If an old snapshot lacks `GarmentType`, UI logic may infer it from legacy `Type` and common clothing names, but new writes should store the explicit value.
+
+## Delete And History Rules
+
+- Worn records are permanent user history. Do not delete worn records as a side effect of deleting clothing or outfits.
+- Deleting clothing first refreshes affected worn-record snapshots, then removes the clothing link from live outfits.
+- Live outfits with fewer than two remaining clothing items are deleted; their worn records keep snapshots and get `OutfitId = null`.
+- Live outfits with at least two remaining clothing items stay visible and use `OriginalClothingCount` to show changed-state warnings.
+- A snapshot that is marked complete can still be stale. Refresh it before destructive changes when details are empty or the snapshot count is lower than the current outfit item count.
+- History previews must prefer snapshot clothing over live outfit clothing. Live data is only for status comparison and current outfit navigation.
+
+## Image Retention
+
+- Images referenced by clothing records are active assets.
+- Images referenced only by `OutfitWornRecord.ClothingDetailsSnapshot` are still active history assets.
+- Single clothing delete, batch wardrobe clear, and orphan-original cleanup must not physically delete images referenced by worn-record snapshots.
+- Cache cleanup may delete `display/` and `thumbnails/`, but must not delete `originals/`.
+- Missing display/thumbnail assets should be rebuilt from originals where possible. If the original is missing, history can keep text metadata but cannot render the deleted image.
 
 ## Error Presentation
 

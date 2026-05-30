@@ -88,6 +88,8 @@ GirlfriendClosetApp/
 - 记录穿着时保存 `OutfitNameSnapshot`、`OutfitClothingIdsSnapshot`、`ClothingCountSnapshot`、`ClothingDetailsSnapshot`、`PreviewSnapshotPath` 和 `IsSnapshotComplete`
 - `Outfit.OriginalClothingCount` 用于判断搭配内容是否已变化，`OutfitCard` 会显示"搭配已变化"提示
 - 删除衣服或搭配前会补齐相关穿着记录快照，历史弹窗优先使用快照展示已删除或已变化的搭配
+- 历史快照引用的图片会被视为有效资产；删除衣物、批量清空和孤儿原图清理都不能物理删除这些图片
+- 如果旧快照缺少细分类，历史展示会用 `Type` 和名称兜底推断半裙、裤装、鞋、包等常见单品位置
 
 ### 2. 备份与恢复
 
@@ -132,7 +134,7 @@ GirlfriendClosetApp/
 
 - 查看缺失图片数量
 - 查看图片缓存健康状态并一键重建缺失缓存
-- 扫描并清理数据库未引用的孤儿原图
+- 扫描并清理数据库未引用的孤儿原图（衣物记录和穿着历史快照引用都会被视为有效引用）
 - 查看备份前的数据规模、图片覆盖情况和导出提醒
 - 选择旧图片目录批量修复
 - 清理主视觉和小预览缓存
