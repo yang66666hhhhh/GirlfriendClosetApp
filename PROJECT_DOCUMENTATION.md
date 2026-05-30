@@ -1,6 +1,6 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-05-29
+> 最后更新时间：2026-05-30
 > 当前状态：主流程可用，近期重点已转向推荐调试、数据洞察、性能优化与本地数据安全体验
 
 ---
@@ -103,6 +103,7 @@ GirlfriendClosetApp/
 - `string? Notes`
 - `DateTime? WornDate`
 - `int WearCount`
+- `int OriginalClothingCount`（原始衣服数量，用于判断搭配是否变化）
 
 #### Tag
 
@@ -116,6 +117,14 @@ GirlfriendClosetApp/
 - `OutfitClothing`
 - `Favorite`
 - `OutfitWornRecord`
+  - `Guid? OutfitId`（可空，支持搭配删除后保留记录）
+  - `DateTime WornDate`
+  - `string OutfitNameSnapshot`（搭配名称快照）
+  - `string? OutfitClothingIdsSnapshot`（衣服 ID 列表快照，JSON 格式）
+  - `int ClothingCountSnapshot`（衣服数量快照）
+  - `string? ClothingDetailsSnapshot`（衣服详情快照，JSON 格式）
+  - `bool IsSnapshotComplete`（快照完整性标记）
+  - `string? PreviewSnapshotPath`（预览图快照路径）
 
 ### 4.2 枚举
 
@@ -180,9 +189,9 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 #### TagsTab
 
-- 标签按风格 / 场景 / 季节分组整理
-- 支持名称搜索、分类筛选与按使用频次排序
-- 展示标签当前关联的衣物数量，用于区分“已在使用”和“待整理”
+- 标签按风格 / 场景分组整理（季节标签由系统管理，不在页面显示）
+- 支持名称搜索、分类筛选、使用状态筛选与多种排序方式
+- 展示标签当前关联的衣物数量和搭配使用次数，用于区分"已在使用"和"待整理"
 - 标签卡片操作收纳为右上角轻量菜单，避免底部按钮影响信息密度
 - 标签编辑器与可选择标签组件复用
 - 依赖 `TagsTabState`
@@ -238,6 +247,8 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 #### Clothing
 
 - `Components/Clothing/ClothingEditorPanel`
+  - 默认类型为"未选择"（`ClothingType.Unspecified`）
+  - 名称字段为选填，留空自动命名为"未命名"
 - `Components/Clothing/BatchClothingImportPanel`
 - `Components/Clothing/BatchClothingCompletionPanel`
 - `Components/Clothing/BatchClothingImportSummaryDialog`
@@ -249,7 +260,10 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Outfit/Engine/OutfitCompositionEngine`
 - `Components/Outfit/Controls/OutfitPreviewCanvas`
 - `Components/Outfit/Controls/OutfitCard`
+  - 显示搭配变化提示（原 X 件，现 Y 件）
+  - 使用玫瑰色背景突出显示
 - `Components/Outfit/Editor/OutfitEditorPanel`
+  - 名称字段为选填，留空自动命名为"未命名"
 
 ### 6.3 搭配预览模型
 
@@ -713,6 +727,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 | 数据洞察 UseCase | `ClosetApp.Application/UseCases/Insights/GetWardrobeInsights.cs` |
 | 年度报告 UseCase | `ClosetApp.Application/UseCases/Insights/GetAnnualOutfitReport.cs` |
 | 本地路径定义 | `ClosetApp.Infrastructure/AppPaths.cs` |
+| 衣服快照 DTO | `ClosetApp.Application/DTOs/ClothingSnapshotDto.cs` |
 | 测试工程 | `ClosetApp.Tests/ClosetApp.Tests.csproj` |
 | 架构约定 | `docs/ARCHITECTURE_CONVENTIONS.md` |
 
@@ -726,6 +741,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `ViewModels` 仍存在，但不是当前页面交互的唯一主轴
 - `ClosetApp.UI.Logic` 是纯逻辑共享工程，承载 State、Engine、Import 等文件，供 UI 与测试工程直接引用复用
 - `WardrobeActionErrorPresenter` 统一处理数据库忙/文件占用/权限不足等异常的中文提示
+- 穿着记录快照系统：记录穿着时保存完整搭配快照，删除衣服或搭配时自动更新快照，确保历史记录永久保留
 
 ### 14.2 风险与后续方向
 
@@ -833,6 +849,82 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - 删除 `Themes/Chips.xaml`、`Themes/ButtonStyles.xaml`、`Themes/Styles.xaml`（与 Controls 目录下重复）
 - 移除未使用的 `GetRecommendationParamsAsync()` 方法
 - 提取 `VisualTreeHelperExtensions` 共享工具类，消除 3 个文件中的重复 `FindVisualChild<T>` 实现
+
+### 2026-05-30
+
+#### 数据模型更新
+
+- **OutfitWornRecord 快照系统**：记录穿着时保存完整的搭配快照
+  - 新增 `OutfitNameSnapshot`：搭配名称快照
+  - 新增 `OutfitClothingIdsSnapshot`：衣服 ID 列表快照（JSON 格式）
+  - 新增 `ClothingCountSnapshot`：衣服数量快照
+  - 新增 `ClothingDetailsSnapshot`：衣服详情快照（JSON 格式，包含名称、图片路径、类型）
+  - 新增 `IsSnapshotComplete`：标记快照是否完整
+  - 外键 `OutfitId` 改为可空，支持搭配删除后保留穿着记录
+
+- **Outfit 实体更新**：
+  - 新增 `OriginalClothingCount`：记录原始衣服数量，用于判断搭配是否变化
+
+- **ClothingSnapshotDto**：新增衣服快照 DTO
+  - `Id`：衣服 ID
+  - `Name`：衣服名称
+  - `ImagePath`：图片路径
+  - `Type`：衣服类型
+
+#### 搭配变化提示
+
+- **OutfitCard 搭配变化提示**：删除衣服后，搭配卡片显示变化提示
+  - 显示"搭配已变化（原 X 件，现 Y 件）"
+  - 使用玫瑰色背景突出显示
+
+- **历史记录状态提示**：穿着记录显示搭配状态
+  - 搭配已删除：显示"搭配已删除"
+  - 搭配已变化：显示"搭配已变化"
+  - 快照不完整：显示"搭配已删除（快照不完整）"或"搭配已变化（快照不完整）"
+
+#### 删除逻辑优化
+
+- **删除衣服时更新快照**：在删除搭配之前，更新相关穿着记录的快照
+  - 确保快照包含所有衣服（包括即将被删除的衣服）
+  - 设置 `IsSnapshotComplete = true`
+
+- **删除搭配时更新快照**：在删除搭配之前，更新相关穿着记录的快照
+  - 确保快照包含所有衣服
+  - 设置 `IsSnapshotComplete = true`
+  - 将 `OutfitId` 设为 null
+
+- **删除结果反馈**：删除衣服时显示受影响的搭配列表
+  - 显示哪些搭配被删除
+  - 显示哪些搭配剩余多少件衣服
+
+#### 标签页重构
+
+- **移除季节标签显示**：季节标签（春/夏/秋/冬/四季）改为系统预设，页面不显示
+- **简化页面结构**：只显示风格标签和场景标签两个区域
+- **改进总览描述**：标题改为"整理你的风格和场景词"
+- **新增使用状态筛选**：支持按"正在使用"和"未使用"筛选标签
+- **新增最近添加排序**：支持按创建时间排序
+- **增强使用统计**：显示衣物使用数量和搭配使用次数
+
+#### 衣物编辑器优化
+
+- **默认类型改为未选择**：添加衣服时默认选中"❓ 未选择"
+- **允许空名称**：不填写名称时自动使用"未命名"
+
+#### Toast 提示优化
+
+- 收藏/取消收藏：显示搭配名称
+- 推荐详情加载失败：包含当前温度信息
+- 搭配列表刷新失败：说明无法加载最新数据
+- 添加穿搭记录：显示搭配名称和日期
+- 撤销记录：显示日期
+
+#### 数据库迁移
+
+- `AddOutfitWornRecordSnapshot`：添加快照字段
+- `AddOutfitWornRecordClothingSnapshot`：添加衣服详情快照字段
+- `AddIsSnapshotCompleteToOutfitWornRecord`：添加快照完整性标记
+- `AddOutfitOriginalClothingCountAndClothingDetailsSnapshot`：添加原始衣服数量和衣服详情快照
 
 ---
 
