@@ -52,6 +52,7 @@
 - History UI should distinguish deleted outfits, changed outfits, and incomplete snapshots; prefer snapshot data over live navigation properties for historical display.
 - Snapshot clothing details must include enough rendering data: `Id`, `Name`, `ImagePath`, `Color`, `Type`, and `GarmentType` when available.
 - If an old snapshot lacks `GarmentType`, UI logic may infer it from legacy `Type` and common clothing names, but new writes should store the explicit value.
+- If a snapshot image is missing, history UI should keep text metadata visible and offer a targeted repair that updates only that record's `ClothingDetailsSnapshot.ImagePath`.
 
 ## Delete And History Rules
 
@@ -70,6 +71,7 @@
 - Single clothing delete, batch wardrobe clear, and orphan-original cleanup must not physically delete images referenced by worn-record snapshots.
 - Cache cleanup may delete `display/` and `thumbnails/`, but must not delete `originals/`.
 - Missing display/thumbnail assets should be rebuilt from originals where possible. If the original is missing, history can keep text metadata but cannot render the deleted image.
+- Worn-record image health checks should count snapshot image paths in addition to live clothing image paths, and must not require the live outfit to still exist.
 
 ## Error Presentation
 

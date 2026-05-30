@@ -1,5 +1,6 @@
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
+using ClosetApp.Application.DTOs;
 
 namespace ClosetApp.Application.Interfaces;
 
@@ -15,6 +16,8 @@ public interface IOutfitService
     Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count);
     Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end);
     Task RecordWornDateAsync(Guid outfitId, DateTime date);
+    Task<WornRecordImageHealthDto> AnalyzeWornRecordImageHealthAsync();
+    Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath);
     Task DeleteWornRecordAsync(Guid recordId);
     Task<bool> ToggleFavoriteAsync(Guid outfitId);
 }

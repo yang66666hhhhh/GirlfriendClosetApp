@@ -397,6 +397,10 @@
                                             Style="{StaticResource SettingsButton}"
                                             Click="RepairMissingImages_Click"
                                             Margin="0,0,8,8"/>
+                                    <Button Content="检查历史图片"
+                                            Style="{StaticResource SettingsButton}"
+                                            Click="CheckWornRecordImages_Click"
+                                            Margin="0,0,8,8"/>
                                     <Button Content="清理图片缓存"
                                             Style="{StaticResource PageToolbarDangerButton}"
                                             Click="ClearThumbnails_Click"

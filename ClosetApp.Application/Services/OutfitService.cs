@@ -191,6 +191,54 @@ public class OutfitService : IOutfitService
         }
     }
 
+    public async Task<WornRecordImageHealthDto> AnalyzeWornRecordImageHealthAsync()
+    {
+        var records = (await _wornRecordRepository.GetAllAsync()).ToList();
+        var snapshotClothingCount = 0;
+        var missingImageCount = 0;
+        var recordsWithMissingImages = 0;
+
+        foreach (var record in records)
+        {
+            var missingInRecord = 0;
+            foreach (var clothing in DeserializeSnapshotClothes(record.ClothingDetailsSnapshot))
+            {
+                snapshotClothingCount++;
+                if (IsMissingImage(clothing.ImagePath))
+                {
+                    missingImageCount++;
+                    missingInRecord++;
+                }
+            }
+
+            if (missingInRecord > 0)
+                recordsWithMissingImages++;
+        }
+
+        return new WornRecordImageHealthDto(
+            records.Count,
+            snapshotClothingCount,
+            missingImageCount,
+            recordsWithMissingImages);
+    }
+
+    public async Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            throw new ArgumentException("图片路径不能为空。", nameof(imagePath));
+
+        var record = await _wornRecordRepository.GetByIdAsync(recordId)
+            ?? throw new InvalidOperationException("穿着记录不存在。");
+        var snapshotClothes = DeserializeSnapshotClothes(record.ClothingDetailsSnapshot);
+        var target = snapshotClothes.FirstOrDefault(clothing => clothing.Id == clothingId)
+            ?? throw new InvalidOperationException("穿着记录里找不到这件单品。");
+
+        target.ImagePath = imagePath;
+        record.ClothingDetailsSnapshot = JsonSerializer.Serialize(snapshotClothes);
+        record.IsSnapshotComplete = snapshotClothes.Count > 0;
+        await _wornRecordRepository.UpdateAsync(record);
+    }
+
     public async Task<bool> ToggleFavoriteAsync(Guid outfitId)
     {
         var existing = (await _favoriteRepository.GetByOutfitIdAsync(outfitId)).FirstOrDefault();
@@ -215,5 +263,54 @@ public class OutfitService : IOutfitService
         return !record.IsSnapshotComplete ||
             string.IsNullOrWhiteSpace(record.ClothingDetailsSnapshot) ||
             record.ClothingCountSnapshot < currentSnapshotItemCount;
+    }
+
+    private static List<ClothingSnapshotDto> DeserializeSnapshotClothes(string? snapshotJson)
+    {
+        if (string.IsNullOrWhiteSpace(snapshotJson))
+            return [];
+
+        try
+        {
+            return JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(snapshotJson) ?? [];
+        }
+        catch
+        {
+            return [];
+        }
+    }
+
+    private static bool IsMissingImage(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return true;
+
+        return !File.Exists(imagePath) &&
+            !File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imagePath)) &&
+            !File.Exists(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ClosetApp",
+                "images",
+                "originals",
+                imagePath)) &&
+            !File.Exists(Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "ClosetApp",
+                "images",
+                "display",
+                imagePath)) &&
+            !File.Exists(BuildThumbnailPath(imagePath));
+    }
+
+    private static string BuildThumbnailPath(string imagePath)
+    {
+        var thumbnailFolder = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+            "ClosetApp",
+            "images",
+            "thumbnails");
+        var name = Path.GetFileNameWithoutExtension(imagePath);
+        var ext = Path.GetExtension(imagePath);
+        return Path.Combine(thumbnailFolder, $"{name}_thumb{ext}");
     }
 }

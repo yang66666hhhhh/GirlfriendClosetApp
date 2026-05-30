@@ -17,12 +17,14 @@ namespace ClosetApp.UI.Views;
 public partial class SettingsTab : UserControl
 {
     private readonly IImageMaintenanceService _imageMaintenanceService;
+    private readonly IOutfitService _outfitService;
     private readonly ThemeService _themeService;
     private readonly SettingsViewModel _viewModel;
 
     public SettingsTab()
     {
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
+        _outfitService = App.Services.GetRequiredService<IOutfitService>();
         _themeService = App.Services.GetRequiredService<ThemeService>();
         _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
         InitializeComponent();
@@ -194,6 +196,24 @@ public partial class SettingsTab : UserControl
         await RefreshStatsAsync();
         MessageBox.Show(result.Summary, "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
         ToastService.Instance.ShowSuccess("孤儿原图已清理", result.Summary);
+    }
+
+    private async void CheckWornRecordImages_Click(object sender, RoutedEventArgs e)
+    {
+        try
+        {
+            var result = await _outfitService.AnalyzeWornRecordImageHealthAsync();
+            MessageBox.Show(result.Summary, "穿着历史图片", MessageBoxButton.OK, result.HasMissingImages ? MessageBoxImage.Warning : MessageBoxImage.Information);
+
+            if (result.HasMissingImages)
+                ToastService.Instance.ShowInfo("发现历史缺图", result.Summary);
+            else
+                ToastService.Instance.ShowSuccess("历史图片检查完成", result.Summary);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("历史图片检查失败", ex.Message);
+        }
     }
 
     private async void ClearLogs_Click(object sender, RoutedEventArgs e)

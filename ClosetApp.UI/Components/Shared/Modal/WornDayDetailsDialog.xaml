@@ -191,6 +191,28 @@
                                                                FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TagRoseTextBrush}"/>
                                                 </Border>
+                                                <Border Background="{DynamicResource TagAmberSurfaceBrush}"
+                                                        BorderBrush="{DynamicResource TagAmberBorderBrush}"
+                                                        BorderThickness="1"
+                                                        CornerRadius="8"
+                                                        Padding="8,4"
+                                                        Margin="0,6,0,0"
+                                                        HorizontalAlignment="Left"
+                                                        Visibility="{Binding HasMissingImages, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock Text="{Binding MissingImageText}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TagAmberTextBrush}"
+                                                                   VerticalAlignment="Center"/>
+                                                        <Button Content="修复"
+                                                                Style="{StaticResource ModalCancelButton}"
+                                                                MinWidth="48"
+                                                                Padding="8,3"
+                                                                Margin="8,0,0,0"
+                                                                Click="RepairMissingImageButton_Click"/>
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
 
                                             <Button Grid.Column="3"

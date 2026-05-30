@@ -350,6 +350,16 @@ public class OutfitsViewModelTests
             return Task.CompletedTask;
         }
 
+        public Task<WornRecordImageHealthDto> AnalyzeWornRecordImageHealthAsync()
+        {
+            return Task.FromResult(new WornRecordImageHealthDto(_records.Count, 0, 0, 0));
+        }
+
+        public Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task DeleteWornRecordAsync(Guid recordId) => throw new NotImplementedException();
         public Task<bool> ToggleFavoriteAsync(Guid outfitId)
         {

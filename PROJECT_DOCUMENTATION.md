@@ -407,6 +407,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 3. 当前 live `Outfit` 只用于判断状态：搭配已删除、搭配已变化、快照不完整
 4. 旧快照缺少 `GarmentType` 时，先用 `Type` 推断；`Type` 也不可用时，可按名称兜底识别半裙、裤装、鞋、包、连衣裙、外套等常见类型
 5. 快照图片路径失效时，历史仍保留文字和数量，但预览无法画出该单品图片；需要通过备份或缺失图片修复找回同名图片
+6. 历史详情弹窗会标记缺图的快照单品，并允许为单条记录里的缺图单品重新选择图片
 
 ### 8.2 记录穿着算法
 
@@ -460,6 +461,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 设置页“清理孤儿原图”会把衣物引用和历史快照引用都视为有效引用
 - 普通缓存清理只清理 `display/` 和 `thumbnails/`，不删除 `originals/`
 - 缺失缓存可由 `ImageStorageService.EnsureDisplayAsync()` / `EnsureThumbnailAsync()` 从原图重建
+- 设置页“检查历史图片”会统计穿着历史快照中的单品图片可用性，缺图修复只更新对应 `ClothingDetailsSnapshot` 的 `ImagePath`
 
 ### 8.6 批量清空算法
 

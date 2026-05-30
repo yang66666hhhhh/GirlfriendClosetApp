@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using Microsoft.Win32;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Logic.States;
@@ -13,6 +14,7 @@ namespace ClosetApp.UI.Components.Shared.Modal;
 public partial class WornDayDetailsDialog : UserControl
 {
     private readonly IOutfitService _outfitService;
+    private readonly IImageStorageService _imageStorageService;
     private readonly DateTime _date;
     private List<OutfitWornRecord> _records;
     private readonly bool _isEmbedded;
@@ -23,6 +25,7 @@ public partial class WornDayDetailsDialog : UserControl
     {
         InitializeComponent();
         _outfitService = App.Services.GetRequiredService<IOutfitService>();
+        _imageStorageService = App.Services.GetRequiredService<IImageStorageService>();
         _date = date.Date;
         _records = records.ToList();
         _isEmbedded = isEmbedded;
@@ -162,6 +165,36 @@ public partial class WornDayDetailsDialog : UserControl
         }
     }
 
+    private async void RepairMissingImageButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement { DataContext: WornDayRecordItem item } || item.FirstMissingClothing == null)
+            return;
+
+        var dialog = new OpenFileDialog
+        {
+            Title = $"为「{item.FirstMissingClothing.Name}」选择历史图片",
+            Filter = "图片文件|*.jpg;*.jpeg;*.png;*.webp;*.bmp|所有文件|*.*"
+        };
+
+        if (dialog.ShowDialog() != true)
+            return;
+
+        try
+        {
+            var storedImagePath = await _imageStorageService.SaveImageAsync(dialog.FileName);
+            await _outfitService.RepairWornRecordSnapshotImageAsync(
+                item.Id,
+                item.FirstMissingClothing.Id,
+                storedImagePath);
+            ToastService.Instance.ShowSuccess("历史图片已修复", $"已为「{item.FirstMissingClothing.Name}」更新图片。");
+            await ReloadDayRecordsAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("修复历史图片失败", ex.Message);
+        }
+    }
+
     private void RecordsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (RecordsList.SelectedItem is not WornDayRecordItem item)
@@ -222,14 +255,26 @@ public partial class WornDayDetailsDialog : UserControl
         string TimeText,
         string PreviewMetaText,
         IList<global::ClosetApp.Domain.Entities.Clothing> PreviewClothes,
-        string? StatusText)
+        string? StatusText,
+        IReadOnlyList<MissingSnapshotClothing> MissingClothes)
     {
         public bool HasPreviewClothes => PreviewClothes.Count > 0;
         public bool HasStatus => !string.IsNullOrEmpty(StatusText);
+        public bool HasMissingImages => MissingClothes.Count > 0;
+        public string MissingImageText => MissingClothes.Count == 0
+            ? string.Empty
+            : MissingClothes.Count == 1
+                ? $"缺少「{MissingClothes[0].Name}」的历史图片"
+                : $"有 {MissingClothes.Count} 件历史单品缺图";
+        public MissingSnapshotClothing? FirstMissingClothing => MissingClothes.FirstOrDefault();
 
         public static WornDayRecordItem FromRecord(OutfitWornRecord record)
         {
             var display = WornRecordSnapshotDisplayFactory.FromRecord(record);
+            var missingClothes = display.PreviewClothes
+                .Where(clothing => IsMissingImage(clothing.ImagePath))
+                .Select(clothing => new MissingSnapshotClothing(clothing.Id, ResolveClothingName(clothing)))
+                .ToList();
 
             var statusText = (display.IsDeleted, display.IsChanged, display.HasUsableSnapshot) switch
             {
@@ -252,9 +297,26 @@ public partial class WornDayDetailsDialog : UserControl
                 record.WornDate.ToString("HH:mm"),
                 string.Join(" · ", metaParts),
                 display.PreviewClothes,
-                statusText);
+                statusText,
+                missingClothes);
+        }
+
+        private static string ResolveClothingName(global::ClosetApp.Domain.Entities.Clothing clothing)
+        {
+            var name = clothing.Name?.Trim();
+            return string.IsNullOrWhiteSpace(name) ? "历史单品" : name;
+        }
+
+        private static bool IsMissingImage(string? imagePath)
+        {
+            if (string.IsNullOrWhiteSpace(imagePath))
+                return true;
+
+            return ClothingImageLoader.ResolvePath(imagePath) == null;
         }
     }
+
+    private sealed record MissingSnapshotClothing(Guid Id, string Name);
 
     private void ApplyMode()
     {

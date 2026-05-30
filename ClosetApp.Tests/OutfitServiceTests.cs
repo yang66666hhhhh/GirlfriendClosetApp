@@ -1,7 +1,9 @@
 using ClosetApp.Application.Services;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Domain.Interfaces;
+using System.Text.Json;
 using Xunit;
 
 namespace ClosetApp.Tests;
@@ -57,6 +59,77 @@ public class OutfitServiceTests
         Assert.Equal("skirt.jpg", wornRecordRepository.CheckedImagePath);
     }
 
+    [Fact]
+    public async Task AnalyzeWornRecordImageHealthAsync_WithMissingSnapshotImage_ReturnsCounts()
+    {
+        var wornRecordRepository = new FakeOutfitWornRecordRepository
+        {
+            Records =
+            [
+                new OutfitWornRecord
+                {
+                    IsSnapshotComplete = true,
+                    ClothingDetailsSnapshot = JsonSerializer.Serialize(new[]
+                    {
+                        new ClothingSnapshotDto
+                        {
+                            Id = Guid.NewGuid(),
+                            Name = "黑色半裙",
+                            ImagePath = "missing-skirt.jpg",
+                            Type = nameof(ClothingType.Skirt)
+                        }
+                    })
+                }
+            ]
+        };
+        var service = new OutfitService(
+            new FakeOutfitRepository(),
+            wornRecordRepository,
+            new FakeFavoriteRepository());
+
+        var result = await service.AnalyzeWornRecordImageHealthAsync();
+
+        Assert.Equal(1, result.RecordCount);
+        Assert.Equal(1, result.SnapshotClothingCount);
+        Assert.Equal(1, result.MissingImageCount);
+        Assert.Equal(1, result.RecordsWithMissingImages);
+    }
+
+    [Fact]
+    public async Task RepairWornRecordSnapshotImageAsync_UpdatesTargetSnapshotImage()
+    {
+        var clothingId = Guid.NewGuid();
+        var record = new OutfitWornRecord
+        {
+            Id = Guid.NewGuid(),
+            IsSnapshotComplete = true,
+            ClothingDetailsSnapshot = JsonSerializer.Serialize(new[]
+            {
+                new ClothingSnapshotDto
+                {
+                    Id = clothingId,
+                    Name = "黑色半裙",
+                    ImagePath = "missing-skirt.jpg",
+                    Type = nameof(ClothingType.Skirt)
+                }
+            })
+        };
+        var wornRecordRepository = new FakeOutfitWornRecordRepository
+        {
+            Records = [record]
+        };
+        var service = new OutfitService(
+            new FakeOutfitRepository(),
+            wornRecordRepository,
+            new FakeFavoriteRepository());
+
+        await service.RepairWornRecordSnapshotImageAsync(record.Id, clothingId, "new-skirt.jpg");
+
+        var snapshotClothes = JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(record.ClothingDetailsSnapshot!);
+        Assert.Equal("new-skirt.jpg", Assert.Single(snapshotClothes!).ImagePath);
+        Assert.Equal(record.Id, wornRecordRepository.UpdatedRecordId);
+    }
+
     private sealed class FakeClothingRepository : IClothingRepository
     {
         private readonly Clothing _clothing;
@@ -110,13 +183,19 @@ public class OutfitServiceTests
 
     private sealed class FakeOutfitWornRecordRepository : IOutfitWornRecordRepository
     {
+        public List<OutfitWornRecord> Records { get; init; } = [];
         public bool IsImageReferencedBySnapshot { get; init; }
         public string? CheckedImagePath { get; private set; }
+        public Guid? UpdatedRecordId { get; private set; }
 
-        public Task<IEnumerable<OutfitWornRecord>> GetAllAsync() => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
-        public Task<OutfitWornRecord?> GetByIdAsync(Guid id) => Task.FromResult<OutfitWornRecord?>(null);
+        public Task<IEnumerable<OutfitWornRecord>> GetAllAsync() => Task.FromResult(Records.AsEnumerable());
+        public Task<OutfitWornRecord?> GetByIdAsync(Guid id) => Task.FromResult(Records.FirstOrDefault(record => record.Id == id));
         public Task AddAsync(OutfitWornRecord entity) => Task.CompletedTask;
-        public Task UpdateAsync(OutfitWornRecord entity) => Task.CompletedTask;
+        public Task UpdateAsync(OutfitWornRecord entity)
+        {
+            UpdatedRecordId = entity.Id;
+            return Task.CompletedTask;
+        }
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
         public Task<IEnumerable<OutfitWornRecord>> GetByDateRangeAsync(DateTime start, DateTime end) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
         public Task<IEnumerable<OutfitWornRecord>> GetByOutfitIdAsync(Guid outfitId) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());

@@ -1,7 +1,8 @@
+using ClosetApp.Application.DTOs;
+using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Insights;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.Application.Interfaces;
 using Xunit;
 
 namespace ClosetApp.Tests;
@@ -189,6 +190,8 @@ public class GetWardrobeInsightsTests
         public Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count) => throw new NotImplementedException();
         public Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end) => throw new NotImplementedException();
         public Task RecordWornDateAsync(Guid outfitId, DateTime date) => throw new NotImplementedException();
+        public Task<WornRecordImageHealthDto> AnalyzeWornRecordImageHealthAsync() => Task.FromResult(new WornRecordImageHealthDto(0, 0, 0, 0));
+        public Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath) => throw new NotImplementedException();
         public Task DeleteWornRecordAsync(Guid recordId) => throw new NotImplementedException();
         public Task<bool> ToggleFavoriteAsync(Guid outfitId) => throw new NotImplementedException();
     }

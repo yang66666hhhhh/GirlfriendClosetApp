@@ -194,6 +194,7 @@ MainWindow 2 列布局：
 - 历史快照引用的图片是历史资产，删除衣物、批量清空和孤儿图清理不得物理删除这些图片
 - live 搭配少于 2 件时可删除 live 搭配，但穿着记录必须保留，且 `OutfitId` 置空后继续使用快照展示
 - 读取 live `Outfit.OutfitClothes` 时必须容忍 `Clothing` 导航为空；搭配卡片、预览和推荐评分要先过滤无效链接，再读取颜色、标签、类型或图片
+- 历史快照图片缺失时，UI 仍需显示单品文字信息；单张修复只更新对应记录的 `ClothingDetailsSnapshot.ImagePath`，不得改写 live 搭配
 
 ### 7.5 标签约定
 
