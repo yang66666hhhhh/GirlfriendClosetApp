@@ -300,6 +300,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Shared/FileSizeFormatter` — 文件大小格式化工具
 - `Components/Shared/AnimationHelper` — 可复用动画工具（Shake）
 - `Components/Tags/Controls/TagEditorPanel`
+- `Components/Tags/Controls/TagsFilterPanel` — 标签页筛选 / 排序 / 筛选为空提示区，集中处理筛选控件和本地 UI 复位
 - `Components/Tags/Controls/TagSelectionSection`
 - `Components/Tags/Models/SelectableTag`
 
@@ -341,8 +342,9 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 - `TagsViewModel` 负责把 `ITagService` 返回的数据映射到页面可绑定属性
 - `TagsTabState` 负责标签搜索、分类筛选、使用状态筛选、排序、分组集合和汇总文案，并过滤系统季节标签
+- `TagsFilterPanel` 负责承接标签页顶部筛选、排序和筛选为空提示，减少 `TagsTab.xaml(.cs)` 体积
 - `TagRepository` 查询标签列表时会一并加载 `ClothingTags`，用于计算每个标签的当前使用次数
-- `TagsTab.xaml.cs` 主要保留分类切换、排序切换、清空筛选和卡片菜单事件
+- `TagsTab.xaml.cs` 主要保留新增 / 编辑 / 删除和卡片菜单事件
 
 标签页当前交互目标：
 

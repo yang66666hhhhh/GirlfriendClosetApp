@@ -1,12 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Domain.Entities;
-using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Tags.Controls;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Logic.Services;
-using ClosetApp.UI.Logic.States;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,66 +33,6 @@ public partial class TagsTab : UserControl
         {
             ToastService.Instance.ShowError("标签列表刷新失败", $"无法加载最新标签数据：{ex.Message}");
         }
-    }
-
-    private void CategoryFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
-            return;
-
-        var category = item.Tag?.ToString() switch
-        {
-            "Style" => TagCategory.Style,
-            "Scene" => TagCategory.Scene,
-            _ => (TagCategory?)null
-        };
-
-        _viewModel.SetSelectedCategory(category);
-    }
-
-    private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
-            return;
-
-        var sortBy = item.Tag?.ToString() switch
-        {
-            "Name" => TagSortBy.Name,
-            "LeastUsed" => TagSortBy.LeastUsed,
-            "Newest" => TagSortBy.Newest,
-            _ => TagSortBy.MostUsed
-        };
-
-        _viewModel.SetSortBy(sortBy);
-    }
-
-    private void UsageFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
-            return;
-
-        var usageFilter = item.Tag?.ToString() switch
-        {
-            "Used" => TagUsageFilter.Used,
-            "Unused" => TagUsageFilter.Unused,
-            _ => TagUsageFilter.All
-        };
-
-        _viewModel.SetUsageFilter(usageFilter);
-    }
-
-    private void ClearFilters_Click(object sender, RoutedEventArgs e)
-    {
-        _viewModel.ClearFilters();
-
-        if (CategoryFilterComboBox.Items.Count > 0)
-            CategoryFilterComboBox.SelectedIndex = 0;
-
-        if (SortComboBox.Items.Count > 0)
-            SortComboBox.SelectedIndex = 0;
-
-        if (UsageFilterComboBox.Items.Count > 0)
-            UsageFilterComboBox.SelectedIndex = 0;
     }
 
     private void AddTag_Click(object sender, RoutedEventArgs e)
