@@ -1,0 +1,272 @@
+<UserControl x:Class="ClosetApp.UI.Components.Settings.BackupSettingsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
+             xmlns:dto="clr-namespace:ClosetApp.Application.DTOs;assembly=ClosetApp.Application">
+    <UserControl.Resources>
+        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
+            <Setter Property="Margin" Value="0,0,0,18"/>
+            <Setter Property="Padding" Value="22,20"/>
+            <Setter Property="CornerRadius" Value="22"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="SettingsEyebrowBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+
+        <Style x:Key="SettingsEyebrowBadgeText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="SettingsInsetCard" TargetType="Border" BasedOn="{StaticResource PageInsetCard}">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="SettingsButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource SettingsSectionCard}"
+            Margin="0">
+        <StackPanel>
+            <Border Style="{StaticResource SettingsEyebrowBadge}"
+                    Background="{DynamicResource PrimaryLightBrush}"
+                    BorderBrush="{DynamicResource PrimaryBrush}"
+                    BorderThickness="1">
+                <TextBlock Text="安全"
+                           Style="{StaticResource SettingsEyebrowBadgeText}"
+                           Foreground="{DynamicResource PrimaryBrush}"/>
+            </Border>
+
+            <Grid Margin="0,0,0,14">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="数据备份与恢复"
+                               Style="{StaticResource PageSectionTitleText}"/>
+                    <TextBlock Text="导出前先看状态，导入后立刻看到结果和建议，整个闭环会更清楚。"
+                               Style="{StaticResource PageSectionBodyText}"/>
+                </StackPanel>
+                <Button Grid.Column="1"
+                        Content="刷新状态"
+                        Style="{StaticResource SettingsButton}"
+                        Click="RefreshBackupState_Click"
+                        VerticalAlignment="Top"/>
+            </Grid>
+
+            <Border Style="{StaticResource SettingsInsetCard}" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="导出备份"
+                               Style="{StaticResource PageFieldLabelText}"/>
+                    <TextBlock Text="建议使用 ZIP 格式保留图片，JSON 仅备份数据。"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,10"/>
+                    <WrapPanel>
+                        <Button Content="导出 ZIP 备份包"
+                                Style="{StaticResource SettingsButton}"
+                                Click="ExportBackup_Click"
+                                Margin="0,0,8,8"/>
+                        <Button Content="一键快速导出"
+                                Style="{StaticResource SettingsButton}"
+                                Click="QuickExportBackup_Click"
+                                Margin="0,0,8,8"/>
+                        <Button Content="打开备份目录"
+                                Style="{StaticResource SettingsButton}"
+                                Click="OpenBackupsDir_Click"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource SettingsInsetCard}" Margin="0,0,0,10">
+                <StackPanel>
+                    <TextBlock Text="导入恢复"
+                               Style="{StaticResource PageFieldLabelText}"/>
+                    <TextBlock Text="导入会覆盖当前数据，请确认后再操作。"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               FontSize="11"
+                               TextWrapping="Wrap"
+                               Margin="0,4,0,10"/>
+                    <Button Content="导入备份文件"
+                            Style="{StaticResource PageToolbarDangerButton}"
+                            Click="ImportBackup_Click"
+                            HorizontalAlignment="Left"/>
+                </StackPanel>
+            </Border>
+
+            <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border Grid.Column="0" Style="{StaticResource SettingsInsetCard}">
+                    <StackPanel>
+                        <TextBlock Text="导出前校验"
+                                   Style="{StaticResource PageFieldLabelText}"/>
+                        <TextBlock Text="{Binding BackupValidation}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   Margin="0,8,0,0"/>
+                        <TextBlock Text="{Binding BackupValidationData}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0"/>
+                        <TextBlock Text="{Binding BackupValidationImages}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,6,0,0"/>
+                        <TextBlock Text="{Binding BackupValidationHint}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,6,0,0"/>
+                        <Border Style="{StaticResource PageWarningCard}"
+                                Margin="0,10,0,0"
+                                Visibility="{Binding IsBackupValidationWarningVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="导出提醒"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding BackupValidationWarnings}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Grid.Column="2" Style="{StaticResource SettingsInsetCard}">
+                    <StackPanel>
+                        <TextBlock Text="最近一次导入"
+                                   Style="{StaticResource PageFieldLabelText}"/>
+                        <TextBlock Text="{Binding LastImportSummary}"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   FontWeight="SemiBold"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0"/>
+                        <TextBlock Text="{Binding LastImportDetail}"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   TextWrapping="Wrap"
+                                   Margin="0,8,0,0"/>
+                        <Border Style="{StaticResource PageWarningCard}"
+                                Margin="0,10,0,0"
+                                Visibility="{Binding IsLastImportWarningVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="建议处理"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding LastImportWarning}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,6,0,0"/>
+                                <Button Content="立即修复缺失图片"
+                                        Style="{StaticResource SettingsButton}"
+                                        HorizontalAlignment="Left"
+                                        Margin="0,10,0,0"
+                                        Click="RepairMissingImages_Click"
+                                        Visibility="{Binding IsRepairAfterImportVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource PageInsetCard}"
+                                Background="{DynamicResource SurfacePageBrush}"
+                                Padding="12"
+                                Margin="0,10,0,0"
+                                Visibility="{Binding IsLastImportMissingCardVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <StackPanel>
+                                <TextBlock Text="缺失图片"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"/>
+                                <TextBlock Text="{Binding LastImportMissingFiles}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           TextWrapping="Wrap"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <Border Style="{StaticResource SettingsInsetCard}">
+                <StackPanel>
+                    <DockPanel LastChildFill="False">
+                        <TextBlock Text="备份历史"
+                                   Style="{StaticResource PageFieldLabelText}"/>
+                        <Button Content="清空历史"
+                                Style="{StaticResource PageToolbarDangerButton}"
+                                HorizontalAlignment="Right"
+                                Click="ClearBackupHistory_Click"/>
+                    </DockPanel>
+
+                    <ItemsControl ItemsSource="{Binding BackupHistory}"
+                                  Margin="0,10,0,0">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type dto:BackupHistoryItem}">
+                                <Border Background="{DynamicResource SurfacePageBrush}"
+                                        CornerRadius="14"
+                                        Padding="12"
+                                        Margin="0,0,0,10">
+                                    <StackPanel>
+                                        <DockPanel LastChildFill="False">
+                                            <TextBlock Text="{Binding Summary}"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       FontWeight="SemiBold"
+                                                       TextWrapping="Wrap"
+                                                       Width="220"/>
+                                            <TextBlock Text="{Binding StatusText}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       HorizontalAlignment="Right"/>
+                                        </DockPanel>
+                                        <TextBlock Text="{Binding MetaText}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   Margin="0,6,0,0"/>
+                                        <TextBlock Text="{Binding FileName}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   TextWrapping="Wrap"
+                                                   Margin="0,4,0,0"/>
+                                        <TextBlock Text="{Binding TimestampText}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   Margin="0,4,0,0"/>
+                                        <WrapPanel Margin="0,10,0,0">
+                                            <Button Content="打开文件"
+                                                    Style="{StaticResource SettingsButton}"
+                                                    Click="OpenBackupFile_Click"
+                                                    Tag="{Binding FilePath}"
+                                                    Margin="0,0,8,8"/>
+                                            <Button Content="打开目录"
+                                                    Style="{StaticResource SettingsButton}"
+                                                    Click="OpenBackupFolder_Click"
+                                                    Tag="{Binding FilePath}"/>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock Text="{Binding BackupHistoryEmptyText}"
+                               Foreground="{DynamicResource TextSecondaryBrush}"
+                               Margin="0,8,0,0"
+                               Visibility="{Binding IsBackupHistoryEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

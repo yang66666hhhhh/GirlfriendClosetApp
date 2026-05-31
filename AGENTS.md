@@ -70,7 +70,7 @@ ClosetApp.slnx
 │   │   ├── Outfit/            # OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel 等 WPF 控件
 │   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel 等 WPF 控件
 │   │   ├── Tags/              # TagEditorPanel, TagSelectionSection, SelectableTag
-│   │   ├── Settings/          # ImageMaintenanceSettingsPanel 等设置页稳定区块
+│   │   ├── Settings/          # ImageMaintenanceSettingsPanel, BackupSettingsPanel 等设置页稳定区块
 │   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
 │   ├── Converters/            # ImagePathConverter, BoolToFavoriteColorConverter...
 │   ├── ViewModels/            # WardrobeViewModel, OutfitsViewModel, SettingsViewModel, TagsViewModel
@@ -177,7 +177,7 @@ MainWindow 2 列布局：
 | ClothesTab | 瀑布流展示、搜索、分类筛选、批量导入 | `ClothesTabState` |
 | OutfitsTab | 搭配列表、创建/编辑/删除、天气推荐、穿着记录 | `OutfitsTabState` |
 | TagsTab | 风格/场景标签管理、使用状态筛选、使用频次统计；季节标签由系统管理 | `TagsTabState` |
-| SettingsTab | 主题切换、天气、备份、图片维护；图片治理区由 `ImageMaintenanceSettingsPanel` 承接 | 无（使用 ViewModel） |
+| SettingsTab | 主题切换、天气、备份、图片维护；图片治理区由 `ImageMaintenanceSettingsPanel` 承接，备份恢复区由 `BackupSettingsPanel` 承接 | 无（使用 ViewModel） |
 
 ### 7.3 状态类约定
 
