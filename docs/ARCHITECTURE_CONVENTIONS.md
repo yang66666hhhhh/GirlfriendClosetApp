@@ -13,6 +13,7 @@
 - State classes own search text, filters, loading flags, empty state, and current item collections.
 - Code-behind may still own click handlers, animations, visual tree probing, and modal orchestration.
 - Stable settings-page blocks may live under `ClosetApp.UI/Components/Settings`; `SettingsTab` should keep page initialization, refresh coordination, and cross-section actions while child panels own their local UI and events.
+- The storage-locations block is `StorageLocationsSettingsPanel`. Keep data-directory, database, image-directory, thumbnail-directory, and app-directory entry UI inside that panel; `SettingsTab` should not directly manage those buttons once the panel owns them.
 - Stable wardrobe-page blocks may live under `ClosetApp.UI/Components/Clothing`; `ClothesTab` should keep page refresh, modal orchestration, destructive actions, and masonry layout coordination while child panels own their local binding UI and light event forwarding.
 - The image governance block is `ImageMaintenanceSettingsPanel`. Keep image stats, cache rebuild, missing-image repair, worn-record image checks, cache cleanup, and orphan-original cleanup inside that panel unless a new shared service boundary is needed.
 - The weather and recommendation-preferences block is `WeatherPreferencesSettingsPanel`. Keep weather refresh, city persistence, and recommendation-preference editing inside that panel; notify `SettingsTab` only when the outfits page should refresh.

@@ -30,8 +30,6 @@ public partial class SettingsTab : UserControl
     {
         try
         {
-            TxtDataDir.Text = AppPaths.BaseDir;
-            TxtImagesDir.Text = AppPaths.ImagesDir;
             TxtLogDir.Text = AppPaths.LogsDir;
             await _viewModel.InitializeAsync();
             AppearancePanel.Refresh();
@@ -51,33 +49,7 @@ public partial class SettingsTab : UserControl
         Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
     }
 
-    private static void RevealFile(string filePath)
-    {
-        var directory = Path.GetDirectoryName(filePath);
-        if (string.IsNullOrWhiteSpace(directory))
-            return;
-
-        Directory.CreateDirectory(directory);
-        if (File.Exists(filePath))
-        {
-            Process.Start(new ProcessStartInfo
-            {
-                FileName = "explorer.exe",
-                Arguments = $"/select,\"{filePath}\"",
-                UseShellExecute = true
-            });
-            return;
-        }
-
-        OpenPath(directory);
-    }
-
-    private void OpenDataDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.BaseDir);
-    private void OpenDatabase_Click(object sender, RoutedEventArgs e) => RevealFile(AppPaths.DatabasePath);
-    private void OpenImagesDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.ImagesDir);
-    private void OpenThumbnailsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.ThumbnailsDir);
     private void OpenLogsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.LogsDir);
-    private void OpenAppDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppDomain.CurrentDomain.BaseDirectory);
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
     {
