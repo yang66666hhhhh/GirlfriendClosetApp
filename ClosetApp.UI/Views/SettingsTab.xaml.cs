@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Application.Interfaces;
@@ -34,9 +33,8 @@ public partial class SettingsTab : UserControl
             TxtDataDir.Text = AppPaths.BaseDir;
             TxtImagesDir.Text = AppPaths.ImagesDir;
             TxtLogDir.Text = AppPaths.LogsDir;
-            TxtVersion.Text = $"版本 {GetVersion()}";
             await _viewModel.InitializeAsync();
-            ApplyThemeCardSelection(_themeService.CurrentTheme);
+            AppearancePanel.Refresh();
             await ImageMaintenancePanel.RefreshAsync();
             await BackupPanel.RefreshAsync();
             await WeatherPreferencesPanel.RefreshAsync();
@@ -45,12 +43,6 @@ public partial class SettingsTab : UserControl
         {
             ToastService.Instance.ShowError("设置页面刷新失败", $"无法加载最新设置数据：{ex.Message}");
         }
-    }
-
-    private static string GetVersion()
-    {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return version == null ? "开发版" : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private static void OpenPath(string path)
@@ -94,26 +86,11 @@ public partial class SettingsTab : UserControl
         ToastService.Instance.ShowInfo("统计信息已刷新。");
     }
 
-    // ── 主题切换 ──
-
-    private void ThemeCard_Selected(object sender, RoutedEventArgs e)
-    {
-        if (e.OriginalSource is not Components.Shared.ThemeCard card)
-            return;
-        _ = ApplyThemeAsync(card.ThemeKind);
-    }
-
     private async Task ApplyThemeAsync(AppThemeKind theme)
     {
         await _viewModel.ApplyThemeAsync(theme);
-        ApplyThemeCardSelection(theme);
+        AppearancePanel.ApplyThemeCardSelection(theme);
         ToastService.Instance.ShowSuccess(theme == AppThemeKind.Rose ? "已切换到柔粉主题" : "已切换到清蓝主题");
-    }
-
-    private void ApplyThemeCardSelection(AppThemeKind theme)
-    {
-        ThemeRoseCard.IsSelected = theme == AppThemeKind.Rose;
-        ThemeBlueCard.IsSelected = theme == AppThemeKind.Blue;
     }
 
     private async void ClearLogs_Click(object sender, RoutedEventArgs e)
@@ -162,5 +139,10 @@ public partial class SettingsTab : UserControl
     private async void WeatherPreferencesPanel_OutfitsRefreshRequested(object sender, EventArgs e)
     {
         await RequestAppRefreshAsync(outfits: true);
+    }
+
+    private async void AppearancePanel_ThemeChanged(object sender, AppThemeKind e)
+    {
+        await ApplyThemeAsync(e);
     }
 }
