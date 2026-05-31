@@ -5,7 +5,7 @@
             Padding="16,14"
             Visibility="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=SectionVisibility}">
         <StackPanel>
-            <Grid Margin="0,0,0,12">
+            <Grid Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -21,7 +21,8 @@
                         Background="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=BadgeBackground}"
                         BorderBrush="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=BadgeBorderBrush}"
                         BorderThickness="1"
-                        VerticalAlignment="Top">
+                        VerticalAlignment="Top"
+                        Padding="12,10">
                     <TextBlock Text="{Binding RelativeSource={RelativeSource AncestorType=UserControl}, Path=CountText}"
                                Style="{StaticResource PageSummaryValueText}"/>
                 </Border>
