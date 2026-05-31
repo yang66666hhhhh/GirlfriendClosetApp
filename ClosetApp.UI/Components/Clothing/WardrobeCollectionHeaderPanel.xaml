@@ -12,7 +12,7 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="44,4,44,8"
+    <Grid Margin="44,2,44,8"
           Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
@@ -28,12 +28,12 @@
         </StackPanel>
 
         <StackPanel Grid.Column="1"
-                    Width="120"
+                    Width="122"
                     VerticalAlignment="Top">
             <TextBlock Text="排序"
                        Style="{StaticResource PageFieldLabelText}"
                        HorizontalAlignment="Left"/>
-            <ComboBox MinWidth="112"
+            <ComboBox MinWidth="116"
                       Margin="0,6,0,0"
                       ItemsSource="{Binding SortOptions}"
                       SelectedItem="{Binding SortBy, Mode=TwoWay}">

@@ -11,13 +11,13 @@
 
     <Border Style="{StaticResource PageSummaryCard}"
             Margin="44,0,44,10"
-            Padding="12,10"
-            Background="{DynamicResource PrimaryLightBrush}"
-            BorderBrush="{DynamicResource PrimaryBrush}"
+            Padding="16,14"
+            Background="{DynamicResource SurfaceSectionBrush}"
+            BorderBrush="{DynamicResource BorderLightBrush}"
             BorderThickness="1"
             Visibility="{Binding IsFilterExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
         <StackPanel>
-            <Grid Margin="0,0,0,8">
+            <Grid Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -34,7 +34,7 @@
                            Text="{Binding FilterResultText}"
                            FontSize="11"
                            Foreground="{DynamicResource TextTertiaryBrush}"
-                           VerticalAlignment="Center"/>
+                           VerticalAlignment="Top"/>
             </Grid>
 
             <StackPanel>
@@ -42,7 +42,7 @@
                            FontSize="11"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
-                           Margin="0,0,0,5"/>
+                           Margin="0,0,0,6"/>
                 <ScrollViewer HorizontalScrollBarVisibility="Disabled"
                               VerticalScrollBarVisibility="Disabled">
                     <WrapPanel>
@@ -88,7 +88,7 @@
                            FontSize="11"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
-                           Margin="0,10,0,5"/>
+                           Margin="0,12,0,6"/>
                 <WrapPanel>
                     <RadioButton Content="四季都看"
                                  Style="{StaticResource ChipStyle}"
@@ -120,7 +120,7 @@
                            FontSize="11"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
-                           Margin="0,10,0,5"/>
+                           Margin="0,12,0,6"/>
                 <CheckBox Content="只看收藏"
                           Style="{StaticResource FilterCheckStyle}"
                           Foreground="{DynamicResource TextPrimaryBrush}"
@@ -130,7 +130,7 @@
                            FontSize="11"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextSecondaryBrush}"
-                           Margin="0,10,0,5"/>
+                           Margin="0,12,0,6"/>
                 <TextBlock Text="还没有风格标签，先去标签页加几个会更好筛。"
                            FontSize="10"
                            Foreground="{DynamicResource TextTertiaryBrush}"

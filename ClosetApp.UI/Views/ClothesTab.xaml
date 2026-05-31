@@ -68,7 +68,7 @@
                       x:Name="ContentScroller"
                       VerticalScrollBarVisibility="Auto"
                       HorizontalScrollBarVisibility="Disabled"
-                      Padding="0,0,0,48">
+                      Padding="0,0,0,32">
 
             <StackPanel x:Name="ContentStack">
 
@@ -88,7 +88,7 @@
                               Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <components:MasonryPanel ColumnWidth="248" Spacing="14"/>
+                            <components:MasonryPanel ColumnWidth="244" Spacing="12"/>
                         </ItemsPanelTemplate>
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
@@ -104,7 +104,7 @@
                 <Button Content="加载更多衣物"
                         Style="{StaticResource PageToolbarCapsuleButton}"
                         HorizontalAlignment="Center"
-                        Margin="0,0,0,16"
+                        Margin="0,6,0,12"
                         Visibility="{Binding HasMoreClothes, Converter={StaticResource BooleanToVisibilityConverter}}"
                         Click="LoadMoreClothes_Click"/>
 
@@ -112,7 +112,7 @@
                 <states:EmptyState x:Name="EmptyState"
                                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"
                                    HorizontalAlignment="Center"
-                                   Margin="0,80,0,0"
+                                   Margin="0,88,0,0"
                                    Icon="✨"
                                    Title="衣柜还空空的"
                                    Body="先导入一批照片，或者手动记下第一件心动单品。"

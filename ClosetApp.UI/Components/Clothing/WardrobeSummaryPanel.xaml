@@ -10,10 +10,10 @@
     </UserControl.Resources>
 
     <Border Style="{StaticResource PageSummaryCard}"
-            Margin="44,8,44,8"
-            Padding="12,10"
+            Margin="44,12,44,10"
+            Padding="16,14"
             Background="{DynamicResource SurfaceElevatedBrush}"
-            BorderBrush="{DynamicResource PrimaryBrush}"
+            BorderBrush="{DynamicResource BorderLightBrush}"
             BorderThickness="1"
             Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
         <Grid>
@@ -32,17 +32,24 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <TextBlock Text="衣柜"
                                Style="{StaticResource PageSummaryTitleText}"
-                               FontSize="13"/>
+                               FontSize="14"/>
                     <TextBlock Text="搜索、筛选、待整理都在这里。"
                                Style="{StaticResource PageSummaryHintText}"
-                               Margin="6,1,0,0"/>
+                               Margin="8,1,0,0"/>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="12,0,0,0">
-                    <Border Style="{StaticResource PageSummaryBadge}"
+                <Grid Grid.Column="1"
+                      Margin="18,0,0,0"
+                      VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="8"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0"
+                            Style="{StaticResource PageSummaryBadge}"
                             Background="{DynamicResource PrimaryLightBrush}"
-                            Padding="8,5"
-                            Margin="0,0,4,0">
+                            Padding="10,7">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding TotalCount, StringFormat={}{0} 件}"
                                        Style="{StaticResource PageSummaryValueText}"/>
@@ -51,9 +58,10 @@
                                        Margin="4,1,0,0"/>
                         </StackPanel>
                     </Border>
-                    <Border Style="{StaticResource PageSummaryBadge}"
+                    <Border Grid.Column="2"
+                            Style="{StaticResource PageSummaryBadge}"
                             Background="{DynamicResource PrimaryLightBrush}"
-                            Padding="8,5">
+                            Padding="10,7">
                         <StackPanel Orientation="Horizontal">
                             <TextBlock Text="{Binding FilteredCount, StringFormat={}{0} 件}"
                                        Foreground="{DynamicResource PrimaryBrush}"
@@ -63,10 +71,10 @@
                                        Margin="4,1,0,0"/>
                         </StackPanel>
                     </Border>
-                </StackPanel>
+                </Grid>
             </Grid>
 
-            <Grid Grid.Row="1" Margin="0,5,0,0">
+            <Grid Grid.Row="1" Margin="0,12,0,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -77,19 +85,19 @@
                          MinWidth="240"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
 
-                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="8,0,0,0" VerticalAlignment="Center">
+                <StackPanel Grid.Column="1" Orientation="Horizontal" Margin="10,0,0,0" VerticalAlignment="Center">
                     <Button Content="{Binding FilterToggleText}"
                             Style="{StaticResource WardrobeButton}"
                             Click="ToggleFilter_Click"/>
                     <Button Content="清除"
                             Style="{StaticResource WardrobeButton}"
-                            Margin="4,0,0,0"
+                            Margin="6,0,0,0"
                             Click="ClearFilter_Click"/>
                 </StackPanel>
             </Grid>
 
-            <StackPanel Grid.Row="2" Margin="0,8,0,0">
-                <Grid Margin="0,0,0,6">
+            <StackPanel Grid.Row="2" Margin="0,14,0,0">
+                <Grid Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
@@ -102,7 +110,7 @@
                                VerticalAlignment="Center"/>
                     <TextBlock Grid.Column="1"
                                Text="导入后优先补资料"
-                               FontSize="9"
+                               FontSize="10"
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="8,1,0,0"
                                VerticalAlignment="Center"/>
@@ -120,7 +128,7 @@
                     </StackPanel>
                 </Grid>
 
-                <WrapPanel>
+                <WrapPanel Margin="0,0,0,2">
                     <RadioButton Content="{Binding QueueAllText}"
                                  Style="{StaticResource ChipStyle}"
                                  GroupName="QueueGroup"
@@ -161,8 +169,8 @@
                         BorderBrush="{DynamicResource BorderLightBrush}"
                         BorderThickness="1"
                         CornerRadius="12"
-                        Padding="10,8"
-                        Margin="0,2,0,0"
+                        Padding="12,10"
+                        Margin="0,4,0,0"
                         Visibility="{Binding ShowRecentImportSummary, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Text="{Binding RecentImportSummaryTitle}"
@@ -173,8 +181,8 @@
                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                    FontSize="10"
                                    TextWrapping="Wrap"
-                                   Margin="0,3,0,0"/>
-                        <WrapPanel Margin="0,7,0,0">
+                                   Margin="0,4,0,0"/>
+                        <WrapPanel Margin="0,8,0,0">
                             <Border Style="{StaticResource PageSummaryBadge}"
                                     Background="{DynamicResource PrimaryLightBrush}"
                                     Padding="7,4"
