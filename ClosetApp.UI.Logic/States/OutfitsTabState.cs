@@ -1,5 +1,6 @@
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
+using ClosetApp.UI.Logic.Services;
 
 namespace ClosetApp.UI.Logic.States;
 
@@ -53,13 +54,9 @@ public sealed class OutfitsTabState
     public string CalendarMonthText => _calendarMonth.ToString("yyyy年 M月");
     public bool IsHistoryExpanded => _isHistoryExpanded;
     public string HistoryToggleText => _isHistoryExpanded ? "收起记录日历" : "查看记录日历";
-    public string HistoryQuickText => _recentWornRecords.Count == 0
-        ? "暂无记录"
-        : $"{_recentWornRecords.Count} 条最近记录";
-    public string HistorySummaryText => _recentWornRecords.Count == 0
-        ? "记录一次「今天穿了」，这里就会生成你的穿搭时间线。"
-        : $"最近 {_recentWornRecords.Count} 条穿着记录，点日历日期可以补记或撤销。";
-    public string CalendarSummaryText { get; private set; } = "按月份回看每天穿了哪套，慢慢就会长出你的穿搭习惯。";
+    public string HistoryQuickText => OutfitPresentationText.BuildHistoryQuickText(_recentWornRecords.Count);
+    public string HistorySummaryText => OutfitPresentationText.BuildHistorySummaryText(_recentWornRecords.Count);
+    public string CalendarSummaryText { get; private set; } = OutfitPresentationText.BuildDefaultCalendarSummaryText();
 
     public void BeginLoad() => IsLoading = true;
 
@@ -234,7 +231,7 @@ public sealed class OutfitsTabState
             .GroupBy(record => record.WornDate.Date)
             .ToDictionary(group => group.Key, group => group.ToList());
 
-        CalendarSummaryText = BuildCalendarSummary(monthRecords);
+        CalendarSummaryText = OutfitPresentationText.BuildCalendarSummaryText(monthRecords);
         _calendarDays = BuildCalendarDays(_calendarMonth, groupedRecords, _selectedHistoryDate).ToList();
     }
 
@@ -271,20 +268,6 @@ public sealed class OutfitsTabState
             _calendarMonth = targetMonth;
 
         return monthChanged;
-    }
-
-    private static string BuildCalendarSummary(IReadOnlyList<OutfitWornRecord> records)
-    {
-        if (records.Count == 0)
-            return "这个月还没有穿搭记录。点任意一天，可以补记那天穿了什么。";
-
-        var activeDays = records.Select(record => record.WornDate.Date).Distinct().Count();
-        var mostWorn = records
-            .GroupBy(record => record.Outfit?.Name ?? "未命名搭配")
-            .OrderByDescending(group => group.Count())
-            .First();
-
-        return $"本月 {records.Count} 次记录 · {activeDays} 天有穿搭 · 最常穿「{mostWorn.Key}」";
     }
 
     private static string GetSceneLabel(OutfitScene scene) => scene switch

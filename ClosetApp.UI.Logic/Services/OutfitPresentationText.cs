@@ -1,4 +1,5 @@
 using ClosetApp.Application.DTOs;
+using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Logic.States;
 
@@ -61,6 +62,37 @@ public static class OutfitPresentationText
     public static string BuildTodayWornStatusText(int todayWornCount)
     {
         return todayWornCount > 0 ? $"今天已记 {todayWornCount} 套" : "今天还没记录";
+    }
+
+    public static string BuildHistoryQuickText(int recentRecordCount)
+    {
+        return recentRecordCount == 0 ? "暂无记录" : $"{recentRecordCount} 条最近记录";
+    }
+
+    public static string BuildHistorySummaryText(int recentRecordCount)
+    {
+        return recentRecordCount == 0
+            ? "记录一次「今天穿了」，这里就会生成你的穿搭时间线。"
+            : $"最近 {recentRecordCount} 条穿着记录，点日历日期可以补记或撤销。";
+    }
+
+    public static string BuildDefaultCalendarSummaryText()
+    {
+        return "按月份回看每天穿了哪套，慢慢就会长出你的穿搭习惯。";
+    }
+
+    public static string BuildCalendarSummaryText(IReadOnlyList<OutfitWornRecord> records)
+    {
+        if (records.Count == 0)
+            return "这个月还没有穿搭记录。点任意一天，可以补记那天穿了什么。";
+
+        var activeDays = records.Select(record => record.WornDate.Date).Distinct().Count();
+        var mostWorn = records
+            .GroupBy(record => record.Outfit?.Name ?? "未命名搭配")
+            .OrderByDescending(group => group.Count())
+            .First();
+
+        return $"本月 {records.Count} 次记录 · {activeDays} 天有穿搭 · 最常穿「{mostWorn.Key}」";
     }
 
     public static string BuildRecommendationReadinessBadgeText(bool hasRecommendationGap)

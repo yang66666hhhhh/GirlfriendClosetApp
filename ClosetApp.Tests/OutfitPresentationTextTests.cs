@@ -53,6 +53,41 @@ public class OutfitPresentationTextTests
     }
 
     [Fact]
+    public void BuildHistoryQuickText_WhenEmpty_ReturnsFallback()
+    {
+        Assert.Equal("暂无记录", OutfitPresentationText.BuildHistoryQuickText(0));
+    }
+
+    [Fact]
+    public void BuildHistorySummaryText_WhenHasRecords_ReturnsGuidance()
+    {
+        Assert.Contains("最近 2 条穿着记录", OutfitPresentationText.BuildHistorySummaryText(2));
+    }
+
+    [Fact]
+    public void BuildDefaultCalendarSummaryText_ReturnsHint()
+    {
+        Assert.Contains("按月份回看每天穿了哪套", OutfitPresentationText.BuildDefaultCalendarSummaryText());
+    }
+
+    [Fact]
+    public void BuildCalendarSummaryText_WhenHasRecords_ReturnsMonthlySummary()
+    {
+        var outfit = new Outfit { Name = "常穿搭配" };
+        var records = new[]
+        {
+            new OutfitWornRecord { WornDate = DateTime.Today, Outfit = outfit },
+            new OutfitWornRecord { WornDate = DateTime.Today.AddDays(-1), Outfit = outfit }
+        };
+
+        var summary = OutfitPresentationText.BuildCalendarSummaryText(records);
+
+        Assert.Contains("本月 2 次记录", summary);
+        Assert.Contains("2 天有穿搭", summary);
+        Assert.Contains("最常穿「常穿搭配」", summary);
+    }
+
+    [Fact]
     public void BuildRecommendationReadinessCountText_WhenHasMatchingSeason_UsesRatio()
     {
         var readiness = new RecommendationReadinessSummaryDto(
