@@ -47,6 +47,7 @@
 - Reusable tag UI belongs under `Components/Tags`.
 - Tag selection APIs should take a `TagCategory` so they can be reused by clothing, outfits, scenes, and future calendar features.
 - `TagCategory.Season` is system-managed metadata. Tags pages should hide season tags from ordinary management views and only show user-managed `Style` / `Scene` tags.
+- The `TagsOverviewPanel` may own the top-level summary card markup, but its content should stay pure binding-driven display with no business branching beyond what `TagsViewModel` / `TagsTabState` already expose.
 - Tags page filtering should keep name search, category filter, usage filter, and sorting in `TagsTabState`, not in XAML code-behind.
 - The `TagsFilterPanel` may own ComboBox event wiring and local control reset behavior, but it should only call `TagsViewModel` methods that update `TagsTabState`; filtering rules still belong to state, not the panel.
 

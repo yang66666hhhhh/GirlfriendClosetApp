@@ -205,6 +205,8 @@ public class OutfitsTabStateTests
     [Fact]
     public void SetCalendarRecords_WithDeletedOutfit_UsesSnapshotName()
     {
+        var today = DateTime.Today;
+        var wornDate = new DateTime(today.Year, today.Month, 21, 9, 0, 0);
         var record = new OutfitWornRecord
         {
             Id = Guid.NewGuid(),
@@ -212,13 +214,13 @@ public class OutfitsTabStateTests
             OutfitNameSnapshot = "已经删除的旅行搭配",
             ClothingCountSnapshot = 2,
             IsSnapshotComplete = true,
-            WornDate = new DateTime(2026, 5, 21, 9, 0, 0)
+            WornDate = wornDate
         };
 
         var state = new OutfitsTabState();
         state.SetCalendarRecords([record]);
 
-        var day = state.CalendarDays.Single(day => day.Date == record.WornDate.Date);
+        var day = state.CalendarDays.Single(day => day.Date == wornDate.Date);
         Assert.Equal("已经删除的旅行搭配", day.FirstOutfitName);
     }
 

@@ -43,8 +43,6 @@ GirlfriendClosetApp/
 - `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选
 - `OutfitsTab`：搭配页，统一编辑器、穿搭预览与记录
 - `TagsTab`：标签页，维护标签数据，并按使用情况做整理与筛选
-- `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
-- `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
 - `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，外观区由 `AppearanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
 
 ## 关键实现
@@ -58,6 +56,7 @@ GirlfriendClosetApp/
 ### 1.1 标签页整理体验
 
 - `TagsTabState` 负责标签搜索词、分类筛选、排序方式、分组集合和汇总文案
+- `TagsOverviewPanel` 承接标签页顶部的“标签体系”概览卡片
 - `TagsFilterPanel` 承接标签页顶部的筛选、排序和筛选为空提示区，局部管理 ComboBox 选择与清空筛选后的 UI 复位
 - 标签页会过滤系统季节标签，只展示可整理的风格 / 场景标签
 - 标签页会统计每个标签当前关联的衣物数量和搭配使用次数，用于显示"已在使用 / 待整理"
