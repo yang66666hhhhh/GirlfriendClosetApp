@@ -6,6 +6,7 @@ using System.Windows.Controls;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
+using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
@@ -203,17 +204,42 @@ public partial class SettingsTab : UserControl
         try
         {
             var result = await _outfitService.AnalyzeWornRecordImageHealthAsync();
-            MessageBox.Show(result.Summary, "穿着历史图片", MessageBoxButton.OK, result.HasMissingImages ? MessageBoxImage.Warning : MessageBoxImage.Information);
-
-            if (result.HasMissingImages)
-                ToastService.Instance.ShowInfo("发现历史缺图", result.Summary);
-            else
+            if (!result.HasMissingImages)
+            {
+                MessageBox.Show(result.Summary, "穿着历史图片", MessageBoxButton.OK, MessageBoxImage.Information);
                 ToastService.Instance.ShowSuccess("历史图片检查完成", result.Summary);
+                return;
+            }
+
+            var previewItems = result.MissingRecordItems
+                .Take(8)
+                .Select(item => item.Summary)
+                .ToList();
+            var moreText = result.MissingRecordItems.Count > previewItems.Count
+                ? $"\n...还有 {result.MissingRecordItems.Count - previewItems.Count} 条记录"
+                : string.Empty;
+            var confirm = MessageBox.Show(
+                $"{result.Summary}\n\n{string.Join("\n", previewItems)}{moreText}\n\n是否打开最近一条缺图记录所在日期？",
+                "穿着历史图片",
+                MessageBoxButton.OKCancel,
+                MessageBoxImage.Warning);
+
+            ToastService.Instance.ShowInfo("发现历史缺图", result.Summary);
+            if (confirm == MessageBoxResult.OK)
+                await OpenWornRecordDayAsync(result.MissingRecordItems[0].WornDate);
         }
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("历史图片检查失败", ex.Message);
         }
+    }
+
+    private async Task OpenWornRecordDayAsync(DateTime date)
+    {
+        var start = date.Date;
+        var end = start.AddDays(1).AddTicks(-1);
+        var records = (await _outfitService.GetWornRecordsAsync(start, end)).ToList();
+        ModalService.Instance.Show(new WornDayDetailsDialog(start, records));
     }
 
     private async void ClearLogs_Click(object sender, RoutedEventArgs e)

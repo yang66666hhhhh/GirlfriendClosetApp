@@ -196,6 +196,7 @@ MainWindow 2 列布局：
 - 读取 live `Outfit.OutfitClothes` 时必须容忍 `Clothing` 导航为空；搭配卡片、预览和推荐评分要先过滤无效链接，再读取颜色、标签、类型或图片
 - 历史快照图片缺失时，UI 仍需显示单品文字信息；单张修复只更新对应记录的 `ClothingDetailsSnapshot.ImagePath`，不得改写 live 搭配
 - 历史缺图判断必须复用 `IImageAssetResolver`，不要在 UI 或 Application 中各自手写图片路径解析；修复失败时要清理本次新保存的图片，避免制造孤儿资产
+- 历史图片健康检查结果应包含可导航的缺图记录摘要，不能只返回聚合数量；UI 应能引导用户打开对应日期详情
 
 ### 7.5 标签约定
 

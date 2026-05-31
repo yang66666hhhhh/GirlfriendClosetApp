@@ -69,6 +69,9 @@ public class OutfitServiceTests
             [
                 new OutfitWornRecord
                 {
+                    Id = Guid.NewGuid(),
+                    WornDate = new DateTime(2026, 5, 30),
+                    OutfitNameSnapshot = "约会搭配",
                     IsSnapshotComplete = true,
                     ClothingDetailsSnapshot = JsonSerializer.Serialize(new[]
                     {
@@ -95,6 +98,10 @@ public class OutfitServiceTests
         Assert.Equal(1, result.SnapshotClothingCount);
         Assert.Equal(1, result.MissingImageCount);
         Assert.Equal(1, result.RecordsWithMissingImages);
+        var missingRecord = Assert.Single(result.MissingRecordItems);
+        Assert.Equal("约会搭配", missingRecord.OutfitName);
+        Assert.Equal(new DateTime(2026, 5, 30), missingRecord.WornDate);
+        Assert.Equal(1, missingRecord.MissingImageCount);
     }
 
     [Fact]

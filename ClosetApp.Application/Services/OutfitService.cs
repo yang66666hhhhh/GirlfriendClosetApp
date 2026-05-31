@@ -201,6 +201,7 @@ public class OutfitService : IOutfitService
         var snapshotClothingCount = 0;
         var missingImageCount = 0;
         var recordsWithMissingImages = 0;
+        var missingRecords = new List<WornRecordMissingImageDto>();
 
         foreach (var record in records)
         {
@@ -216,14 +217,24 @@ public class OutfitService : IOutfitService
             }
 
             if (missingInRecord > 0)
+            {
                 recordsWithMissingImages++;
+                missingRecords.Add(new WornRecordMissingImageDto(
+                    record.Id,
+                    record.WornDate,
+                    ResolveWornRecordOutfitName(record),
+                    missingInRecord));
+            }
         }
 
         return new WornRecordImageHealthDto(
             records.Count,
             snapshotClothingCount,
             missingImageCount,
-            recordsWithMissingImages);
+            recordsWithMissingImages,
+            missingRecords
+                .OrderByDescending(record => record.WornDate)
+                .ToList());
     }
 
     public async Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath)
@@ -260,6 +271,16 @@ public class OutfitService : IOutfitService
     {
         var trimmed = name?.Trim();
         return string.IsNullOrWhiteSpace(trimmed) ? DefaultOutfitName : trimmed;
+    }
+
+    private static string ResolveWornRecordOutfitName(OutfitWornRecord record)
+    {
+        var snapshotName = record.OutfitNameSnapshot?.Trim();
+        if (!string.IsNullOrWhiteSpace(snapshotName))
+            return snapshotName;
+
+        var liveName = record.Outfit?.Name?.Trim();
+        return string.IsNullOrWhiteSpace(liveName) ? "未命名搭配" : liveName;
     }
 
     private static bool ShouldRefreshSnapshot(OutfitWornRecord record, int currentSnapshotItemCount)

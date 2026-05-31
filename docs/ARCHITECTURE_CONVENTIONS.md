@@ -74,6 +74,7 @@
 - Worn-record image health checks should count snapshot image paths in addition to live clothing image paths, and must not require the live outfit to still exist.
 - Missing-image checks for worn-record snapshots must use `IImageAssetResolver`; do not duplicate image path resolution in UI or Application code.
 - If a repair flow saves a new image before updating a snapshot, failures must best-effort delete the newly saved image to avoid orphan assets.
+- Worn-record image health results should include enough record summary data for UI to navigate users to the affected day, not just aggregate counts.
 
 ## Error Presentation
 
