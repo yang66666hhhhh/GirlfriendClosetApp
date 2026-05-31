@@ -1,5 +1,6 @@
 using ClosetApp.Application.Services;
 using ClosetApp.Application.DTOs;
+using ClosetApp.Application.Images;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Domain.Interfaces;
@@ -85,7 +86,8 @@ public class OutfitServiceTests
         var service = new OutfitService(
             new FakeOutfitRepository(),
             wornRecordRepository,
-            new FakeFavoriteRepository());
+            new FakeFavoriteRepository(),
+            new FakeImageAssetResolver());
 
         var result = await service.AnalyzeWornRecordImageHealthAsync();
 
@@ -121,13 +123,42 @@ public class OutfitServiceTests
         var service = new OutfitService(
             new FakeOutfitRepository(),
             wornRecordRepository,
-            new FakeFavoriteRepository());
+            new FakeFavoriteRepository(),
+            new FakeImageAssetResolver());
 
         await service.RepairWornRecordSnapshotImageAsync(record.Id, clothingId, "new-skirt.jpg");
 
         var snapshotClothes = JsonSerializer.Deserialize<List<ClothingSnapshotDto>>(record.ClothingDetailsSnapshot!);
         Assert.Equal("new-skirt.jpg", Assert.Single(snapshotClothes!).ImagePath);
         Assert.Equal(record.Id, wornRecordRepository.UpdatedRecordId);
+    }
+
+    [Fact]
+    public async Task RepairWornRecordSnapshotImageAsync_WithUnknownSnapshotClothing_Throws()
+    {
+        var record = new OutfitWornRecord
+        {
+            Id = Guid.NewGuid(),
+            IsSnapshotComplete = true,
+            ClothingDetailsSnapshot = JsonSerializer.Serialize(new[]
+            {
+                new ClothingSnapshotDto
+                {
+                    Id = Guid.Empty,
+                    Name = "旧快照单品",
+                    ImagePath = "missing.jpg",
+                    Type = nameof(ClothingType.Skirt)
+                }
+            })
+        };
+        var service = new OutfitService(
+            new FakeOutfitRepository(),
+            new FakeOutfitWornRecordRepository { Records = [record] },
+            new FakeFavoriteRepository(),
+            new FakeImageAssetResolver());
+
+        await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RepairWornRecordSnapshotImageAsync(record.Id, Guid.NewGuid(), "new.jpg"));
     }
 
     private sealed class FakeClothingRepository : IClothingRepository
@@ -215,5 +246,20 @@ public class OutfitServiceTests
         public Task UpdateAsync(Favorite entity) => Task.CompletedTask;
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
         public Task<IEnumerable<Favorite>> GetByOutfitIdAsync(Guid outfitId) => Task.FromResult(Enumerable.Empty<Favorite>());
+    }
+
+    private sealed class FakeImageAssetResolver : IImageAssetResolver
+    {
+        public ImageAsset Resolve(string? imagePath)
+        {
+            return string.Equals(imagePath, "available.jpg", StringComparison.OrdinalIgnoreCase)
+                ? new ImageAsset(imagePath, imagePath, imagePath, null)
+                : new ImageAsset(imagePath, null, null, null);
+        }
+
+        public string? ResolvePath(string? imagePath, ImageVariant variant)
+        {
+            return Resolve(imagePath).HasImage ? imagePath : null;
+        }
     }
 }

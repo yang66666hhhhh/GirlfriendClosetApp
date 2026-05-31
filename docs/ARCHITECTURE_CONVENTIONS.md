@@ -72,6 +72,8 @@
 - Cache cleanup may delete `display/` and `thumbnails/`, but must not delete `originals/`.
 - Missing display/thumbnail assets should be rebuilt from originals where possible. If the original is missing, history can keep text metadata but cannot render the deleted image.
 - Worn-record image health checks should count snapshot image paths in addition to live clothing image paths, and must not require the live outfit to still exist.
+- Missing-image checks for worn-record snapshots must use `IImageAssetResolver`; do not duplicate image path resolution in UI or Application code.
+- If a repair flow saves a new image before updating a snapshot, failures must best-effort delete the newly saved image to avoid orphan assets.
 
 ## Error Presentation
 

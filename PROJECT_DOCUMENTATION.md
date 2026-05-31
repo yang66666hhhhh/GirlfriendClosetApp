@@ -462,6 +462,8 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 普通缓存清理只清理 `display/` 和 `thumbnails/`，不删除 `originals/`
 - 缺失缓存可由 `ImageStorageService.EnsureDisplayAsync()` / `EnsureThumbnailAsync()` 从原图重建
 - 设置页“检查历史图片”会统计穿着历史快照中的单品图片可用性，缺图修复只更新对应 `ClothingDetailsSnapshot` 的 `ImagePath`
+- 历史快照缺图判断统一使用 `IImageAssetResolver`，确保设置页统计和历史弹窗提示一致
+- 单张历史图片修复会先保存新图片，再更新快照；如果快照更新失败，UI 需要 best-effort 删除本次新保存的图片
 
 ### 8.6 批量清空算法
 

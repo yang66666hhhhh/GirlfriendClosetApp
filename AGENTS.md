@@ -195,6 +195,7 @@ MainWindow 2 列布局：
 - live 搭配少于 2 件时可删除 live 搭配，但穿着记录必须保留，且 `OutfitId` 置空后继续使用快照展示
 - 读取 live `Outfit.OutfitClothes` 时必须容忍 `Clothing` 导航为空；搭配卡片、预览和推荐评分要先过滤无效链接，再读取颜色、标签、类型或图片
 - 历史快照图片缺失时，UI 仍需显示单品文字信息；单张修复只更新对应记录的 `ClothingDetailsSnapshot.ImagePath`，不得改写 live 搭配
+- 历史缺图判断必须复用 `IImageAssetResolver`，不要在 UI 或 Application 中各自手写图片路径解析；修复失败时要清理本次新保存的图片，避免制造孤儿资产
 
 ### 7.5 标签约定
 
@@ -684,8 +685,9 @@ public async Task DoSomethingAsync() { ... }
 - [ ] 使用 MessageBox 进行确认对话
 
 ### 文档
+- [ ] 任何代码行为、业务规则、接口、UI 入口或维护流程变化，都已同步更新对应文档（至少检查 `PROJECT_DOCUMENTATION.md`、`README.md`、`docs/ARCHITECTURE_CONVENTIONS.md`、`AGENTS.md`）
 - [ ] 如有新组件/服务/UseCase，已更新 PROJECT_DOCUMENTATION.md
-- [ ] 如有架构变更，已更新 AGENTS.md
+- [ ] 如有架构变更或 AI 编码约束变化，已更新 AGENTS.md
 
 ---
 

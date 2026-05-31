@@ -210,6 +210,7 @@
                                                                 MinWidth="48"
                                                                 Padding="8,3"
                                                                 Margin="8,0,0,0"
+                                                                Visibility="{Binding CanRepairMissingImage, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                                 Click="RepairMissingImageButton_Click"/>
                                                     </StackPanel>
                                                 </Border>

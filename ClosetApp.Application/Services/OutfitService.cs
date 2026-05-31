@@ -1,5 +1,6 @@
 using System.Text.Json;
 using ClosetApp.Application.DTOs;
+using ClosetApp.Application.Images;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -14,15 +15,18 @@ public class OutfitService : IOutfitService
     private readonly IOutfitRepository _repository;
     private readonly IOutfitWornRecordRepository _wornRecordRepository;
     private readonly IFavoriteRepository _favoriteRepository;
+    private readonly IImageAssetResolver? _imageAssetResolver;
 
     public OutfitService(
         IOutfitRepository repository,
         IOutfitWornRecordRepository wornRecordRepository,
-        IFavoriteRepository favoriteRepository)
+        IFavoriteRepository favoriteRepository,
+        IImageAssetResolver? imageAssetResolver = null)
     {
         _repository = repository;
         _wornRecordRepository = wornRecordRepository;
         _favoriteRepository = favoriteRepository;
+        _imageAssetResolver = imageAssetResolver;
     }
 
     public async Task<IEnumerable<Outfit>> GetAllOutfitsAsync()
@@ -280,10 +284,13 @@ public class OutfitService : IOutfitService
         }
     }
 
-    private static bool IsMissingImage(string? imagePath)
+    private bool IsMissingImage(string? imagePath)
     {
         if (string.IsNullOrWhiteSpace(imagePath))
             return true;
+
+        if (_imageAssetResolver != null)
+            return !_imageAssetResolver.Resolve(imagePath).HasImage;
 
         return !File.Exists(imagePath) &&
             !File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, imagePath)) &&
