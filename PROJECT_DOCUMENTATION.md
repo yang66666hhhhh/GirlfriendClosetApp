@@ -1,6 +1,6 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-05-30
+> 最后更新时间：2026-06-01
 > 当前状态：主流程可用，近期重点已转向推荐调试、数据洞察、性能优化与本地数据安全体验
 
 ---
@@ -175,6 +175,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 搜索与分类筛选
 - 打开衣物编辑器
 - 批量导入图片并在导入前提示同名/同尺寸图片风险
+- 顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接
 - 依赖 `ClothesTabState` 维护页面状态
 
 #### OutfitsTab
@@ -244,6 +245,12 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 #### Clothing
 
+- `Components/Clothing/WardrobeSummaryPanel`
+  - 承接衣柜页顶部概览工具带
+  - 展示衣柜总量、当前筛选结果、搜索入口、筛选开关、待整理队列和最近导入摘要
+- `Components/Clothing/WardrobeFilterPanel`
+  - 承接衣柜页展开筛选区
+  - 集中展示分类、季节、收藏和风格标签筛选
 - `Components/Clothing/ClothingEditorPanel`
   - 默认类型为"未选择"（`ClothingType.Unspecified`）
   - 名称字段为选填，留空自动命名为"未命名"
@@ -286,6 +293,8 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 #### Shared / Tags
 
+- `Components/Clothing/WardrobeSummaryPanel` — 衣柜页顶部概览工具带，集中处理总量摘要、搜索入口、筛选开关、待整理队列和最近导入摘要
+- `Components/Clothing/WardrobeFilterPanel` — 衣柜页展开筛选区，集中处理分类、季节、收藏和风格标签筛选
 - `Components/Settings/ImageMaintenanceSettingsPanel` — 设置页图片资产治理区，集中处理图片统计、缓存重建、缺图修复、历史图片检查和孤儿原图清理
 - `Components/Settings/WeatherPreferencesSettingsPanel` — 设置页天气与推荐偏好区，集中处理天气城市、天气刷新和今日推荐偏好保存
 - `Components/Settings/AppearanceSettingsPanel` — 设置页外观与应用信息区，集中处理主题切换、版本展示和应用目录入口
@@ -355,6 +364,16 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 先快速看见标签库总量、已用数量和待整理数量
 - 再按名称 / 分类缩小范围
 - 最后在分组卡片里完成编辑或删除，而不打断浏览节奏
+
+### 6.7 衣柜页状态与交互约定
+
+`ClothesTab` 当前也采用“View + ViewModel + State”的轻组合：
+
+- `WardrobeViewModel` 负责把衣物服务、批量导入结果和待整理统计映射到页面可绑定属性
+- `ClothesTabState` 负责衣柜搜索、分类筛选、季节筛选、收藏筛选、标签筛选、待整理队列、排序和摘要文案
+- `WardrobeSummaryPanel` 负责承接衣柜页顶部概览工具带，保持搜索、筛选开关、待整理入口和最近导入摘要独立
+- `WardrobeFilterPanel` 负责承接衣柜页展开筛选区，减少 `ClothesTab.xaml` 体积并复用筛选布局
+- `ClothesTab.xaml.cs` 主要保留新增 / 编辑 / 删除、批量导入、批量补全、批量清空和瀑布流布局协调
 
 ---
 

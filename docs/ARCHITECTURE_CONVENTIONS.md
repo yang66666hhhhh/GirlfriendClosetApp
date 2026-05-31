@@ -13,10 +13,13 @@
 - State classes own search text, filters, loading flags, empty state, and current item collections.
 - Code-behind may still own click handlers, animations, visual tree probing, and modal orchestration.
 - Stable settings-page blocks may live under `ClosetApp.UI/Components/Settings`; `SettingsTab` should keep page initialization, refresh coordination, and cross-section actions while child panels own their local UI and events.
+- Stable wardrobe-page blocks may live under `ClosetApp.UI/Components/Clothing`; `ClothesTab` should keep page refresh, modal orchestration, destructive actions, and masonry layout coordination while child panels own their local binding UI and light event forwarding.
 - The image governance block is `ImageMaintenanceSettingsPanel`. Keep image stats, cache rebuild, missing-image repair, worn-record image checks, cache cleanup, and orphan-original cleanup inside that panel unless a new shared service boundary is needed.
 - The weather and recommendation-preferences block is `WeatherPreferencesSettingsPanel`. Keep weather refresh, city persistence, and recommendation-preference editing inside that panel; notify `SettingsTab` only when the outfits page should refresh.
 - The appearance block is `AppearanceSettingsPanel`. Keep theme-card UI, version display, and app-directory entry inside that panel; notify `SettingsTab` only when a theme change needs the page-level apply flow.
 - The backup and restore block is `BackupSettingsPanel`. Keep backup export/import, validation display, import summaries, backup history, and file/folder opening inside that panel; notify `SettingsTab` with events only for cross-page refresh or image-repair handoff.
+- The wardrobe top summary block is `WardrobeSummaryPanel`. Keep total-count badges, search box, filter-toggle UI, queue chips, and recent-import summary inside that panel; notify `ClothesTab` only for actions that open panels or start workflows.
+- The wardrobe expanded filter block is `WardrobeFilterPanel`. Keep category, season, favorite-only, and tag filter markup inside that panel; filtering rules still belong to `ClothesTabState` / `WardrobeViewModel`, not the panel.
 
 ## Design System
 

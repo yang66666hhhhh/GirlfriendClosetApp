@@ -2,7 +2,7 @@
 
 私人数字衣橱桌面应用，面向个人衣物整理、搭配管理和本地数据治理场景。项目使用 WPF + SQLite，采用 Domain / Application / Infrastructure / UI 四层结构。
 
-> 更新时间：2026-05-30
+> 更新时间：2026-06-01
 > 当前运行时：UI 与测试工程为 .NET 10 / WPF；Domain、Application、Infrastructure 为 .NET 8 类库
 
 ## 当前能力
@@ -40,7 +40,7 @@ GirlfriendClosetApp/
 
 当前主界面由左侧导航 + 右侧内容区组成，包含 4 个主页面：
 
-- `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选
+- `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接
 - `OutfitsTab`：搭配页，统一编辑器、穿搭预览与记录
 - `TagsTab`：标签页，维护标签数据，并按使用情况做整理与筛选
 - `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，外观区由 `AppearanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
@@ -65,7 +65,14 @@ GirlfriendClosetApp/
 - 标签卡片操作已收为右上角的轻量 `⋯` 菜单，避免底部操作按钮挤占信息区
 - 标签卡片 hover 会提升边框、阴影和状态胶囊，用来强调当前可整理对象
 
-### 1.2 衣物分类体系
+### 1.2 衣柜页整理体验
+
+- `ClothesTabState` 负责衣柜搜索词、分类筛选、季节筛选、收藏筛选、标签筛选、待整理队列和排序状态
+- `WardrobeSummaryPanel` 承接衣柜页顶部概览工具带，集中展示衣柜总量、当前筛选结果、搜索入口、筛选开关、待整理队列和最近导入摘要
+- `WardrobeFilterPanel` 承接衣柜页展开筛选区，集中展示分类、季节、收藏和风格标签筛选
+- `ClothesTab.xaml.cs` 主要保留新增 / 编辑 / 删除、批量导入、批量补全、批量清空和瀑布流布局协调
+
+### 1.3 衣物分类体系
 
 `ClosetApp.Domain/Clothing/` 定义了精细衣物分类模型，与 `ClothingType` 枚举共存：
 
@@ -75,7 +82,7 @@ GirlfriendClosetApp/
 - `ClothingMappings`：GarmentType ↔ DisplayCategory / LayerRole / 中文名称映射
 - `ClothingTaxonomy`：按 DisplayCategory 分组查询 GarmentType
 
-### 1.3 共享组件
+### 1.4 共享组件
 
 `ClosetApp.UI/Components/Shared/` 下的可复用组件：
 
@@ -93,7 +100,11 @@ GirlfriendClosetApp/
 
 `ClosetApp.UI/Components/Settings/BackupSettingsPanel` 是设置页备份恢复面板，集中处理备份导出、导入恢复、导出前校验、导入摘要、备份历史和文件定位。
 
-### 1.4 穿着记录快照
+`ClosetApp.UI/Components/Clothing/WardrobeSummaryPanel` 是衣柜页顶部概览工具带，集中处理总量摘要、搜索入口、筛选开关、待整理队列和最近导入摘要。
+
+`ClosetApp.UI/Components/Clothing/WardrobeFilterPanel` 是衣柜页展开筛选面板，集中处理分类、季节、收藏和风格标签筛选。
+
+### 1.5 穿着记录快照
 
 - `OutfitWornRecord.OutfitId` 已改为可空，支持搭配删除后保留历史记录
 - 记录穿着时保存 `OutfitNameSnapshot`、`OutfitClothingIdsSnapshot`、`ClothingCountSnapshot`、`ClothingDetailsSnapshot`、`PreviewSnapshotPath` 和 `IsSnapshotComplete`
