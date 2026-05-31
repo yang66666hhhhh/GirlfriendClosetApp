@@ -73,7 +73,13 @@ GirlfriendClosetApp/
 - `WardrobeCollectionHeaderPanel` 承接衣柜列表上方的集合标题与排序区，集中展示结果标题、摘要文案和排序入口
 - `ClothesTab.xaml.cs` 主要保留新增 / 编辑 / 删除、批量导入、批量补全、批量清空和瀑布流布局协调
 
-### 1.3 衣物分类体系
+### 1.3 搭配页展示文案收敛
+
+- `OutfitsViewModel` 继续保留搭配加载、删除、穿着记录、天气推荐和日历刷新等主流程
+- 推荐区与今日主推荐的纯展示文案开始收敛到 `ClosetApp.UI.Logic/Services/OutfitPresentationText`
+- 这类 helper 负责排序标签、紧凑城市名、季节文案和今日主推荐支持文案，避免 ViewModel 同时承载状态编排和大段文本拼装
+
+### 1.4 衣物分类体系
 
 `ClosetApp.Domain/Clothing/` 定义了精细衣物分类模型，与 `ClothingType` 枚举共存：
 
@@ -83,7 +89,7 @@ GirlfriendClosetApp/
 - `ClothingMappings`：GarmentType ↔ DisplayCategory / LayerRole / 中文名称映射
 - `ClothingTaxonomy`：按 DisplayCategory 分组查询 GarmentType
 
-### 1.4 共享组件
+### 1.5 共享组件
 
 `ClosetApp.UI/Components/Shared/` 下的可复用组件：
 
@@ -111,7 +117,7 @@ GirlfriendClosetApp/
 
 `ClosetApp.UI/Components/Clothing/WardrobeCollectionHeaderPanel` 是衣柜页列表头部面板，集中处理集合标题、结果摘要和排序入口。
 
-### 1.5 穿着记录快照
+### 1.6 穿着记录快照
 
 - `OutfitWornRecord.OutfitId` 已改为可空，支持搭配删除后保留历史记录
 - 记录穿着时保存 `OutfitNameSnapshot`、`OutfitClothingIdsSnapshot`、`ClothingCountSnapshot`、`ClothingDetailsSnapshot`、`PreviewSnapshotPath` 和 `IsSnapshotComplete`

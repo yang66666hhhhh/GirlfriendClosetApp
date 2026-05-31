@@ -373,6 +373,14 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 再按名称 / 分类缩小范围
 - 最后在分组卡片里完成编辑或删除，而不打断浏览节奏
 
+### 6.7 搭配页展示文案收敛
+
+`OutfitsViewModel` 当前开始把一部分纯展示文本逻辑迁到 `ClosetApp.UI.Logic`：
+
+- `OutfitPresentationText` 负责排序标签、紧凑天气城市名、季节提示和今日主推荐支持文案
+- `OutfitsViewModel` 仍负责推荐刷新、日历切换、穿着记录和主状态通知，不把业务流程迁进 helper
+- 这类 helper 适合继续承接“无副作用、可直接测试”的文案拼装逻辑
+
 ### 6.7 衣柜页状态与交互约定
 
 `ClothesTab` 当前也采用“View + ViewModel + State”的轻组合：

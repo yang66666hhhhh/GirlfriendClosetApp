@@ -237,16 +237,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
     }
 
-    public string GetSortLabel(OutfitSortBy sort) => sort switch
-    {
-        OutfitSortBy.Newest => "最新创建",
-        OutfitSortBy.Oldest => "最早创建",
-        OutfitSortBy.Name => "名称",
-        OutfitSortBy.Rating => "评分",
-        OutfitSortBy.WearCount => "穿着次数",
-        OutfitSortBy.LastWorn => "最近穿着",
-        _ => sort.ToString()
-    };
+    public string GetSortLabel(OutfitSortBy sort) => OutfitPresentationText.GetSortLabel(sort);
 
     public string HistoryQuickText => _state.HistoryQuickText;
     public string HistorySummaryText => _state.HistorySummaryText;
@@ -257,7 +248,7 @@ public partial class OutfitsViewModel : ViewModelBase
     public bool HasAnyWornRecords => RecentWornRecords.Count > 0;
     public bool HasNoWornRecords => !HasAnyWornRecords;
     public string WeatherHeadlineText => $"{WeatherCity} · {WeatherTemperature}°C · {WeatherCondition}";
-    public string WeatherCityCompactText => BuildCompactWeatherCity(WeatherCity);
+    public string WeatherCityCompactText => OutfitPresentationText.BuildCompactWeatherCity(WeatherCity);
     public string WeatherCompactSummaryText => $"{WeatherTemperature}°C · {WeatherCondition}";
     public int TodayWornCount => RecentWornRecords.Count(record => record.WornDate.Date == DateTime.Today);
     public bool HasTodayWornRecords => TodayWornCount > 0;
@@ -281,7 +272,7 @@ public partial class OutfitsViewModel : ViewModelBase
             ? $"{RecommendationReadiness.MatchingSeasonCount}/{RecommendationReadiness.ReadyOutfitCount} 套对季"
             : $"{RecommendationReadiness.ReadyOutfitCount} 套已整理";
     public string RecommendationMissingSeasonText => RecommendationReadiness?.MissingSeason is { } season
-        ? $"建议补 {GetSeasonLabel(season)} 搭配"
+        ? $"建议补 {OutfitPresentationText.GetSeasonLabel(season)} 搭配"
         : HasRecommendationGap
             ? "先把常穿搭配补完整，推荐会更稳。"
             : "当前温度下已经有可轮换的搭配。";
@@ -292,7 +283,10 @@ public partial class OutfitsViewModel : ViewModelBase
         ? PrimaryWeatherRecommendation!.Name
         : "今天还没有合适推荐";
     public string TodayHeroRecommendationSupportText => HasPrimaryWeatherRecommendation
-        ? BuildTodayHeroSupportText(PrimaryWeatherRecommendation!)
+        ? OutfitPresentationText.BuildTodayHeroSupportText(
+            PrimaryWeatherRecommendation!,
+            HasTodayWornRecords,
+            TodayWornCount)
         : HasTodayWornRecords
             ? $"{TodayWornStatusText}，{RecommendationReadinessDetail}"
             : RecommendationReadinessDetail;
@@ -714,53 +708,6 @@ public partial class OutfitsViewModel : ViewModelBase
         NotifyPropertiesChanged(WeatherPropertyNames);
     }
 
-    private static string BuildCompactWeatherCity(string city)
-    {
-        if (string.IsNullOrWhiteSpace(city))
-            return string.Empty;
-
-        var parts = city
-            .Split(" · ", StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Take(2)
-            .ToArray();
-
-        return parts.Length == 0 ? city : string.Join(" · ", parts);
-    }
-
-    private static string GetSeasonLabel(Season season)
-    {
-        return season switch
-        {
-            Season.Spring => "春季",
-            Season.Summer => "夏季",
-            Season.Autumn => "秋季",
-            Season.Winter => "冬季",
-            Season.AllSeason => "四季",
-            _ => "当前"
-        };
-    }
-
-    private string BuildTodayHeroSupportText(RecommendedOutfitDto recommendation)
-    {
-        if (recommendation.IsWornToday)
-            return "这套今天已经记过一次了；如果晚点还要出门，也可以继续穿它。";
-
-        var summary = ResolveHeroSummaryText(recommendation);
-        if (!HasTodayWornRecords)
-            return summary;
-
-        return $"{summary} 今天已经记过 {TodayWornCount} 套，下一套可以换个感觉。";
-    }
-
-    private static string ResolveHeroSummaryText(RecommendedOutfitDto recommendation)
-    {
-        var summary = recommendation.ReasonSummaryText?.Trim();
-        if (!string.IsNullOrWhiteSpace(summary))
-            return summary;
-
-        var primary = recommendation.PrimaryReason?.Trim();
-        return string.IsNullOrWhiteSpace(primary) ? "今天先穿这套。" : primary;
-    }
 }
 
 public sealed record OutfitSceneFilterOption(string Label, OutfitScene? Value);

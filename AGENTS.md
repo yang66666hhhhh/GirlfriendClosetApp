@@ -184,6 +184,7 @@ MainWindow 2 列布局：
 - 页面轻状态放在 `ClosetApp.UI.Logic/States`
 - `ClosetApp.UI.Logic` 中的纯逻辑类型使用 `ClosetApp.UI.Logic.*` 命名空间
 - State 负责：搜索文本、筛选器、加载标记、空状态、当前集合
+- 纯展示文案、排序标签、推荐提示等无副作用 helper 优先收敛到 `ClosetApp.UI.Logic/Services`
 - Code-behind 负责：点击处理、动画、弹窗编排
 
 ### 7.4 穿着记录快照约定
