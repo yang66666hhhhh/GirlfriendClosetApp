@@ -378,7 +378,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 `OutfitsViewModel` 当前开始把一部分纯展示文本逻辑迁到 `ClosetApp.UI.Logic`：
 
 - `OutfitPresentationText` 负责排序标签、紧凑天气城市名、季节提示和今日主推荐支持文案
-- `OutfitPresentationText` 也负责推荐数量、准备度 badge / count、缺口提示和主 CTA 文案
+- `OutfitPresentationText` 也负责推荐数量、准备度 badge / count、缺口提示、主 CTA 和今日穿着状态文案
 - `OutfitsViewModel` 仍负责推荐刷新、日历切换、穿着记录和主状态通知，不把业务流程迁进 helper
 - 这类 helper 适合继续承接“无副作用、可直接测试”的文案拼装逻辑
 

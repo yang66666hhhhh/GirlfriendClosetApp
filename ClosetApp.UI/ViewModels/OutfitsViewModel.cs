@@ -250,9 +250,9 @@ public partial class OutfitsViewModel : ViewModelBase
     public string WeatherHeadlineText => $"{WeatherCity} · {WeatherTemperature}°C · {WeatherCondition}";
     public string WeatherCityCompactText => OutfitPresentationText.BuildCompactWeatherCity(WeatherCity);
     public string WeatherCompactSummaryText => OutfitPresentationText.BuildCompactWeatherSummary(WeatherTemperature, WeatherCondition);
-    public int TodayWornCount => RecentWornRecords.Count(record => record.WornDate.Date == DateTime.Today);
+    public int TodayWornCount => OutfitPresentationText.CountTodayWornRecords(RecentWornRecords);
     public bool HasTodayWornRecords => TodayWornCount > 0;
-    public string TodayWornStatusText => HasTodayWornRecords ? $"今天已记 {TodayWornCount} 套" : "今天还没记录";
+    public string TodayWornStatusText => OutfitPresentationText.BuildTodayWornStatusText(TodayWornCount);
     public bool HasWeatherRecommendations => WeatherRecommendations.Count > 0;
     public bool HasPrimaryWeatherRecommendation => PrimaryWeatherRecommendation != null;
     public bool HasSecondaryWeatherRecommendations => SecondaryWeatherRecommendations.Count > 0;

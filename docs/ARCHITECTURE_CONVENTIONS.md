@@ -23,7 +23,7 @@
 - The wardrobe top summary block is `WardrobeSummaryPanel`. Keep total-count badges, search box, filter-toggle UI, queue chips, and recent-import summary inside that panel; notify `ClothesTab` only for actions that open panels or start workflows.
 - The wardrobe expanded filter block is `WardrobeFilterPanel`. Keep category, season, favorite-only, and tag filter markup inside that panel; filtering rules still belong to `ClothesTabState` / `WardrobeViewModel`, not the panel.
 - The wardrobe collection header block is `WardrobeCollectionHeaderPanel`. Keep collection title, summary copy, and sort selector inside that panel; sorting state still belongs to `ClothesTabState` / `WardrobeViewModel`, not the panel.
-- Presentation-only text helpers such as outfit recommendation copy belong in `ClosetApp.UI.Logic/Services`. Use them for pure formatting, count text, badge copy, CTA selection, and copy selection, while keeping loading, commands, and refresh orchestration in the ViewModel.
+- Presentation-only text helpers such as outfit recommendation copy belong in `ClosetApp.UI.Logic/Services`. Use them for pure formatting, count text, badge copy, CTA selection, daily-status text, and copy selection, while keeping loading, commands, and refresh orchestration in the ViewModel.
 
 ## Design System
 

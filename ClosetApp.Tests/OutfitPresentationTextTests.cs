@@ -34,6 +34,25 @@ public class OutfitPresentationTextTests
     }
 
     [Fact]
+    public void CountTodayWornRecords_ReturnsOnlyTodayItems()
+    {
+        var items = new[]
+        {
+            CreateRecentWornListItem(DateTime.Today),
+            CreateRecentWornListItem(DateTime.Today.AddDays(-1)),
+            CreateRecentWornListItem(DateTime.Today)
+        };
+
+        Assert.Equal(2, OutfitPresentationText.CountTodayWornRecords(items));
+    }
+
+    [Fact]
+    public void BuildTodayWornStatusText_WhenEmpty_ReturnsFallback()
+    {
+        Assert.Equal("今天还没记录", OutfitPresentationText.BuildTodayWornStatusText(0));
+    }
+
+    [Fact]
     public void BuildRecommendationReadinessCountText_WhenHasMatchingSeason_UsesRatio()
     {
         var readiness = new RecommendationReadinessSummaryDto(
@@ -117,5 +136,20 @@ public class OutfitPresentationTextTests
             primaryReason ?? "今天适合这套。",
             reasonSummaryText,
             primaryReason is null ? [] : [primaryReason]);
+    }
+
+    private static RecentWornListItem CreateRecentWornListItem(DateTime wornDate)
+    {
+        return new RecentWornListItem(
+            Guid.NewGuid(),
+            wornDate,
+            "date",
+            "搭配",
+            "10:00",
+            "meta",
+            [],
+            "summary",
+            "note",
+            "sync");
     }
 }

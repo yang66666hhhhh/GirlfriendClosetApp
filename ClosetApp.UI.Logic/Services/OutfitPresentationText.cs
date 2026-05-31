@@ -53,6 +53,16 @@ public static class OutfitPresentationText
         return recommendations.Count > 0 ? $"{recommendations.Count} 套" : "暂无";
     }
 
+    public static int CountTodayWornRecords(IReadOnlyList<RecentWornListItem> recentWornRecords)
+    {
+        return recentWornRecords.Count(record => record.WornDate.Date == DateTime.Today);
+    }
+
+    public static string BuildTodayWornStatusText(int todayWornCount)
+    {
+        return todayWornCount > 0 ? $"今天已记 {todayWornCount} 套" : "今天还没记录";
+    }
+
     public static string BuildRecommendationReadinessBadgeText(bool hasRecommendationGap)
     {
         return hasRecommendationGap ? "还差一点" : "已经就绪";
