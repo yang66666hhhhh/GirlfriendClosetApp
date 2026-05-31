@@ -1,0 +1,48 @@
+<UserControl x:Class="ClosetApp.UI.Components.Clothing.WardrobeCollectionHeaderPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:conv="clr-namespace:ClosetApp.UI.Converters">
+    <UserControl.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="/ClosetApp.UI;component/Components/Clothing/WardrobeResources.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:SortByLabelConverter x:Key="SortByLabelConverter"/>
+        </ResourceDictionary>
+    </UserControl.Resources>
+
+    <Grid Margin="44,4,44,8"
+          Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
+
+        <StackPanel Grid.Column="0">
+            <TextBlock Text="{Binding CollectionSectionTitle}"
+                       Style="{StaticResource PageSectionTitleText}"/>
+            <TextBlock Text="{Binding CollectionSectionBody}"
+                       Style="{StaticResource PageSectionBodyText}"
+                       Margin="0,4,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Column="1"
+                    Width="120"
+                    VerticalAlignment="Top">
+            <TextBlock Text="排序"
+                       Style="{StaticResource PageFieldLabelText}"
+                       HorizontalAlignment="Left"/>
+            <ComboBox MinWidth="112"
+                      Margin="0,6,0,0"
+                      ItemsSource="{Binding SortOptions}"
+                      SelectedItem="{Binding SortBy, Mode=TwoWay}">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding Converter={StaticResource SortByLabelConverter}}"/>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
+        </StackPanel>
+    </Grid>
+</UserControl>

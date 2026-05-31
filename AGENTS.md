@@ -68,7 +68,7 @@ ClosetApp.slnx
 │   ├── Views/                 # ClothesTab, OutfitsTab, TagsTab, SettingsTab
 │   ├── Components/
 │   │   ├── Outfit/            # OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel 等 WPF 控件
-│   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel, WardrobeSummaryPanel, WardrobeFilterPanel 等 WPF 控件
+│   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel, WardrobeSummaryPanel, WardrobeFilterPanel, WardrobeCollectionHeaderPanel 等 WPF 控件
 │   │   ├── Tags/              # TagEditorPanel, TagsOverviewPanel, TagsFilterPanel, TagSectionPanel, TagSelectionSection, SelectableTag
 │   │   ├── Settings/          # ImageMaintenanceSettingsPanel, WeatherPreferencesSettingsPanel, AppearanceSettingsPanel, BackupSettingsPanel 等设置页稳定区块
 │   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
@@ -174,7 +174,7 @@ MainWindow 2 列布局：
 
 | Tab | 职责 | State 类 |
 |-----|------|----------|
-| ClothesTab | 瀑布流展示、搜索、分类筛选、批量导入；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接 | `ClothesTabState` |
+| ClothesTab | 瀑布流展示、搜索、分类筛选、批量导入；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接，集合标题与排序区由 `WardrobeCollectionHeaderPanel` 承接 | `ClothesTabState` |
 | OutfitsTab | 搭配列表、创建/编辑/删除、天气推荐、穿着记录 | `OutfitsTabState` |
 | TagsTab | 风格/场景标签管理、使用状态筛选、使用频次统计；季节标签由系统管理 | `TagsTabState` |
 | SettingsTab | 主题切换、天气、备份、图片维护；图片治理区由 `ImageMaintenanceSettingsPanel` 承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 承接，外观区由 `AppearanceSettingsPanel` 承接，备份恢复区由 `BackupSettingsPanel` 承接 | 无（使用 ViewModel） |
@@ -206,6 +206,7 @@ MainWindow 2 列布局：
 - 标签使用统计同时关注衣物关联数和搭配使用次数
 - 衣柜页顶部概览工具带优先收敛到 `Components/Clothing/WardrobeSummaryPanel`
 - 衣柜页展开筛选区优先收敛到 `Components/Clothing/WardrobeFilterPanel`
+- 衣柜列表上方集合标题与排序区优先收敛到 `Components/Clothing/WardrobeCollectionHeaderPanel`
 - 标签页顶部体系概览优先收敛到 `Components/Tags/Controls/TagsOverviewPanel`
 - 标签页顶部筛选 / 排序 / 筛选为空提示优先收敛到 `Components/Tags/Controls/TagsFilterPanel`
 - 标签页风格 / 场景分组外壳优先收敛到 `Components/Tags/Controls/TagSectionPanel`

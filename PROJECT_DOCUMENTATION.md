@@ -175,7 +175,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 搜索与分类筛选
 - 打开衣物编辑器
 - 批量导入图片并在导入前提示同名/同尺寸图片风险
-- 顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接
+- 顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接，集合标题与排序区由 `WardrobeCollectionHeaderPanel` 承接
 - 依赖 `ClothesTabState` 维护页面状态
 
 #### OutfitsTab
@@ -251,6 +251,9 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Clothing/WardrobeFilterPanel`
   - 承接衣柜页展开筛选区
   - 集中展示分类、季节、收藏和风格标签筛选
+- `Components/Clothing/WardrobeCollectionHeaderPanel`
+  - 承接衣柜列表上方的集合标题与排序区
+  - 集中展示结果标题、摘要文案和排序入口
 - `Components/Clothing/ClothingEditorPanel`
   - 默认类型为"未选择"（`ClothingType.Unspecified`）
   - 名称字段为选填，留空自动命名为"未命名"
@@ -295,6 +298,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 - `Components/Clothing/WardrobeSummaryPanel` — 衣柜页顶部概览工具带，集中处理总量摘要、搜索入口、筛选开关、待整理队列和最近导入摘要
 - `Components/Clothing/WardrobeFilterPanel` — 衣柜页展开筛选区，集中处理分类、季节、收藏和风格标签筛选
+- `Components/Clothing/WardrobeCollectionHeaderPanel` — 衣柜列表上方集合标题与排序区，集中处理结果标题、摘要文案和排序入口
 - `Components/Settings/ImageMaintenanceSettingsPanel` — 设置页图片资产治理区，集中处理图片统计、缓存重建、缺图修复、历史图片检查和孤儿原图清理
 - `Components/Settings/WeatherPreferencesSettingsPanel` — 设置页天气与推荐偏好区，集中处理天气城市、天气刷新和今日推荐偏好保存
 - `Components/Settings/AppearanceSettingsPanel` — 设置页外观与应用信息区，集中处理主题切换、版本展示和应用目录入口
@@ -373,6 +377,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `ClothesTabState` 负责衣柜搜索、分类筛选、季节筛选、收藏筛选、标签筛选、待整理队列、排序和摘要文案
 - `WardrobeSummaryPanel` 负责承接衣柜页顶部概览工具带，保持搜索、筛选开关、待整理入口和最近导入摘要独立
 - `WardrobeFilterPanel` 负责承接衣柜页展开筛选区，减少 `ClothesTab.xaml` 体积并复用筛选布局
+- `WardrobeCollectionHeaderPanel` 负责承接衣柜列表头部的集合标题与排序区，减少 `ClothesTab.xaml` 中部的重复展示结构
 - `ClothesTab.xaml.cs` 主要保留新增 / 编辑 / 删除、批量导入、批量补全、批量清空和瀑布流布局协调
 
 ---

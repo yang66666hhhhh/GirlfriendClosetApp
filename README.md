@@ -40,7 +40,7 @@ GirlfriendClosetApp/
 
 当前主界面由左侧导航 + 右侧内容区组成，包含 4 个主页面：
 
-- `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接
+- `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接，集合标题与排序区由 `WardrobeCollectionHeaderPanel` 承接
 - `OutfitsTab`：搭配页，统一编辑器、穿搭预览与记录
 - `TagsTab`：标签页，维护标签数据，并按使用情况做整理与筛选
 - `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，外观区由 `AppearanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
@@ -70,6 +70,7 @@ GirlfriendClosetApp/
 - `ClothesTabState` 负责衣柜搜索词、分类筛选、季节筛选、收藏筛选、标签筛选、待整理队列和排序状态
 - `WardrobeSummaryPanel` 承接衣柜页顶部概览工具带，集中展示衣柜总量、当前筛选结果、搜索入口、筛选开关、待整理队列和最近导入摘要
 - `WardrobeFilterPanel` 承接衣柜页展开筛选区，集中展示分类、季节、收藏和风格标签筛选
+- `WardrobeCollectionHeaderPanel` 承接衣柜列表上方的集合标题与排序区，集中展示结果标题、摘要文案和排序入口
 - `ClothesTab.xaml.cs` 主要保留新增 / 编辑 / 删除、批量导入、批量补全、批量清空和瀑布流布局协调
 
 ### 1.3 衣物分类体系
@@ -103,6 +104,8 @@ GirlfriendClosetApp/
 `ClosetApp.UI/Components/Clothing/WardrobeSummaryPanel` 是衣柜页顶部概览工具带，集中处理总量摘要、搜索入口、筛选开关、待整理队列和最近导入摘要。
 
 `ClosetApp.UI/Components/Clothing/WardrobeFilterPanel` 是衣柜页展开筛选面板，集中处理分类、季节、收藏和风格标签筛选。
+
+`ClosetApp.UI/Components/Clothing/WardrobeCollectionHeaderPanel` 是衣柜页列表头部面板，集中处理集合标题、结果摘要和排序入口。
 
 ### 1.5 穿着记录快照
 
