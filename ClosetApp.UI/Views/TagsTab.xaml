@@ -409,82 +409,24 @@
 
                 <tags:TagsFilterPanel/>
 
-                <!-- 风格标签区域 -->
-                <Border Style="{StaticResource PageSummaryCard}"
-                        Margin="0,0,0,14"
-                        Padding="16,14"
-                        Visibility="{Binding ShowStyleSection, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="风格标签"
-                                           Style="{StaticResource PageSummaryTitleText}"/>
-                                <TextBlock Text="描述衣物的气质和风格，如「简约」「甜美」「复古」等。"
-                                           Style="{StaticResource PageSummaryBodyText}"/>
-                            </StackPanel>
-                            <Border Grid.Column="1"
-                                    Style="{StaticResource PageSummaryBadge}"
-                                    Background="{DynamicResource TagLavenderSurfaceBrush}"
-                                    BorderBrush="{DynamicResource TagLavenderBorderBrush}"
-                                    BorderThickness="1"
-                                    VerticalAlignment="Top">
-                                <TextBlock Text="{Binding StyleTags.Count, StringFormat={}{0} 个}"
-                                           Style="{StaticResource PageSummaryValueText}"/>
-                            </Border>
-                        </Grid>
+                <tags:TagSectionPanel SectionTitle="风格标签"
+                                      SectionDescription="描述衣物的气质和风格，如「简约」「甜美」「复古」等。"
+                                      CountText="{Binding StyleTags.Count, StringFormat={}{0} 个}"
+                                      BadgeBackground="{DynamicResource TagLavenderSurfaceBrush}"
+                                      BadgeBorderBrush="{DynamicResource TagLavenderBorderBrush}"
+                                      ItemsSource="{Binding StyleTags}"
+                                      ItemTemplate="{StaticResource TagCardTemplate}"
+                                      SectionVisibility="{Binding ShowStyleSection, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                      Margin="0,0,0,14"/>
 
-                        <ItemsControl ItemsSource="{Binding StyleTags}"
-                                      ItemTemplate="{StaticResource TagCardTemplate}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
-
-                <!-- 场景标签区域 -->
-                <Border Style="{StaticResource PageSummaryCard}"
-                        Padding="16,14"
-                        Visibility="{Binding ShowSceneSection, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <StackPanel>
-                        <Grid Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel Grid.Column="0">
-                                <TextBlock Text="场景标签"
-                                           Style="{StaticResource PageSummaryTitleText}"/>
-                                <TextBlock Text="描述衣物适合的场合，如「通勤」「约会」「运动」等。"
-                                           Style="{StaticResource PageSummaryBodyText}"/>
-                            </StackPanel>
-                            <Border Grid.Column="1"
-                                    Style="{StaticResource PageSummaryBadge}"
-                                    Background="{DynamicResource TagSkySurfaceBrush}"
-                                    BorderBrush="{DynamicResource TagSkyBorderBrush}"
-                                    BorderThickness="1"
-                                    VerticalAlignment="Top">
-                                <TextBlock Text="{Binding SceneTags.Count, StringFormat={}{0} 个}"
-                                           Style="{StaticResource PageSummaryValueText}"/>
-                            </Border>
-                        </Grid>
-
-                        <ItemsControl ItemsSource="{Binding SceneTags}"
-                                      ItemTemplate="{StaticResource TagCardTemplate}">
-                            <ItemsControl.ItemsPanel>
-                                <ItemsPanelTemplate>
-                                    <WrapPanel/>
-                                </ItemsPanelTemplate>
-                            </ItemsControl.ItemsPanel>
-                        </ItemsControl>
-                    </StackPanel>
-                </Border>
+                <tags:TagSectionPanel SectionTitle="场景标签"
+                                      SectionDescription="描述衣物适合的场合，如「通勤」「约会」「运动」等。"
+                                      CountText="{Binding SceneTags.Count, StringFormat={}{0} 个}"
+                                      BadgeBackground="{DynamicResource TagSkySurfaceBrush}"
+                                      BadgeBorderBrush="{DynamicResource TagSkyBorderBrush}"
+                                      ItemsSource="{Binding SceneTags}"
+                                      ItemTemplate="{StaticResource TagCardTemplate}"
+                                      SectionVisibility="{Binding ShowSceneSection, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </StackPanel>
         </ScrollViewer>
 

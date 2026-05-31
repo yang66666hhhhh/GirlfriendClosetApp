@@ -302,6 +302,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Tags/Controls/TagEditorPanel`
 - `Components/Tags/Controls/TagsOverviewPanel` — 标签页顶部体系概览区，集中展示标签总览和风格 / 场景计数
 - `Components/Tags/Controls/TagsFilterPanel` — 标签页筛选 / 排序 / 筛选为空提示区，集中处理筛选控件和本地 UI 复位
+- `Components/Tags/Controls/TagSectionPanel` — 标签页分组外壳区，复用风格 / 场景分组标题、计数徽章和列表承载布局
 - `Components/Tags/Controls/TagSelectionSection`
 - `Components/Tags/Models/SelectableTag`
 
@@ -345,6 +346,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `TagsOverviewPanel` 负责承接标签页顶部体系概览卡片，保持总览文案和统计展示独立
 - `TagsTabState` 负责标签搜索、分类筛选、使用状态筛选、排序、分组集合和汇总文案，并过滤系统季节标签
 - `TagsFilterPanel` 负责承接标签页顶部筛选、排序和筛选为空提示，减少 `TagsTab.xaml(.cs)` 体积
+- `TagSectionPanel` 负责复用风格 / 场景分组外壳，只承载绑定展示和 `ItemsControl` 外层结构
 - `TagRepository` 查询标签列表时会一并加载 `ClothingTags`，用于计算每个标签的当前使用次数
 - `TagsTab.xaml.cs` 主要保留新增 / 编辑 / 删除和卡片菜单事件
 

@@ -69,7 +69,7 @@ ClosetApp.slnx
 │   ├── Components/
 │   │   ├── Outfit/            # OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel 等 WPF 控件
 │   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel 等 WPF 控件
-│   │   ├── Tags/              # TagEditorPanel, TagsOverviewPanel, TagsFilterPanel, TagSelectionSection, SelectableTag
+│   │   ├── Tags/              # TagEditorPanel, TagsOverviewPanel, TagsFilterPanel, TagSectionPanel, TagSelectionSection, SelectableTag
 │   │   ├── Settings/          # ImageMaintenanceSettingsPanel, WeatherPreferencesSettingsPanel, AppearanceSettingsPanel, BackupSettingsPanel 等设置页稳定区块
 │   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
 │   ├── Converters/            # ImagePathConverter, BoolToFavoriteColorConverter...
@@ -206,6 +206,7 @@ MainWindow 2 列布局：
 - 标签使用统计同时关注衣物关联数和搭配使用次数
 - 标签页顶部体系概览优先收敛到 `Components/Tags/Controls/TagsOverviewPanel`
 - 标签页顶部筛选 / 排序 / 筛选为空提示优先收敛到 `Components/Tags/Controls/TagsFilterPanel`
+- 标签页风格 / 场景分组外壳优先收敛到 `Components/Tags/Controls/TagSectionPanel`
 
 ---
 

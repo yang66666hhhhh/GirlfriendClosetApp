@@ -50,6 +50,7 @@
 - The `TagsOverviewPanel` may own the top-level summary card markup, but its content should stay pure binding-driven display with no business branching beyond what `TagsViewModel` / `TagsTabState` already expose.
 - Tags page filtering should keep name search, category filter, usage filter, and sorting in `TagsTabState`, not in XAML code-behind.
 - The `TagsFilterPanel` may own ComboBox event wiring and local control reset behavior, but it should only call `TagsViewModel` methods that update `TagsTabState`; filtering rules still belong to state, not the panel.
+- The `TagSectionPanel` may own repeated group-shell layout for tag collections, but it should stay generic: pass title, description, count text, badge colors, item template, and items via binding rather than hard-coding style/scene assumptions in code-behind.
 
 ## Worn Record Snapshots
 
