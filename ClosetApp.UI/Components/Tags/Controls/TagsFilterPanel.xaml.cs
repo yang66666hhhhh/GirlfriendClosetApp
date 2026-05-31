@@ -13,10 +13,17 @@ public partial class TagsFilterPanel : UserControl
         InitializeComponent();
     }
 
-    private TagsViewModel ViewModel => (TagsViewModel)DataContext;
+    private bool TryGetViewModel(out TagsViewModel? viewModel)
+    {
+        viewModel = DataContext as TagsViewModel;
+        return viewModel != null;
+    }
 
     private void CategoryFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (!TryGetViewModel(out var viewModel))
+            return;
+
         if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
             return;
 
@@ -27,11 +34,14 @@ public partial class TagsFilterPanel : UserControl
             _ => (TagCategory?)null
         };
 
-        ViewModel.SetSelectedCategory(category);
+        viewModel.SetSelectedCategory(category);
     }
 
     private void SortComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (!TryGetViewModel(out var viewModel))
+            return;
+
         if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
             return;
 
@@ -43,11 +53,14 @@ public partial class TagsFilterPanel : UserControl
             _ => TagSortBy.MostUsed
         };
 
-        ViewModel.SetSortBy(sortBy);
+        viewModel.SetSortBy(sortBy);
     }
 
     private void UsageFilterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
+        if (!TryGetViewModel(out var viewModel))
+            return;
+
         if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
             return;
 
@@ -58,12 +71,15 @@ public partial class TagsFilterPanel : UserControl
             _ => TagUsageFilter.All
         };
 
-        ViewModel.SetUsageFilter(usageFilter);
+        viewModel.SetUsageFilter(usageFilter);
     }
 
     private void ClearFilters_Click(object sender, RoutedEventArgs e)
     {
-        ViewModel.ClearFilters();
+        if (!TryGetViewModel(out var viewModel))
+            return;
+
+        viewModel.ClearFilters();
 
         if (CategoryFilterComboBox.Items.Count > 0)
             CategoryFilterComboBox.SelectedIndex = 0;
