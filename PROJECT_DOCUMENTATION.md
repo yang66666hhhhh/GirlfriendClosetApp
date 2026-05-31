@@ -64,7 +64,7 @@ GirlfriendClosetApp/
 │   └── Migrations/               # EF Core 迁移
 ├── ClosetApp.UI/
 │   ├── Views/                    # ClothesTab, OutfitsTab, TagsTab, SettingsTab, NavigationSidebar
-│   ├── Components/               # 服饰卡片、穿搭预览、编辑器、共享弹层、标签组件
+│   ├── Components/               # 服饰卡片、穿搭预览、编辑器、设置页子面板、共享弹层、标签组件
 │   ├── Themes/                   # Tokens / Controls / 兼容资源
 │   ├── Services/                 # ModalService, ToastService, ThemeService...
 │   └── ViewModels/               # 仍保留的 VM
@@ -200,8 +200,8 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 当前是本轮重点页面，负责：
 
 - 数据目录展示
-- 日志与图片缓存清理
-- 主视觉 / 小预览缓存缺失统计与一键重建
+- 日志清理
+- 图片资产治理由 `ImageMaintenanceSettingsPanel` 承接，包括缓存清理、缺失缓存重建、缺失图片修复、孤儿原图清理和历史图片检查
 - 备份导出 / 导入
 - 导出前校验与图片覆盖展示
 - 导入结果摘要卡片
@@ -287,6 +287,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 #### Shared / Tags
 
+- `Components/Settings/ImageMaintenanceSettingsPanel` — 设置页图片资产治理区，集中处理图片统计、缓存重建、缺图修复、历史图片检查和孤儿原图清理
 - `Components/Shared/Modal/*`
 - `Components/Shared/Editor/*`
 - `Components/Shared/Form/*`
@@ -557,6 +558,7 @@ string BuildDefaultBackupPath();
 - 最近备份历史列表
 - 打开备份文件 / 打开所在目录
 - 清空备份历史
+- 图片资产治理区已拆为 `ImageMaintenanceSettingsPanel`，`SettingsTab` 只负责刷新协调和其它设置分组
 - 图片缓存健康状态展示与缺失缓存重建
 - 孤儿原图扫描与确认清理
 - 导入后根据缺失图片情况给出修复建议

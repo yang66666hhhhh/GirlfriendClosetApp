@@ -28,7 +28,7 @@ GirlfriendClosetApp/
 ├── ClosetApp.Domain/                 # 实体、枚举、仓储接口、衣物分类模型
 ├── ClosetApp.Application/            # DTO、服务接口/实现、UseCases、图片资产抽象
 ├── ClosetApp.Infrastructure/         # EF Core、SQLite、图片/备份/天气等基础设施
-├── ClosetApp.UI/                     # WPF 页面、组件、状态类、主题资源
+├── ClosetApp.UI/                     # WPF 页面、组件、设置页子面板、状态类、主题资源
 ├── ClosetApp.UI.Logic/               # UI 纯逻辑共享工程（State、Engine、Import 等逻辑源码归属处）
 ├── ClosetApp.Tests/                  # xUnit 测试工程（当前同时引用 UI.Logic 与 UI 工程）
 ├── docs/
@@ -43,7 +43,7 @@ GirlfriendClosetApp/
 - `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选
 - `OutfitsTab`：搭配页，统一编辑器、穿搭预览与记录
 - `TagsTab`：标签页，维护标签数据，并按使用情况做整理与筛选
-- `SettingsTab`：设置页，负责数据治理与本地文件维护
+- `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接
 
 ## 关键实现
 
@@ -81,6 +81,8 @@ GirlfriendClosetApp/
 - `FileSizeFormatter`：文件大小格式化工具（B/KB/MB/GB）
 - `AnimationHelper`：可复用动画工具（Shake 抖动效果）
 - `ThemeColorHelper`：主题感知的颜色解析和混合工具
+
+`ClosetApp.UI/Components/Settings/ImageMaintenanceSettingsPanel` 是设置页图片治理面板，集中处理图片统计、缓存重建、缺图修复、历史图片检查和孤儿原图清理。
 
 ### 1.4 穿着记录快照
 
@@ -142,6 +144,8 @@ GirlfriendClosetApp/
 - 查看备份前的数据规模、图片覆盖情况和导出提醒
 - 选择旧图片目录批量修复
 - 清理主视觉和小预览缓存
+
+这些图片治理操作集中在 `ImageMaintenanceSettingsPanel`，`SettingsTab` 只负责页面初始化、备份、天气、主题和刷新协调。
 
 ### 4.1 今日推荐偏好
 

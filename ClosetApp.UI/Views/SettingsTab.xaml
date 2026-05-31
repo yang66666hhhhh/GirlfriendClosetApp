@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
              xmlns:dto="clr-namespace:ClosetApp.Application.DTOs;assembly=ClosetApp.Application"
+             xmlns:settings="clr-namespace:ClosetApp.UI.Components.Settings"
              xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
@@ -309,108 +310,8 @@
                             </StackPanel>
                         </Border>
 
-                        <Border Style="{StaticResource SettingsSectionCard}">
-                            <StackPanel>
-                                <Border Style="{StaticResource SettingsEyebrowBadge}"
-                                        Background="{DynamicResource PrimaryLightBrush}"
-                                        BorderBrush="{DynamicResource PrimaryBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock Text="维护"
-                                               Style="{StaticResource SettingsEyebrowBadgeText}"
-                                               Foreground="{DynamicResource PrimaryBrush}"/>
-                                </Border>
-                                <Grid Margin="0,0,0,14">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="图片资产"
-                                                   Style="{StaticResource PageSectionTitleText}"/>
-                                        <TextBlock Text="把缓存、缺失修复和孤儿原图治理收进同一组，减少来回切换。"
-                                                   Style="{StaticResource PageSectionBodyText}"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="1"
-                                            Content="刷新"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="RefreshStats_Click"
-                                            VerticalAlignment="Top"/>
-                                </Grid>
-
-                                <UniformGrid Columns="3" Margin="0,0,0,10">
-                                    <Border Style="{StaticResource SettingsStatCard}">
-                                        <StackPanel>
-                                            <TextBlock Text="原图规模" Style="{StaticResource SettingsStatLabel}"/>
-                                            <TextBlock Text="{Binding ImageStats}" Style="{StaticResource SettingsStatValue}"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource SettingsStatCard}">
-                                        <StackPanel>
-                                            <TextBlock Text="缓存体量" Style="{StaticResource SettingsStatLabel}"/>
-                                            <TextBlock Text="{Binding CacheStats}" Style="{StaticResource SettingsStatValue}"/>
-                                        </StackPanel>
-                                    </Border>
-                                    <Border Style="{StaticResource SettingsStatCard}" Margin="0,0,0,10">
-                                        <StackPanel>
-                                            <TextBlock Text="缺失状态" Style="{StaticResource SettingsStatLabel}"/>
-                                            <TextBlock x:Name="TxtMissingImageStats" Text="{Binding MissingImageStats}" Style="{StaticResource SettingsStatValue}"/>
-                                        </StackPanel>
-                                    </Border>
-                                </UniformGrid>
-
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="12"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-
-                                    <Border Grid.Column="0" Style="{StaticResource SettingsInsetCard}">
-                                        <StackPanel>
-                                            <TextBlock Text="缓存健康" Style="{StaticResource PageFieldLabelText}"/>
-                                            <TextBlock x:Name="TxtThumbnailHealthStats"
-                                                       Text="{Binding ThumbnailHealthStats}"
-                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                       TextWrapping="Wrap"
-                                                       Margin="0,6,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-
-                                    <Border Grid.Column="2" Style="{StaticResource SettingsInsetCard}">
-                                        <StackPanel>
-                                            <TextBlock Text="原图治理" Style="{StaticResource PageFieldLabelText}"/>
-                                            <TextBlock x:Name="TxtOrphanOriginalStats"
-                                                       Text="{Binding OrphanOriginalStats}"
-                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                       TextWrapping="Wrap"
-                                                       Margin="0,6,0,0"/>
-                                        </StackPanel>
-                                    </Border>
-                                </Grid>
-
-                                <WrapPanel Style="{StaticResource SettingsActionWrap}">
-                                    <Button Content="重建缺失缓存"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="RebuildThumbnails_Click"
-                                            Margin="0,0,8,8"/>
-                                    <Button Content="修复缺失图片"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="RepairMissingImages_Click"
-                                            Margin="0,0,8,8"/>
-                                    <Button Content="检查历史图片"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="CheckWornRecordImages_Click"
-                                            Margin="0,0,8,8"/>
-                                    <Button Content="清理图片缓存"
-                                            Style="{StaticResource PageToolbarDangerButton}"
-                                            Click="ClearThumbnails_Click"
-                                            Margin="0,0,8,8"/>
-                                    <Button Content="清理孤儿原图"
-                                            Style="{StaticResource PageToolbarDangerButton}"
-                                            Click="CleanupOrphanOriginals_Click"/>
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
+                        <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
+                                                                WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
 
                         <Border Style="{StaticResource SettingsSectionCard}" Margin="0">
                             <StackPanel>

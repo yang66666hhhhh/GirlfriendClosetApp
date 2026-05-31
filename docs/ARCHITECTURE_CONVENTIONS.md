@@ -12,6 +12,8 @@
 - Pure logic types in `ClosetApp.UI.Logic` use `ClosetApp.UI.Logic.*` namespaces.
 - State classes own search text, filters, loading flags, empty state, and current item collections.
 - Code-behind may still own click handlers, animations, visual tree probing, and modal orchestration.
+- Stable settings-page blocks may live under `ClosetApp.UI/Components/Settings`; `SettingsTab` should keep page initialization, refresh coordination, and cross-section actions while child panels own their local UI and events.
+- The image governance block is `ImageMaintenanceSettingsPanel`. Keep image stats, cache rebuild, missing-image repair, worn-record image checks, cache cleanup, and orphan-original cleanup inside that panel unless a new shared service boundary is needed.
 
 ## Design System
 

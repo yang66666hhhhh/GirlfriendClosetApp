@@ -6,8 +6,6 @@ using System.Windows.Controls;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
-using ClosetApp.UI.Components.Shared.Modal;
-using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,14 +16,12 @@ namespace ClosetApp.UI.Views;
 public partial class SettingsTab : UserControl
 {
     private readonly IImageMaintenanceService _imageMaintenanceService;
-    private readonly IOutfitService _outfitService;
     private readonly ThemeService _themeService;
     private readonly SettingsViewModel _viewModel;
 
     public SettingsTab()
     {
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
-        _outfitService = App.Services.GetRequiredService<IOutfitService>();
         _themeService = App.Services.GetRequiredService<ThemeService>();
         _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
         InitializeComponent();
@@ -43,7 +39,7 @@ public partial class SettingsTab : UserControl
             TxtVersion.Text = $"版本 {GetVersion()}";
             await _viewModel.InitializeAsync();
             ApplyThemeCardSelection(_themeService.CurrentTheme);
-            await RefreshStatsAsync();
+            await ImageMaintenancePanel.RefreshAsync();
             await RefreshBackupStateAsync();
             await _viewModel.RefreshWeatherAsync(showStatus: false);
         }
@@ -57,11 +53,6 @@ public partial class SettingsTab : UserControl
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version;
         return version == null ? "开发版" : $"{version.Major}.{version.Minor}.{version.Build}";
-    }
-
-    private async Task RefreshStatsAsync()
-    {
-        await _viewModel.RefreshStatsAsync();
     }
 
     private static void OpenPath(string path)
@@ -101,7 +92,7 @@ public partial class SettingsTab : UserControl
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
     {
-        await RefreshStatsAsync();
+        await ImageMaintenancePanel.RefreshAsync();
         await RefreshBackupStateAsync();
         ToastService.Instance.ShowInfo("统计信息已刷新。");
     }
@@ -148,100 +139,6 @@ public partial class SettingsTab : UserControl
         ThemeBlueCard.IsSelected = theme == AppThemeKind.Blue;
     }
 
-    // ── 图片维护 ──
-
-    private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
-    {
-        var result = MessageBox.Show(
-            "确定清理图片缓存吗？原始图片不会被删除。",
-            "清理缓存",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Question);
-
-        if (result != MessageBoxResult.OK)
-            return;
-
-        await _imageMaintenanceService.CleanupImageCacheAsync();
-        await RefreshStatsAsync();
-        MessageBox.Show("图片缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("图片缓存已清理");
-    }
-
-    private async void RebuildThumbnails_Click(object sender, RoutedEventArgs e)
-    {
-        var result = await _imageMaintenanceService.RebuildMissingThumbnailsAsync();
-        await RefreshStatsAsync();
-        MessageBox.Show(result.Summary, "图片缓存", MessageBoxButton.OK, MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("图片缓存已重建", result.Summary);
-    }
-
-    private async void CleanupOrphanOriginals_Click(object sender, RoutedEventArgs e)
-    {
-        var analysis = await _imageMaintenanceService.AnalyzeOrphanOriginalsAsync();
-        if (!analysis.HasOrphans)
-        {
-            MessageBox.Show("没有发现可清理的孤儿原图。", "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
-            return;
-        }
-
-        var confirm = MessageBox.Show(
-            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FileSizeFormatter.Format(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物或穿着历史引用的图片。确定继续吗？",
-            "清理孤儿原图",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning);
-
-        if (confirm != MessageBoxResult.OK)
-            return;
-
-        var result = await _imageMaintenanceService.CleanupOrphanOriginalsAsync();
-        await RefreshStatsAsync();
-        MessageBox.Show(result.Summary, "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("孤儿原图已清理", result.Summary);
-    }
-
-    private async void CheckWornRecordImages_Click(object sender, RoutedEventArgs e)
-    {
-        try
-        {
-            var result = await _outfitService.AnalyzeWornRecordImageHealthAsync();
-            if (!result.HasMissingImages)
-            {
-                MessageBox.Show(result.Summary, "穿着历史图片", MessageBoxButton.OK, MessageBoxImage.Information);
-                ToastService.Instance.ShowSuccess("历史图片检查完成", result.Summary);
-                return;
-            }
-
-            var previewItems = result.MissingRecordItems
-                .Take(8)
-                .Select(item => item.Summary)
-                .ToList();
-            var moreText = result.MissingRecordItems.Count > previewItems.Count
-                ? $"\n...还有 {result.MissingRecordItems.Count - previewItems.Count} 条记录"
-                : string.Empty;
-            var confirm = MessageBox.Show(
-                $"{result.Summary}\n\n{string.Join("\n", previewItems)}{moreText}\n\n是否打开最近一条缺图记录所在日期？",
-                "穿着历史图片",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Warning);
-
-            ToastService.Instance.ShowInfo("发现历史缺图", result.Summary);
-            if (confirm == MessageBoxResult.OK)
-                await OpenWornRecordDayAsync(result.MissingRecordItems[0].WornDate);
-        }
-        catch (Exception ex)
-        {
-            ToastService.Instance.ShowError("历史图片检查失败", ex.Message);
-        }
-    }
-
-    private async Task OpenWornRecordDayAsync(DateTime date)
-    {
-        var start = date.Date;
-        var end = start.AddDays(1).AddTicks(-1);
-        var records = (await _outfitService.GetWornRecordsAsync(start, end)).ToList();
-        ModalService.Instance.Show(new WornDayDetailsDialog(start, records));
-    }
-
     private async void ClearLogs_Click(object sender, RoutedEventArgs e)
     {
         var result = MessageBox.Show(
@@ -254,7 +151,7 @@ public partial class SettingsTab : UserControl
             return;
 
         await _imageMaintenanceService.CleanupLogsAsync();
-        await RefreshStatsAsync();
+        await ImageMaintenancePanel.RefreshAsync();
         MessageBox.Show("历史日志已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
         ToastService.Instance.ShowSuccess("历史日志已清理");
     }
@@ -319,32 +216,6 @@ public partial class SettingsTab : UserControl
         MessageBox.Show(BuildImportMessage(result), "完成", MessageBoxButton.OK, MessageBoxImage.Information);
     }
 
-    private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
-    {
-        var dialog = new OpenFolderDialog
-        {
-            Title = "选择旧图片所在目录，应用会按文件名尝试重连缺失图片。"
-        };
-
-        if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FolderName))
-            return;
-
-        var repairedCount = await _imageMaintenanceService.RelinkMissingImagesAsync(dialog.FolderName);
-        await RefreshStatsAsync();
-        await RequestAppRefreshAsync(clothes: true, outfits: true);
-
-        MessageBox.Show(
-            repairedCount == 0
-                ? "没有找到可重连的图片文件。"
-                : $"已修复 {repairedCount} 张缺失图片。",
-            "图片修复",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess(
-            repairedCount == 0 ? "没有需要修复的图片" : "缺失图片已重连",
-            repairedCount == 0 ? null : $"共修复 {repairedCount} 张图片。");
-    }
-
     private async void RefreshBackupState_Click(object sender, RoutedEventArgs e)
     {
         await RefreshBackupStateAsync();
@@ -365,6 +236,11 @@ public partial class SettingsTab : UserControl
         await _viewModel.ClearBackupHistoryWithFeedbackAsync();
     }
 
+    private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
+    {
+        await ImageMaintenancePanel.RepairMissingImagesAsync();
+    }
+
     private async Task RequestAppRefreshAsync(
         bool clothes = false,
         bool outfits = false,
@@ -374,6 +250,11 @@ public partial class SettingsTab : UserControl
         if (Window.GetWindow(this) is not MainWindow window)
             return;
         await window.RefreshDataTabsAsync(clothes, outfits, tags, settings);
+    }
+
+    private async void ImageMaintenancePanel_WardrobeImagesChanged(object sender, EventArgs e)
+    {
+        await RequestAppRefreshAsync(clothes: true, outfits: true);
     }
 
     private void OpenBackupFile_Click(object sender, RoutedEventArgs e)
