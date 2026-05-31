@@ -202,6 +202,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 数据目录展示
 - 日志清理
 - 图片资产治理由 `ImageMaintenanceSettingsPanel` 承接，包括缓存清理、缺失缓存重建、缺失图片修复、孤儿原图清理和历史图片检查
+- 天气与今日推荐偏好由 `WeatherPreferencesSettingsPanel` 承接，包括城市保存、天气刷新和推荐偏好设置
 - 备份与恢复由 `BackupSettingsPanel` 承接，包括备份导出 / 导入、导出前校验、导入结果摘要和备份历史展示
 - 缺失图片检测与修复入口
 - 天气城市和今日推荐偏好设置
@@ -285,6 +286,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 #### Shared / Tags
 
 - `Components/Settings/ImageMaintenanceSettingsPanel` — 设置页图片资产治理区，集中处理图片统计、缓存重建、缺图修复、历史图片检查和孤儿原图清理
+- `Components/Settings/WeatherPreferencesSettingsPanel` — 设置页天气与推荐偏好区，集中处理天气城市、天气刷新和今日推荐偏好保存
 - `Components/Settings/BackupSettingsPanel` — 设置页备份与恢复区，集中处理导出、导入、备份校验、导入摘要、备份历史和文件定位
 - `Components/Shared/Modal/*`
 - `Components/Shared/Editor/*`
@@ -557,6 +559,7 @@ string BuildDefaultBackupPath();
 - 打开备份文件 / 打开所在目录
 - 清空备份历史
 - 图片资产治理区已拆为 `ImageMaintenanceSettingsPanel`，`SettingsTab` 只负责刷新协调和其它设置分组
+- 天气与推荐偏好区已拆为 `WeatherPreferencesSettingsPanel`，保存后通过事件通知父页刷新搭配页
 - 备份与恢复区已拆为 `BackupSettingsPanel`，导入成功后通过事件通知父页刷新衣柜、搭配和标签
 - 图片缓存健康状态展示与缺失缓存重建
 - 孤儿原图扫描与确认清理

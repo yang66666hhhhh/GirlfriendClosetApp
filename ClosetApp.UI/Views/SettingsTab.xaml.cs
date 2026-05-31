@@ -39,7 +39,7 @@ public partial class SettingsTab : UserControl
             ApplyThemeCardSelection(_themeService.CurrentTheme);
             await ImageMaintenancePanel.RefreshAsync();
             await BackupPanel.RefreshAsync();
-            await _viewModel.RefreshWeatherAsync(showStatus: false);
+            await WeatherPreferencesPanel.RefreshAsync();
         }
         catch (Exception ex)
         {
@@ -92,26 +92,6 @@ public partial class SettingsTab : UserControl
         await ImageMaintenancePanel.RefreshAsync();
         await BackupPanel.RefreshAsync();
         ToastService.Instance.ShowInfo("统计信息已刷新。");
-    }
-
-    private async void RefreshWeather_Click(object sender, RoutedEventArgs e)
-    {
-        await _viewModel.RefreshWeatherAsync(showStatus: true);
-    }
-
-    private async void SaveWeatherCity_Click(object sender, RoutedEventArgs e)
-    {
-        var city = _viewModel.WeatherCity.Trim();
-        await _viewModel.SaveWeatherCityAsync(city);
-        if (string.IsNullOrWhiteSpace(city))
-            TxtWeatherCity.Focus();
-        await RequestAppRefreshAsync(outfits: true);
-    }
-
-    private async void SaveRecommendationPreferences_Click(object sender, RoutedEventArgs e)
-    {
-        await _viewModel.SaveRecommendationPreferencesAsync();
-        await RequestAppRefreshAsync(outfits: true);
     }
 
     // ── 主题切换 ──
@@ -177,5 +157,10 @@ public partial class SettingsTab : UserControl
     private async void BackupPanel_RepairMissingImagesRequested(object sender, EventArgs e)
     {
         await ImageMaintenancePanel.RepairMissingImagesAsync();
+    }
+
+    private async void WeatherPreferencesPanel_OutfitsRefreshRequested(object sender, EventArgs e)
+    {
+        await RequestAppRefreshAsync(outfits: true);
     }
 }

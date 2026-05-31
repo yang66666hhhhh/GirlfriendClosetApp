@@ -199,7 +199,7 @@
                             <Border Style="{StaticResource SettingsStatCard}">
                                 <StackPanel>
                                     <TextBlock Text="默认城市" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock Text="{Binding Text, ElementName=TxtWeatherCity}" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock Text="{Binding WeatherCity}" Style="{StaticResource SettingsStatValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource SettingsStatCard}" Margin="0,0,0,10">
@@ -366,134 +366,8 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
-                        <Border Style="{StaticResource SettingsSectionCard}">
-                            <StackPanel>
-                                <Border Style="{StaticResource SettingsEyebrowBadge}"
-                                        Background="{DynamicResource PrimaryLightBrush}"
-                                        BorderBrush="{DynamicResource PrimaryBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock Text="偏好"
-                                               Style="{StaticResource SettingsEyebrowBadgeText}"
-                                               Foreground="{DynamicResource PrimaryBrush}"/>
-                                </Border>
-                                <TextBlock Text="天气与城市"
-                                           Style="{StaticResource PageSectionTitleText}"/>
-                                <TextBlock Text="默认城市会用于获取实时天气，后续天气穿搭推荐也会直接复用这里。"
-                                           Style="{StaticResource PageSectionBodyText}"/>
-
-                                <Grid Margin="0,0,0,14">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBox x:Name="TxtWeatherCity"
-                                             Grid.Column="0"
-                                             MinHeight="40"
-                                             Padding="12,9"
-                                             Text="{Binding WeatherCity, UpdateSourceTrigger=PropertyChanged}"/>
-                                    <Button x:Name="BtnSaveWeatherCity"
-                                            Grid.Column="1"
-                                            Content="保存"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="SaveWeatherCity_Click"
-                                            Margin="8,0,0,0"
-                                            IsEnabled="{Binding CanEditWeather}"/>
-                                    <Button x:Name="BtnRefreshWeather"
-                                            Grid.Column="2"
-                                            Content="刷新天气"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="RefreshWeather_Click"
-                                            Margin="8,0,0,0"
-                                            IsEnabled="{Binding CanEditWeather}"/>
-                                </Grid>
-
-                                <Border Style="{StaticResource SettingsInsetCard}">
-                                    <StackPanel>
-                                        <TextBlock x:Name="TxtWeatherSummary"
-                                                   Text="{Binding WeatherSummary}"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <TextBlock x:Name="TxtWeatherDetails"
-                                                   Text="{Binding WeatherDetails}"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   Margin="0,6,0,0"
-                                                   TextWrapping="Wrap"/>
-                                        <TextBlock x:Name="TxtWeatherObservedAt"
-                                                   Text="{Binding WeatherObservedAt}"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   Margin="0,6,0,0"/>
-                                        <Border x:Name="WeatherStatusCard"
-                                                Style="{StaticResource PageInsetCard}"
-                                                Background="{DynamicResource SurfacePageBrush}"
-                                                Padding="12"
-                                                Margin="0,12,0,0"
-                                                Visibility="{Binding IsWeatherStatusVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock x:Name="TxtWeatherStatus"
-                                                       Text="{Binding WeatherStatus}"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       TextWrapping="Wrap"/>
-                                        </Border>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Style="{StaticResource SettingsInsetCard}"
-                                        Margin="0,14,0,0">
-                                    <StackPanel>
-                                        <TextBlock Text="今日推荐偏好"
-                                                   Style="{StaticResource PageFieldLabelText}"/>
-                                        <TextBlock Text="这里会影响搭配页的天气推荐，先把常用场景、轮换方式和是否避开今天已穿过设好。"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,6,0,0"/>
-
-                                        <Grid Margin="0,12,0,0">
-                                            <Grid.ColumnDefinitions>
-                                                <ColumnDefinition Width="*"/>
-                                                <ColumnDefinition Width="12"/>
-                                                <ColumnDefinition Width="*"/>
-                                            </Grid.ColumnDefinitions>
-
-                                            <ComboBox Grid.Column="0"
-                                                      MinHeight="36"
-                                                      ItemsSource="{Binding RecommendationSceneOptions}"
-                                                      DisplayMemberPath="Label"
-                                                      SelectedValuePath="Value"
-                                                      SelectedValue="{Binding RecommendationDefaultScene, Mode=TwoWay}"/>
-                                            <ComboBox Grid.Column="2"
-                                                      MinHeight="36"
-                                                      ItemsSource="{Binding RecommendationRotationStrategyOptions}"
-                                                      DisplayMemberPath="Label"
-                                                      SelectedValuePath="Value"
-                                                      SelectedValue="{Binding RecommendationRotationStrategy, Mode=TwoWay}"/>
-                                        </Grid>
-
-                                        <WrapPanel Margin="0,12,0,0"
-                                                   VerticalAlignment="Center">
-                                            <CheckBox Content="避开今天已穿过"
-                                                      IsChecked="{Binding RecommendationAvoidWornToday, Mode=TwoWay}"
-                                                      Foreground="{DynamicResource TextSecondaryBrush}"
-                                                      VerticalAlignment="Center"
-                                                      Margin="0,0,14,8"/>
-                                            <Button Content="保存推荐偏好"
-                                                    Style="{StaticResource SettingsButton}"
-                                                    Margin="0,0,0,8"
-                                                    Click="SaveRecommendationPreferences_Click"/>
-                                        </WrapPanel>
-
-                                        <Border Style="{StaticResource PageInsetCard}"
-                                                Background="{DynamicResource SurfacePageBrush}"
-                                                Padding="12"
-                                                Margin="0,12,0,0"
-                                                Visibility="{Binding IsRecommendationStatusVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock Text="{Binding RecommendationStatus}"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       TextWrapping="Wrap"/>
-                                        </Border>
-                                    </StackPanel>
-                                </Border>
-                            </StackPanel>
-                        </Border>
+                        <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
+                                                                  OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
 
                         <Border x:Name="AppearanceSectionCard"
                                 Style="{StaticResource SettingsSectionCard}">

@@ -14,6 +14,7 @@
 - Code-behind may still own click handlers, animations, visual tree probing, and modal orchestration.
 - Stable settings-page blocks may live under `ClosetApp.UI/Components/Settings`; `SettingsTab` should keep page initialization, refresh coordination, and cross-section actions while child panels own their local UI and events.
 - The image governance block is `ImageMaintenanceSettingsPanel`. Keep image stats, cache rebuild, missing-image repair, worn-record image checks, cache cleanup, and orphan-original cleanup inside that panel unless a new shared service boundary is needed.
+- The weather and recommendation-preferences block is `WeatherPreferencesSettingsPanel`. Keep weather refresh, city persistence, and recommendation-preference editing inside that panel; notify `SettingsTab` only when the outfits page should refresh.
 - The backup and restore block is `BackupSettingsPanel`. Keep backup export/import, validation display, import summaries, backup history, and file/folder opening inside that panel; notify `SettingsTab` with events only for cross-page refresh or image-repair handoff.
 
 ## Design System

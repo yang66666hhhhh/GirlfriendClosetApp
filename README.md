@@ -44,6 +44,7 @@ GirlfriendClosetApp/
 - `OutfitsTab`：搭配页，统一编辑器、穿搭预览与记录
 - `TagsTab`：标签页，维护标签数据，并按使用情况做整理与筛选
 - `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
+- `SettingsTab`：设置页，负责数据治理与本地文件维护；图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
 
 ## 关键实现
 
@@ -83,6 +84,8 @@ GirlfriendClosetApp/
 - `ThemeColorHelper`：主题感知的颜色解析和混合工具
 
 `ClosetApp.UI/Components/Settings/ImageMaintenanceSettingsPanel` 是设置页图片治理面板，集中处理图片统计、缓存重建、缺图修复、历史图片检查和孤儿原图清理。
+
+`ClosetApp.UI/Components/Settings/WeatherPreferencesSettingsPanel` 是设置页天气与推荐偏好面板，集中处理天气城市、天气刷新和今日推荐偏好保存。
 
 `ClosetApp.UI/Components/Settings/BackupSettingsPanel` 是设置页备份恢复面板，集中处理备份导出、导入恢复、导出前校验、导入摘要、备份历史和文件定位。
 
@@ -147,7 +150,7 @@ GirlfriendClosetApp/
 - 选择旧图片目录批量修复
 - 清理主视觉和小预览缓存
 
-这些图片治理操作集中在 `ImageMaintenanceSettingsPanel`，备份恢复操作集中在 `BackupSettingsPanel`，`SettingsTab` 只负责页面初始化、天气、主题和跨分组刷新协调。
+这些图片治理操作集中在 `ImageMaintenanceSettingsPanel`，天气与推荐偏好集中在 `WeatherPreferencesSettingsPanel`，备份恢复操作集中在 `BackupSettingsPanel`，`SettingsTab` 只负责页面初始化、主题和跨分组刷新协调。
 
 ### 4.1 今日推荐偏好
 
