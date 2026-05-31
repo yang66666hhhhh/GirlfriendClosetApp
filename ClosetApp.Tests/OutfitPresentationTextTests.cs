@@ -22,6 +22,52 @@ public class OutfitPresentationTextTests
     }
 
     [Fact]
+    public void BuildCompactWeatherSummary_ReturnsTemperatureAndCondition()
+    {
+        Assert.Equal("18°C · 多云", OutfitPresentationText.BuildCompactWeatherSummary(18, "多云"));
+    }
+
+    [Fact]
+    public void BuildRecommendationCountText_WhenEmpty_ReturnsFallback()
+    {
+        Assert.Equal("暂无", OutfitPresentationText.BuildRecommendationCountText([]));
+    }
+
+    [Fact]
+    public void BuildRecommendationReadinessCountText_WhenHasMatchingSeason_UsesRatio()
+    {
+        var readiness = new RecommendationReadinessSummaryDto(
+            "title",
+            "detail",
+            Season.Autumn,
+            3,
+            5);
+
+        Assert.Equal("3/5 套对季", OutfitPresentationText.BuildRecommendationReadinessCountText(readiness));
+    }
+
+    [Fact]
+    public void BuildRecommendationMissingSeasonText_WhenMissingSeasonExists_ReturnsSuggestion()
+    {
+        var readiness = new RecommendationReadinessSummaryDto(
+            "title",
+            "detail",
+            Season.Winter,
+            0,
+            5);
+
+        Assert.Equal("建议补 冬季 搭配", OutfitPresentationText.BuildRecommendationMissingSeasonText(readiness, hasRecommendationGap: true));
+    }
+
+    [Fact]
+    public void BuildTodayHeroPrimaryActionText_WhenHasTodayRecordsAndNotWornToday_ReturnsRetryCopy()
+    {
+        var recommendation = CreateRecommendation(primaryReason: "今天适合轻一点。");
+
+        Assert.Equal("再记这套", OutfitPresentationText.BuildTodayHeroPrimaryActionText(recommendation, hasTodayWornRecords: true));
+    }
+
+    [Fact]
     public void ResolveHeroSummaryText_PrefersSummaryText()
     {
         var recommendation = CreateRecommendation(

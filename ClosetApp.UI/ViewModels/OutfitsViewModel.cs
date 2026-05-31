@@ -249,14 +249,14 @@ public partial class OutfitsViewModel : ViewModelBase
     public bool HasNoWornRecords => !HasAnyWornRecords;
     public string WeatherHeadlineText => $"{WeatherCity} · {WeatherTemperature}°C · {WeatherCondition}";
     public string WeatherCityCompactText => OutfitPresentationText.BuildCompactWeatherCity(WeatherCity);
-    public string WeatherCompactSummaryText => $"{WeatherTemperature}°C · {WeatherCondition}";
+    public string WeatherCompactSummaryText => OutfitPresentationText.BuildCompactWeatherSummary(WeatherTemperature, WeatherCondition);
     public int TodayWornCount => RecentWornRecords.Count(record => record.WornDate.Date == DateTime.Today);
     public bool HasTodayWornRecords => TodayWornCount > 0;
     public string TodayWornStatusText => HasTodayWornRecords ? $"今天已记 {TodayWornCount} 套" : "今天还没记录";
     public bool HasWeatherRecommendations => WeatherRecommendations.Count > 0;
     public bool HasPrimaryWeatherRecommendation => PrimaryWeatherRecommendation != null;
     public bool HasSecondaryWeatherRecommendations => SecondaryWeatherRecommendations.Count > 0;
-    public string WeatherRecommendationCountText => HasWeatherRecommendations ? $"{WeatherRecommendations.Count} 套" : "暂无";
+    public string WeatherRecommendationCountText => OutfitPresentationText.BuildRecommendationCountText(WeatherRecommendations);
     public RecommendedOutfitDto? PrimaryWeatherRecommendation => WeatherRecommendations.FirstOrDefault();
     public IReadOnlyList<RecommendedOutfitDto> SecondaryWeatherRecommendations => WeatherRecommendations.Skip(1).Take(2).ToList();
     public bool CanRefreshWeatherRecommendations => !IsWeatherLoading;
@@ -265,20 +265,10 @@ public partial class OutfitsViewModel : ViewModelBase
     public bool HasRecommendationGap => RecommendationReadiness?.HasGap ?? false;
     public string RecommendationReadinessTitle => RecommendationReadiness?.Title ?? "推荐准备度";
     public string RecommendationReadinessDetail => RecommendationReadiness?.Detail ?? "刷新天气后会整理当前搭配是否够用。";
-    public string RecommendationReadinessBadgeText => HasRecommendationGap ? "还差一点" : "已经就绪";
-    public string RecommendationReadinessCountText => RecommendationReadiness == null
-        ? "等待刷新"
-        : RecommendationReadiness.MatchingSeasonCount > 0
-            ? $"{RecommendationReadiness.MatchingSeasonCount}/{RecommendationReadiness.ReadyOutfitCount} 套对季"
-            : $"{RecommendationReadiness.ReadyOutfitCount} 套已整理";
-    public string RecommendationMissingSeasonText => RecommendationReadiness?.MissingSeason is { } season
-        ? $"建议补 {OutfitPresentationText.GetSeasonLabel(season)} 搭配"
-        : HasRecommendationGap
-            ? "先把常穿搭配补完整，推荐会更稳。"
-            : "当前温度下已经有可轮换的搭配。";
-    public string WeatherRecommendationHintText => WeatherRecommendations.Count == 0
-        ? RecommendationReadinessDetail
-        : $"{PrimaryWeatherRecommendation!.PrimaryReason}";
+    public string RecommendationReadinessBadgeText => OutfitPresentationText.BuildRecommendationReadinessBadgeText(HasRecommendationGap);
+    public string RecommendationReadinessCountText => OutfitPresentationText.BuildRecommendationReadinessCountText(RecommendationReadiness);
+    public string RecommendationMissingSeasonText => OutfitPresentationText.BuildRecommendationMissingSeasonText(RecommendationReadiness, HasRecommendationGap);
+    public string WeatherRecommendationHintText => OutfitPresentationText.BuildWeatherRecommendationHintText(WeatherRecommendations, RecommendationReadinessDetail);
     public string TodayHeroRecommendationNameText => HasPrimaryWeatherRecommendation
         ? PrimaryWeatherRecommendation!.Name
         : "今天还没有合适推荐";
@@ -291,11 +281,7 @@ public partial class OutfitsViewModel : ViewModelBase
             ? $"{TodayWornStatusText}，{RecommendationReadinessDetail}"
             : RecommendationReadinessDetail;
     public string TodayHeroPrimaryActionText => HasPrimaryWeatherRecommendation
-        ? PrimaryWeatherRecommendation!.IsWornToday
-            ? "今天又穿它"
-            : HasTodayWornRecords
-                ? "再记这套"
-                : "今天穿它"
+        ? OutfitPresentationText.BuildTodayHeroPrimaryActionText(PrimaryWeatherRecommendation, HasTodayWornRecords)
         : "去新建一套";
 
     public async Task LoadOutfitsAsync()

@@ -77,7 +77,7 @@ GirlfriendClosetApp/
 
 - `OutfitsViewModel` 继续保留搭配加载、删除、穿着记录、天气推荐和日历刷新等主流程
 - 推荐区与今日主推荐的纯展示文案开始收敛到 `ClosetApp.UI.Logic/Services/OutfitPresentationText`
-- 这类 helper 负责排序标签、紧凑城市名、季节文案和今日主推荐支持文案，避免 ViewModel 同时承载状态编排和大段文本拼装
+- 这类 helper 负责排序标签、紧凑城市名、季节文案、推荐数量、准备度提示和今日主推荐支持文案，避免 ViewModel 同时承载状态编排和大段文本拼装
 
 ### 1.4 衣物分类体系
 

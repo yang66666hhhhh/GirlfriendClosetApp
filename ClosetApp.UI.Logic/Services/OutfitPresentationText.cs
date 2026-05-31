@@ -30,6 +30,11 @@ public static class OutfitPresentationText
         return parts.Length == 0 ? city : string.Join(" · ", parts);
     }
 
+    public static string BuildCompactWeatherSummary(int temperature, string condition)
+    {
+        return $"{temperature}°C · {condition}";
+    }
+
     public static string GetSeasonLabel(Season season)
     {
         return season switch
@@ -41,6 +46,47 @@ public static class OutfitPresentationText
             Season.AllSeason => "四季",
             _ => "当前"
         };
+    }
+
+    public static string BuildRecommendationCountText(IReadOnlyList<RecommendedOutfitDto> recommendations)
+    {
+        return recommendations.Count > 0 ? $"{recommendations.Count} 套" : "暂无";
+    }
+
+    public static string BuildRecommendationReadinessBadgeText(bool hasRecommendationGap)
+    {
+        return hasRecommendationGap ? "还差一点" : "已经就绪";
+    }
+
+    public static string BuildRecommendationReadinessCountText(RecommendationReadinessSummaryDto? readiness)
+    {
+        if (readiness == null)
+            return "等待刷新";
+
+        return readiness.MatchingSeasonCount > 0
+            ? $"{readiness.MatchingSeasonCount}/{readiness.ReadyOutfitCount} 套对季"
+            : $"{readiness.ReadyOutfitCount} 套已整理";
+    }
+
+    public static string BuildRecommendationMissingSeasonText(
+        RecommendationReadinessSummaryDto? readiness,
+        bool hasRecommendationGap)
+    {
+        if (readiness?.MissingSeason is { } season)
+            return $"建议补 {GetSeasonLabel(season)} 搭配";
+
+        return hasRecommendationGap
+            ? "先把常穿搭配补完整，推荐会更稳。"
+            : "当前温度下已经有可轮换的搭配。";
+    }
+
+    public static string BuildWeatherRecommendationHintText(
+        IReadOnlyList<RecommendedOutfitDto> recommendations,
+        string recommendationReadinessDetail)
+    {
+        return recommendations.Count == 0
+            ? recommendationReadinessDetail
+            : recommendations[0].PrimaryReason;
     }
 
     public static string BuildTodayHeroSupportText(
@@ -56,6 +102,19 @@ public static class OutfitPresentationText
             return summary;
 
         return $"{summary} 今天已经记过 {todayWornCount} 套，下一套可以换个感觉。";
+    }
+
+    public static string BuildTodayHeroPrimaryActionText(
+        RecommendedOutfitDto? primaryRecommendation,
+        bool hasTodayWornRecords)
+    {
+        if (primaryRecommendation == null)
+            return "去新建一套";
+
+        if (primaryRecommendation.IsWornToday)
+            return "今天又穿它";
+
+        return hasTodayWornRecords ? "再记这套" : "今天穿它";
     }
 
     public static string ResolveHeroSummaryText(RecommendedOutfitDto recommendation)
