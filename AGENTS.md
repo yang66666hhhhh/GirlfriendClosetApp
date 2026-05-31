@@ -70,7 +70,7 @@ ClosetApp.slnx
 │   │   ├── Outfit/            # OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel 等 WPF 控件
 │   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel, WardrobeSummaryPanel, WardrobeFilterPanel, WardrobeCollectionHeaderPanel 等 WPF 控件
 │   │   ├── Tags/              # TagEditorPanel, TagsOverviewPanel, TagsFilterPanel, TagSectionPanel, TagSelectionSection, SelectableTag
-│   │   ├── Settings/          # StorageLocationsSettingsPanel, ImageMaintenanceSettingsPanel, WeatherPreferencesSettingsPanel, AppearanceSettingsPanel, BackupSettingsPanel 等设置页稳定区块
+│   │   ├── Settings/          # StorageLocationsSettingsPanel, LogMaintenanceSettingsPanel, ImageMaintenanceSettingsPanel, WeatherPreferencesSettingsPanel, AppearanceSettingsPanel, BackupSettingsPanel 等设置页稳定区块
 │   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
 │   ├── Converters/            # ImagePathConverter, BoolToFavoriteColorConverter...
 │   ├── ViewModels/            # WardrobeViewModel, OutfitsViewModel, SettingsViewModel, TagsViewModel

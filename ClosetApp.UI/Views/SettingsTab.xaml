@@ -238,57 +238,7 @@
                         <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
                                                                 WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
 
-                        <Border Style="{StaticResource SettingsSectionCard}" Margin="0">
-                            <StackPanel>
-                                <Border Style="{StaticResource SettingsEyebrowBadge}"
-                                        Background="{DynamicResource PrimaryLightBrush}"
-                                        BorderBrush="{DynamicResource PrimaryBrush}"
-                                        BorderThickness="1">
-                                    <TextBlock Text="排障"
-                                               Style="{StaticResource SettingsEyebrowBadgeText}"
-                                               Foreground="{DynamicResource PrimaryBrush}"/>
-                                </Border>
-                                <Grid Margin="0,0,0,14">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="Auto"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="系统日志"
-                                                   Style="{StaticResource PageSectionTitleText}"/>
-                                        <TextBlock Text="保留最近 14 天日志，主要用于排查启动、图片处理和数据同步问题。"
-                                                   Style="{StaticResource PageSectionBodyText}"/>
-                                    </StackPanel>
-                                    <Button Grid.Column="1"
-                                            Content="刷新"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="RefreshStats_Click"
-                                            VerticalAlignment="Top"/>
-                                </Grid>
-
-                                <Border Style="{StaticResource SettingsInsetCard}">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding LogStats}"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                                   FontWeight="SemiBold"/>
-                                        <TextBlock x:Name="TxtLogDir"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   TextWrapping="Wrap"
-                                                   Margin="0,6,0,0"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <WrapPanel Style="{StaticResource SettingsActionWrap}">
-                                    <Button Content="打开日志目录"
-                                            Style="{StaticResource SettingsButton}"
-                                            Click="OpenLogsDir_Click"
-                                            Margin="0,0,8,8"/>
-                                    <Button Content="清理历史日志"
-                                            Style="{StaticResource PageToolbarDangerButton}"
-                                            Click="ClearLogs_Click"/>
-                                </WrapPanel>
-                            </StackPanel>
-                        </Border>
+                        <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">

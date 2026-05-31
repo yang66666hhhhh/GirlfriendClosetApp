@@ -203,6 +203,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 数据目录展示
 - 日志清理
 - 资源与目录区由 `StorageLocationsSettingsPanel` 承接，包括数据目录、数据库、图片目录、缓存目录和应用目录入口
+- 系统日志区由 `LogMaintenanceSettingsPanel` 承接，包括日志统计刷新、日志目录入口和历史日志清理
 - 图片资产治理由 `ImageMaintenanceSettingsPanel` 承接，包括缓存清理、缺失缓存重建、缺失图片修复、孤儿原图清理和历史图片检查
 - 天气与今日推荐偏好由 `WeatherPreferencesSettingsPanel` 承接，包括城市保存、天气刷新和推荐偏好设置
 - 外观与应用信息由 `AppearanceSettingsPanel` 承接，包括主题切换、版本展示和应用目录入口
@@ -301,6 +302,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Clothing/WardrobeFilterPanel` — 衣柜页展开筛选区，集中处理分类、季节、收藏和风格标签筛选
 - `Components/Clothing/WardrobeCollectionHeaderPanel` — 衣柜列表上方集合标题与排序区，集中处理结果标题、摘要文案和排序入口
 - `Components/Settings/StorageLocationsSettingsPanel` — 设置页资源与目录区，集中处理数据目录、数据库、图片目录、缓存目录和应用目录入口
+- `Components/Settings/LogMaintenanceSettingsPanel` — 设置页系统日志区，集中处理日志统计刷新、日志目录入口和历史日志清理
 - `Components/Settings/ImageMaintenanceSettingsPanel` — 设置页图片资产治理区，集中处理图片统计、缓存重建、缺图修复、历史图片检查和孤儿原图清理
 - `Components/Settings/WeatherPreferencesSettingsPanel` — 设置页天气与推荐偏好区，集中处理天气城市、天气刷新和今日推荐偏好保存
 - `Components/Settings/AppearanceSettingsPanel` — 设置页外观与应用信息区，集中处理主题切换、版本展示和应用目录入口
@@ -593,6 +595,7 @@ string BuildDefaultBackupPath();
 - 打开备份文件 / 打开所在目录
 - 清空备份历史
 - 资源与目录区已拆为 `StorageLocationsSettingsPanel`
+- 系统日志区已拆为 `LogMaintenanceSettingsPanel`
 - 图片资产治理区已拆为 `ImageMaintenanceSettingsPanel`，`SettingsTab` 只负责刷新协调和其它设置分组
 - 天气与推荐偏好区已拆为 `WeatherPreferencesSettingsPanel`，保存后通过事件通知父页刷新搭配页
 - 外观与应用信息区已拆为 `AppearanceSettingsPanel`，主题切换通过事件交还父页执行

@@ -43,7 +43,7 @@ GirlfriendClosetApp/
 - `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接，集合标题与排序区由 `WardrobeCollectionHeaderPanel` 承接
 - `OutfitsTab`：搭配页，统一编辑器、穿搭预览与记录
 - `TagsTab`：标签页，维护标签数据，并按使用情况做整理与筛选
-- `SettingsTab`：设置页，负责数据治理与本地文件维护；资源与目录区由 `StorageLocationsSettingsPanel` 子组件承接，图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，外观区由 `AppearanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
+- `SettingsTab`：设置页，负责数据治理与本地文件维护；资源与目录区由 `StorageLocationsSettingsPanel` 子组件承接，系统日志区由 `LogMaintenanceSettingsPanel` 子组件承接，图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，外观区由 `AppearanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
 
 ## 关键实现
 
@@ -102,6 +102,8 @@ GirlfriendClosetApp/
 `ClosetApp.UI/Components/Settings/BackupSettingsPanel` 是设置页备份恢复面板，集中处理备份导出、导入恢复、导出前校验、导入摘要、备份历史和文件定位。
 
 `ClosetApp.UI/Components/Settings/StorageLocationsSettingsPanel` 是设置页资源与目录面板，集中处理数据目录、数据库、图片目录、缓存目录和应用目录入口。
+
+`ClosetApp.UI/Components/Settings/LogMaintenanceSettingsPanel` 是设置页系统日志面板，集中处理日志统计刷新、日志目录入口和历史日志清理。
 
 `ClosetApp.UI/Components/Clothing/WardrobeSummaryPanel` 是衣柜页顶部概览工具带，集中处理总量摘要、搜索入口、筛选开关、待整理队列和最近导入摘要。
 
@@ -170,7 +172,7 @@ GirlfriendClosetApp/
 - 选择旧图片目录批量修复
 - 清理主视觉和小预览缓存
 
-这些图片治理操作集中在 `ImageMaintenanceSettingsPanel`，资源与目录入口集中在 `StorageLocationsSettingsPanel`，天气与推荐偏好集中在 `WeatherPreferencesSettingsPanel`，外观信息集中在 `AppearanceSettingsPanel`，备份恢复操作集中在 `BackupSettingsPanel`，`SettingsTab` 只负责页面初始化和跨分组刷新协调。
+这些图片治理操作集中在 `ImageMaintenanceSettingsPanel`，资源与目录入口集中在 `StorageLocationsSettingsPanel`，系统日志入口和清理集中在 `LogMaintenanceSettingsPanel`，天气与推荐偏好集中在 `WeatherPreferencesSettingsPanel`，外观信息集中在 `AppearanceSettingsPanel`，备份恢复操作集中在 `BackupSettingsPanel`，`SettingsTab` 只负责页面初始化和跨分组刷新协调。
 
 ### 4.1 今日推荐偏好
 
