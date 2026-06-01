@@ -94,13 +94,6 @@
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
-        <Style x:Key="OutfitFilterCardStyle" TargetType="Border" BasedOn="{StaticResource PageSummaryCard}">
-            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="16"/>
-        </Style>
-
         <LinearGradientBrush x:Key="TodayHeroBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
             <GradientStop Color="{DynamicResource Surface.Hero}" Offset="0"/>
             <GradientStop Color="{DynamicResource Surface.Modal}" Offset="0.48"/>
@@ -450,7 +443,7 @@
                 </StackPanel>
 
                 <Grid Margin="0,0,0,6">
-                    <Border Style="{StaticResource OutfitFilterCardStyle}"
+                    <Border Style="{StaticResource PageFilterCard}"
                             Margin="0,0,0,12"
                             Padding="16,14"
                             Grid.ColumnSpan="2">

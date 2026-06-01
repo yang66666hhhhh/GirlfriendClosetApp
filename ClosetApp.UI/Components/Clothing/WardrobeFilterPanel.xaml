@@ -9,12 +9,9 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Border Style="{StaticResource PageSummaryCard}"
+    <Border Style="{StaticResource PageFilterCard}"
             Margin="44,0,44,10"
             Padding="16,14"
-            Background="{DynamicResource SurfaceSectionBrush}"
-            BorderBrush="{DynamicResource BorderLightBrush}"
-            BorderThickness="1"
             Visibility="{Binding IsFilterExpanded, Converter={StaticResource BooleanToVisibilityConverter}}">
         <StackPanel>
             <Grid Margin="0,0,0,10">

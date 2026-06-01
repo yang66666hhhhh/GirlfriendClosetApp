@@ -7,12 +7,9 @@
     </UserControl.Resources>
 
     <StackPanel>
-        <Border Style="{StaticResource PageSummaryCard}"
+        <Border Style="{StaticResource PageFilterCard}"
                 Margin="0,0,0,14"
-                Padding="16,14"
-                Background="{DynamicResource SurfaceSectionBrush}"
-                BorderBrush="{DynamicResource BorderLightBrush}"
-                BorderThickness="1">
+                Padding="16,14">
             <StackPanel>
                 <Grid>
                     <Grid.ColumnDefinitions>
