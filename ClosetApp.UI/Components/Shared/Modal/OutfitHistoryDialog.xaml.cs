@@ -123,6 +123,24 @@ public partial class OutfitHistoryDialog : UserControl
         OpenRecentWornPopup(element);
     }
 
+    private async void OpenCurrentPreviewDayDetails_Click(object sender, RoutedEventArgs e)
+    {
+        if (CurrentPreviewPanel.DataContext is not RecentWornListItem item)
+            return;
+
+        await _viewModel.FocusHistoryDateAsync(item.WornDate);
+        var day = _viewModel.CalendarDays.FirstOrDefault(calendarDay => calendarDay.Date.Date == item.WornDate.Date);
+        var dialog = new WornDayDetailsDialog(item.WornDate.Date, day?.Records ?? [], isEmbedded: true);
+        dialog.RecordsChanged += async (_, _) =>
+        {
+            await _viewModel.RefreshAsync();
+            await _viewModel.EnsureCalendarLoadedAsync();
+            SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
+        };
+        dialog.CloseRequested += (_, _) => CloseDayDetailsOverlay();
+        OpenDayDetailsOverlay(dialog);
+    }
+
     private void UpdateRecentSectionState()
     {
         if (OpenRecentSectionButton == null || RecentSectionSummaryText == null)

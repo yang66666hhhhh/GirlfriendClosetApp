@@ -387,6 +387,17 @@
                             <TextBlock Text="{Binding WeatherRecommendationHintText}"
                                        Style="{StaticResource PageSummaryBodyText}"
                                        Margin="0,6,0,0"/>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,12,0,0">
+                                <Button Content="去调整偏好"
+                                        Style="{StaticResource PageToolbarCapsuleButton}"
+                                        Margin="0,0,8,0"
+                                        Click="OpenSettings_Click"/>
+                                <Button Content="+ 新建搭配"
+                                        Style="{StaticResource OutfitMintButton}"
+                                        Padding="12,7"
+                                        Click="CreateOutfit_Click"/>
+                            </StackPanel>
                         </StackPanel>
                         <Button Grid.Column="1"
                                 Content="{Binding RefreshWeatherButtonText}"

@@ -550,6 +550,13 @@
                                            FontSize="9.5"
                                            FontWeight="SemiBold"/>
                             </Border>
+                            <Button Content="打开当天详情"
+                                    Style="{StaticResource ModalCancelButton}"
+                                    MinWidth="92"
+                                    Padding="10,6"
+                                    Margin="0,8,0,0"
+                                    HorizontalAlignment="Left"
+                                    Click="OpenCurrentPreviewDayDetails_Click"/>
                             <Border Height="196"
                                     Margin="0,8,0,0"
                                     Background="{DynamicResource SurfacePageBrush}"
