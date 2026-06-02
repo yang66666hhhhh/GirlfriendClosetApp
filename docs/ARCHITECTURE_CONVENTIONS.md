@@ -68,6 +68,7 @@
 - Snapshot clothing details must include enough rendering data: `Id`, `Name`, `ImagePath`, `Color`, `Type`, and `GarmentType` when available.
 - If an old snapshot lacks `GarmentType`, UI logic may infer it from legacy `Type` and common clothing names, but new writes should store the explicit value.
 - If a snapshot image is missing, history UI should keep text metadata visible and offer a targeted repair that updates only that record's `ClothingDetailsSnapshot.ImagePath`.
+- History surfaces such as `OutfitHistoryDialog`, current preview cards, and `WornDayDetailsDialog` should use a consistent status hierarchy: changed/deleted/incomplete snapshot state is separate from preview-availability and missing-image hints, instead of collapsing all problems into one badge.
 
 ## Delete And History Rules
 

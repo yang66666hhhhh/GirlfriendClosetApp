@@ -2,14 +2,14 @@
 
 私人数字衣橱桌面应用，面向个人衣物整理、搭配管理和本地数据治理场景。项目使用 WPF + SQLite，采用 Domain / Application / Infrastructure / UI 四层结构。
 
-> 更新时间：2026-06-01
+> 更新时间：2026-06-02
 > 当前运行时：UI 与测试工程为 .NET 10 / WPF；Domain、Application、Infrastructure 为 .NET 8 类库
 
 ## 当前能力
 
 - 衣柜管理：新增、编辑、删除衣物，支持图片、季节、品牌、备注、收藏状态和批量导入；衣物类型默认未选择，名称留空会自动保存为"未命名"
 - 搭配管理：创建和编辑搭配，按"人体区域 + 穿搭层级"生成预览，支持穿着记录和天气驱动的今日推荐；推荐会结合季节、收藏、穿着记录、场景、标签、颜色偏好和手动推荐偏好
-- 穿着记录：记录穿着时保存搭配名称、衣物数量、衣物明细和预览图快照；删除衣服或搭配后历史记录仍保留，并提示"搭配已删除 / 搭配已变化 / 快照不完整"等状态
+- 穿着记录：记录穿着时保存搭配名称、衣物数量、衣物明细和预览图快照；删除衣服或搭配后历史记录仍保留，并提示"搭配已删除 / 搭配已变化 / 快照不完整"等状态；最近穿着弹窗和当天详情侧栏会分层展示状态变化、预览缺口和历史缺图
 - 推荐调试：点击推荐搭配的"详情"按钮，查看完整评分分解（季节、收藏、穿着、场景、偏好等维度）
 - 数据洞察：查看衣柜使用统计，包括穿着次数、活跃天数、连续记录、最常穿 Top5、场景/季节分布、闲置预警
 - 年度报告：查看当年穿搭数据总结，包括月度统计、Top5 搭配、场景/季节分布、精彩瞬间
@@ -41,7 +41,7 @@ GirlfriendClosetApp/
 当前主界面由左侧导航 + 右侧内容区组成，包含 4 个主页面：
 
 - `ClothesTab`：衣柜页，瀑布流卡片、搜索、分类筛选；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接，集合标题与排序区由 `WardrobeCollectionHeaderPanel` 承接
-- `OutfitsTab`：搭配页，统一编辑器、穿搭预览与记录
+- `OutfitsTab`：搭配页，统一编辑器、穿搭预览、今日推荐与穿着记录；推荐 Hero、准备度提示、最近穿着弹窗和当天详情侧栏已形成一套连续处理入口
 - `TagsTab`：标签页，维护标签数据，并按使用情况做整理与筛选
 - `SettingsTab`：设置页，负责数据治理与本地文件维护；资源与目录区由 `StorageLocationsSettingsPanel` 子组件承接，系统日志区由 `LogMaintenanceSettingsPanel` 子组件承接，图片治理区由 `ImageMaintenanceSettingsPanel` 子组件承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 子组件承接，外观区由 `AppearanceSettingsPanel` 子组件承接，备份恢复区由 `BackupSettingsPanel` 子组件承接
 
@@ -78,6 +78,7 @@ GirlfriendClosetApp/
 - `OutfitsViewModel` 继续保留搭配加载、删除、穿着记录、天气推荐和日历刷新等主流程
 - 推荐区与今日主推荐的纯展示文案开始收敛到 `ClosetApp.UI.Logic/Services/OutfitPresentationText`
 - 这类 helper 负责排序标签、紧凑城市名、季节文案、推荐数量、准备度提示、今日主推荐支持文案、今日穿着状态文案，以及历史/日历摘要文案，避免 ViewModel 和 State 同时承载状态编排与大段文本拼装
+- 推荐准备度卡会直接展示缺季提示、行动引导和设置/新建入口，减少“推荐还没准备好”时的空泛反馈
 
 ### 1.4 衣物分类体系
 
@@ -128,6 +129,7 @@ GirlfriendClosetApp/
 - live 搭配读取会跳过 `Clothing` 导航为空的无效链接，避免删除衣物后搭配卡片或今日推荐刷新崩溃
 - 历史详情可提示快照单品缺图并支持单张修复；设置页可检查穿着历史图片健康状态、查看缺图记录摘要并打开对应日期详情
 - 历史缺图判断统一走 `IImageAssetResolver`，修复失败会清理本次新保存的图片，避免孤儿资产
+- `OutfitHistoryDialog`、`WornDayDetailsDialog` 和当前预览卡会统一使用红色状态 badge 表达“搭配已变化/已删除/快照不完整”，黄色状态 badge 表达“预览待补齐/当前只剩文字信息/历史图片缺失”
 
 ### 2. 备份与恢复
 
