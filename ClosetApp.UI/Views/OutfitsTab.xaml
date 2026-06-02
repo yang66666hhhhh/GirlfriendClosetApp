@@ -70,6 +70,21 @@
             <Setter Property="FontSize" Value="11"/>
         </Style>
 
+        <Style x:Key="RecommendationStatusBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="{StaticResource OutfitSkySurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource OutfitSkyBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="RecommendationStatusBadgeText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource OutfitSkyTextBrush}"/>
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
         <Style x:Key="TodayHeroSecondaryActionButton" TargetType="Button" BasedOn="{StaticResource CapsuleButton}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -211,6 +226,29 @@
                                                TextWrapping="Wrap"
                                                MaxWidth="292"/>
 
+                                    <WrapPanel Margin="0,10,0,0"
+                                               Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                Margin="0,0,8,8">
+                                            <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
+                                                       Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                Margin="0,0,8,8"
+                                                Background="{StaticResource OutfitLavenderSurfaceBrush}"
+                                                BorderBrush="{StaticResource OutfitLavenderBorderBrush}">
+                                            <TextBlock Text="{Binding RecommendationReadinessCountText}"
+                                                       Style="{StaticResource RecommendationStatusBadgeText}"
+                                                       Foreground="{StaticResource OutfitLavenderTextBrush}"/>
+                                        </Border>
+                                        <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                Margin="0,0,0,8"
+                                                Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="{Binding RecommendationMissingSeasonText}"
+                                                       Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                        </Border>
+                                    </WrapPanel>
+
                                     <StackPanel Margin="0,16,0,0">
                                         <Button Content="{Binding TodayHeroPrimaryActionText}"
                                                 Style="{StaticResource OutfitMintButton}"
@@ -239,7 +277,8 @@
                                                     Style="{StaticResource TodayHeroSecondaryActionButton}"
                                                     HorizontalAlignment="Left"
                                                     VerticalAlignment="Center"
-                                                    Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"/>
+                                                    Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
+                                                    IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
                                         </StackPanel>
                                     </StackPanel>
                                 </StackPanel>
@@ -316,6 +355,48 @@
                         </Grid>
                     </Border>
                 </Grid>
+
+                <Border Style="{StaticResource PageInsetCard}"
+                        Margin="0,0,0,16"
+                        Padding="16,14"
+                        Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Grid.Column="0">
+                            <WrapPanel>
+                                <Border Style="{StaticResource RecommendationStatusBadge}"
+                                        Margin="0,0,8,8"
+                                        Background="{StaticResource OutfitMintSurfaceBrush}"
+                                        BorderBrush="{StaticResource OutfitMintBorderBrush}">
+                                    <TextBlock Text="{Binding RecommendationReadinessTitle}"
+                                               Style="{StaticResource RecommendationStatusBadgeText}"
+                                               Foreground="{StaticResource OutfitMintTextBrush}"/>
+                                </Border>
+                                <Border Style="{StaticResource RecommendationStatusBadge}"
+                                        Margin="0,0,0,8">
+                                    <TextBlock Text="{Binding WeatherStatusText}"
+                                               Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                </Border>
+                            </WrapPanel>
+                            <TextBlock Text="{Binding RecommendationReadinessDetail}"
+                                       Style="{StaticResource PageSummaryBodyText}"
+                                       Margin="0,2,0,0"/>
+                            <TextBlock Text="{Binding WeatherRecommendationHintText}"
+                                       Style="{StaticResource PageSummaryBodyText}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                        <Button Grid.Column="1"
+                                Content="{Binding RefreshWeatherButtonText}"
+                                Style="{StaticResource PageToolbarCapsuleButton}"
+                                Margin="16,0,0,0"
+                                VerticalAlignment="Top"
+                                Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
+                                IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
+                    </Grid>
+                </Border>
 
                 <StackPanel Margin="0,0,0,16"
                             Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">

@@ -43,6 +43,15 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="WornRecordMetaBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -177,6 +186,13 @@
                                                            FontSize="11.5"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                                            Margin="0,6,0,0"/>
+                                                <Border Style="{StaticResource WornRecordMetaBadge}"
+                                                        Margin="0,6,0,0">
+                                                    <TextBlock Text="{Binding PreviewMetaText}"
+                                                               FontSize="9.5"
+                                                               FontWeight="SemiBold"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                </Border>
                                                 <!-- 状态提示 -->
                                                 <Border Background="{DynamicResource TagRoseSurfaceBrush}"
                                                         BorderBrush="{DynamicResource TagRoseBorderBrush}"
