@@ -49,6 +49,7 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
             return;
 
         await _imageMaintenanceService.CleanupImageCacheAsync();
+        ClothingImageLoader.ClearMemoryCaches();
         await RefreshAsync();
         MessageBox.Show("图片缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
         ToastService.Instance.ShowSuccess("图片缓存已清理");

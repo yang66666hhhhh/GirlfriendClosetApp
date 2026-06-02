@@ -62,6 +62,8 @@ public partial class PremiumClothingCard : UserControl
     private Point _mouseDownPos;
     private bool _heightApplied;
     private bool _imageLoaded;
+    private CancellationTokenSource? _imageLoadCts;
+    private int _imageLoadVersion;
 
     public int LastFavoriteLevelBeforeToggle { get; private set; }
 
@@ -70,6 +72,9 @@ public partial class PremiumClothingCard : UserControl
         InitializeComponent();
         DataContextChanged += (s, e) =>
         {
+            CancelImageLoad();
+            CardImage.Source = null;
+
             if (e.NewValue is global::ClosetApp.Domain.Entities.Clothing)
             {
                 _heightApplied = false;
@@ -81,10 +86,13 @@ public partial class PremiumClothingCard : UserControl
         IsVisibleChanged += (_, e) =>
         {
             if ((bool)e.NewValue && !_imageLoaded)
-                LoadImage();
+                _ = LoadImageAsync();
         };
         Unloaded += (_, _) =>
         {
+            CancelImageLoad();
+            CardImage.Source = null;
+
             if (ReferenceEquals(_activeHoverCard, this))
                 _activeHoverCard = null;
 
@@ -115,20 +123,56 @@ public partial class PremiumClothingCard : UserControl
         }
 
         if (IsVisible)
-            LoadImage();
+            _ = LoadImageAsync();
     }
 
-    private void LoadImage()
+    private async Task LoadImageAsync()
     {
-        if (_imageLoaded || DataContext is not global::ClosetApp.Domain.Entities.Clothing c) return;
-        _imageLoaded = true;
+        if (_imageLoaded || DataContext is not global::ClosetApp.Domain.Entities.Clothing clothing)
+            return;
 
-        CardImage.Source = ClothingImageLoader.Load(
-            c.ImagePath,
-            ImageVariant.Display,
-            720,
-            trimLightPadding: true,
-            extractForeground: true);
+        _imageLoaded = true;
+        var imagePath = clothing.ImagePath;
+        var requestVersion = Interlocked.Increment(ref _imageLoadVersion);
+        var cts = new CancellationTokenSource();
+        var previous = Interlocked.Exchange(ref _imageLoadCts, cts);
+        previous?.Cancel();
+        previous?.Dispose();
+
+        try
+        {
+            var imageSource = await ClothingImageLoader.LoadAsync(
+                imagePath,
+                ImageVariant.Display,
+                720,
+                trimLightPadding: true,
+                extractForeground: true,
+                cts.Token);
+
+            if (cts.IsCancellationRequested ||
+                requestVersion != _imageLoadVersion ||
+                !ReferenceEquals(DataContext, clothing))
+            {
+                return;
+            }
+
+            CardImage.Source = imageSource;
+            ImageFallback.Visibility = imageSource == null
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            if (ReferenceEquals(_imageLoadCts, cts))
+            {
+                _imageLoadCts = null;
+            }
+
+            cts.Dispose();
+        }
     }
 
     protected override Size MeasureOverride(Size constraint)
@@ -146,6 +190,16 @@ public partial class PremiumClothingCard : UserControl
             }
         }
         return base.MeasureOverride(constraint);
+    }
+
+    private void CancelImageLoad()
+    {
+        var cts = Interlocked.Exchange(ref _imageLoadCts, null);
+        if (cts == null)
+            return;
+
+        cts.Cancel();
+        cts.Dispose();
     }
 
     private double FindMasonryColumnWidth()

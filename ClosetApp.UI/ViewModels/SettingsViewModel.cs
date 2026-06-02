@@ -416,10 +416,23 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task<BackupImportResult> ImportBackupWithFeedbackAsync(string filePath)
     {
-        var result = await _backupService.ImportAsync(filePath);
-        await RefreshStatsAsync();
+        BackupImportResult result;
+        try
+        {
+            result = await _backupService.ImportAsync(filePath);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("备份导入失败", ex.Message);
+            throw;
+        }
+
+        if (result.Success)
+            await RefreshStatsAsync();
+
         await RefreshBackupStateAsync(result);
-        ToastService.Instance.ShowSuccess("备份已导入", "衣柜、搭配和标签列表已经刷新。");
+        if (result.Success)
+            ToastService.Instance.ShowSuccess("备份已导入", "衣柜、搭配和标签列表已经刷新。");
         return result;
     }
 
@@ -454,13 +467,17 @@ public partial class SettingsViewModel : ObservableObject
     private void ApplyLatestImport(BackupImportResult result)
     {
         LastImportSummary = result.Summary;
-        LastImportDetail =
-            $"{result.ImportedAt:yyyy-MM-dd HH:mm} · {Path.GetFileName(result.FilePath)}\n" +
-            $"衣服 {result.ClothingCount} · 搭配 {result.OutfitCount} · 标签 {result.TagCount} · 恢复图片 {result.RestoredImageCount}";
+        LastImportDetail = result.Success
+            ? $"{result.ImportedAt:yyyy-MM-dd HH:mm} · {Path.GetFileName(result.FilePath)}\n" +
+              $"衣服 {result.ClothingCount} · 搭配 {result.OutfitCount} · 标签 {result.TagCount} · 恢复图片 {result.RestoredImageCount}"
+            : $"{result.ImportedAt:yyyy-MM-dd HH:mm} · {Path.GetFileName(result.FilePath)}\n" +
+              $"导入阶段：{result.FailureStage ?? "导入"} · 数据库已回滚：{(result.DatabaseRolledBack ? "是" : "否")} · 恢复图片 {result.RestoredImageCount}";
 
-        IsLastImportWarningVisible = result.Warnings.Count > 0;
-        LastImportWarning = result.Warnings.Count > 0 ? string.Join(" ", result.Warnings) : string.Empty;
-        IsRepairAfterImportVisible = result.ShouldSuggestRepair && result.Warnings.Count > 0;
+        IsLastImportWarningVisible = result.Warnings.Count > 0 || !result.Success;
+        LastImportWarning = !result.Success
+            ? string.Join(" ", result.Warnings.Append(result.FailureDetail ?? string.Empty).Where(text => !string.IsNullOrWhiteSpace(text)))
+            : result.Warnings.Count > 0 ? string.Join(" ", result.Warnings) : string.Empty;
+        IsRepairAfterImportVisible = result.Success && result.ShouldSuggestRepair && result.Warnings.Count > 0;
 
         IsLastImportMissingCardVisible = result.MissingImageFiles.Count > 0;
         LastImportMissingFiles = result.MissingImageFiles.Count == 0

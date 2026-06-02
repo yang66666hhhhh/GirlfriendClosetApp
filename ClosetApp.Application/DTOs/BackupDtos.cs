@@ -75,14 +75,22 @@ public sealed record BackupImportResult(
     int RestoredImageCount,
     int MissingImageCount,
     IReadOnlyList<string> MissingImageFiles,
-    IReadOnlyList<string> Warnings)
+    IReadOnlyList<string> Warnings,
+    bool Success = true,
+    bool DatabaseRolledBack = false,
+    int CleanedUpImageCount = 0,
+    int FailedRestoreImageCount = 0,
+    string? FailureStage = null,
+    string? FailureDetail = null)
 {
     public string Summary =>
-        Format == "zip"
-            ? $"导入 {ClothingCount} 件衣服、{OutfitCount} 套搭配、{TagCount} 个标签，恢复 {RestoredImageCount} 张图片。"
-            : $"导入 {ClothingCount} 件衣服、{OutfitCount} 套搭配、{TagCount} 个标签的核心数据。";
+        Success
+            ? Format == "zip"
+                ? $"导入 {ClothingCount} 件衣服、{OutfitCount} 套搭配、{TagCount} 个标签，恢复 {RestoredImageCount} 张图片。"
+                : $"导入 {ClothingCount} 件衣服、{OutfitCount} 套搭配、{TagCount} 个标签的核心数据。"
+            : "导入未完成，当前数据已保持原状。";
 
-    public bool ShouldSuggestRepair => MissingImageCount > 0 || (Format == "json" && MissingImageFiles.Count > 0);
+    public bool ShouldSuggestRepair => Success && (MissingImageCount > 0 || (Format == "json" && MissingImageFiles.Count > 0));
 }
 
 public sealed record BackupHistoryItem(

@@ -113,7 +113,11 @@ public partial class BackupSettingsPanel : UserControl
 
         var result = await _viewModel.ImportBackupWithFeedbackAsync(dialog.FileName);
         BackupImported?.Invoke(this, EventArgs.Empty);
-        MessageBox.Show(BuildImportMessage(result), "完成", MessageBoxButton.OK, MessageBoxImage.Information);
+        MessageBox.Show(
+            BuildImportMessage(result),
+            result.Success ? "完成" : "导入失败",
+            MessageBoxButton.OK,
+            result.Success ? MessageBoxImage.Information : MessageBoxImage.Warning);
     }
 
     private async void RefreshBackupState_Click(object sender, RoutedEventArgs e)
@@ -183,6 +187,8 @@ public partial class BackupSettingsPanel : UserControl
         var message = result.Summary;
         if (result.Warnings.Count > 0)
             message += $"\n\n提醒：{string.Join(" ", result.Warnings)}";
+        if (!result.Success && !string.IsNullOrWhiteSpace(result.FailureDetail))
+            message += $"\n\n失败原因：{result.FailureDetail}";
         return message;
     }
 }

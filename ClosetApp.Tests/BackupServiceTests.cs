@@ -294,6 +294,78 @@ public class BackupServiceTests
     }
 
     [Fact]
+    public async Task ImportZip_WhenImageRestorePartiallyFails_StillRestoresCoreDataAndReturnsWarning()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var storageDir = Path.Combine(tempDir, "storage");
+        var historyDir = Path.Combine(tempDir, "history");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+            var imageStorage = new ImageStorageService(storageDir);
+            var sourceImagePath = Path.Combine(tempDir, "partial-source.png");
+            await CreateSourceImageAsync(sourceImagePath);
+            var storedFileName = await imageStorage.SaveImageAsync(sourceImagePath);
+
+            await using (var setupContext = new ClosetDbContext(options))
+            {
+                await setupContext.Database.EnsureDeletedAsync();
+                await setupContext.Database.EnsureCreatedAsync();
+                setupContext.Clothes.Add(new Clothing
+                {
+                    Name = "Partial Restore Coat",
+                    Type = ClothingType.Outerwear,
+                    Season = Season.Winter,
+                    ImagePath = storedFileName
+                });
+                await setupContext.SaveChangesAsync();
+            }
+
+            var backupPath = Path.Combine(tempDir, "partial-restore.zip");
+            var exportService = new BackupService(new TestDbContextFactory(options), imageStorage, historyDir);
+            await exportService.ExportAsync(backupPath);
+
+            await using (var resetContext = new ClosetDbContext(options))
+            {
+                resetContext.Clothes.RemoveRange(await resetContext.Clothes.ToListAsync());
+                await resetContext.SaveChangesAsync();
+            }
+
+            await imageStorage.DeleteImageWithThumbnailAsync(storedFileName);
+
+            var importService = new BackupService(
+                new TestDbContextFactory(options),
+                new FailingRestoreImageStorageService(storageDir, storedFileName),
+                historyDir);
+
+            var importResult = await importService.ImportAsync(backupPath);
+
+            await using var assertContext = new ClosetDbContext(options);
+            Assert.Contains(await assertContext.Clothes.ToListAsync(), clothing => clothing.Name == "Partial Restore Coat");
+            Assert.True(importResult.Success);
+            Assert.Equal(0, importResult.RestoredImageCount);
+            Assert.Equal(1, importResult.FailedRestoreImageCount);
+            Assert.Contains(importResult.Warnings, warning => warning.Contains("恢复到本地时失败", StringComparison.Ordinal));
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    [Fact]
     public async Task ValidateExportAsync_WithJsonAndImages_ReturnsImageWarning()
     {
         var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
@@ -598,5 +670,39 @@ public class BackupServiceTests
         {
             return Task.FromResult(CreateDbContext());
         }
+    }
+
+    private sealed class FailingRestoreImageStorageService : ClosetApp.Application.Interfaces.IImageStorageService
+    {
+        private readonly ImageStorageService _inner;
+        private readonly string _failingFileName;
+
+        public FailingRestoreImageStorageService(string baseFolder, string failingFileName)
+        {
+            _inner = new ImageStorageService(baseFolder);
+            _failingFileName = failingFileName;
+        }
+
+        public Task<string> SaveImageAsync(string sourcePath) => _inner.SaveImageAsync(sourcePath);
+        public Task<string> SaveThumbnailAsync(string sourcePath, int maxSize = 200) => _inner.SaveThumbnailAsync(sourcePath, maxSize);
+        public Task<bool> EnsureThumbnailAsync(string imagePath, int maxSize = 200) => _inner.EnsureThumbnailAsync(imagePath, maxSize);
+        public Task<bool> EnsureDisplayAsync(string imagePath, int maxWidth = 900) => _inner.EnsureDisplayAsync(imagePath, maxWidth);
+
+        public Task RestoreImageAsync(string sourcePath, string storedFileName)
+        {
+            if (string.Equals(storedFileName, _failingFileName, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException("模拟图片恢复失败");
+
+            return _inner.RestoreImageAsync(sourcePath, storedFileName);
+        }
+
+        public Task DeleteImageAsync(string imagePath) => _inner.DeleteImageAsync(imagePath);
+        public Task DeleteImageWithThumbnailAsync(string imagePath) => _inner.DeleteImageWithThumbnailAsync(imagePath);
+        public Task TryDeleteImageAsync(string? imagePath) => _inner.TryDeleteImageAsync(imagePath);
+        public string GetImageFullPath(string relativePath) => _inner.GetImageFullPath(relativePath);
+        public string GetDisplayFullPath(string relativePath) => _inner.GetDisplayFullPath(relativePath);
+        public string GetThumbnailFullPath(string relativePath) => _inner.GetThumbnailFullPath(relativePath);
+        public IReadOnlyList<string> GetOriginalImageFullPaths() => _inner.GetOriginalImageFullPaths();
+        public IReadOnlyList<string> GetImageAssetFullPaths(string relativePath) => _inner.GetImageAssetFullPaths(relativePath);
     }
 }

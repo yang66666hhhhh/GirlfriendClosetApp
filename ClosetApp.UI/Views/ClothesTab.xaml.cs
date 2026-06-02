@@ -49,6 +49,7 @@ public partial class ClothesTab : UserControl
         };
         Loaded += async (_, _) => await RefreshAsync();
         SizeChanged += (_, _) => _resizeTimer.Start();
+        ContentScroller.ScrollChanged += ContentScroller_ScrollChanged;
     }
 
     public async Task RefreshAsync()
@@ -132,6 +133,14 @@ public partial class ClothesTab : UserControl
     private void LoadMoreClothes_Click(object sender, RoutedEventArgs e)
     {
         _viewModel.LoadMoreClothes();
+    }
+
+    private void ContentScroller_ScrollChanged(object sender, ScrollChangedEventArgs e)
+    {
+        _viewModel.TryPrefetchMoreClothes(
+            e.VerticalOffset,
+            e.ViewportHeight,
+            e.ExtentHeight);
     }
 
     private void OpenClearWardrobePanel(ClothingType? initialType)

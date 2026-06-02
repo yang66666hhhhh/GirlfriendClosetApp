@@ -503,11 +503,41 @@
                                                            FontWeight="SemiBold"
                                                            TextWrapping="Wrap"/>
 
+                                                <TextBlock Text="{Binding UserReasonHeadline}"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                           FontSize="12"
+                                                           Margin="0,6,0,0"
+                                                           TextWrapping="Wrap"/>
+
                                                 <TextBlock Text="{Binding ReasonSummaryText}"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                                            FontSize="11.5"
                                                            Margin="0,6,0,0"
                                                            TextWrapping="Wrap"/>
+
+                                                <ItemsControl ItemsSource="{Binding HighlightTags}"
+                                                              Margin="0,8,0,0">
+                                                    <ItemsControl.ItemsPanel>
+                                                        <ItemsPanelTemplate>
+                                                            <WrapPanel/>
+                                                        </ItemsPanelTemplate>
+                                                    </ItemsControl.ItemsPanel>
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                                                    BorderThickness="1"
+                                                                    CornerRadius="8"
+                                                                    Margin="0,0,6,6"
+                                                                    Padding="8,3">
+                                                                <TextBlock Text="{Binding}"
+                                                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                           FontSize="10.5"
+                                                                           FontWeight="SemiBold"/>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
                                             </StackPanel>
 
                                             <StackPanel Grid.Row="2"
@@ -520,6 +550,12 @@
                                                            Margin="0,4,0,0"
                                                            TextWrapping="Wrap"
                                                            MaxHeight="52"/>
+                                                <TextBlock Text="{Binding CautionText}"
+                                                           Style="{StaticResource WeatherRecommendationMetaText}"
+                                                           Margin="0,6,0,0"
+                                                           Foreground="{DynamicResource AmberBrush}"
+                                                           TextWrapping="Wrap"
+                                                           Visibility="{Binding CautionText, Converter={StaticResource NullToVisibilityConverter}}"/>
                                             </StackPanel>
 
                                             <StackPanel Grid.Row="3"

@@ -23,6 +23,9 @@
 - The wardrobe top summary block is `WardrobeSummaryPanel`. Keep total-count badges, search box, filter-toggle UI, queue chips, and recent-import summary inside that panel; notify `ClothesTab` only for actions that open panels or start workflows.
 - The wardrobe expanded filter block is `WardrobeFilterPanel`. Keep category, season, favorite-only, and tag filter markup inside that panel; filtering rules still belong to `ClothesTabState` / `WardrobeViewModel`, not the panel.
 - The wardrobe collection header block is `WardrobeCollectionHeaderPanel`. Keep collection title, summary copy, and sort selector inside that panel; sorting state still belongs to `ClothesTabState` / `WardrobeViewModel`, not the panel.
+- Paginated wardrobe collections should refresh their visible window when state changes instead of rebuilding `Take(...).ToList()` inside a hot binding getter on every access.
+- For masonry-backed wardrobe lists, prefer incremental population of the visible window over one-shot bulk insertion. This keeps the existing `ItemsControl + MasonryPanel` contract while lowering first-layout pressure without introducing a new virtualization system.
+- Scroll-driven wardrobe prefetch is acceptable when it only expands the existing visible window near the bottom, leaves an explicit manual load-more affordance as fallback, guards against repeated near-bottom events consuming multiple pages in one burst, and keeps a soft ceiling so long sessions do not let the automatic window grow without bound.
 - Presentation-only text helpers such as outfit recommendation copy belong in `ClosetApp.UI.Logic/Services`. Use them for pure formatting, count text, badge copy, CTA selection, daily-status text, history/calendar summary text, and copy selection, while keeping loading, commands, refresh orchestration, and state transitions in the ViewModel or State class.
 
 ## Design System
@@ -91,6 +94,11 @@
 - Missing-image checks for worn-record snapshots must use `IImageAssetResolver`; do not duplicate image path resolution in UI or Application code.
 - If a repair flow saves a new image before updating a snapshot, failures must best-effort delete the newly saved image to avoid orphan assets.
 - Worn-record image health results should include enough record summary data for UI to navigate users to the affected day, not just aggregate counts.
+- UI image consumers that load on visibility, such as `PremiumClothingCard`, should prefer cancellable async loading plus request-version guards so rapid scrolling or DataContext reuse cannot paint an outdated image onto the latest item.
+- Long-lived UI image helpers such as `ClothingImageLoader` should keep memory caches bounded and clearable. When the app offers a user-visible cache cleanup action, clear both disk cache and in-process image cache together.
+- Async image helpers should also deduplicate concurrent loads for the same resolved cache key so multiple cards entering view together reuse one background decode instead of spawning duplicate work.
+- Size-probing helpers that decode images for layout, such as `GetDisplaySize(...)`, should deduplicate concurrent requests for the same cache key too; otherwise masonry measurement can duplicate the same decode work even when image rendering itself is already deduped.
+- Image loaders should keep a short-lived negative cache for decode failures as well, so broken or already-missing assets do not get re-decoded on every visibility change; successful reloads must clear the negative entry.
 
 ## Error Presentation
 
@@ -99,6 +107,7 @@
 - It classifies exceptions into: database busy, file occupied, permission denied, validation failure, and unknown.
 - Each method returns `(string Title, string Detail)` for direct display in toast or modal.
 - Prefer this over raw exception messages in UI code.
+- Backup/import flows are a special case: failure feedback should state whether database changes were rolled back and whether any image restoration work happened before the failure, instead of collapsing everything into a generic error string.
 
 ## Batch Import
 

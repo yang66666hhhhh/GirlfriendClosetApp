@@ -151,10 +151,43 @@ public class OutfitPresentationTextTests
             OutfitPresentationText.BuildTodayHeroSupportText(recommendation, hasTodayWornRecords: true, todayWornCount: 2));
     }
 
+    [Fact]
+    public void RecommendedOutfitDto_UserReasonHeadline_WhenTemperatureReason_ReturnsWeatherCopy()
+    {
+        var recommendation = CreateRecommendation(primaryReason: "温度在 22°C 左右，这套的季节感正合适。");
+
+        Assert.Equal("今天的天气条件和这套搭配比较合拍。", recommendation.UserReasonHeadline);
+    }
+
+    [Fact]
+    public void RecommendedOutfitDto_HighlightTags_WhenFavoriteAndColorReasons_ReturnsReadableTags()
+    {
+        var recommendation = CreateRecommendation(
+            primaryReason: "这套被你标记过收藏，值得优先翻出来穿。",
+            reasons:
+            [
+                "这套被你标记过收藏，值得优先翻出来穿。",
+                "颜色也接近你常选的那一类。",
+                "风格标签也比较贴近你的常用偏好。"
+            ]);
+
+        Assert.Contains("你的偏爱", recommendation.HighlightTags);
+        Assert.Contains("颜色顺手", recommendation.HighlightTags);
+    }
+
+    [Fact]
+    public void RecommendedOutfitDto_CautionText_WhenAlreadyWornToday_ReturnsRepeatWarning()
+    {
+        var recommendation = CreateRecommendation(isWornToday: true);
+
+        Assert.Equal("今天已经记录过这套，除非你想重复穿。", recommendation.CautionText);
+    }
+
     private static RecommendedOutfitDto CreateRecommendation(
         bool isWornToday = false,
         string? reasonSummaryText = null,
-        string? primaryReason = null)
+        string? primaryReason = null,
+        IReadOnlyList<string>? reasons = null)
     {
         var outfit = new Outfit
         {
@@ -170,7 +203,7 @@ public class OutfitPresentationTextTests
             95,
             primaryReason ?? "今天适合这套。",
             reasonSummaryText,
-            primaryReason is null ? [] : [primaryReason]);
+            reasons ?? (primaryReason is null ? [] : [primaryReason]));
     }
 
     private static RecentWornListItem CreateRecentWornListItem(DateTime wornDate)

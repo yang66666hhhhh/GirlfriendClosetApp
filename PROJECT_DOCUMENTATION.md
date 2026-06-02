@@ -382,7 +382,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `OutfitsViewModel` 仍负责推荐刷新、日历切换、穿着记录和主状态通知，不把业务流程迁进 helper
 - 这类 helper 适合继续承接“无副作用、可直接测试”的文案拼装逻辑
 - `OutfitsTab` 当前已把推荐准备度卡、最近穿着弹窗、当前预览卡和当天详情侧栏收敛为连续体验：推荐不足时给出缺季与行动提示，历史记录异常时分层展示状态变化、预览缺口和缺图修复入口
-- `OutfitsViewModel` 已开始按 partial file 拆分稳定区块，天气 / 推荐刷新与推荐调试入口、历史记录 / 日历协调都已独立到单独文件，后续继续削薄优先沿同样边界推进
+- `OutfitsViewModel` 已开始按 partial file 拆分稳定区块，天气 / 推荐刷新与推荐调试入口、历史记录 / 日历协调、搭配动作与洞察入口都已独立到单独文件，后续继续削薄优先沿同样边界推进
 
 ### 6.7 衣柜页状态与交互约定
 
@@ -390,6 +390,9 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 
 - `WardrobeViewModel` 负责把衣物服务、批量导入结果和待整理统计映射到页面可绑定属性
 - `ClothesTabState` 负责衣柜搜索、分类筛选、季节筛选、收藏筛选、标签筛选、待整理队列、排序和摘要文案
+- `WardrobeViewModel.DisplayedClothes` 应在状态变化或分页扩展时刷新一次展示窗口，不要在属性 getter 中重复 `Take(...).ToList()` 触发额外分配
+- 衣柜瀑布流当前采用“分页 + 分段渲染”折中策略：`DisplayedClothes` 命中新的目标窗口后，先推送首批卡片，再由 UI Dispatcher 以后台优先级小批追加，减少 `MasonryPanel` 一次性接收大量卡片时的布局压力
+- `ClothesTab` 会在滚动接近底部时调用 `WardrobeViewModel.TryPrefetchMoreClothes(...)` 自动预扩容下一页，保留“加载更多衣物”按钮作为显式兜底入口；同一展示窗口只允许自动预扩容一次，避免一次滚动连续吞掉多页；自动预扩容窗口存在软上限，超过后必须显式点击继续加载
 - `WardrobeSummaryPanel` 负责承接衣柜页顶部概览工具带，保持搜索、筛选开关、待整理入口和最近导入摘要独立
 - `WardrobeFilterPanel` 负责承接衣柜页展开筛选区，减少 `ClothesTab.xaml` 体积并复用筛选布局
 - `WardrobeCollectionHeaderPanel` 负责承接衣柜列表头部的集合标题与排序区，减少 `ClothesTab.xaml` 中部的重复展示结构
@@ -680,6 +683,12 @@ public class RecommendationPreferences
 - `ImageAssetResolver`：统一判断图片是否存在并给出解析结果
 - `ImagePathConverter`：UI 图片路径转换
 - `ClothingImageLoader`：UI 端图片加载辅助
+- `PremiumClothingCard`：衣柜卡片图片只在可见时触发加载，并通过异步取消和请求版本保护避免滚动 / 复用时旧图回填
+- `ClothingImageLoader` 的进程内缓存已改为弱引用并设置上限，避免图片资源随着滚动无限堆积；设置页执行“清理图片缓存”时会同时清理进程内图片缓存
+- `ClothingImageLoader.LoadAsync(...)` 需要合并同一缓存 key 的并发请求，避免同一张图在多个卡片同时进入视口时被重复后台解码
+- `ClothingImageLoader.GetDisplaySize(...)` 也应合并同一缓存 key 的并发探测请求，避免瀑布流首屏批量测量时重复解码同一张图只为了拿宽高
+- `ClothingImageLoader` 还应对解码失败结果做短时负缓存，避免坏图、损坏缓存或已失效路径在滚动过程中被反复后台解码；成功加载后要清除该失败记录，设置页清理图片缓存时也要一并清空
+- 备份导入失败时，设置页最近一次导入状态必须明确展示失败阶段、数据库是否已回滚，以及导入过程中已恢复的图片数量，避免用户只看到一句笼统的“导入失败”
 
 图片资产按用途分为三类：
 
@@ -971,6 +980,9 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 #### 性能优化
 
 - **推荐详情缓存**：缓存推荐调试结果，避免每次打开详情重新计算
+- **推荐解释产品化**：`RecommendedOutfitDto` 增加主界面可直接消费的用户理由标题、亮点标签和谨慎提示，推荐卡先回答“为什么是它”和“有没有需要留意的点”
+- **推荐详情取舍提示**：`RecommendationDebugDto` 与 `RecommendationDebugDialog` 现在会单独展示“需要留意”区块，把今天已穿过、最近刚穿、季节不太贴合等负向因素明确说出来
+- **推荐对比解释**：当存在接近的下一位候选时，`RecommendationDebugDto` 会补充“为什么它排在前面”的对比说明，把季节贴合、穿着新鲜感、偏好贴合等领先因素说清楚
 - **数据洞察缓存**：缓存统计结果，数据变化时自动清除
 - **日历按需加载**：初始加载不再获取日历数据，打开"查看记录"弹窗时才加载
 - **图片懒加载**：

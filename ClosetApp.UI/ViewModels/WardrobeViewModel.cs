@@ -9,6 +9,8 @@ using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Logic.States;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows;
+using System.Windows.Threading;
 using Serilog;
 
 namespace ClosetApp.UI.ViewModels;
@@ -100,13 +102,22 @@ public partial class WardrobeViewModel : ViewModelBase
     private bool _isFilterExpanded;
     private int _displayedClothingCount = 20;
     private const int PageSize = 20;
+    private const int MaxAutoPrefetchPages = 3;
+    private const double AutoPrefetchViewportMultiplier = 1.25;
+    private const double AutoPrefetchMinimumThreshold = 560;
+    private const int InitialRenderBatchSize = 12;
+    private const int IncrementalRenderBatchSize = 8;
+    private readonly ObservableCollection<Clothing> _displayedClothes = [];
+    private readonly ReadOnlyObservableCollection<Clothing> _displayedClothesView;
+    private int _displayRefreshVersion;
+    private int _lastAutoPrefetchTargetCount;
 
     public IReadOnlyList<Tag> AvailableTags => _availableTags;
     public ObservableCollection<SelectableTag> TagFilters => _tagFilters;
     public bool HasAvailableTags => _tagFilters.Count > 0;
     public IReadOnlyList<Clothing> AllClothes => _state.AllClothes;
     public IReadOnlyList<Clothing> FilteredClothes => _state.FilteredClothes;
-    public IReadOnlyList<Clothing> DisplayedClothes => _state.FilteredClothes.Take(_displayedClothingCount).ToList();
+    public IReadOnlyList<Clothing> DisplayedClothes => _displayedClothesView;
     public bool HasMoreClothes => _state.FilteredClothes.Count > _displayedClothingCount;
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
@@ -361,6 +372,7 @@ public partial class WardrobeViewModel : ViewModelBase
         _completeClothingMetadataBatch = completeClothingMetadataBatch;
         _clearWardrobeByTypes = clearWardrobeByTypes;
         _importClothesFromImages = importClothesFromImages;
+        _displayedClothesView = new ReadOnlyObservableCollection<Clothing>(_displayedClothes);
 
         CategoryFilter = new EnumRadioGroup<ClothingType>(OnCategoryFilterChanged);
         SeasonFilter = new EnumRadioGroup<Season>(OnSeasonFilterChanged);
@@ -455,7 +467,42 @@ public partial class WardrobeViewModel : ViewModelBase
     public void LoadMoreClothes()
     {
         _displayedClothingCount += PageSize;
+        _lastAutoPrefetchTargetCount = 0;
+        RefreshDisplayedClothes();
         NotifyStateChanged();
+    }
+
+    public bool TryPrefetchMoreClothes(double verticalOffset, double viewportHeight, double extentHeight)
+    {
+        if (!HasMoreClothes || viewportHeight <= 0 || extentHeight <= 0)
+            return false;
+
+        var autoPrefetchLimit = PageSize * MaxAutoPrefetchPages;
+        if (_displayedClothingCount >= autoPrefetchLimit)
+            return false;
+
+        var remainingDistance = extentHeight - (verticalOffset + viewportHeight);
+        var threshold = Math.Max(viewportHeight * AutoPrefetchViewportMultiplier, AutoPrefetchMinimumThreshold);
+        if (remainingDistance > threshold)
+        {
+            _lastAutoPrefetchTargetCount = 0;
+            return false;
+        }
+
+        if (_lastAutoPrefetchTargetCount == _displayedClothingCount)
+            return false;
+
+        var nextTargetCount = Math.Min(
+            Math.Min(_displayedClothingCount + PageSize, autoPrefetchLimit),
+            _state.FilteredClothes.Count);
+        if (nextTargetCount <= _displayedClothingCount || nextTargetCount == _lastAutoPrefetchTargetCount)
+            return false;
+
+        _lastAutoPrefetchTargetCount = nextTargetCount;
+        _displayedClothingCount = nextTargetCount;
+        RefreshDisplayedClothes();
+        NotifyStateChanged();
+        return true;
     }
 
     public void ToggleFilterExpanded() => IsFilterExpanded = !IsFilterExpanded;
@@ -554,7 +601,85 @@ public partial class WardrobeViewModel : ViewModelBase
 
     private void NotifyStateChanged()
     {
+        RefreshDisplayedClothes();
         NotifyPropertiesChanged(StatePropertyNames);
+    }
+
+    private void RefreshDisplayedClothes()
+    {
+        var filteredClothes = _state.FilteredClothes;
+        var targetItems = filteredClothes.Take(Math.Min(_displayedClothingCount, filteredClothes.Count)).ToList();
+        var version = Interlocked.Increment(ref _displayRefreshVersion);
+
+        if (System.Windows.Application.Current?.Dispatcher == null)
+        {
+            ReplaceDisplayedClothes(targetItems);
+            return;
+        }
+
+        var currentItems = _displayedClothes.ToList();
+        var startIndex = 0;
+
+        if (CanAppendToCurrentWindow(currentItems, targetItems))
+        {
+            startIndex = currentItems.Count;
+        }
+        else
+        {
+            startIndex = Math.Min(targetItems.Count, InitialRenderBatchSize);
+            ReplaceDisplayedClothes(targetItems.Take(startIndex));
+        }
+
+        if (startIndex >= targetItems.Count)
+            return;
+
+        _ = ContinueDisplayedClothesRenderAsync(
+            targetItems,
+            startIndex,
+            version,
+            System.Windows.Application.Current.Dispatcher);
+    }
+
+    private async Task ContinueDisplayedClothesRenderAsync(
+        IReadOnlyList<Clothing> targetItems,
+        int startIndex,
+        int version,
+        Dispatcher dispatcher)
+    {
+        for (var index = startIndex; index < targetItems.Count; index += IncrementalRenderBatchSize)
+        {
+            var batch = targetItems.Skip(index).Take(IncrementalRenderBatchSize).ToList();
+
+            await dispatcher.InvokeAsync(() =>
+            {
+                if (version != _displayRefreshVersion)
+                    return;
+
+                foreach (var clothing in batch)
+                    _displayedClothes.Add(clothing);
+            }, DispatcherPriority.Background);
+        }
+    }
+
+    private bool CanAppendToCurrentWindow(IReadOnlyList<Clothing> currentItems, IReadOnlyList<Clothing> targetItems)
+    {
+        if (currentItems.Count == 0 || currentItems.Count >= targetItems.Count)
+            return false;
+
+        for (var index = 0; index < currentItems.Count; index++)
+        {
+            if (currentItems[index].Id != targetItems[index].Id)
+                return false;
+        }
+
+        return true;
+    }
+
+    private void ReplaceDisplayedClothes(IEnumerable<Clothing> clothes)
+    {
+        _displayedClothes.Clear();
+        foreach (var clothing in clothes)
+            _displayedClothes.Add(clothing);
     }
 
     private void BuildTagFilters(IEnumerable<Tag> tags)

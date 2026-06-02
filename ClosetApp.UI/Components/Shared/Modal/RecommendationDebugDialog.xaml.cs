@@ -25,6 +25,8 @@ public partial class RecommendationDebugDialog : UserControl
 
         BindBreakdown();
         BindReasons();
+        BindComparison();
+        BindCautions();
         BindPreferenceWeights();
     }
 
@@ -36,6 +38,24 @@ public partial class RecommendationDebugDialog : UserControl
     private void BindReasons()
     {
         ReasonsList.ItemsSource = _debug.Reasons;
+    }
+
+    private void BindComparison()
+    {
+        ComparisonSection.Visibility = _debug.HasComparison ? Visibility.Visible : Visibility.Collapsed;
+        if (!_debug.HasComparison)
+            return;
+
+        ComparisonTitleText.Text = $"为什么它排在「{_debug.ComparedOutfitName}」前面";
+        ComparisonList.ItemsSource = _debug.ComparisonNotes;
+    }
+
+    private void BindCautions()
+    {
+        CautionsList.ItemsSource = _debug.Cautions;
+        CautionsSection.Visibility = _debug.Cautions.Count > 0
+            ? Visibility.Visible
+            : Visibility.Collapsed;
     }
 
     private void BindPreferenceWeights()

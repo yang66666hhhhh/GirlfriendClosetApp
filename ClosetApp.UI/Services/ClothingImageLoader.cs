@@ -9,6 +9,9 @@ namespace ClosetApp.UI.Services;
 
 public static class ClothingImageLoader
 {
+    private const int MaxImageCacheEntries = 240;
+    private const int MaxSizeCacheEntries = 512;
+    private const int MaxFailureCacheEntries = 256;
     private const byte TransparentBackgroundThreshold = 12;
     private const byte LightBackgroundThreshold = 240;
     private const byte NeutralBackgroundThreshold = 232;
@@ -32,6 +35,7 @@ public static class ClothingImageLoader
     private const double TallSilhouetteMinWidthRatio = 0.54;
     private const double VeryTallSilhouetteMinWidthRatio = 0.48;
     private const double TallSilhouetteExtraHeightRatio = 0.04;
+    private static readonly TimeSpan FailureCacheTtl = TimeSpan.FromSeconds(45);
 
     private static readonly string ImagesFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
@@ -40,8 +44,14 @@ public static class ClothingImageLoader
     private static readonly string DisplayFolder = Path.Combine(ImagesFolder, "display");
     private static readonly string ThumbnailFolder = Path.Combine(ImagesFolder, "thumbnails");
 
-    private static readonly ConcurrentDictionary<string, ImageSource?> ImageCache = new();
+    private static readonly ConcurrentDictionary<string, WeakReference<ImageSource>> ImageCache = new();
     private static readonly ConcurrentDictionary<string, Size?> SizeCache = new();
+    private static readonly ConcurrentDictionary<string, DateTimeOffset> FailedImageCache = new();
+    private static readonly ConcurrentDictionary<string, Task<ImageSource?>> InflightImageLoads = new();
+    private static readonly ConcurrentDictionary<string, Task<Size?>> InflightSizeLoads = new();
+    private static readonly ConcurrentQueue<string> ImageCacheOrder = new();
+    private static readonly ConcurrentQueue<string> SizeCacheOrder = new();
+    private static readonly ConcurrentQueue<string> FailureCacheOrder = new();
 
     public static ImageSource? Load(string? path, int decodePixelWidth = 400)
     {
@@ -60,14 +70,63 @@ public static class ClothingImageLoader
             return null;
 
         var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding, extractForeground);
-        if (ImageCache.TryGetValue(key, out var cached))
+        if (TryGetCachedImage(key, out var cached))
             return cached;
+        if (HasRecentFailure(key))
+            return null;
 
         var image = LoadCore(resolved, decodePixelWidth, trimLightPadding, extractForeground);
         if (image != null)
-            ImageCache.TryAdd(key, image);
+        {
+            ClearFailedLoad(key);
+            CacheImage(key, image);
+        }
+        else
+        {
+            CacheFailedLoad(key);
+        }
 
         return image;
+    }
+
+    public static Task<ImageSource?> LoadAsync(
+        string? path,
+        ImageVariant variant,
+        int decodePixelWidth = 400,
+        bool trimLightPadding = false,
+        bool extractForeground = false,
+        CancellationToken cancellationToken = default)
+    {
+        var resolved = ResolvePath(path, variant);
+        if (resolved == null)
+            return Task.FromResult<ImageSource?>(null);
+
+        var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding, extractForeground);
+        if (TryGetCachedImage(key, out var cached))
+            return Task.FromResult(cached);
+        if (HasRecentFailure(key))
+            return Task.FromResult<ImageSource?>(null);
+
+        var loadTask = InflightImageLoads.GetOrAdd(key, _ => Task.Run(() =>
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var image = LoadCore(resolved, decodePixelWidth, trimLightPadding, extractForeground);
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (image != null)
+            {
+                ClearFailedLoad(key);
+                CacheImage(key, image);
+            }
+            else
+            {
+                CacheFailedLoad(key);
+            }
+
+            return image;
+        }, cancellationToken));
+
+        return AwaitInflightLoadAsync(key, loadTask, cancellationToken);
     }
 
     public static Size? GetDisplaySize(string? path, int decodePixelWidth = 400, bool trimLightPadding = false)
@@ -77,11 +136,81 @@ public static class ClothingImageLoader
             return null;
 
         var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding, extractForeground: false);
-        return SizeCache.GetOrAdd(key, _ =>
+        if (SizeCache.TryGetValue(key, out var cachedSize))
+            return cachedSize;
+        if (HasRecentFailure(key))
+            return null;
+
+        var sizeTask = InflightSizeLoads.GetOrAdd(key, _ => Task.Run<Size?>(() =>
         {
             var image = LoadCore(resolved, decodePixelWidth, trimLightPadding, extractForeground: false);
             return image == null ? null : new Size(image.Width, image.Height);
-        });
+        }));
+
+        var size = sizeTask.GetAwaiter().GetResult();
+        if (size != null)
+        {
+            ClearFailedLoad(key);
+            SizeCache[key] = size;
+            CacheSizeKey(key);
+        }
+        else
+        {
+            CacheFailedLoad(key);
+        }
+
+        if (sizeTask.IsCompleted)
+            InflightSizeLoads.TryRemove(key, out _);
+        return size;
+    }
+
+    public static void ClearMemoryCaches()
+    {
+        ImageCache.Clear();
+        SizeCache.Clear();
+        FailedImageCache.Clear();
+        InflightImageLoads.Clear();
+        InflightSizeLoads.Clear();
+
+        while (ImageCacheOrder.TryDequeue(out _))
+        {
+        }
+
+        while (SizeCacheOrder.TryDequeue(out _))
+        {
+        }
+
+        while (FailureCacheOrder.TryDequeue(out _))
+        {
+        }
+    }
+
+    internal static bool HasRecentFailureForDiagnostics(
+        string? path,
+        ImageVariant variant,
+        int decodePixelWidth = 400,
+        bool trimLightPadding = false,
+        bool extractForeground = false)
+    {
+        var resolved = ResolvePath(path, variant);
+        if (resolved == null)
+            return false;
+
+        var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding, extractForeground);
+        return HasRecentFailure(key);
+    }
+
+    internal static bool HasSizeCacheEntryForDiagnostics(
+        string? path,
+        int decodePixelWidth = 400,
+        bool trimLightPadding = false)
+    {
+        var resolved = ResolvePath(path, ImageVariant.Display);
+        if (resolved == null)
+            return false;
+
+        var key = BuildCacheKey(resolved, decodePixelWidth, trimLightPadding, extractForeground: false);
+        return SizeCache.ContainsKey(key);
     }
 
     public static string? ResolvePath(string? path, bool preferThumbnail = false)
@@ -140,7 +269,9 @@ public static class ClothingImageLoader
 
     private static string BuildCacheKey(string path, int decodePixelWidth, bool trimLightPadding, bool extractForeground)
     {
-        var ticks = File.GetLastWriteTimeUtc(path).Ticks;
+        var ticks = File.Exists(path)
+            ? File.GetLastWriteTimeUtc(path).Ticks
+            : 0L;
         return $"{path}|{ticks}|{decodePixelWidth}|trim:{trimLightPadding}|fg:{extractForeground}";
     }
 
@@ -154,6 +285,108 @@ public static class ClothingImageLoader
     private static string? FirstExisting(params string[] paths)
     {
         return paths.FirstOrDefault(File.Exists);
+    }
+
+    private static bool TryGetCachedImage(string key, out ImageSource? image)
+    {
+        image = null;
+        if (!ImageCache.TryGetValue(key, out var weakReference))
+            return false;
+
+        if (weakReference.TryGetTarget(out image))
+            return true;
+
+        ImageCache.TryRemove(key, out _);
+        return false;
+    }
+
+    private static void CacheImage(string key, ImageSource image)
+    {
+        ImageCache[key] = new WeakReference<ImageSource>(image);
+        ImageCacheOrder.Enqueue(key);
+        TrimImageCache();
+    }
+
+    private static void CacheSizeKey(string key)
+    {
+        SizeCacheOrder.Enqueue(key);
+        TrimSizeCache();
+    }
+
+    private static bool HasRecentFailure(string key)
+    {
+        if (!FailedImageCache.TryGetValue(key, out var expiresAt))
+            return false;
+
+        if (expiresAt > DateTimeOffset.UtcNow)
+            return true;
+
+        FailedImageCache.TryRemove(key, out _);
+        return false;
+    }
+
+    private static void CacheFailedLoad(string key)
+    {
+        FailedImageCache[key] = DateTimeOffset.UtcNow.Add(FailureCacheTtl);
+        FailureCacheOrder.Enqueue(key);
+        TrimFailureCache();
+    }
+
+    private static void ClearFailedLoad(string key)
+    {
+        FailedImageCache.TryRemove(key, out _);
+    }
+
+    private static async Task<ImageSource?> AwaitInflightLoadAsync(
+        string key,
+        Task<ImageSource?> loadTask,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await loadTask.WaitAsync(cancellationToken);
+        }
+        finally
+        {
+            if (loadTask.IsCompleted)
+                InflightImageLoads.TryRemove(key, out _);
+        }
+    }
+
+    private static void TrimImageCache()
+    {
+        while (ImageCache.Count > MaxImageCacheEntries && ImageCacheOrder.TryDequeue(out var key))
+        {
+            if (ImageCache.TryGetValue(key, out var weakReference) &&
+                !weakReference.TryGetTarget(out _))
+            {
+                ImageCache.TryRemove(key, out _);
+                continue;
+            }
+
+            ImageCache.TryRemove(key, out _);
+        }
+    }
+
+    private static void TrimSizeCache()
+    {
+        while (SizeCache.Count > MaxSizeCacheEntries && SizeCacheOrder.TryDequeue(out var key))
+            SizeCache.TryRemove(key, out _);
+    }
+
+    private static void TrimFailureCache()
+    {
+        var now = DateTimeOffset.UtcNow;
+        while (FailedImageCache.Count > MaxFailureCacheEntries && FailureCacheOrder.TryDequeue(out var key))
+        {
+            if (FailedImageCache.TryGetValue(key, out var expiresAt) && expiresAt > now)
+            {
+                FailedImageCache.TryRemove(key, out _);
+                continue;
+            }
+
+            FailedImageCache.TryRemove(key, out _);
+        }
     }
 
     private static ImageSource TryTrimLightPadding(BitmapSource source)

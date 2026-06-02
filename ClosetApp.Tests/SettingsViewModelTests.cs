@@ -156,6 +156,42 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task RefreshBackupStateAsync_WithFailedLatestImport_ShowsRollbackContext()
+    {
+        var backup = new FakeBackupService
+        {
+            Validation = CreateValidation(),
+            History = []
+        };
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), backup);
+        var failedImport = new BackupImportResult(
+            @"D:\backup\failed.zip",
+            "zip",
+            new DateTime(2026, 5, 28, 13, 0, 0),
+            0,
+            0,
+            0,
+            0,
+            0,
+            2,
+            1,
+            ["missing-a.jpg"],
+            ["本次导入没有完成，数据库改动已回滚。"],
+            Success: false,
+            DatabaseRolledBack: true,
+            FailureStage: "导入并恢复图片",
+            FailureDetail: "测试异常");
+
+        await viewModel.RefreshBackupStateAsync(failedImport);
+
+        Assert.Contains("导入未完成", viewModel.LastImportSummary);
+        Assert.Contains("数据库已回滚：是", viewModel.LastImportDetail);
+        Assert.True(viewModel.IsLastImportWarningVisible);
+        Assert.Contains("测试异常", viewModel.LastImportWarning);
+        Assert.False(viewModel.IsRepairAfterImportVisible);
+    }
+
+    [Fact]
     public async Task ClearBackupHistoryWithFeedbackAsync_ClearsHistoryAndRefreshesEmptyState()
     {
         var backup = new FakeBackupService

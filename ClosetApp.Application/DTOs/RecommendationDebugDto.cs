@@ -18,9 +18,13 @@ public sealed record RecommendationDebugDto(
     IReadOnlyDictionary<OutfitScene, int> SceneWeights,
     IReadOnlyDictionary<string, int> TagWeights,
     IReadOnlyDictionary<string, int> ColorWeights,
-    int TotalPreferenceWeight)
+    int TotalPreferenceWeight,
+    string? ComparedOutfitName = null,
+    IReadOnlyList<string>? ComparisonNotes = null)
 {
     public IReadOnlyList<ScoreBreakdownItem> Breakdown => BuildBreakdown();
+    public IReadOnlyList<string> Cautions => BuildCautions();
+    public bool HasComparison => !string.IsNullOrWhiteSpace(ComparedOutfitName) && ComparisonNotes is { Count: > 0 };
 
     private IReadOnlyList<ScoreBreakdownItem> BuildBreakdown()
     {
@@ -60,6 +64,26 @@ public sealed record RecommendationDebugDto(
     {
         if (score != 0)
             items.Add(new ScoreBreakdownItem(label, score, detail));
+    }
+
+    private IReadOnlyList<string> BuildCautions()
+    {
+        var cautions = new List<string>();
+
+        if (RecentWearScore <= -48)
+            cautions.Add("这套今天已经穿过一次，更适合作为重复穿搭备选。");
+        else if (RecentWearScore <= -28)
+            cautions.Add("这套最近刚穿过，今天如果想换感觉，可以先看看别的。");
+        else if (RecentWearScore <= -18)
+            cautions.Add("这套离上次出场还不算久，属于稳妥但不算新鲜的选择。");
+
+        if (WearCountScore <= -8)
+            cautions.Add("它已经是高频搭配了，继续穿会更省心，但新鲜感会弱一点。");
+
+        if (SeasonScore < 0)
+            cautions.Add("季节匹配度不算理想，穿之前最好再确认一下当天体感。");
+
+        return cautions;
     }
 }
 

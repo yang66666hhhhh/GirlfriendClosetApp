@@ -122,18 +122,21 @@ public sealed class BackupService : IBackupService
     public async Task<BackupImportResult> ImportAsync(string filePath)
     {
         var format = GetBackupFormat(filePath);
+        var restoredImageCount = 0;
+        var missingImageCount = 0;
+        var failedRestoreImageCount = 0;
+        IReadOnlyList<string> missingImageFiles = [];
 
         try
         {
             ClosetBackupDocument document;
-            var restoredImageCount = 0;
-            var missingImageCount = 0;
-            IReadOnlyList<string> missingImageFiles = [];
+            var shouldRestoreDocument = true;
 
             if (IsZipBackup(filePath))
             {
                 EnsureImageStorageAvailable();
-                (document, restoredImageCount, missingImageCount, missingImageFiles) = await ImportZipAsync(filePath);
+                (document, restoredImageCount, missingImageCount, missingImageFiles, failedRestoreImageCount) = await ImportZipAsync(filePath);
+                shouldRestoreDocument = false;
             }
             else
             {
@@ -148,9 +151,10 @@ public sealed class BackupService : IBackupService
                 missingImageCount = missingImageFiles.Count;
             }
 
-            await RestoreDocumentAsync(document);
+            if (shouldRestoreDocument)
+                await RestoreDocumentAsync(document);
 
-            var warnings = BuildImportWarnings(format, restoredImageCount, missingImageCount, document);
+            var warnings = BuildImportWarnings(format, restoredImageCount, missingImageCount, document, failedRestoreImageCount);
             var result = new BackupImportResult(
                 filePath,
                 format,
@@ -163,7 +167,9 @@ public sealed class BackupService : IBackupService
                 restoredImageCount,
                 missingImageCount,
                 missingImageFiles,
-                warnings);
+                warnings,
+                Success: true,
+                FailedRestoreImageCount: failedRestoreImageCount);
 
             var fileInfo = new FileInfo(filePath);
             await AppendHistoryAsync(new BackupHistoryItem(
@@ -179,8 +185,29 @@ public sealed class BackupService : IBackupService
         }
         catch (Exception ex)
         {
-            await AppendHistoryAsync(new BackupHistoryItem(
+            var failureWarnings = BuildImportFailureWarnings(format, restoredImageCount, missingImageCount);
+            var failureResult = new BackupImportResult(
+                filePath,
+                format,
                 DateTime.Now,
+                0,
+                0,
+                0,
+                0,
+                0,
+                restoredImageCount,
+                missingImageCount,
+                missingImageFiles,
+                failureWarnings,
+                Success: false,
+                DatabaseRolledBack: true,
+                CleanedUpImageCount: 0,
+                FailedRestoreImageCount: failedRestoreImageCount,
+                FailureStage: IsZipBackup(filePath) ? "导入并恢复图片" : "导入核心数据",
+                FailureDetail: ex.Message);
+
+            await AppendHistoryAsync(new BackupHistoryItem(
+                failureResult.ImportedAt,
                 "Import",
                 format,
                 filePath,
@@ -188,7 +215,7 @@ public sealed class BackupService : IBackupService
                 Success: false,
                 "导入备份失败。",
                 ex.Message));
-            throw;
+            throw new InvalidOperationException(BuildImportFailureMessage(failureResult), ex);
         }
     }
 
@@ -352,7 +379,7 @@ public sealed class BackupService : IBackupService
         return packagedImages;
     }
 
-    private async Task<(ClosetBackupDocument Document, int RestoredImageCount, int MissingImageCount, IReadOnlyList<string> MissingImageFiles)> ImportZipAsync(string filePath)
+    private async Task<(ClosetBackupDocument Document, int RestoredImageCount, int MissingImageCount, IReadOnlyList<string> MissingImageFiles, int FailedRestoreImageCount)> ImportZipAsync(string filePath)
     {
         using var archive = ZipFile.OpenRead(filePath);
         var documentEntry = archive.GetEntry(BackupDocumentEntryName)
@@ -367,12 +394,13 @@ public sealed class BackupService : IBackupService
 
         var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Import", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(tempDir);
-        var restoredImageCount = 0;
+        var extractedImageCount = 0;
+        var failedRestoreImageCount = 0;
         var missingImageFiles = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         try
         {
-            var restoredImages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var extractedImages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var imageReference in GetImageReferences(document))
             {
@@ -380,7 +408,7 @@ public sealed class BackupService : IBackupService
                 if (string.IsNullOrWhiteSpace(imageFileName))
                     continue;
 
-                if (restoredImages.Contains(imageFileName))
+                if (extractedImages.Contains(imageFileName))
                 {
                     imageReference.ApplyRestoredPath(imageFileName);
                     continue;
@@ -397,16 +425,30 @@ public sealed class BackupService : IBackupService
                 var tempImagePath = Path.Combine(tempDir, imageFileName);
                 Directory.CreateDirectory(Path.GetDirectoryName(tempImagePath)!);
                 imageEntry.ExtractToFile(tempImagePath, overwrite: true);
-                await _imageStorageService!.RestoreImageAsync(tempImagePath, imageFileName);
                 imageReference.ApplyRestoredPath(imageFileName);
-                restoredImages.Add(imageFileName);
-                restoredImageCount++;
+                extractedImages.Add(imageFileName);
+                extractedImageCount++;
+            }
+
+            await RestoreDocumentAsync(document);
+
+            foreach (var restoredFileName in extractedImages)
+            {
+                try
+                {
+                    var tempImagePath = Path.Combine(tempDir, restoredFileName);
+                    await _imageStorageService!.RestoreImageAsync(tempImagePath, restoredFileName);
+                }
+                catch
+                {
+                    failedRestoreImageCount++;
+                }
             }
 
             var orderedMissingFiles = missingImageFiles
                 .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                 .ToList();
-            return (document, restoredImageCount, orderedMissingFiles.Count, orderedMissingFiles);
+            return (document, extractedImageCount - failedRestoreImageCount, orderedMissingFiles.Count, orderedMissingFiles, failedRestoreImageCount);
         }
         finally
         {
@@ -624,7 +666,8 @@ public sealed class BackupService : IBackupService
         string format,
         int restoredImageCount,
         int missingImageCount,
-        ClosetBackupDocument document)
+        ClosetBackupDocument document,
+        int failedRestoreImageCount = 0)
     {
         var warnings = new List<string>();
 
@@ -634,10 +677,49 @@ public sealed class BackupService : IBackupService
         if (format == "zip" && missingImageCount > 0)
             warnings.Add($"备份包里有 {missingImageCount} 张图片缺失，相关衣物会保留原图片文件名。");
 
+        if (format == "zip" && failedRestoreImageCount > 0)
+            warnings.Add($"有 {failedRestoreImageCount} 张图片在恢复到本地时失败，核心数据已导入，可继续用“图片修复”补齐。");
+
         if (format == "zip" && restoredImageCount == 0 && HasImageReferences(document))
             warnings.Add("备份里有图片路径，但没有恢复到任何图片文件。");
 
         return warnings;
+    }
+
+    private static List<string> BuildImportFailureWarnings(string format, int restoredImageCount, int missingImageCount)
+    {
+        var warnings = new List<string>
+        {
+            "本次导入没有完成，数据库改动已回滚。"
+        };
+
+        if (format == "zip" && restoredImageCount > 0)
+            warnings.Add($"已尝试恢复 {restoredImageCount} 张图片，请确认图片目录中是否需要手动复查。");
+
+        if (format == "zip" && missingImageCount > 0)
+            warnings.Add($"备份包中仍有 {missingImageCount} 张图片缺失。");
+
+        return warnings;
+    }
+
+    private static string BuildImportFailureMessage(BackupImportResult result)
+    {
+        var parts = new List<string>
+        {
+            "导入备份失败。",
+            "当前数据库已保持导入前状态。"
+        };
+
+        if (result.RestoredImageCount > 0)
+            parts.Add($"导入过程中曾恢复 {result.RestoredImageCount} 张图片。");
+
+        if (result.MissingImageCount > 0)
+            parts.Add($"备份包中还有 {result.MissingImageCount} 张图片缺失。");
+
+        if (!string.IsNullOrWhiteSpace(result.FailureDetail))
+            parts.Add(result.FailureDetail!);
+
+        return string.Join(" ", parts);
     }
 
     private static bool HasImageReferences(ClosetBackupDocument document)

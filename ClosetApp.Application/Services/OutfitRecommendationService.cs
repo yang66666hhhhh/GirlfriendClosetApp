@@ -54,16 +54,19 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         var outfits = (await _outfitRepository.GetAllAsync()).ToList();
         var wardrobeProfile = BuildWardrobeProfile(outfits);
 
-        var best = outfits
+        var ranked = outfits
             .Where(outfit => outfit.OutfitClothes.Count > 0)
             .Select(outfit => BuildDebugRecommendation(outfit, temperature, scene, wardrobeProfile))
             .OrderByDescending(r => r.TotalScore)
             .ThenBy(r => r.Reasons.Count)
-            .FirstOrDefault();
+            .ToList();
+
+        var best = ranked.FirstOrDefault();
 
         if (best == null)
             return null;
 
+        var runnerUp = ranked.Skip(1).FirstOrDefault();
         return new RecommendationDebugDto(
             best.OutfitName,
             best.TotalScore,
@@ -80,7 +83,9 @@ public class OutfitRecommendationService : IOutfitRecommendationService
             wardrobeProfile.SceneWeights,
             wardrobeProfile.TagWeights,
             wardrobeProfile.ColorWeights,
-            wardrobeProfile.TotalPreferenceWeight);
+            wardrobeProfile.TotalPreferenceWeight,
+            runnerUp?.OutfitName,
+            runnerUp == null ? null : BuildComparisonNotes(best, runnerUp));
     }
 
     public async Task<RecommendationDebugDto?> GetRecommendationDebugForOutfitAsync(Guid outfitId, int temperature, OutfitScene? scene = null)
@@ -436,6 +441,28 @@ public class OutfitRecommendationService : IOutfitRecommendationService
         weights[key] = weights.TryGetValue(key, out var current)
             ? current + weight
             : weight;
+    }
+
+    private static IReadOnlyList<string> BuildComparisonNotes(RecommendationDebugDto best, RecommendationDebugDto runnerUp)
+    {
+        var notes = new List<string>();
+
+        AddComparisonNote(notes, "季节更贴合今天", best.SeasonScore, runnerUp.SeasonScore);
+        AddComparisonNote(notes, "穿着新鲜感更强", best.RecentWearScore + best.WearCountScore, runnerUp.RecentWearScore + runnerUp.WearCountScore);
+        AddComparisonNote(notes, "更贴近你的个人偏好", best.PreferenceSceneScore + best.PreferenceTagScore + best.PreferenceColorScore, runnerUp.PreferenceSceneScore + runnerUp.PreferenceTagScore + runnerUp.PreferenceColorScore);
+        AddComparisonNote(notes, "场景更对路", best.SceneScore, runnerUp.SceneScore);
+        AddComparisonNote(notes, "整体基础评分更高", best.BaseScore, runnerUp.BaseScore);
+
+        if (notes.Count == 0)
+            notes.Add("它和下一位候选差距不大，但综合分还是略高一点。");
+
+        return notes.Take(3).ToList();
+    }
+
+    private static void AddComparisonNote(List<string> notes, string text, int bestScore, int runnerUpScore)
+    {
+        if (bestScore > runnerUpScore)
+            notes.Add(text);
     }
 
     private sealed record WardrobePreferenceProfile(

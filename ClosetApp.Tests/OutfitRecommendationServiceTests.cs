@@ -172,6 +172,45 @@ public class OutfitRecommendationServiceTests
         Assert.Equal(debug.TotalScore, breakdownTotal);
     }
 
+    [Fact]
+    public async Task GetRecommendationDebugAsync_WhenOutfitWornToday_ReturnsCaution()
+    {
+        var today = Outfit("Today Look", Season.Spring, rating: 4, wornDate: DateTime.Today);
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([today]));
+
+        var debug = await service.GetRecommendationDebugAsync(20);
+
+        Assert.NotNull(debug);
+        Assert.Contains(debug.Cautions, caution => caution.Contains("今天已经穿过一次", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetRecommendationDebugAsync_WhenSeasonMismatch_ReturnsSeasonCaution()
+    {
+        var winter = Outfit("Winter Look", Season.Winter, rating: 4);
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([winter]));
+
+        var debug = await service.GetRecommendationDebugAsync(28);
+
+        Assert.NotNull(debug);
+        Assert.Contains(debug.Cautions, caution => caution.Contains("季节匹配度不算理想", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task GetRecommendationDebugAsync_WhenHasRunnerUp_ReturnsComparisonNotes()
+    {
+        var better = Outfit("Better Look", Season.Spring, rating: 4, wornDate: DateTime.Today.AddDays(-20));
+        var runnerUp = Outfit("Runner Up", Season.Winter, rating: 4, wornDate: DateTime.Today.AddDays(-2));
+        var service = new OutfitRecommendationService(new FakeOutfitRepository([runnerUp, better]));
+
+        var debug = await service.GetRecommendationDebugAsync(20);
+
+        Assert.NotNull(debug);
+        Assert.True(debug.HasComparison);
+        Assert.Equal("Runner Up", debug.ComparedOutfitName);
+        Assert.NotEmpty(debug.ComparisonNotes!);
+    }
+
     private static Outfit Outfit(
         string name,
         Season season,
