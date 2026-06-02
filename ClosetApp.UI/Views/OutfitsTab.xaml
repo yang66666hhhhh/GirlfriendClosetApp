@@ -530,8 +530,7 @@
                         <TextBlock Text="{Binding CollectionSectionTitle}"
                                    Style="{StaticResource PageSectionTitleText}"/>
                         <TextBlock Text="{Binding CollectionSectionBody}"
-                                   Style="{StaticResource PageSectionBodyText}"
-                                   Margin="0,4,0,0"/>
+                                   Style="{StaticResource PageCollectionBodyText}"/>
                     </StackPanel>
                     <StackPanel Grid.Column="1"
                                 Width="120"
@@ -553,9 +552,8 @@
                     </StackPanel>
                 </Grid>
 
-                <Border Style="{StaticResource PageInsetCard}"
+                <Border Style="{StaticResource PageFilteredEmptyCard}"
                         Margin="0,0,0,14"
-                        Padding="16,14"
                         Visibility="{Binding IsFilteredEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
                     <StackPanel>
                         <TextBlock Text="没有筛出搭配"

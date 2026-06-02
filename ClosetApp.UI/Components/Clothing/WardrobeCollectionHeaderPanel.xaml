@@ -24,8 +24,7 @@
             <TextBlock Text="{Binding CollectionSectionTitle}"
                        Style="{StaticResource PageSectionTitleText}"/>
             <TextBlock Text="{Binding CollectionSectionBody}"
-                       Style="{StaticResource PageSectionBodyText}"
-                       Margin="0,4,0,0"/>
+                       Style="{StaticResource PageCollectionBodyText}"/>
         </StackPanel>
 
         <StackPanel Grid.Column="1"

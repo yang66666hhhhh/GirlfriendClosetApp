@@ -89,8 +89,7 @@
                 <TextBlock Text="{Binding CollectionSectionTitle}"
                            Style="{StaticResource PageSectionTitleText}"/>
                 <TextBlock Text="{Binding CollectionSectionBody}"
-                           Style="{StaticResource PageSectionBodyText}"
-                           Margin="0,4,0,0"/>
+                           Style="{StaticResource PageCollectionBodyText}"/>
             </StackPanel>
             <StackPanel Grid.Column="1"
                         Width="132"
@@ -115,9 +114,7 @@
             </StackPanel>
         </Grid>
 
-        <Border Style="{StaticResource PageInsetCard}"
-                Margin="0,0,0,12"
-                Padding="16,14"
+        <Border Style="{StaticResource PageFilteredEmptyCard}"
                 Visibility="{Binding IsFilteredEmpty, Converter={StaticResource BooleanToVisibilityConverter}}">
             <StackPanel>
                 <TextBlock Text="没有找到符合条件的标签"
