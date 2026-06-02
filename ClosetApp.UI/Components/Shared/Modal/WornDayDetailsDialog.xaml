@@ -52,6 +52,16 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         </Style>
+
+        <Style x:Key="WornRecordDangerBadge" TargetType="Border" BasedOn="{StaticResource WornRecordMetaBadge}">
+            <Setter Property="Background" Value="{DynamicResource TagRoseSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TagRoseBorderBrush}"/>
+        </Style>
+
+        <Style x:Key="WornRecordWarningBadge" TargetType="Border" BasedOn="{StaticResource WornRecordMetaBadge}">
+            <Setter Property="Background" Value="{DynamicResource TagAmberSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TagAmberBorderBrush}"/>
+        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -193,27 +203,27 @@
                                                                FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                 </Border>
-                                                <!-- 状态提示 -->
-                                                <Border Background="{DynamicResource TagRoseSurfaceBrush}"
-                                                        BorderBrush="{DynamicResource TagRoseBorderBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="8"
-                                                        Padding="8,3"
-                                                        Margin="0,6,0,0"
-                                                        HorizontalAlignment="Left"
-                                                        Visibility="{Binding HasStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                    <TextBlock Text="{Binding StatusText}"
-                                                               FontSize="11"
-                                                               FontWeight="SemiBold"
-                                                               Foreground="{DynamicResource TagRoseTextBrush}"/>
-                                                </Border>
-                                                <Border Background="{DynamicResource TagAmberSurfaceBrush}"
-                                                        BorderBrush="{DynamicResource TagAmberBorderBrush}"
-                                                        BorderThickness="1"
-                                                        CornerRadius="8"
+                                                <WrapPanel Margin="0,6,0,0">
+                                                    <Border Style="{StaticResource WornRecordDangerBadge}"
+                                                            Margin="0,0,6,6"
+                                                            Visibility="{Binding HasStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <TextBlock Text="{Binding StatusText}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TagRoseTextBrush}"/>
+                                                    </Border>
+                                                    <Border Style="{StaticResource WornRecordWarningBadge}"
+                                                            Margin="0,0,0,6"
+                                                            Visibility="{Binding HasPreviewAvailabilityHint, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                        <TextBlock Text="{Binding PreviewAvailabilityText}"
+                                                                   FontSize="11"
+                                                                   FontWeight="SemiBold"
+                                                                   Foreground="{DynamicResource TagAmberTextBrush}"/>
+                                                    </Border>
+                                                </WrapPanel>
+                                                <Border Style="{StaticResource WornRecordWarningBadge}"
                                                         Padding="8,4"
-                                                        Margin="0,6,0,0"
-                                                        HorizontalAlignment="Left"
+                                                        Margin="0,0,0,0"
                                                         Visibility="{Binding HasMissingImages, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding MissingImageText}"

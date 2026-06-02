@@ -261,10 +261,12 @@ public partial class WornDayDetailsDialog : UserControl
         string PreviewMetaText,
         IList<global::ClosetApp.Domain.Entities.Clothing> PreviewClothes,
         string? StatusText,
+        string PreviewAvailabilityText,
         IReadOnlyList<MissingSnapshotClothing> MissingClothes)
     {
         public bool HasPreviewClothes => PreviewClothes.Count > 0;
         public bool HasStatus => !string.IsNullOrEmpty(StatusText);
+        public bool HasPreviewAvailabilityHint => !string.IsNullOrEmpty(PreviewAvailabilityText);
         public bool HasMissingImages => MissingClothes.Count > 0;
         public string MissingImageText => MissingClothes.Count == 0
             ? string.Empty
@@ -296,6 +298,11 @@ public partial class WornDayDetailsDialog : UserControl
                 metaParts.Add($"原 {display.SnapshotCount} 件");
             else if (display.PreviewClothes.Count > 0)
                 metaParts.Add($"{display.PreviewClothes.Count} 件单品");
+            var previewAvailabilityText = display.HasUsableSnapshot
+                ? string.Empty
+                : display.ShouldShowSnapshotStatus
+                    ? "当前只剩文字信息"
+                    : "预览待补齐";
 
             return new WornDayRecordItem(
                 record.Id,
@@ -304,6 +311,7 @@ public partial class WornDayDetailsDialog : UserControl
                 string.Join(" · ", metaParts),
                 display.PreviewClothes,
                 statusText,
+                previewAvailabilityText,
                 missingClothes);
         }
 
