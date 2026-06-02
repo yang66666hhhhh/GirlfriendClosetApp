@@ -85,6 +85,12 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
+        <Style x:Key="RecommendationActionHintText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
         <Style x:Key="TodayHeroSecondaryActionButton" TargetType="Button" BasedOn="{StaticResource CapsuleButton}">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
@@ -387,6 +393,10 @@
                             <TextBlock Text="{Binding WeatherRecommendationHintText}"
                                        Style="{StaticResource PageSummaryBodyText}"
                                        Margin="0,6,0,0"/>
+                            <TextBlock Text="{Binding RecommendationMissingSeasonText}"
+                                       Style="{StaticResource RecommendationActionHintText}"
+                                       Margin="0,8,0,0"
+                                       Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                             <StackPanel Orientation="Horizontal"
                                         Margin="0,12,0,0">
                                 <Button Content="去调整偏好"
@@ -398,6 +408,10 @@
                                         Padding="12,7"
                                         Click="CreateOutfit_Click"/>
                             </StackPanel>
+                            <TextBlock Text="先补季节标注和常穿搭配，通常比一口气新建很多套更快见效。"
+                                       Style="{StaticResource RecommendationActionHintText}"
+                                       Margin="0,8,0,0"
+                                       Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                         </StackPanel>
                         <Button Grid.Column="1"
                                 Content="{Binding RefreshWeatherButtonText}"

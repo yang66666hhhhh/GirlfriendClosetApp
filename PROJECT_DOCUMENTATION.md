@@ -984,6 +984,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
   - 简化 Hero 区域 secondary actions 按钮（只保留查看记录、推荐详情、刷新推荐）
   - 在页面顶部添加工具栏（数据洞察、年度报告）
   - 移除独立的年度报告卡片，改为顶部工具栏入口
+  - 推荐准备度卡补充缺季提示和行动引导文案，弱化“没准备好”时的空泛感
 
 - **批量导入提示**：批量添加衣服成功后显示 Toast 提示消息
 
