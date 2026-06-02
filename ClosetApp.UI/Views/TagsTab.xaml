@@ -432,9 +432,7 @@
 
         <states:EmptyState Grid.Row="1"
                            x:Name="TxtEmpty"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Top"
-                           Margin="0,88,0,0"
+                           Style="{StaticResource PageEmptyStateAlignment}"
                            Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"
                            Icon="🏷"
                            Title="还没有标签"

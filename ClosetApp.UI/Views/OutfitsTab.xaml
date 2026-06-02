@@ -521,7 +521,7 @@
                     </Border>
                 </Grid>
 
-                <Grid Margin="0,2,0,8">
+                <Grid Style="{StaticResource PageCollectionHeaderGrid}">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
@@ -594,9 +594,7 @@
 
         <states:EmptyState Grid.Row="1"
                            x:Name="TxtEmpty"
-                           HorizontalAlignment="Center"
-                           VerticalAlignment="Top"
-                           Margin="0,88,0,0"
+                           Style="{StaticResource PageEmptyStateAlignment}"
                            Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"
                            Icon="👗"
                            Title="还没有搭配"

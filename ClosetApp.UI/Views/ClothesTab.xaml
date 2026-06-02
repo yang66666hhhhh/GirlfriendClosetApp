@@ -110,9 +110,8 @@
 
                 <!-- ═══ EMPTY STATE ═══ -->
                 <states:EmptyState x:Name="EmptyState"
+                                   Style="{StaticResource PageEmptyStateAlignment}"
                                    Visibility="{Binding IsEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                   HorizontalAlignment="Center"
-                                   Margin="0,88,0,0"
                                    Icon="✨"
                                    Title="衣柜还空空的"
                                    Body="先导入一批照片，或者手动记下第一件心动单品。"

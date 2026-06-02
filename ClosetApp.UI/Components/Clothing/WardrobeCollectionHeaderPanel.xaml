@@ -12,7 +12,8 @@
         </ResourceDictionary>
     </UserControl.Resources>
 
-    <Grid Margin="44,2,44,8"
+    <Grid Style="{StaticResource PageCollectionHeaderGrid}"
+          Margin="44,2,44,8"
           Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>

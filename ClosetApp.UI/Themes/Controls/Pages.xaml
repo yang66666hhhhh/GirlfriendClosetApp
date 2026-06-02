@@ -158,4 +158,14 @@
         <Setter Property="MinHeight" Value="34"/>
     </Style>
 
+    <Style x:Key="PageCollectionHeaderGrid" TargetType="Grid">
+        <Setter Property="Margin" Value="0,2,0,8"/>
+    </Style>
+
+    <Style x:Key="PageEmptyStateAlignment" TargetType="{x:Type FrameworkElement}">
+        <Setter Property="HorizontalAlignment" Value="Center"/>
+        <Setter Property="VerticalAlignment" Value="Top"/>
+        <Setter Property="Margin" Value="0,88,0,0"/>
+    </Style>
+
 </ResourceDictionary>

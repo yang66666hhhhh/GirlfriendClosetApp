@@ -79,7 +79,8 @@
             </StackPanel>
         </Border>
 
-        <Grid Margin="0,0,0,10">
+        <Grid Style="{StaticResource PageCollectionHeaderGrid}"
+              Margin="0,0,0,10">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
