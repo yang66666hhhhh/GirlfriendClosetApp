@@ -34,6 +34,16 @@
             <Setter Property="HorizontalAlignment" Value="Left"/>
         </Style>
 
+        <Style x:Key="HistoryWarningBadge" TargetType="Border" BasedOn="{StaticResource HistoryStatusBadge}">
+            <Setter Property="Background" Value="{DynamicResource TagAmberSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TagAmberBorderBrush}"/>
+        </Style>
+
+        <Style x:Key="HistoryDangerBadge" TargetType="Border" BasedOn="{StaticResource HistoryStatusBadge}">
+            <Setter Property="Background" Value="{DynamicResource TagRoseSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TagRoseBorderBrush}"/>
+        </Style>
+
         <DataTemplate x:Key="RecentWornRecordTemplate">
             <Border Background="Transparent"
                     BorderBrush="Transparent"
@@ -144,11 +154,17 @@
                                            FontSize="9.5"
                                            FontWeight="SemiBold"/>
                             </Border>
-                            <Border Style="{StaticResource HistoryStatusBadge}"
-                                    Background="{DynamicResource TagAmberSurfaceBrush}"
-                                    BorderBrush="{DynamicResource TagAmberBorderBrush}"
-                                    Visibility="{Binding HasPreviewClothes, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                <TextBlock Text="预览待补齐"
+                            <Border Style="{StaticResource HistoryDangerBadge}"
+                                    Margin="0,0,6,0"
+                                    Visibility="{Binding HasSnapshotStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="{Binding SnapshotStatusText}"
+                                           Foreground="{DynamicResource TagRoseTextBrush}"
+                                           FontSize="9.5"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                            <Border Style="{StaticResource HistoryWarningBadge}"
+                                    Visibility="{Binding HasPreviewAvailabilityHint, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <TextBlock Text="{Binding PreviewAvailabilityText}"
                                            Foreground="{DynamicResource TagAmberTextBrush}"
                                            FontSize="9.5"
                                            FontWeight="SemiBold"/>
@@ -550,6 +566,24 @@
                                            FontSize="9.5"
                                            FontWeight="SemiBold"/>
                             </Border>
+                            <WrapPanel Margin="0,8,0,0">
+                                <Border Style="{StaticResource HistoryDangerBadge}"
+                                        Margin="0,0,6,6"
+                                        Visibility="{Binding HasSnapshotStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding SnapshotStatusText}"
+                                               Foreground="{DynamicResource TagRoseTextBrush}"
+                                               FontSize="9.5"
+                                               FontWeight="SemiBold"/>
+                                </Border>
+                                <Border Style="{StaticResource HistoryWarningBadge}"
+                                        Margin="0,0,0,6"
+                                        Visibility="{Binding HasPreviewAvailabilityHint, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                    <TextBlock Text="{Binding PreviewAvailabilityText}"
+                                               Foreground="{DynamicResource TagAmberTextBrush}"
+                                               FontSize="9.5"
+                                               FontWeight="SemiBold"/>
+                                </Border>
+                            </WrapPanel>
                             <Button Content="打开当天详情"
                                     Style="{StaticResource ModalCancelButton}"
                                     MinWidth="92"

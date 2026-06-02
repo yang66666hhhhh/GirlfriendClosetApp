@@ -341,9 +341,13 @@ public sealed record RecentWornListItem(
     string FocusSummaryText,
     string FocusNoteText,
     string FocusSyncText,
+    string? SnapshotStatusText = null,
+    string PreviewAvailabilityText = "",
     bool IsSelected = false)
 {
     public bool HasPreviewClothes => PreviewClothes.Count > 0;
+    public bool HasSnapshotStatus => !string.IsNullOrWhiteSpace(SnapshotStatusText);
+    public bool HasPreviewAvailabilityHint => !string.IsNullOrWhiteSpace(PreviewAvailabilityText);
 
     public static RecentWornListItem FromRecord(OutfitWornRecord record)
     {
@@ -383,6 +387,19 @@ public sealed record RecentWornListItem(
             ? "这套还没有补搭配备注。"
             : record.Outfit!.Notes!.Trim();
         var focusSyncText = $"日历已同步到 {record.WornDate:M月d日}";
+        var snapshotStatusText = (display.IsDeleted, display.IsChanged, display.HasUsableSnapshot) switch
+        {
+            (true, _, true) => "搭配已删除",
+            (true, _, false) => "搭配已删除（快照不完整）",
+            (_, true, true) => "搭配已变化",
+            (_, true, false) => "搭配已变化（快照不完整）",
+            _ => null
+        };
+        var previewAvailabilityText = display.HasUsableSnapshot
+            ? string.Empty
+            : display.ShouldShowSnapshotStatus
+                ? "当前只剩文字信息"
+                : "预览待补齐";
 
         return new RecentWornListItem(
             record.Id,
@@ -394,7 +411,9 @@ public sealed record RecentWornListItem(
             display.PreviewClothes,
             focusSummaryText,
             focusNoteText,
-            focusSyncText);
+            focusSyncText,
+            snapshotStatusText,
+            previewAvailabilityText);
     }
 
     private static string GetSeasonLabel(Season season) => season switch
