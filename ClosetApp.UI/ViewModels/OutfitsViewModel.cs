@@ -50,13 +50,22 @@ public partial class OutfitsViewModel : ViewModelBase
         nameof(HasNoWornRecords),
         nameof(TodayWornCount),
         nameof(HasTodayWornRecords),
-        nameof(TodayWornStatusText)
+        nameof(TodayWornStatusText),
+        nameof(SelectedOutfit),
+        nameof(SelectedOutfitId),
+        nameof(HasSelectedOutfit)
     ];
 
     private readonly IOutfitService _outfitService;
+    private readonly GenerateOutfitEffectImage? _generateOutfitEffectImage;
+    private readonly GetOutfitGeneratedImages? _getOutfitGeneratedImages;
+    private readonly DeleteOutfitGeneratedImage? _deleteOutfitGeneratedImage;
+    private readonly SetPrimaryOutfitGeneratedImage? _setPrimaryOutfitGeneratedImage;
     private readonly OutfitsTabState _state = new();
+    private IReadOnlyList<Outfit> _displayedOutfits = [];
     private int _displayedOutfitCount = 20;
     private const int PageSize = 20;
+    private Outfit? _selectedOutfit;
 
     private string _searchText = string.Empty;
 
@@ -68,7 +77,11 @@ public partial class OutfitsViewModel : ViewModelBase
         IRecommendationPreferencesService recommendationPreferencesService,
         GetTodayRecommendations getTodayRecommendations,
         GetWardrobeInsights getWardrobeInsights,
-        GetAnnualOutfitReport getAnnualOutfitReport)
+        GetAnnualOutfitReport getAnnualOutfitReport,
+        GenerateOutfitEffectImage? generateOutfitEffectImage = null,
+        GetOutfitGeneratedImages? getOutfitGeneratedImages = null,
+        DeleteOutfitGeneratedImage? deleteOutfitGeneratedImage = null,
+        SetPrimaryOutfitGeneratedImage? setPrimaryOutfitGeneratedImage = null)
     {
         _outfitService = outfitService;
         _outfitRecommendationService = outfitRecommendationService;
@@ -78,11 +91,32 @@ public partial class OutfitsViewModel : ViewModelBase
         _getTodayRecommendations = getTodayRecommendations;
         _getWardrobeInsights = getWardrobeInsights;
         _getAnnualOutfitReport = getAnnualOutfitReport;
+        _generateOutfitEffectImage = generateOutfitEffectImage;
+        _getOutfitGeneratedImages = getOutfitGeneratedImages;
+        _deleteOutfitGeneratedImage = deleteOutfitGeneratedImage;
+        _setPrimaryOutfitGeneratedImage = setPrimaryOutfitGeneratedImage;
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
-    public IReadOnlyList<Outfit> DisplayedOutfits => _state.Outfits.Take(_displayedOutfitCount).ToList();
+    public IReadOnlyList<Outfit> DisplayedOutfits => _displayedOutfits;
     public bool HasMoreOutfits => _state.Outfits.Count > _displayedOutfitCount;
+    public Outfit? SelectedOutfit
+    {
+        get => _selectedOutfit;
+        private set
+        {
+            if (ReferenceEquals(_selectedOutfit, value))
+                return;
+
+            _selectedOutfit = value;
+            OnPropertyChanged(nameof(SelectedOutfit));
+            OnPropertyChanged(nameof(SelectedOutfitId));
+            OnPropertyChanged(nameof(HasSelectedOutfit));
+        }
+    }
+
+    public Guid? SelectedOutfitId => SelectedOutfit?.Id;
+    public bool HasSelectedOutfit => SelectedOutfit != null;
     public IReadOnlyList<OutfitSceneFilterOption> SceneFilterOptions { get; } =
     [
         new("全部场景", null),
@@ -172,7 +206,35 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public string GetSortLabel(OutfitSortBy sort) => OutfitPresentationText.GetSortLabel(sort);
 
-    public async Task LoadOutfitsAsync()
+    public async Task<Outfit?> RefreshSingleOutfitAsync(Guid outfitId)
+    {
+        var outfit = await _outfitService.GetOutfitByIdAsync(outfitId);
+        if (outfit == null)
+        {
+            _state.RemoveOutfit(outfitId);
+            if (SelectedOutfit?.Id == outfitId)
+            {
+                SelectedOutfit = _state.Outfits.FirstOrDefault();
+            }
+        }
+        else
+        {
+            _state.UpsertOutfit(outfit);
+            if (SelectedOutfit?.Id == outfitId)
+            {
+                SelectedOutfit = outfit;
+            }
+        }
+
+        InvalidateInsightsCache();
+        await RefreshDerivedStateAsync();
+        await RefreshCalendarIfLoadedAsync();
+        await RefreshRecommendationsForCurrentWeatherAsync();
+        NotifyStateChanged();
+        return outfit;
+    }
+
+    public async Task LoadOutfitsAsync(bool refreshWeather = false)
     {
         _state.BeginLoad();
         NotifyStateChanged();
@@ -181,10 +243,20 @@ public partial class OutfitsViewModel : ViewModelBase
         {
             var outfits = await _outfitService.GetAllOutfitsAsync();
             _state.SetOutfits(outfits);
+            SelectedOutfit = ResolveSelection(SelectedOutfit?.Id);
             InvalidateInsightsCache();
             await RefreshDerivedStateAsync();
             await RefreshCalendarIfLoadedAsync();
-            await RefreshWeatherRecommendationsAsync();
+
+            if (refreshWeather || WeatherRecommendations.Count == 0)
+            {
+                await RefreshWeatherRecommendationsAsync();
+            }
+            else
+            {
+                await RefreshRecommendationsForCurrentWeatherAsync();
+            }
+
             Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
         }
         finally
@@ -193,7 +265,7 @@ public partial class OutfitsViewModel : ViewModelBase
         }
     }
 
-    public Task RefreshAsync() => LoadOutfitsAsync();
+    public Task RefreshAsync() => LoadOutfitsAsync(refreshWeather: true);
 
     public void SetSelectedScene(OutfitScene? scene)
     {
@@ -233,6 +305,7 @@ public partial class OutfitsViewModel : ViewModelBase
 
     private void NotifyStateChanged()
     {
+        RefreshDisplayedOutfits();
         NotifyPropertiesChanged(StatePropertyNames);
         NotifyWeatherStateChanged();
     }
@@ -240,6 +313,32 @@ public partial class OutfitsViewModel : ViewModelBase
     private void NotifyWeatherStateChanged()
     {
         NotifyPropertiesChanged(WeatherPropertyNames);
+    }
+
+    private void RefreshDisplayedOutfits()
+    {
+        var visibleCount = Math.Min(_displayedOutfitCount, _state.Outfits.Count);
+        _displayedOutfits = visibleCount <= 0
+            ? []
+            : _state.Outfits.Take(visibleCount).ToArray();
+    }
+
+    public void SelectOutfit(Outfit? outfit)
+    {
+        SelectedOutfit = outfit == null ? null : ResolveSelection(outfit.Id);
+    }
+
+    public void ClearSelectedOutfit()
+    {
+        SelectedOutfit = null;
+    }
+
+    private Outfit? ResolveSelection(Guid? outfitId)
+    {
+        if (outfitId == null)
+            return null;
+
+        return _state.Outfits.FirstOrDefault(outfit => outfit.Id == outfitId);
     }
 
 }

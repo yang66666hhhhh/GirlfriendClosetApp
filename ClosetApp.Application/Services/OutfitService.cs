@@ -16,17 +16,20 @@ public class OutfitService : IOutfitService
     private readonly IOutfitWornRecordRepository _wornRecordRepository;
     private readonly IFavoriteRepository _favoriteRepository;
     private readonly IImageAssetResolver? _imageAssetResolver;
+    private readonly IOutfitGeneratedImageRepository? _generatedImageRepository;
 
     public OutfitService(
         IOutfitRepository repository,
         IOutfitWornRecordRepository wornRecordRepository,
         IFavoriteRepository favoriteRepository,
-        IImageAssetResolver? imageAssetResolver = null)
+        IImageAssetResolver? imageAssetResolver = null,
+        IOutfitGeneratedImageRepository? generatedImageRepository = null)
     {
         _repository = repository;
         _wornRecordRepository = wornRecordRepository;
         _favoriteRepository = favoriteRepository;
         _imageAssetResolver = imageAssetResolver;
+        _generatedImageRepository = generatedImageRepository;
     }
 
     public async Task<IEnumerable<Outfit>> GetAllOutfitsAsync()
@@ -265,6 +268,14 @@ public class OutfitService : IOutfitService
 
         await _favoriteRepository.AddAsync(new Favorite { OutfitId = outfitId });
         return true;
+    }
+
+    public async Task<IReadOnlyList<OutfitGeneratedImage>> GetGeneratedImagesAsync(Guid outfitId)
+    {
+        if (_generatedImageRepository == null)
+            return [];
+
+        return await _generatedImageRepository.GetByOutfitIdAsync(outfitId);
     }
 
     private static string NormalizeName(string? name)

@@ -228,6 +228,32 @@ public partial class OutfitsViewModel
         }
     }
 
+    private async Task RefreshRecommendationsForCurrentWeatherAsync()
+    {
+        try
+        {
+            var recommendationPreferences = await _recommendationPreferencesService.GetAsync();
+            var request = new TodayRecommendationRequest(
+                WeatherCity,
+                WeatherTemperature,
+                WeatherCondition,
+                IsWeatherFromApi: !string.Equals(WeatherCondition, "天气暂缺", StringComparison.Ordinal),
+                recommendationPreferences.DefaultScene,
+                recommendationPreferences.AvoidWornToday,
+                recommendationPreferences.RotationStrategy);
+
+            var result = await _getTodayRecommendations.ExecuteAsync(request);
+            WeatherRecommendations = result.Recommendations;
+            RecommendationReadiness = result.Readiness;
+            WeatherStatusText = result.StatusText;
+            NotifyWeatherStateChanged();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to refresh recommendations with cached weather context");
+        }
+    }
+
     [RelayCommand]
     public async Task RefreshWeatherRecommendationsWithFeedbackAsync()
     {

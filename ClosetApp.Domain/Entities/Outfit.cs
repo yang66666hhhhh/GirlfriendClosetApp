@@ -16,4 +16,5 @@ public class Outfit : BaseEntity
     public ICollection<OutfitClothing> OutfitClothes { get; set; } = new List<OutfitClothing>();
     public ICollection<Favorite> Favorites { get; set; } = new List<Favorite>();
     public ICollection<OutfitWornRecord> WornRecords { get; set; } = new List<OutfitWornRecord>();
+    public ICollection<OutfitGeneratedImage> GeneratedImages { get; set; } = new List<OutfitGeneratedImage>();
 }

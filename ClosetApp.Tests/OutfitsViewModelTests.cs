@@ -177,14 +177,22 @@ public class OutfitsViewModelTests
         var removed = CreateOutfit("旧搭配", OutfitScene.Work, Season.Autumn);
         var kept = CreateOutfit("保留搭配", OutfitScene.Casual, Season.Spring);
         var outfitService = new FakeOutfitService([removed, kept]);
-        var viewModel = CreateViewModel([removed, kept], outfitService: outfitService);
+        var weather = new FakeWeatherService(new WeatherInfo
+        {
+            City = "Hangzhou",
+            Temperature = 18,
+            Condition = "多云"
+        });
+        var viewModel = CreateViewModel([removed, kept], outfitService: outfitService, weatherService: weather);
         await viewModel.LoadOutfitsAsync();
+        weather.ResetRequestCount();
 
         await viewModel.DeleteOutfitWithFeedbackAsync(removed);
 
         Assert.Equal(removed.Id, outfitService.DeletedOutfitId);
         Assert.Single(viewModel.Outfits);
         Assert.Equal("保留搭配", viewModel.Outfits[0].Name);
+        Assert.Equal(0, weather.RequestCount);
     }
 
     [Fact]
@@ -192,29 +200,69 @@ public class OutfitsViewModelTests
     {
         var outfit = CreateOutfit("常穿搭配", OutfitScene.Work, Season.Autumn);
         var outfitService = new FakeOutfitService([outfit]);
-        var viewModel = CreateViewModel([outfit], outfitService: outfitService);
+        var weather = new FakeWeatherService(new WeatherInfo
+        {
+            City = "Hangzhou",
+            Temperature = 18,
+            Condition = "多云"
+        });
+        var viewModel = CreateViewModel([outfit], outfitService: outfitService, weatherService: weather);
+        await viewModel.LoadOutfitsAsync();
+        weather.ResetRequestCount();
 
         var result = await viewModel.ToggleFavoriteWithFeedbackAsync(outfit);
 
         Assert.True(result);
         Assert.Equal(outfit.Id, outfitService.ToggledFavoriteOutfitId);
         Assert.True(viewModel.Outfits[0].Favorites.Count > 0);
+        Assert.Equal(0, weather.RequestCount);
     }
 
     [Fact]
-    public async Task RefreshAfterOutfitSavedWithFeedbackAsync_ReloadsOutfits()
+    public async Task RecordOutfitWornWithFeedbackAsync_UpdatesStateWithoutRefreshingWeather()
+    {
+        var outfit = CreateOutfit("今日通勤", OutfitScene.Work, Season.Spring, withClothes: true);
+        var outfitService = new FakeOutfitService([outfit]);
+        var weather = new FakeWeatherService(new WeatherInfo
+        {
+            City = "Hangzhou",
+            Temperature = 18,
+            Condition = "多云"
+        });
+        var viewModel = CreateViewModel([outfit], outfitService: outfitService, weatherService: weather);
+        await viewModel.LoadOutfitsAsync();
+        weather.ResetRequestCount();
+
+        await viewModel.RecordOutfitWornWithFeedbackAsync(outfit, outfit.Name);
+
+        Assert.Equal(outfit.Id, outfitService.RecordedOutfitId);
+        Assert.True(viewModel.HasTodayWornRecords);
+        Assert.Equal(0, weather.RequestCount);
+    }
+
+    [Fact]
+    public async Task RefreshAfterOutfitSavedWithFeedbackAsync_UpsertsSavedOutfitWithoutRefreshingWeather()
     {
         var first = CreateOutfit("原有搭配", OutfitScene.Work, Season.Autumn);
         var outfitService = new FakeOutfitService([first]);
-        var viewModel = CreateViewModel([first], outfitService: outfitService);
+        var weather = new FakeWeatherService(new WeatherInfo
+        {
+            City = "Hangzhou",
+            Temperature = 18,
+            Condition = "多云"
+        });
+        var viewModel = CreateViewModel([first], outfitService: outfitService, weatherService: weather);
         await viewModel.LoadOutfitsAsync();
 
-        outfitService.AddStoredOutfit(CreateOutfit("新搭配", OutfitScene.Casual, Season.Spring));
+        var added = CreateOutfit("新搭配", OutfitScene.Casual, Season.Spring);
+        outfitService.AddStoredOutfit(added);
+        weather.ResetRequestCount();
 
-        await viewModel.RefreshAfterOutfitSavedWithFeedbackAsync("已保存搭配", "新的搭配已经出现在列表里。");
+        await viewModel.RefreshAfterOutfitSavedWithFeedbackAsync(added.Id, "已保存搭配", "新的搭配已经出现在列表里。");
 
         Assert.Equal(2, viewModel.OutfitCount);
         Assert.Contains(viewModel.Outfits, outfit => outfit.Name == "新搭配");
+        Assert.Equal(0, weather.RequestCount);
     }
 
     [Fact]
@@ -234,6 +282,61 @@ public class OutfitsViewModelTests
         Assert.Contains(nameof(OutfitsViewModel.CalendarDays), changedProperties);
         Assert.True(viewModel.HasAnyWornRecords);
         Assert.False(viewModel.HasNoWornRecords);
+    }
+
+    [Fact]
+    public async Task DisplayedOutfits_ReusesStableWindowAcrossLoadMoreAndFilters()
+    {
+        var outfits = Enumerable.Range(1, 25)
+            .Select(index => CreateOutfit($"搭配 {index}", OutfitScene.Casual, Season.Spring))
+            .ToArray();
+        var viewModel = CreateViewModel(outfits);
+
+        await viewModel.LoadOutfitsAsync();
+
+        Assert.Equal(20, viewModel.DisplayedOutfits.Count);
+
+        viewModel.LoadMoreOutfitsCommand.Execute(null);
+        Assert.Equal(25, viewModel.DisplayedOutfits.Count);
+
+        viewModel.SearchText = "搭配 1";
+        Assert.All(viewModel.DisplayedOutfits, outfit => Assert.Contains("搭配 1", outfit.Name));
+
+        viewModel.ClearFiltersCommand.Execute(null);
+        Assert.Equal(20, viewModel.DisplayedOutfits.Count);
+    }
+
+    [Fact]
+    public async Task SelectOutfit_SelectsMatchingStoredEntity()
+    {
+        var first = CreateOutfit("第一套", OutfitScene.Work, Season.Spring);
+        var second = CreateOutfit("第二套", OutfitScene.Date, Season.Autumn);
+        var viewModel = CreateViewModel([first, second]);
+        await viewModel.LoadOutfitsAsync();
+
+        viewModel.SelectOutfit(second);
+
+        Assert.NotNull(viewModel.SelectedOutfit);
+        Assert.Equal(second.Id, viewModel.SelectedOutfitId);
+        Assert.Equal("第二套", viewModel.SelectedOutfit!.Name);
+        Assert.True(viewModel.HasSelectedOutfit);
+    }
+
+    [Fact]
+    public async Task DeleteOutfitAsync_WhenSelected_RemovesSelectionOrFallsBack()
+    {
+        var first = CreateOutfit("第一套", OutfitScene.Work, Season.Spring);
+        var second = CreateOutfit("第二套", OutfitScene.Date, Season.Autumn);
+        var outfitService = new FakeOutfitService([first, second]);
+        var viewModel = CreateViewModel([first, second], outfitService: outfitService);
+        await viewModel.LoadOutfitsAsync();
+        viewModel.SelectOutfit(second);
+
+        await viewModel.DeleteOutfitAsync(second);
+
+        Assert.NotNull(viewModel.SelectedOutfit);
+        Assert.Equal(first.Id, viewModel.SelectedOutfitId);
+        Assert.Equal("第一套", viewModel.SelectedOutfit!.Name);
     }
 
     private static OutfitsViewModel CreateViewModel(
@@ -376,6 +479,12 @@ public class OutfitsViewModelTests
             return Task.FromResult(true);
         }
 
+        public Task<IReadOnlyList<OutfitGeneratedImage>> GetGeneratedImagesAsync(Guid outfitId)
+        {
+            var outfit = _outfits.FirstOrDefault(item => item.Id == outfitId);
+            return Task.FromResult<IReadOnlyList<OutfitGeneratedImage>>(outfit?.GeneratedImages.ToList() ?? []);
+        }
+
         public void AddStoredOutfit(Outfit outfit)
         {
             _outfits.Add(outfit);
@@ -433,14 +542,21 @@ public class OutfitsViewModelTests
         }
 
         public string? RequestedCity { get; private set; }
+        public int RequestCount { get; private set; }
 
         public Task<WeatherInfo?> GetCurrentWeatherAsync(string city)
         {
             RequestedCity = city;
+            RequestCount++;
             return Task.FromResult(_weather);
         }
 
         public int GetFallbackTemperature(DateTimeOffset? date = null) => 22;
+
+        public void ResetRequestCount()
+        {
+            RequestCount = 0;
+        }
     }
 
     private sealed class FakeWeatherPreferencesService : IWeatherPreferencesService

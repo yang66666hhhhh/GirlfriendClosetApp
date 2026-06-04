@@ -156,6 +156,65 @@ namespace ClosetApp.Infrastructure.Migrations
                     b.ToTable("OutfitClothes");
                 });
 
+            modelBuilder.Entity("ClosetApp.Domain.Entities.OutfitGeneratedImage", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FailureReason")
+                        .HasColumnType("TEXT");
+
+                    b.Property<bool>("IsPrimary")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("Model")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OptionSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<Guid>("OutfitId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("OutfitSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProfileSnapshotJson")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("PromptSnapshot")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ProviderKind")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("ResultImagePath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("OutfitId");
+
+                    b.ToTable("OutfitGeneratedImages");
+                });
+
             modelBuilder.Entity("ClosetApp.Domain.Entities.OutfitWornRecord", b =>
                 {
                     b.Property<Guid>("Id")
@@ -198,6 +257,67 @@ namespace ClosetApp.Infrastructure.Migrations
                     b.HasIndex("OutfitId");
 
                     b.ToTable("OutfitWornRecords");
+                });
+
+            modelBuilder.Entity("ClosetApp.Domain.Entities.PersonalProfile", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AvatarPhotoPath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("AvoidKeywords")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("BodyShape")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime?>("CloudUploadConsentAcceptedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FaceFeaturesSummary")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("FullBodyPhotoPath")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HairColor")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("HairLength")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<int?>("HeightCm")
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("SkinTone")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("StyleKeywords")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("PersonalProfiles");
                 });
 
             modelBuilder.Entity("ClosetApp.Domain.Entities.Tag", b =>
@@ -387,6 +507,17 @@ namespace ClosetApp.Infrastructure.Migrations
                     b.Navigation("Outfit");
                 });
 
+            modelBuilder.Entity("ClosetApp.Domain.Entities.OutfitGeneratedImage", b =>
+                {
+                    b.HasOne("ClosetApp.Domain.Entities.Outfit", "Outfit")
+                        .WithMany("GeneratedImages")
+                        .HasForeignKey("OutfitId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Outfit");
+                });
+
             modelBuilder.Entity("ClosetApp.Domain.Entities.OutfitWornRecord", b =>
                 {
                     b.HasOne("ClosetApp.Domain.Entities.Outfit", "Outfit")
@@ -407,6 +538,8 @@ namespace ClosetApp.Infrastructure.Migrations
             modelBuilder.Entity("ClosetApp.Domain.Entities.Outfit", b =>
                 {
                     b.Navigation("Favorites");
+
+                    b.Navigation("GeneratedImages");
 
                     b.Navigation("OutfitClothes");
 

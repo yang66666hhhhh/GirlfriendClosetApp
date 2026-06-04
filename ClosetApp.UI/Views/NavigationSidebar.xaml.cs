@@ -3,6 +3,8 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using ClosetApp.UI.Components.Shared;
+using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Components.Shared.Modal;
 
 namespace ClosetApp.UI.Views;
 
@@ -10,6 +12,7 @@ namespace ClosetApp.UI.Views;
 {
     public event EventHandler<int>? NavigationChanged;
     public event EventHandler<bool>? CollapseStateChanged;
+    public event EventHandler? PersonalProfileRequested;
 
     private bool _isCollapsed;
 
@@ -91,5 +94,11 @@ namespace ClosetApp.UI.Views;
     {
         if (!_isCollapsed)
             ToggleCollapse();
+    }
+
+    private void Profile_Click(object sender, RoutedEventArgs e)
+    {
+        PersonalProfileRequested?.Invoke(this, EventArgs.Empty);
+        EditorModal.Show(new PersonalProfileEditorPanel(), _ => Task.CompletedTask);
     }
 }

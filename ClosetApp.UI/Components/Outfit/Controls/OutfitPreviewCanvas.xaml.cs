@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using System.Windows.Threading;
 using ClosetApp.Application.Images;
 using ClosetApp.Domain.Clothing;
 using ClosetApp.Domain.Entities;
@@ -19,6 +20,7 @@ public partial class OutfitPreviewCanvas : UserControl
 {
     private readonly OutfitCompositionEngine _engine;
     private bool _pendingRender;
+    private DispatcherOperation? _scheduledRender;
 
     public static readonly DependencyProperty ClothesProperty =
         DependencyProperty.Register(
@@ -48,19 +50,19 @@ public partial class OutfitPreviewCanvas : UserControl
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        Render();
+        ScheduleRender();
     }
 
     private void OnSizeChanged(object sender, SizeChangedEventArgs sizeInfo)
     {
         if (sizeInfo.NewSize.Width > 0 && sizeInfo.NewSize.Height > 0)
-            Render();
+            ScheduleRender();
     }
 
     private static void OnClothesChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is OutfitPreviewCanvas canvas)
-            canvas.Render();
+            canvas.ScheduleRender();
     }
 
     private double MeasureCanvasWidth()
@@ -149,6 +151,20 @@ public partial class OutfitPreviewCanvas : UserControl
 #if DEBUG
         Debug.WriteLine($"[Canvas] Render: Items={layoutItems.Count}, Canvas={cw:F0}x{ch:F0}, Children={RenderCanvas.Children.Count}");
 #endif
+    }
+
+    private void ScheduleRender()
+    {
+        if (!IsLoaded)
+        {
+            _pendingRender = true;
+            return;
+        }
+
+        if (_scheduledRender is { Status: DispatcherOperationStatus.Pending or DispatcherOperationStatus.Executing })
+            return;
+
+        _scheduledRender = Dispatcher.BeginInvoke(Render, DispatcherPriority.Render);
     }
 
     private void AddMissingImagePlaceholder(OutfitLayoutItem item, DropShadowEffect shadow)

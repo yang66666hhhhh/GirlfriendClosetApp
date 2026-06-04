@@ -24,6 +24,7 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
     private readonly List<SelectableClothing> _allItems = new();
     private readonly bool _isEditMode;
     private readonly OutfitEntity? _existingOutfit;
+    private bool _clothesLoaded;
     private bool _isSubmitting;
 
     public event EventHandler<EditorResult<OutfitEntity>>? EditorCompleted;
@@ -38,7 +39,7 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         Loaded += async (s, e) =>
         {
             UpdateCardClip();
-            await LoadClothesAsync();
+            await EnsureClothesLoadedAsync();
         };
     }
 
@@ -99,10 +100,10 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
 
     private async void OnLoadedForEdit(object s, RoutedEventArgs e)
     {
-        await LoadClothesAsync();
+        await EnsureClothesLoadedAsync();
     }
 
-    public async Task LoadDataAsync() => await LoadClothesAsync();
+    public async Task LoadDataAsync() => await EnsureClothesLoadedAsync();
 
     private void CardClip_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateCardClip();
 
@@ -115,6 +116,15 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
             new Rect(0, 0, CardClip.ActualWidth, CardClip.ActualHeight),
             24,
             24);
+    }
+
+    private async Task EnsureClothesLoadedAsync()
+    {
+        if (_clothesLoaded)
+            return;
+
+        await LoadClothesAsync();
+        _clothesLoaded = true;
     }
 
     private async Task LoadClothesAsync()
@@ -213,7 +223,6 @@ public partial class OutfitEditorPanel : UserControl, IEditorPanel<OutfitEntity>
         TxtPreviewCount.Text = $"已选 {selected.Count} 件";
 
         if (LivePreview == null) return;
-        LivePreview.Clothes = null;
         LivePreview.Clothes = selected.Select(i => i.Clothing).ToList();
     }
 

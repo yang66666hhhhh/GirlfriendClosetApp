@@ -22,12 +22,14 @@ public sealed class BackupService : IBackupService
 
     private readonly IDbContextFactory<ClosetDbContext> _dbContextFactory;
     private readonly IImageStorageService? _imageStorageService;
+    private readonly IAiAssetStorageService? _aiAssetStorageService;
     private readonly string _historyFilePath;
 
     public BackupService(
         IDbContextFactory<ClosetDbContext> dbContextFactory,
         IImageStorageService? imageStorageService = null,
-        string? historyDirectory = null)
+        string? historyDirectory = null,
+        IAiAssetStorageService? aiAssetStorageService = null)
     {
         _dbContextFactory = dbContextFactory;
         _imageStorageService = imageStorageService;
@@ -36,6 +38,7 @@ public sealed class BackupService : IBackupService
             : historyDirectory;
         Directory.CreateDirectory(resolvedHistoryDirectory);
         _historyFilePath = Path.Combine(resolvedHistoryDirectory, BackupHistoryFileName);
+        _aiAssetStorageService = aiAssetStorageService;
     }
 
     public async Task<BackupValidationResult> ValidateExportAsync(string filePath)
@@ -52,9 +55,9 @@ public sealed class BackupService : IBackupService
             document.Tags.Count,
             document.WornRecords.Count,
             document.Favorites.Count,
-            imageAnalysis.ReferencedCount,
-            imageAnalysis.AvailableCount,
-            imageAnalysis.MissingCount,
+            imageAnalysis.ReferencedCount + imageAnalysis.AiReferencedCount,
+            imageAnalysis.AvailableCount + imageAnalysis.AiAvailableCount,
+            imageAnalysis.MissingCount + imageAnalysis.AiMissingCount,
             warnings);
     }
 
@@ -70,7 +73,6 @@ public sealed class BackupService : IBackupService
             var includedImageCount = 0;
             if (IsZipBackup(filePath))
             {
-                EnsureImageStorageAvailable();
                 includedImageCount = await ExportZipAsync(filePath, document);
             }
             else
@@ -134,7 +136,6 @@ public sealed class BackupService : IBackupService
 
             if (IsZipBackup(filePath))
             {
-                EnsureImageStorageAvailable();
                 (document, restoredImageCount, missingImageCount, missingImageFiles, failedRestoreImageCount) = await ImportZipAsync(filePath);
                 shouldRestoreDocument = false;
             }
@@ -145,6 +146,7 @@ public sealed class BackupService : IBackupService
                     ?? throw new InvalidOperationException("备份文件格式无效。");
                 missingImageFiles = GetDistinctImageReferences(document)
                     .Select(reference => reference.FileName)
+                    .Concat(GetDistinctAiImageReferences(document).Select(reference => reference.FileName))
                     .Distinct(StringComparer.OrdinalIgnoreCase)
                     .OrderBy(name => name, StringComparer.OrdinalIgnoreCase)
                     .ToList();
@@ -298,6 +300,14 @@ public sealed class BackupService : IBackupService
             Favorites = await context.Favorites
                 .AsNoTracking()
                 .OrderBy(f => f.CreatedAt)
+                .ToListAsync(),
+            PersonalProfile = await context.PersonalProfiles
+                .AsNoTracking()
+                .OrderBy(profile => profile.CreatedAt)
+                .FirstOrDefaultAsync(),
+            OutfitGeneratedImages = await context.OutfitGeneratedImages
+                .AsNoTracking()
+                .OrderBy(image => image.CreatedAt)
                 .ToListAsync()
         };
     }
@@ -376,6 +386,39 @@ public sealed class BackupService : IBackupService
                 wornRecord.ClothingDetailsSnapshot = JsonSerializer.Serialize(snapshotClothes, JsonOptions);
         }
 
+        if (document.PersonalProfile != null)
+        {
+            UpdateAiImagePath(
+                document.PersonalProfile.AvatarPhotoPath,
+                document.PersonalProfile.Id,
+                packagedBySource,
+                usedNames,
+                packagedImages,
+                imagePath => document.PersonalProfile.AvatarPhotoPath = imagePath,
+                resolvePath: ResolveAiProfileImageSourcePath);
+
+            UpdateAiImagePath(
+                document.PersonalProfile.FullBodyPhotoPath,
+                document.PersonalProfile.Id,
+                packagedBySource,
+                usedNames,
+                packagedImages,
+                imagePath => document.PersonalProfile.FullBodyPhotoPath = imagePath,
+                resolvePath: ResolveAiProfileImageSourcePath);
+        }
+
+        foreach (var generatedImage in document.OutfitGeneratedImages)
+        {
+            UpdateAiImagePath(
+                generatedImage.ResultImagePath,
+                generatedImage.Id,
+                packagedBySource,
+                usedNames,
+                packagedImages,
+                imagePath => generatedImage.ResultImagePath = imagePath,
+                resolvePath: ResolveAiGeneratedImageSourcePath);
+        }
+
         return packagedImages;
     }
 
@@ -400,7 +443,7 @@ public sealed class BackupService : IBackupService
 
         try
         {
-            var extractedImages = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var extractedImages = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
 
             foreach (var imageReference in GetImageReferences(document))
             {
@@ -408,7 +451,7 @@ public sealed class BackupService : IBackupService
                 if (string.IsNullOrWhiteSpace(imageFileName))
                     continue;
 
-                if (extractedImages.Contains(imageFileName))
+                if (extractedImages.ContainsKey(imageFileName))
                 {
                     imageReference.ApplyRestoredPath(imageFileName);
                     continue;
@@ -426,18 +469,57 @@ public sealed class BackupService : IBackupService
                 Directory.CreateDirectory(Path.GetDirectoryName(tempImagePath)!);
                 imageEntry.ExtractToFile(tempImagePath, overwrite: true);
                 imageReference.ApplyRestoredPath(imageFileName);
-                extractedImages.Add(imageFileName);
+                extractedImages[imageFileName] = "wardrobe";
+                extractedImageCount++;
+            }
+
+            foreach (var imageReference in GetAiImageReferences(document))
+            {
+                var imageFileName = imageReference.FileName;
+                if (string.IsNullOrWhiteSpace(imageFileName))
+                    continue;
+
+                if (extractedImages.ContainsKey(imageFileName))
+                {
+                    imageReference.ApplyRestoredPath(imageFileName);
+                    continue;
+                }
+
+                var imageEntry = FindZipEntry(archive, $"{ImagesEntryFolder}{imageFileName}");
+                if (imageEntry == null)
+                {
+                    missingImageFiles.Add(imageFileName);
+                    imageReference.ApplyRestoredPath(imageFileName);
+                    continue;
+                }
+
+                var tempImagePath = Path.Combine(tempDir, imageFileName);
+                Directory.CreateDirectory(Path.GetDirectoryName(tempImagePath)!);
+                imageEntry.ExtractToFile(tempImagePath, overwrite: true);
+                imageReference.ApplyRestoredPath(imageFileName);
+                extractedImages[imageFileName] = imageReference.Kind;
                 extractedImageCount++;
             }
 
             await RestoreDocumentAsync(document);
 
-            foreach (var restoredFileName in extractedImages)
+            foreach (var restoredImage in extractedImages)
             {
                 try
                 {
-                    var tempImagePath = Path.Combine(tempDir, restoredFileName);
-                    await _imageStorageService!.RestoreImageAsync(tempImagePath, restoredFileName);
+                    var tempImagePath = Path.Combine(tempDir, restoredImage.Key);
+                    if (string.Equals(restoredImage.Value, "profile", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await _aiAssetStorageService!.RestoreProfileReferenceImageAsync(tempImagePath, restoredImage.Key);
+                    }
+                    else if (string.Equals(restoredImage.Value, "render", StringComparison.OrdinalIgnoreCase))
+                    {
+                        await _aiAssetStorageService!.RestoreGeneratedImageAsync(tempImagePath, restoredImage.Key);
+                    }
+                    else
+                    {
+                        await _imageStorageService!.RestoreImageAsync(tempImagePath, restoredImage.Key);
+                    }
                 }
                 catch
                 {
@@ -505,7 +587,8 @@ public sealed class BackupService : IBackupService
                 Rating = item.Rating,
                 Notes = item.Notes,
                 WornDate = item.WornDate,
-                WearCount = item.WearCount
+                WearCount = item.WearCount,
+                OriginalClothingCount = item.OriginalClothingCount
             };
 
             outfit.OutfitClothes = item.ClothingIds
@@ -517,6 +600,9 @@ public sealed class BackupService : IBackupService
 
         context.OutfitWornRecords.AddRange(document.WornRecords);
         context.Favorites.AddRange(document.Favorites);
+        if (document.PersonalProfile != null)
+            context.PersonalProfiles.Add(document.PersonalProfile);
+        context.OutfitGeneratedImages.AddRange(document.OutfitGeneratedImages);
 
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
@@ -612,6 +698,30 @@ public sealed class BackupService : IBackupService
         packagedImages.Add(new PackagedImage(sourcePath, packagedFileName));
     }
 
+    private void UpdateAiImagePath(
+        string? imagePath,
+        Guid ownerId,
+        IDictionary<string, string> packagedBySource,
+        ISet<string> usedNames,
+        ICollection<PackagedImage> packagedImages,
+        Action<string> applyPackagedPath,
+        Func<string?, string?> resolvePath)
+    {
+        var sourcePath = resolvePath(imagePath);
+        if (sourcePath == null)
+            return;
+
+        var packagedFileName = GetOrCreatePackagedImageFileName(
+            packagedBySource,
+            sourcePath,
+            imagePath,
+            ownerId,
+            usedNames);
+
+        applyPackagedPath(packagedFileName);
+        AddPackagedImage(packagedImages, sourcePath, packagedFileName);
+    }
+
     private static ZipArchiveEntry? FindZipEntry(ZipArchive archive, string entryName)
     {
         return archive.Entries.FirstOrDefault(entry =>
@@ -630,7 +740,23 @@ public sealed class BackupService : IBackupService
                 availableCount++;
         }
 
-        return new BackupImageAnalysis(referencedCount, availableCount, referencedCount - availableCount);
+        var aiReferencedCount = 0;
+        var aiAvailableCount = 0;
+
+        foreach (var imageReference in GetDistinctAiImageReferences(document))
+        {
+            aiReferencedCount++;
+            if (ResolveAiImageSourcePath(imageReference.ImagePath, imageReference.Kind) != null)
+                aiAvailableCount++;
+        }
+
+        return new BackupImageAnalysis(
+            referencedCount,
+            availableCount,
+            referencedCount - availableCount,
+            aiReferencedCount,
+            aiAvailableCount,
+            aiReferencedCount - aiAvailableCount);
     }
 
     private List<string> BuildExportWarnings(
@@ -653,11 +779,12 @@ public sealed class BackupService : IBackupService
         if (File.Exists(filePath))
             warnings.Add("目标文件已存在，导出后会覆盖旧文件。");
 
-        if (format == "json" && imageAnalysis.ReferencedCount > 0)
+        if (format == "json" && (imageAnalysis.ReferencedCount > 0 || imageAnalysis.AiReferencedCount > 0))
             warnings.Add("JSON 备份只保存核心数据，不会打包图片文件。");
 
-        if (format == "zip" && imageAnalysis.MissingCount > 0)
-            warnings.Add($"有 {imageAnalysis.MissingCount} 张图片路径已失效，ZIP 备份不会包含这些文件。");
+        var missingCount = imageAnalysis.MissingCount + imageAnalysis.AiMissingCount;
+        if (format == "zip" && missingCount > 0)
+            warnings.Add($"有 {missingCount} 张图片路径已失效，ZIP 备份不会包含这些文件。");
 
         return warnings;
     }
@@ -671,7 +798,7 @@ public sealed class BackupService : IBackupService
     {
         var warnings = new List<string>();
 
-        if (format == "json" && HasImageReferences(document))
+        if (format == "json" && (HasImageReferences(document) || HasAiImageReferences(document)))
             warnings.Add("JSON 备份不会附带图片文件，导入后如出现缺图，可使用“图片修复”。");
 
         if (format == "zip" && missingImageCount > 0)
@@ -680,7 +807,7 @@ public sealed class BackupService : IBackupService
         if (format == "zip" && failedRestoreImageCount > 0)
             warnings.Add($"有 {failedRestoreImageCount} 张图片在恢复到本地时失败，核心数据已导入，可继续用“图片修复”补齐。");
 
-        if (format == "zip" && restoredImageCount == 0 && HasImageReferences(document))
+        if (format == "zip" && restoredImageCount == 0 && (HasImageReferences(document) || HasAiImageReferences(document)))
             warnings.Add("备份里有图片路径，但没有恢复到任何图片文件。");
 
         return warnings;
@@ -727,10 +854,22 @@ public sealed class BackupService : IBackupService
         return GetImageReferences(document).Any();
     }
 
+    private static bool HasAiImageReferences(ClosetBackupDocument document)
+    {
+        return GetAiImageReferences(document).Any();
+    }
+
     private static IEnumerable<ImageReference> GetDistinctImageReferences(ClosetBackupDocument document)
     {
         return GetImageReferences(document)
             .GroupBy(reference => reference.FileName, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First());
+    }
+
+    private static IEnumerable<AiImageReference> GetDistinctAiImageReferences(ClosetBackupDocument document)
+    {
+        return GetAiImageReferences(document)
+            .GroupBy(reference => $"{reference.Kind}:{reference.FileName}", StringComparer.OrdinalIgnoreCase)
             .Select(group => group.First());
     }
 
@@ -760,6 +899,22 @@ public sealed class BackupService : IBackupService
         return references;
     }
 
+    private static List<AiImageReference> GetAiImageReferences(ClosetBackupDocument document)
+    {
+        var references = new List<AiImageReference>();
+
+        if (document.PersonalProfile != null)
+        {
+            AddAiReference(references, document.PersonalProfile.AvatarPhotoPath, "profile", fileName => document.PersonalProfile.AvatarPhotoPath = fileName);
+            AddAiReference(references, document.PersonalProfile.FullBodyPhotoPath, "profile", fileName => document.PersonalProfile.FullBodyPhotoPath = fileName);
+        }
+
+        foreach (var image in document.OutfitGeneratedImages)
+            AddAiReference(references, image.ResultImagePath, "render", fileName => image.ResultImagePath = fileName);
+
+        return references;
+    }
+
     private static void AddReference(
         ICollection<ImageReference> references,
         string? imagePath,
@@ -773,6 +928,22 @@ public sealed class BackupService : IBackupService
             return;
 
         references.Add(new ImageReference(imagePath, fileName, applyRestoredPath));
+    }
+
+    private static void AddAiReference(
+        ICollection<AiImageReference> references,
+        string? imagePath,
+        string kind,
+        Action<string> applyRestoredPath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return;
+
+        var fileName = Path.GetFileName(imagePath);
+        if (string.IsNullOrWhiteSpace(fileName))
+            return;
+
+        references.Add(new AiImageReference(imagePath, fileName, kind, applyRestoredPath));
     }
 
     private static List<ClothingSnapshotDto> DeserializeSnapshotClothes(string? snapshotJson)
@@ -812,14 +983,59 @@ public sealed class BackupService : IBackupService
 
     private sealed record PackagedImage(string SourcePath, string EntryFileName);
 
+    private string? ResolveAiProfileImageSourcePath(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return null;
+
+        EnsureAiAssetStorageAvailable();
+
+        var path = _aiAssetStorageService.GetProfileReferenceFullPath(imagePath);
+        return File.Exists(path) ? path : null;
+    }
+
+    private string? ResolveAiGeneratedImageSourcePath(string? imagePath)
+    {
+        if (string.IsNullOrWhiteSpace(imagePath))
+            return null;
+
+        EnsureAiAssetStorageAvailable();
+
+        var path = _aiAssetStorageService.GetGeneratedImageFullPath(imagePath);
+        return File.Exists(path) ? path : null;
+    }
+
+    private string? ResolveAiImageSourcePath(string? imagePath, string kind)
+    {
+        return string.Equals(kind, "profile", StringComparison.OrdinalIgnoreCase)
+            ? ResolveAiProfileImageSourcePath(imagePath)
+            : ResolveAiGeneratedImageSourcePath(imagePath);
+    }
+
+    private void EnsureAiAssetStorageAvailable()
+    {
+        if (_aiAssetStorageService == null)
+            throw new InvalidOperationException("当前备份服务未配置 AI 资产存储服务，无法处理 AI 参考图和生成图。");
+    }
+
     private sealed record ImageReference(string ImagePath, string FileName, Action<string> ApplyRestoredPath);
 
-    private sealed record BackupImageAnalysis(int ReferencedCount, int AvailableCount, int MissingCount);
+    private sealed record AiImageReference(string ImagePath, string FileName, string Kind, Action<string> ApplyRestoredPath);
+
+    private sealed record BackupImageAnalysis(
+        int ReferencedCount,
+        int AvailableCount,
+        int MissingCount,
+        int AiReferencedCount,
+        int AiAvailableCount,
+        int AiMissingCount);
 
     private static async Task ClearExistingDataAsync(ClosetDbContext context)
     {
         context.OutfitWornRecords.RemoveRange(await context.OutfitWornRecords.ToListAsync());
         context.Favorites.RemoveRange(await context.Favorites.ToListAsync());
+        context.OutfitGeneratedImages.RemoveRange(await context.OutfitGeneratedImages.ToListAsync());
+        context.PersonalProfiles.RemoveRange(await context.PersonalProfiles.ToListAsync());
         context.OutfitClothes.RemoveRange(await context.OutfitClothes.ToListAsync());
         context.ClothingTags.RemoveRange(await context.ClothingTags.ToListAsync());
         context.Outfits.RemoveRange(await context.Outfits.ToListAsync());

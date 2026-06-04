@@ -127,7 +127,11 @@
         </LinearGradientBrush>
 
         <DataTemplate x:Key="OutfitCardTemplate">
-            <outfit:OutfitCard Outfit="{Binding}"/>
+            <outfit:OutfitCard Outfit="{Binding}"
+                               CardClicked="OutfitCard_CardClicked"
+                               EditClicked="OutfitCard_EditClicked"
+                               DeleteClicked="OutfitCard_DeleteClicked"
+                               FavoriteToggled="OutfitCard_FavoriteToggled"/>
         </DataTemplate>
     </UserControl.Resources>
 

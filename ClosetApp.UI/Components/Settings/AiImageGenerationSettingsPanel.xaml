@@ -1,0 +1,196 @@
+    <UserControl x:Class="ClosetApp.UI.Components.Settings.AiImageGenerationSettingsPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <UserControl.Resources>
+        <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
+            <Setter Property="Margin" Value="0,0,0,18"/>
+            <Setter Property="Padding" Value="22,20"/>
+            <Setter Property="CornerRadius" Value="22"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
+        <Style x:Key="SettingsButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        </Style>
+
+        <Style x:Key="IconCapsuleButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Width" Value="42"/>
+            <Setter Property="MinHeight" Value="42"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="FontSize" Value="16"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="PresetButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="MinHeight" Value="64"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Style.Triggers>
+                <Trigger Property="Tag" Value="active">
+                    <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource SettingsSectionCard}">
+        <StackPanel>
+            <TextBlock Text="AI 图片生成"
+                       Style="{StaticResource PageSectionTitleText}"/>
+            <TextBlock Text="配置 OpenAI 兼容接口、模型与 API Key，并快速检查个人档案是否准备好。"
+                       Style="{StaticResource PageSectionBodyText}"
+                       Margin="0,6,0,0"/>
+
+            <TextBlock Text="一键切换"
+                       Margin="0,16,0,6"
+                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <UniformGrid Columns="3">
+                <Button x:Name="BtnPresetOpenAiMain"
+                        Style="{StaticResource PresetButton}"
+                        Click="Preset_Click">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtPresetOpenAiMain"
+                                   Text="OpenAI 标准"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="gpt-image-1 · 官方默认"
+                                   Style="{StaticResource PageMutedBodyText}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnPresetOpenAi15"
+                        Style="{StaticResource PresetButton}"
+                        Margin="10,0,0,0"
+                        Click="Preset_Click">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtPresetOpenAi15"
+                                   Text="OpenAI 1.5"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="gpt-image-1.5 · 更高质量优先"
+                                   Style="{StaticResource PageMutedBodyText}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Button>
+                <Button x:Name="BtnPresetOpenAiMini"
+                        Style="{StaticResource PresetButton}"
+                        Margin="10,0,0,0"
+                        Click="Preset_Click">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtPresetOpenAiMini"
+                                   Text="OpenAI Mini"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="gpt-image-1-mini · 低成本尝试"
+                                   Style="{StaticResource PageMutedBodyText}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Button>
+            </UniformGrid>
+            <TextBlock Text="点击预设会立即把 Base URL、模型和超时切换到对应组合，并保留你当前保存的 API Key；如果已有 API Key，会自动测试连接，失败则回滚。"
+                       Style="{StaticResource PageMutedBodyText}"
+                       Margin="0,8,0,0"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock Text="Base URL" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBox x:Name="TxtBaseUrl"
+                     Text="{Binding AiBaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="模型" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="170"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <ComboBox x:Name="CmbModelPreset"
+                          Grid.Column="0"
+                          SelectionChanged="ModelPreset_SelectionChanged">
+                    <ComboBoxItem Content="gpt-image-1" Tag="gpt-image-1"/>
+                    <ComboBoxItem Content="gpt-image-1.5" Tag="gpt-image-1.5"/>
+                    <ComboBoxItem Content="gpt-image-1-mini" Tag="gpt-image-1-mini"/>
+                    <ComboBoxItem Content="自定义" Tag="__custom__"/>
+                </ComboBox>
+                <TextBox x:Name="TxtModel"
+                         Grid.Column="2"
+                         Text="{Binding AiModel, UpdateSourceTrigger=PropertyChanged}"/>
+            </Grid>
+            <TextBlock Text="推荐优先用 GPT Image 系列模型；如果你的兼容服务暴露了别的图片模型，也可以切到“自定义”。"
+                       Style="{StaticResource PageMutedBodyText}"
+                       Margin="0,6,0,0"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock Text="API Key" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="10"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="TxtApiKeyVisible"
+                         Grid.Column="0"
+                         Visibility="Collapsed"
+                         TextChanged="ApiKeyVisible_TextChanged"/>
+                <PasswordBox x:Name="TxtApiKey"
+                             Grid.Column="0"
+                             PasswordChanged="ApiKeyPasswordChanged"/>
+                <Button x:Name="BtnToggleApiKeyVisibility"
+                        Grid.Column="2"
+                        Content="👁"
+                        Style="{StaticResource IconCapsuleButton}"
+                        ToolTip="显示或隐藏 API Key"
+                        Click="ToggleApiKeyVisibility_Click"/>
+            </Grid>
+            <TextBlock x:Name="TxtApiKeyHint"
+                       Text="已保存的 API Key 会常驻显示在这里，你可以通过右侧按钮切换明文或隐藏。"
+                       Style="{StaticResource PageMutedBodyText}"
+                       Margin="0,6,0,0"
+                       TextWrapping="Wrap"/>
+
+            <TextBlock Text="超时（秒）" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+            <TextBox x:Name="TxtTimeoutSeconds"
+                     Text="{Binding AiTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <WrapPanel Margin="0,16,0,0">
+                <Button Content="保存配置"
+                        Style="{StaticResource SettingsButton}"
+                        Click="Save_Click"/>
+                <Button Content="测试连接"
+                        Style="{StaticResource CapsuleButton}"
+                        Margin="10,0,0,0"
+                        Click="TestConnection_Click"/>
+                <Button Content="编辑个人档案"
+                        Style="{StaticResource CapsuleButton}"
+                        Margin="10,0,0,0"
+                        Click="OpenProfile_Click"/>
+            </WrapPanel>
+
+            <Border Background="{DynamicResource SurfaceSectionBrush}"
+                    BorderBrush="{DynamicResource BorderLightBrush}"
+                    BorderThickness="1"
+                    CornerRadius="12"
+                    Padding="12"
+                    Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="{Binding AiSettingsSummary}"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <TextBlock Text="{Binding AiSettingsDetail}"
+                               Style="{StaticResource PageMutedBodyText}"
+                               Margin="0,6,0,0"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

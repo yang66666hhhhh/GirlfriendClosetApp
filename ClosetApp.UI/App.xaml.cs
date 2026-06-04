@@ -106,11 +106,14 @@ public partial class App : System.Windows.Application
         services.AddScoped<ITagRepository, TagRepository>();
         services.AddScoped<IFavoriteRepository, FavoriteRepository>();
         services.AddScoped<IOutfitWornRecordRepository, OutfitWornRecordRepository>();
+        services.AddScoped<IPersonalProfileRepository, PersonalProfileRepository>();
+        services.AddScoped<IOutfitGeneratedImageRepository, OutfitGeneratedImageRepository>();
 
         services.AddScoped<IClothingService, ClothingService>();
         services.AddScoped<IOutfitService, OutfitService>();
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IOutfitRecommendationService, OutfitRecommendationService>();
+        services.AddScoped<IPersonalProfileService, PersonalProfileService>();
         services.AddScoped<GetWardrobeOverview>();
         services.AddScoped<CompleteClothingMetadataBatch>();
         services.AddScoped<ClearWardrobeByTypes>();
@@ -122,13 +125,22 @@ public partial class App : System.Windows.Application
         services.AddScoped<GetRecommendationReadinessSummary>();
         services.AddScoped<GetTodayRecommendations>();
         services.AddScoped<GetTagsForSelection>();
+        services.AddScoped<GetAiGenerationReadiness>();
+        services.AddScoped<GetOutfitGeneratedImages>();
+        services.AddScoped<SetPrimaryOutfitGeneratedImage>();
+        services.AddScoped<DeleteOutfitGeneratedImage>();
+        services.AddScoped<GenerateOutfitEffectImage>();
+        services.AddScoped<SaveUploadedOutfitGeneratedImage>();
         services.AddMemoryCache();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IImageMaintenanceService, ImageMaintenanceService>();
         services.AddSingleton<IImageStorageService, ImageStorageService>();
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
+        services.AddSingleton<IAiAssetStorageService, AiAssetStorageService>();
+        services.AddSingleton<IAiGenerationPreferencesService, AiGenerationPreferencesService>();
         services.AddSingleton<IWeatherPreferencesService, WeatherPreferencesService>();
         services.AddSingleton<IRecommendationPreferencesService, RecommendationPreferencesService>();
+        services.AddSingleton<IAiImageGenerationService, OpenAiCompatibleImageGenerationService>();
         services.AddHttpClient<IWeatherService, WeatherService>(client =>
         {
             client.Timeout = TimeSpan.FromSeconds(10);

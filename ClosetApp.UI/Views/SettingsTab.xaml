@@ -242,6 +242,8 @@
                     </StackPanel>
 
                     <StackPanel Grid.Column="2">
+                        <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
+
                         <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
                                                                   OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
 

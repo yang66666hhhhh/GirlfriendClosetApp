@@ -32,6 +32,18 @@ public static class AppPaths
 
     public static string BackupsDir => Path.Combine(_baseDir, "backups");
 
+    public static string AiDir => Path.Combine(_baseDir, "ai");
+
+    public static string AiProfileDir => Path.Combine(AiDir, "profile");
+
+    public static string AiRendersDir => Path.Combine(AiDir, "renders");
+
+    public static string AiRendersOriginalsDir => Path.Combine(AiRendersDir, "originals");
+
+    public static string AiRendersDisplayDir => Path.Combine(AiRendersDir, "display");
+
+    public static string AiRendersThumbnailsDir => Path.Combine(AiRendersDir, "thumbnails");
+
     private static void EnsureDirectories()
     {
         Directory.CreateDirectory(_baseDir);
@@ -41,6 +53,12 @@ public static class AppPaths
         Directory.CreateDirectory(ThumbnailsDir);
         Directory.CreateDirectory(LogsDir);
         Directory.CreateDirectory(BackupsDir);
+        Directory.CreateDirectory(AiDir);
+        Directory.CreateDirectory(AiProfileDir);
+        Directory.CreateDirectory(AiRendersDir);
+        Directory.CreateDirectory(AiRendersOriginalsDir);
+        Directory.CreateDirectory(AiRendersDisplayDir);
+        Directory.CreateDirectory(AiRendersThumbnailsDir);
     }
 
     public static string GetImageFullPath(string relativePath)

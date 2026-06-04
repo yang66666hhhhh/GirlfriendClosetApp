@@ -17,6 +17,9 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
     private readonly IRecommendationPreferencesService _recommendationPreferencesService;
+    private readonly IAiGenerationPreferencesService? _aiGenerationPreferencesService;
+    private readonly IPersonalProfileService? _personalProfileService;
+    private readonly IAiImageGenerationService? _aiImageGenerationService;
     private readonly ThemeService _themeService;
 
     [ObservableProperty]
@@ -143,6 +146,21 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private IReadOnlyList<BackupHistoryItem> _backupHistory = [];
 
+    [ObservableProperty]
+    private string _aiBaseUrl = "https://api.openai.com/v1";
+
+    [ObservableProperty]
+    private string _aiModel = "gpt-image-1";
+
+    [ObservableProperty]
+    private string _aiTimeoutSeconds = "60";
+
+    [ObservableProperty]
+    private string _aiSettingsSummary = "还没有完成 AI 图片生成配置。";
+
+    [ObservableProperty]
+    private string _aiSettingsDetail = "先保存 Base URL、模型和 API Key，再补齐头像、全身照和云端同意。";
+
     private bool _isRefreshingWeather;
 
     public SettingsViewModel(
@@ -151,7 +169,10 @@ public partial class SettingsViewModel : ObservableObject
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
-        ThemeService themeService)
+        ThemeService themeService,
+        IAiGenerationPreferencesService? aiGenerationPreferencesService = null,
+        IPersonalProfileService? personalProfileService = null,
+        IAiImageGenerationService? aiImageGenerationService = null)
     {
         _backupService = backupService;
         _imageMaintenanceService = imageMaintenanceService;
@@ -159,6 +180,9 @@ public partial class SettingsViewModel : ObservableObject
         _weatherPreferencesService = weatherPreferencesService;
         _recommendationPreferencesService = recommendationPreferencesService;
         _themeService = themeService;
+        _aiGenerationPreferencesService = aiGenerationPreferencesService;
+        _personalProfileService = personalProfileService;
+        _aiImageGenerationService = aiImageGenerationService;
     }
 
     public AppThemeKind CurrentThemeValue => _themeService.CurrentTheme;
@@ -183,8 +207,64 @@ public partial class SettingsViewModel : ObservableObject
     {
         await LoadWeatherPreferencesAsync();
         await LoadRecommendationPreferencesAsync();
+        await RefreshAiGenerationSettingsAsync();
         CurrentTheme = _themeService.CurrentTheme;
         UpdateThemeText();
+    }
+
+    public async Task RefreshAiGenerationSettingsAsync()
+    {
+        if (_aiGenerationPreferencesService == null || _personalProfileService == null)
+        {
+            AiSettingsSummary = "当前环境未启用 AI 图片生成配置。";
+            AiSettingsDetail = "等服务接入后，这里会显示 provider 配置和个人档案准备度。";
+            return;
+        }
+
+        var preferences = await _aiGenerationPreferencesService.GetAsync();
+        var profile = await _personalProfileService.GetCurrentAsync();
+
+        AiBaseUrl = preferences.BaseUrl;
+        AiModel = preferences.Model;
+        AiTimeoutSeconds = preferences.TimeoutSeconds.ToString();
+
+        var providerReady =
+            !string.IsNullOrWhiteSpace(preferences.BaseUrl) &&
+            !string.IsNullOrWhiteSpace(preferences.Model) &&
+            preferences.HasEncryptedApiKey;
+
+        var profileReady =
+            profile != null &&
+            !string.IsNullOrWhiteSpace(profile.DisplayName) &&
+            profile.HasMinimumReferencePhotos &&
+            profile.HasConsent;
+
+        AiSettingsSummary = providerReady && profileReady
+            ? "AI 图片生成已准备好。"
+            : "AI 图片生成还差一点准备。";
+
+        var detailParts = new List<string>();
+        detailParts.Add(providerReady
+            ? $"当前使用 {preferences.Model} · 已保存 API Key。"
+            : "还没有完成 provider 配置。");
+        detailParts.Add(profileReady
+            ? $"个人档案已完成：{profile!.DisplayName}。"
+            : "个人档案还缺少昵称、头像照或云端同意。");
+
+        if (preferences.LastConnectionCheckAt.HasValue)
+            detailParts.Add($"最近一次测试：{preferences.LastConnectionCheckAt:yyyy-MM-dd HH:mm}。");
+
+        AiSettingsDetail = string.Join(" ", detailParts);
+    }
+
+    public async Task TestAiConnectionAsync()
+    {
+        if (_aiImageGenerationService == null || _aiGenerationPreferencesService == null)
+            throw new InvalidOperationException("当前环境未启用 AI 图片生成服务。");
+
+        await _aiImageGenerationService.TestConnectionAsync();
+        await _aiGenerationPreferencesService.MarkConnectionCheckedAsync(DateTime.Now);
+        await RefreshAiGenerationSettingsAsync();
     }
 
     public async Task ApplyThemeAsync(AppThemeKind theme)

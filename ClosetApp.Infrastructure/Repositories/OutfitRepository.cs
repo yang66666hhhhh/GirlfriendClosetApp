@@ -26,7 +26,7 @@ public class OutfitRepository : IOutfitRepository
             .ThenInclude(c => c.ClothingTags)
             .ThenInclude(ct => ct.Tag)
             .Include(o => o.Favorites)
-            .Include(o => o.WornRecords)
+            .Include(o => o.GeneratedImages)
             .ToListAsync();
     }
 
@@ -39,7 +39,7 @@ public class OutfitRepository : IOutfitRepository
             .ThenInclude(c => c.ClothingTags)
             .ThenInclude(ct => ct.Tag)
             .Include(o => o.Favorites)
-            .Include(o => o.WornRecords)
+            .Include(o => o.GeneratedImages)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
 
@@ -49,6 +49,7 @@ public class OutfitRepository : IOutfitRepository
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
             .Include(o => o.Favorites)
+            .Include(o => o.GeneratedImages)
             .Include(o => o.WornRecords)
             .FirstOrDefaultAsync(o => o.Id == id);
     }
@@ -80,6 +81,7 @@ public class OutfitRepository : IOutfitRepository
         outfit.Notes = entity.Notes;
         outfit.WornDate = entity.WornDate;
         outfit.WearCount = entity.WearCount;
+        outfit.OriginalClothingCount = entity.OriginalClothingCount;
 
         var existingLinks = outfit.OutfitClothes.ToList();
         foreach (var link in existingLinks.Where(link => !clothingIds.Contains(link.ClothingId)))
@@ -245,6 +247,7 @@ public class OutfitRepository : IOutfitRepository
             .ThenInclude(c => c.ClothingTags)
             .ThenInclude(ct => ct.Tag)
             .Include(o => o.Favorites)
+            .Include(o => o.GeneratedImages)
             .ToListAsync();
     }
 
@@ -258,6 +261,7 @@ public class OutfitRepository : IOutfitRepository
             .ThenInclude(c => c.ClothingTags)
             .ThenInclude(ct => ct.Tag)
             .Include(o => o.Favorites)
+            .Include(o => o.GeneratedImages)
             .ToListAsync();
     }
 
@@ -273,6 +277,7 @@ public class OutfitRepository : IOutfitRepository
             .ThenInclude(c => c.ClothingTags)
             .ThenInclude(ct => ct.Tag)
             .Include(o => o.Favorites)
+            .Include(o => o.GeneratedImages)
             .ToListAsync();
     }
 }

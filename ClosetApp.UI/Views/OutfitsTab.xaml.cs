@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.UI.Components.Outfit.Controls;
 using ClosetApp.UI.Components.Outfit.Editor;
-using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
@@ -15,89 +14,74 @@ namespace ClosetApp.UI.Views;
 public partial class OutfitsTab : UserControl
 {
     private readonly OutfitsViewModel _viewModel;
+    private Task? _refreshTask;
 
     public OutfitsTab()
     {
         _viewModel = App.Services.GetRequiredService<OutfitsViewModel>();
         InitializeComponent();
         DataContext = _viewModel;
-        _viewModel.PropertyChanged += (_, e) =>
-        {
-            if (e.PropertyName is nameof(OutfitsViewModel.DisplayedOutfits) or nameof(OutfitsViewModel.IsEmpty))
-            {
-                AttachCardHandlers();
-            }
-        };
-        Loaded += async (_, _) => await RefreshAsync();
     }
 
-    public async Task RefreshAsync()
+    public Task RefreshAsync()
+    {
+        _refreshTask ??= RefreshCoreAsync();
+        return _refreshTask;
+    }
+
+    private async Task RefreshCoreAsync()
     {
         try
         {
             await _viewModel.LoadOutfitsAsync();
-            AttachCardHandlers();
         }
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("搭配列表刷新失败", $"无法加载最新搭配数据：{ex.Message}");
         }
-    }
-
-    private void AttachCardHandlers()
-    {
-        Dispatcher.BeginInvoke(new Action(() =>
+        finally
         {
-            foreach (var item in OutfitsList.Items)
-            {
-                var container = OutfitsList.ItemContainerGenerator.ContainerFromItem(item) as ContentPresenter;
-                if (container == null)
-                    continue;
-
-                var card = VisualTreeHelperExtensions.FindVisualChild<OutfitCard>(container);
-                if (card == null)
-                    continue;
-
-                card.EditCompleted -= OutfitCard_EditCompleted;
-                card.DeleteRequested -= OutfitCard_DeleteRequested;
-                card.WornRequested -= OutfitCard_WornRequested;
-                card.FavoriteToggled -= OutfitCard_FavoriteToggled;
-                card.EditCompleted += OutfitCard_EditCompleted;
-                card.DeleteRequested += OutfitCard_DeleteRequested;
-                card.WornRequested += OutfitCard_WornRequested;
-                card.FavoriteToggled += OutfitCard_FavoriteToggled;
-            }
-        }), System.Windows.Threading.DispatcherPriority.Loaded);
+            _refreshTask = null;
+        }
     }
 
     private void CreateOutfit_Click(object sender, RoutedEventArgs e)
     {
         EditorModal.Show(new OutfitEditorPanel(), async result =>
         {
-            if (result.Type == EditorResultType.Saved)
+            if (result.Type == EditorResultType.Saved && result.Entity != null)
             {
                 await _viewModel.RefreshAfterOutfitSavedWithFeedbackAsync(
+                    result.Entity.Id,
                     "已保存搭配",
                     "新的搭配已经出现在列表里。");
+                _viewModel.SelectOutfit(result.Entity);
             }
         });
     }
 
-    private async void OutfitCard_EditCompleted(object? sender, OutfitEntity outfit)
+    private void OutfitCard_CardClicked(object sender, RoutedEventArgs e)
     {
-        await _viewModel.RefreshAfterOutfitSavedWithFeedbackAsync(
-            $"已更新「{outfit.Name}」",
-            "修改后的搭配已经同步到列表。");
+        if (sender is not OutfitCard { Outfit: { } outfit })
+            return;
+
+        ModalService.Instance.Show(new OutfitWorkspaceDialog(outfit));
     }
 
-    private async void OutfitCard_DeleteRequested(object? sender, OutfitEntity outfit)
+    private void OutfitCard_EditClicked(object sender, RoutedEventArgs e)
     {
+        if (sender is not OutfitCard { Outfit: { } outfit })
+            return;
+
+        OpenOutfitEditor(outfit);
+    }
+
+    private async void OutfitCard_DeleteClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not OutfitCard { Outfit: { } outfit })
+            return;
+
         await _viewModel.DeleteOutfitWithFeedbackAsync(outfit);
-    }
-
-    private async void OutfitCard_WornRequested(object? sender, OutfitEntity outfit)
-    {
-        await _viewModel.RecordOutfitWornWithFeedbackAsync(outfit, outfit.Name);
     }
 
     private async void OutfitCard_FavoriteToggled(object? sender, RoutedEventArgs e)
@@ -126,6 +110,21 @@ public partial class OutfitsTab : UserControl
             return;
 
         await window.NavigateToSettingsAsync();
+    }
+
+    private void OpenOutfitEditor(OutfitEntity outfit)
+    {
+        EditorModal.Show(new OutfitEditorPanel(outfit), async result =>
+        {
+            if (result.Type == EditorResultType.Saved && result.Entity != null)
+            {
+                await _viewModel.RefreshAfterOutfitSavedWithFeedbackAsync(
+                    result.Entity.Id,
+                    $"已更新「{result.Entity.Name}」",
+                    "修改后的搭配已经同步到列表。");
+                _viewModel.SelectOutfit(result.Entity);
+            }
+        });
     }
 
 }

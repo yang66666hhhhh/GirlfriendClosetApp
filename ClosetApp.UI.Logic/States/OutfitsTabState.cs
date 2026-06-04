@@ -67,6 +67,34 @@ public sealed class OutfitsTabState
         IsLoading = false;
     }
 
+    public void UpsertOutfit(Outfit outfit)
+    {
+        var index = _allOutfits.FindIndex(item => item.Id == outfit.Id);
+        if (index >= 0)
+        {
+            _allOutfits[index] = outfit;
+        }
+        else
+        {
+            _allOutfits.Add(outfit);
+        }
+
+        ApplyFilters();
+        IsLoading = false;
+    }
+
+    public bool RemoveOutfit(Guid outfitId)
+    {
+        var removed = _allOutfits.RemoveAll(item => item.Id == outfitId) > 0;
+        if (removed)
+        {
+            ApplyFilters();
+        }
+
+        IsLoading = false;
+        return removed;
+    }
+
     public void SetSortBy(OutfitSortBy sortBy)
     {
         _sortBy = sortBy;

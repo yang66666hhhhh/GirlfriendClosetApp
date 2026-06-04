@@ -2,6 +2,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Text.Json;
 using ClosetApp.Application.DTOs;
+using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Data;
@@ -279,6 +280,134 @@ public class BackupServiceTests
             Assert.Equal(1, exportResult.IncludedImageCount);
             Assert.Equal(1, importResult.RestoredImageCount);
             Assert.Empty(importResult.MissingImageFiles);
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(tempDir))
+                    Directory.Delete(tempDir, recursive: true);
+            }
+            catch
+            {
+            }
+        }
+    }
+
+    [Fact]
+    public async Task ExportAndImport_Zip_IncludesPersonalProfileAndGeneratedImages()
+    {
+        var tempDir = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var storageDir = Path.Combine(tempDir, "storage");
+        var historyDir = Path.Combine(tempDir, "history");
+        var aiDir = Path.Combine(tempDir, "ai");
+
+        try
+        {
+            var options = new DbContextOptionsBuilder<ClosetDbContext>()
+                .UseSqlite($"Data Source={dbPath}")
+                .Options;
+            var imageStorage = new ImageStorageService(storageDir);
+            var aiStorage = new FakeAiAssetStorageService(aiDir);
+            var sourceImagePath = Path.Combine(tempDir, "source.png");
+            var profileImagePath = Path.Combine(tempDir, "profile.png");
+            var renderImagePath = Path.Combine(tempDir, "render.png");
+            await CreateSourceImageAsync(sourceImagePath);
+            await CreateSourceImageAsync(profileImagePath);
+            await CreateSourceImageAsync(renderImagePath);
+
+            var clothingImage = await imageStorage.SaveImageAsync(sourceImagePath);
+            var avatarImage = await aiStorage.SaveProfileReferenceImageAsync(profileImagePath, "avatar");
+            var bodyImage = await aiStorage.SaveProfileReferenceImageAsync(profileImagePath, "full-body");
+            var renderBytes = await File.ReadAllBytesAsync(renderImagePath);
+            var generatedImage = await aiStorage.SaveGeneratedImageAsync(renderBytes, "image/png");
+
+            var outfitId = Guid.NewGuid();
+
+            await using (var setupContext = new ClosetDbContext(options))
+            {
+                await setupContext.Database.EnsureDeletedAsync();
+                await setupContext.Database.EnsureCreatedAsync();
+
+                var clothing = new Clothing
+                {
+                    Id = Guid.NewGuid(),
+                    Name = "米色风衣",
+                    Type = ClothingType.Outerwear,
+                    Season = Season.Autumn,
+                    ImagePath = clothingImage
+                };
+
+                var outfit = new Outfit
+                {
+                    Id = outfitId,
+                    Name = "AI 通勤搭配",
+                    Scene = OutfitScene.Work,
+                    Season = Season.Autumn
+                };
+                outfit.OutfitClothes.Add(new OutfitClothing
+                {
+                    OutfitId = outfitId,
+                    ClothingId = clothing.Id,
+                    Clothing = clothing
+                });
+
+                setupContext.Clothes.Add(clothing);
+                setupContext.Outfits.Add(outfit);
+                setupContext.PersonalProfiles.Add(new PersonalProfile
+                {
+                    DisplayName = "小楠",
+                    AvatarPhotoPath = avatarImage,
+                    FullBodyPhotoPath = bodyImage,
+                    CloudUploadConsentAcceptedAt = DateTime.Now
+                });
+                setupContext.OutfitGeneratedImages.Add(new OutfitGeneratedImage
+                {
+                    OutfitId = outfitId,
+                    ProviderKind = "OpenAI-Compatible",
+                    Model = "gpt-image-1",
+                    PromptSnapshot = "prompt",
+                    ProfileSnapshotJson = "{}",
+                    OutfitSnapshotJson = "{}",
+                    OptionSnapshotJson = "{}",
+                    ResultImagePath = generatedImage,
+                    IsPrimary = true,
+                    Status = "Succeeded"
+                });
+                await setupContext.SaveChangesAsync();
+            }
+
+            var service = new BackupService(new TestDbContextFactory(options), imageStorage, historyDir, aiStorage);
+            var backupPath = Path.Combine(tempDir, "ai-backup.zip");
+
+            await service.ExportAsync(backupPath);
+
+            await using (var resetContext = new ClosetDbContext(options))
+            {
+                resetContext.OutfitGeneratedImages.RemoveRange(await resetContext.OutfitGeneratedImages.ToListAsync());
+                resetContext.PersonalProfiles.RemoveRange(await resetContext.PersonalProfiles.ToListAsync());
+                resetContext.Outfits.RemoveRange(await resetContext.Outfits.ToListAsync());
+                resetContext.Clothes.RemoveRange(await resetContext.Clothes.ToListAsync());
+                await resetContext.SaveChangesAsync();
+            }
+
+            await aiStorage.TryDeleteProfileReferenceImageAsync(avatarImage);
+            await aiStorage.TryDeleteProfileReferenceImageAsync(bodyImage);
+            await aiStorage.TryDeleteGeneratedImageAsync(generatedImage);
+
+            var importResult = await service.ImportAsync(backupPath);
+
+            await using var assertContext = new ClosetDbContext(options);
+            var restoredProfile = Assert.Single(await assertContext.PersonalProfiles.ToListAsync());
+            var restoredRender = Assert.Single(await assertContext.OutfitGeneratedImages.ToListAsync());
+
+            Assert.Equal("小楠", restoredProfile.DisplayName);
+            Assert.Equal("gpt-image-1", restoredRender.Model);
+            Assert.Equal(4, importResult.RestoredImageCount);
+            Assert.True(File.Exists(aiStorage.GetProfileReferenceFullPath(restoredProfile.AvatarPhotoPath!)));
+            Assert.True(File.Exists(aiStorage.GetGeneratedImageFullPath(restoredRender.ResultImagePath!)));
         }
         finally
         {
@@ -704,5 +833,96 @@ public class BackupServiceTests
         public string GetThumbnailFullPath(string relativePath) => _inner.GetThumbnailFullPath(relativePath);
         public IReadOnlyList<string> GetOriginalImageFullPaths() => _inner.GetOriginalImageFullPaths();
         public IReadOnlyList<string> GetImageAssetFullPaths(string relativePath) => _inner.GetImageAssetFullPaths(relativePath);
+    }
+
+    private sealed class FakeAiAssetStorageService : IAiAssetStorageService
+    {
+        private readonly string _profileDir;
+        private readonly string _renderOriginalsDir;
+        private readonly string _renderDisplayDir;
+        private readonly string _renderThumbnailsDir;
+
+        public FakeAiAssetStorageService(string baseDir)
+        {
+            _profileDir = Path.Combine(baseDir, "profile");
+            _renderOriginalsDir = Path.Combine(baseDir, "renders", "originals");
+            _renderDisplayDir = Path.Combine(baseDir, "renders", "display");
+            _renderThumbnailsDir = Path.Combine(baseDir, "renders", "thumbnails");
+            Directory.CreateDirectory(_profileDir);
+            Directory.CreateDirectory(_renderOriginalsDir);
+            Directory.CreateDirectory(_renderDisplayDir);
+            Directory.CreateDirectory(_renderThumbnailsDir);
+        }
+
+        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName)
+        {
+            var fileName = $"{slotName}{Path.GetExtension(sourcePath)}";
+            File.Copy(sourcePath, Path.Combine(_profileDir, fileName), overwrite: true);
+            return Task.FromResult(fileName);
+        }
+
+        public async Task<string> SaveGeneratedImageAsync(byte[] bytes, string mimeType)
+        {
+            var fileName = $"{Guid.NewGuid():N}.png";
+            var originalPath = Path.Combine(_renderOriginalsDir, fileName);
+            await File.WriteAllBytesAsync(originalPath, bytes);
+            File.Copy(originalPath, Path.Combine(_renderDisplayDir, fileName), overwrite: true);
+            File.Copy(originalPath, Path.Combine(_renderThumbnailsDir, $"{Path.GetFileNameWithoutExtension(fileName)}_thumb.png"), overwrite: true);
+            return fileName;
+        }
+
+        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName)
+        {
+            File.Copy(sourcePath, Path.Combine(_profileDir, storedFileName), overwrite: true);
+            return Task.CompletedTask;
+        }
+
+        public Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName)
+        {
+            var originalPath = Path.Combine(_renderOriginalsDir, storedFileName);
+            File.Copy(sourcePath, originalPath, overwrite: true);
+            File.Copy(sourcePath, Path.Combine(_renderDisplayDir, storedFileName), overwrite: true);
+            File.Copy(sourcePath, Path.Combine(_renderThumbnailsDir, $"{Path.GetFileNameWithoutExtension(storedFileName)}_thumb{Path.GetExtension(storedFileName)}"), overwrite: true);
+            return Task.CompletedTask;
+        }
+
+        public Task TryDeleteProfileReferenceImageAsync(string? imagePath)
+        {
+            if (!string.IsNullOrWhiteSpace(imagePath))
+            {
+                var fullPath = Path.Combine(_profileDir, imagePath);
+                if (File.Exists(fullPath))
+                    File.Delete(fullPath);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public Task TryDeleteGeneratedImageAsync(string? imagePath)
+        {
+            if (string.IsNullOrWhiteSpace(imagePath))
+                return Task.CompletedTask;
+
+            foreach (var asset in GetGeneratedImageAssetFullPaths(imagePath))
+            {
+                if (File.Exists(asset))
+                    File.Delete(asset);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        public string GetProfileReferenceFullPath(string relativePath) => Path.Combine(_profileDir, relativePath);
+        public string GetGeneratedImageFullPath(string relativePath) => Path.Combine(_renderOriginalsDir, relativePath);
+
+        public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath)
+        {
+            return
+            [
+                Path.Combine(_renderOriginalsDir, relativePath),
+                Path.Combine(_renderDisplayDir, relativePath),
+                Path.Combine(_renderThumbnailsDir, $"{Path.GetFileNameWithoutExtension(relativePath)}_thumb{Path.GetExtension(relativePath)}")
+            ];
+        }
     }
 }

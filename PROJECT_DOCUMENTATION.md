@@ -47,7 +47,7 @@ View / Component / State
 ```text
 GirlfriendClosetApp/
 ├── ClosetApp.Domain/
-│   ├── Entities/                 # Clothing, Outfit, Tag, Favorite, OutfitWornRecord
+│   ├── Entities/                 # Clothing, Outfit, Tag, Favorite, OutfitWornRecord, PersonalProfile, OutfitGeneratedImage
 │   ├── Enums/                    # ClothingType, Season, OutfitScene, TagCategory, AppThemeKind
 │   ├── Interfaces/               # 仓储接口
 │   └── Clothing/                 # GarmentType, DisplayCategory, LayerRole, ClothingMappings, ClothingTaxonomy
@@ -60,7 +60,7 @@ GirlfriendClosetApp/
 ├── ClosetApp.Infrastructure/
 │   ├── Data/                     # ClosetDbContext, DesignTimeDbContextFactory, ClosetDatabaseInitializer
 │   ├── Repositories/             # 仓储实现
-│   ├── Services/                 # BackupService, ImageStorageService, WeatherService, RecommendationPreferencesService...
+│   ├── Services/                 # BackupService, ImageStorageService, AiAssetStorageService, OpenAiCompatibleImageGenerationService...
 │   └── Migrations/               # EF Core 迁移
 ├── ClosetApp.UI/
 │   ├── Views/                    # ClothesTab, OutfitsTab, TagsTab, SettingsTab, NavigationSidebar
@@ -115,6 +115,12 @@ GirlfriendClosetApp/
 - `ClothingTag`
 - `OutfitClothing`
 - `Favorite`
+- `PersonalProfile`
+  - 单活跃档案
+  - 保存昵称、身高、外形特征、风格偏好、头像、全身照和云端同意时间
+- `OutfitGeneratedImage`
+  - 挂到 `Outfit`
+  - 保存 provider、模型、prompt / 档案 / 搭配 / 选项快照、结果图路径、主图标记和状态
 - `OutfitWornRecord`
   - `Guid? OutfitId`（可空，支持搭配删除后保留记录）
   - `DateTime WornDate`
@@ -183,6 +189,8 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 展示搭配列表
 - 创建 / 编辑 / 删除搭配
 - 记录穿着行为
+- 从搭配卡片打开效果图工作台浮窗，集中查看、生成、上传和管理 AI 效果图
+- 效果图工作台同时支持云端生成和手动上传效果图，两者都会进入同一套历史、主图和删除流程
 - 根据天气、季节、收藏、最近穿着、穿着频次、场景、标签、颜色偏好和手动推荐偏好给出今日推荐
 - 推荐不足时提示缺少的季节或搭配整理缺口
 - 使用 `OutfitEditorPanel` 与 `OutfitsTabState`
@@ -205,6 +213,7 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - 资源与目录区由 `StorageLocationsSettingsPanel` 承接，包括数据目录、数据库、图片目录、缓存目录和应用目录入口
 - 系统日志区由 `LogMaintenanceSettingsPanel` 承接，包括日志统计刷新、日志目录入口和历史日志清理
 - 图片资产治理由 `ImageMaintenanceSettingsPanel` 承接，包括缓存清理、缺失缓存重建、缺失图片修复、孤儿原图清理和历史图片检查
+- AI 图片生成配置由 `AiImageGenerationSettingsPanel` 承接，包括 Base URL、模型预设切换/自定义输入、API Key 常驻显示/隐藏切换、连接测试和个人档案入口
 - 天气与今日推荐偏好由 `WeatherPreferencesSettingsPanel` 承接，包括城市保存、天气刷新和推荐偏好设置
 - 外观与应用信息由 `AppearanceSettingsPanel` 承接，包括主题切换、版本展示和应用目录入口
 - 备份与恢复由 `BackupSettingsPanel` 承接，包括备份导出 / 导入、导出前校验、导入结果摘要和备份历史展示
@@ -272,6 +281,13 @@ GarmentType 与 ClothingType 的关系：`GarmentType` 是更细的分类，`Clo
 - `Components/Outfit/Controls/OutfitCard`
   - 显示搭配变化提示（原 X 件，现 Y 件）
   - 使用玫瑰色背景突出显示
+  - 预览区只负责展示 `OutfitPreviewCanvas`
+  - 卡片保留标题、轻量元信息、AI 状态、收藏和更多菜单
+  - 点击卡片打开 `Components/Shared/Modal/OutfitWorkspaceDialog`
+- `Components/Shared/Modal/OutfitWorkspaceDialog`
+  - 作为搭配的 AI 效果图工作台
+  - 打开后直接展示当前主效果图或最近一张效果图
+  - 下方只保留历史缩略图与生成 / 上传 / 管理入口，不再混入原始搭配预览
 - `Components/Outfit/Editor/OutfitEditorPanel`
   - 名称字段为选填，留空自动命名为"未命名"
 
@@ -554,6 +570,7 @@ string BuildDefaultBackupPath();
 
 - `backup.json`
 - `images/` 目录下的图片文件
+- 个人参考照与 AI 效果图文件
 
 特点：
 
@@ -592,6 +609,7 @@ string BuildDefaultBackupPath();
 | `CreateOutfitDto` / `UpdateOutfitDto` / `OutfitDto` / `OutfitSummaryDto` | 搭配 CRUD |
 | `RecommendedOutfitDto` / `RecommendationReadinessSummaryDto` | 推荐相关 |
 | `TodayRecommendationResult` / `TodayRecommendationRequest` | 今日推荐编排结果与请求 |
+| `AiGenerationDtos` | 个人档案、AI 配置、效果图生成与结果 |
 | `ImageMaintenanceDtos` | 图片维护 |
 | `BatchClothingImportDtos` | 批量导入预览与选项 |
 | `BatchClothingCompletionDtos` | 批量补全元数据 |
@@ -611,6 +629,7 @@ string BuildDefaultBackupPath();
 - 资源与目录区已拆为 `StorageLocationsSettingsPanel`
 - 系统日志区已拆为 `LogMaintenanceSettingsPanel`
 - 图片资产治理区已拆为 `ImageMaintenanceSettingsPanel`，`SettingsTab` 只负责刷新协调和其它设置分组
+- AI 配置区已拆为 `AiImageGenerationSettingsPanel`，`SettingsTab` 只负责页面级刷新与跨页同步
 - 天气与推荐偏好区已拆为 `WeatherPreferencesSettingsPanel`，保存后通过事件通知父页刷新搭配页
 - 外观与应用信息区已拆为 `AppearanceSettingsPanel`，主题切换通过事件交还父页执行
 - 备份与恢复区已拆为 `BackupSettingsPanel`，导入成功后通过事件通知父页刷新衣柜、搭配和标签
@@ -671,6 +690,12 @@ public class RecommendationPreferences
 │   ├── originals/
 │   ├── display/
 │   └── thumbnails/
+├── ai/
+│   ├── profile/
+│   └── renders/
+│       ├── originals/
+│       ├── display/
+│       └── thumbnails/
 ├── logs/
 └── backups/
 ```
@@ -690,11 +715,13 @@ public class RecommendationPreferences
 - `ClothingImageLoader` 还应对解码失败结果做短时负缓存，避免坏图、损坏缓存或已失效路径在滚动过程中被反复后台解码；成功加载后要清除该失败记录，设置页清理图片缓存时也要一并清空
 - 备份导入失败时，设置页最近一次导入状态必须明确展示失败阶段、数据库是否已回滚，以及导入过程中已恢复的图片数量，避免用户只看到一句笼统的“导入失败”
 
-图片资产按用途分为三类：
+图片资产按用途分为五类：
 
 - `Original`：原始资产，编辑器、备份和图片修复使用，保存时不压缩覆盖
 - `Display`：衣柜瀑布流、搭配卡片、穿搭预览等主视觉使用，默认最大边约 900px
 - `Thumbnail`：小型选择卡、摘要列表等轻量入口使用，默认最大边约 200px
+- `AI Profile`：个人头像 / 可选全身照，供云端图片生成服务读取；头像是最低生成要求
+- `AI Render`：效果图原图 / display / thumbnail，作为搭配级历史资产参与备份
 
 当前图片解析只面向三层资产目录；历史旧目录兼容已移除，缺图时通过“图片修复”按文件名从用户选择的目录重新导入。
 

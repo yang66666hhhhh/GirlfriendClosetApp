@@ -1,0 +1,373 @@
+<UserControl x:Class="ClosetApp.UI.Components.Shared.Modal.OutfitWorkspaceDialog"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:outfit="clr-namespace:ClosetApp.UI.Components.Outfit.Controls">
+    <UserControl.Resources>
+        <Style x:Key="Workspace.MetaChip" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,4"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+
+        <Style x:Key="Workspace.MetaChipText" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="Workspace.SectionTitle" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="Workspace.SectionBody" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="Workspace.SectionCaption" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="Workspace.ActionButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="MinHeight" Value="36"/>
+        </Style>
+
+        <Style x:Key="Workspace.PrimaryButton" TargetType="Button" BasedOn="{StaticResource ModalSaveButton}">
+            <Setter Property="MinHeight" Value="40"/>
+        </Style>
+
+    </UserControl.Resources>
+
+    <Border Style="{StaticResource ModalCardRoot}"
+            Width="880"
+            MaxWidth="980"
+            MaxHeight="820">
+        <Border Style="{StaticResource ModalCardClip}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0"
+                        Style="{StaticResource ModalHeaderHost}"
+                        Padding="26,20">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <TextBlock x:Name="TxtTitle"
+                                       Style="{StaticResource ModalHeaderTitle}"/>
+                            <WrapPanel Margin="0,10,0,0">
+                                <Border Style="{StaticResource Workspace.MetaChip}">
+                                    <TextBlock x:Name="TxtSceneChip" Style="{StaticResource Workspace.MetaChipText}"/>
+                                </Border>
+                                <Border Style="{StaticResource Workspace.MetaChip}">
+                                    <TextBlock x:Name="TxtSeasonChip" Style="{StaticResource Workspace.MetaChipText}"/>
+                                </Border>
+                                <Border x:Name="AiStateBadge" Style="{StaticResource Workspace.MetaChip}">
+                                    <TextBlock x:Name="TxtAiState" Style="{StaticResource Workspace.MetaChipText}"/>
+                                </Border>
+                            </WrapPanel>
+                            <TextBlock x:Name="TxtSummary"
+                                       Margin="0,8,0,0"
+                                       Style="{StaticResource Workspace.SectionBody}"/>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Top">
+                            <Button x:Name="BtnFavorite"
+                                    Width="36"
+                                    Height="36"
+                                    Margin="0,0,10,0"
+                                    Style="{StaticResource Card.FavoriteButtonBase}"
+                                    FontSize="{StaticResource Card.FavoriteFontSize}"
+                                    Click="Favorite_Click"/>
+                            <Button Content="✕"
+                                    Style="{StaticResource ModalCloseButton}"
+                                    Click="Close_Click"/>
+                        </StackPanel>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Row="1"
+                      Margin="24,20,24,16">
+                    <Grid x:Name="ImageWorkspaceHost"
+                          Visibility="Collapsed">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.45*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="0.78*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="20"
+                                Padding="16">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid Grid.Row="0">
+                                    <Border Background="{DynamicResource SurfaceCardBrush}"
+                                            CornerRadius="16"
+                                            ClipToBounds="True"
+                                            MinHeight="440">
+                                        <Image x:Name="HeroImage"
+                                               Stretch="Uniform"/>
+                                    </Border>
+
+                                    <Border x:Name="HeroPrimaryBadge"
+                                            HorizontalAlignment="Left"
+                                            VerticalAlignment="Top"
+                                            Margin="14"
+                                            Background="{DynamicResource PrimaryLightBrush}"
+                                            BorderBrush="{DynamicResource PrimaryBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="10"
+                                            Padding="8,4"
+                                            Visibility="Collapsed">
+                                        <TextBlock Text="主效果图"
+                                                   FontSize="10"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryBrush}"/>
+                                    </Border>
+                                </Grid>
+
+                                <Border Grid.Row="1"
+                                        Margin="0,16,0,0"
+                                        Background="{DynamicResource SurfaceCardBrush}"
+                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="16"
+                                        Padding="16">
+                                    <StackPanel>
+                                        <TextBlock Text="当前效果图"
+                                                   Style="{StaticResource Workspace.SectionTitle}"/>
+                                        <TextBlock x:Name="TxtCurrentImageMeta"
+                                                   Margin="0,6,0,0"
+                                                   Style="{StaticResource Workspace.SectionBody}"/>
+                                        <TextBlock x:Name="TxtCurrentImageHint"
+                                                   Margin="0,6,0,0"
+                                                   Style="{StaticResource Workspace.SectionCaption}"/>
+                                    </StackPanel>
+                                </Border>
+                            </Grid>
+                        </Border>
+
+                        <StackPanel Grid.Column="2">
+                            <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="18"
+                                    Padding="16">
+                                <StackPanel>
+                                    <TextBlock Text="效果图工作台"
+                                               Style="{StaticResource Workspace.SectionTitle}"/>
+                                    <TextBlock x:Name="TxtAiPanelSummary"
+                                               Margin="0,6,0,0"
+                                               Style="{StaticResource Workspace.SectionBody}"/>
+                                    <WrapPanel Margin="0,14,0,0">
+                                        <Button Content="管理效果图"
+                                                Style="{StaticResource Workspace.PrimaryButton}"
+                                                Width="132"
+                                                Margin="0,0,8,8"
+                                                Click="ManageAi_Click"/>
+                                        <Button Content="生成新图"
+                                                Style="{StaticResource Workspace.ActionButton}"
+                                                Margin="0,0,0,8"
+                                                Click="Generate_Click"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </Border>
+
+                            <Border x:Name="HistorySectionHost"
+                                    Margin="0,14,0,0"
+                                    Background="{DynamicResource SurfaceCardBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="18"
+                                    Padding="16"
+                                    Visibility="Collapsed">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Text="历史效果图"
+                                               Style="{StaticResource Workspace.SectionTitle}"/>
+                                    <TextBlock x:Name="TxtHistorySummary"
+                                               Grid.Row="1"
+                                               Margin="0,6,0,0"
+                                               Style="{StaticResource Workspace.SectionBody}"/>
+
+                                    <ScrollViewer x:Name="HistoryScrollViewer"
+                                                  Grid.Row="2"
+                                                  Margin="0,14,0,0"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <ItemsControl x:Name="HistoryList">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Padding="0"
+                                                            Margin="0,0,0,10"
+                                                            BorderThickness="0"
+                                                            Background="Transparent"
+                                                            Tag="{Binding Id}"
+                                                            Cursor="Hand"
+                                                            Click="HistoryItem_Click">
+                                                        <Border Padding="10"
+                                                                CornerRadius="14"
+                                                                BorderThickness="1"
+                                                                Background="{DynamicResource SurfaceSectionBrush}"
+                                                                BorderBrush="{DynamicResource BorderLightBrush}">
+                                                            <Border.Style>
+                                                                <Style TargetType="Border">
+                                                                    <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+                                                                    <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                                                            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                                                            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </Border.Style>
+                                                            <Grid>
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="84"/>
+                                                                    <ColumnDefinition Width="12"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                </Grid.ColumnDefinitions>
+
+                                                                <Border Grid.Column="0"
+                                                                        CornerRadius="12"
+                                                                        Background="{DynamicResource SurfaceHeroBrush}"
+                                                                        ClipToBounds="True">
+                                                                    <Image Source="{Binding ThumbnailSource}"
+                                                                           Height="108"
+                                                                           Stretch="UniformToFill"/>
+                                                                </Border>
+
+                                                                <StackPanel Grid.Column="2">
+                                                                    <TextBlock Text="{Binding BadgeText}"
+                                                                               FontSize="10"
+                                                                               FontWeight="SemiBold"
+                                                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                               TextTrimming="CharacterEllipsis"/>
+                                                                    <TextBlock Text="{Binding MetaText}"
+                                                                               FontSize="10.5"
+                                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                               Margin="0,6,0,0"
+                                                                               TextWrapping="Wrap"/>
+                                                                </StackPanel>
+                                                            </Grid>
+                                                        </Border>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+
+                    <Border x:Name="EmptyAiStateCard"
+                            Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="20"
+                            Padding="26"
+                            Visibility="Collapsed">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        MaxWidth="420">
+                                <TextBlock Text="还没有效果图"
+                                           HorizontalAlignment="Center"
+                                           Style="{StaticResource Workspace.SectionTitle}"/>
+                                <TextBlock Text="这里会直接展示这套搭配的效果图。先生成一张，或者把你已经满意的图片上传进来。"
+                                           Margin="0,10,0,0"
+                                           TextAlignment="Center"
+                                           Style="{StaticResource Workspace.SectionBody}"/>
+                            </StackPanel>
+
+                            <WrapPanel Grid.Row="1"
+                                       HorizontalAlignment="Center"
+                                       Margin="0,20,0,0">
+                                <Button Content="生成效果图"
+                                        Style="{StaticResource Workspace.PrimaryButton}"
+                                        Width="144"
+                                        Margin="0,0,10,0"
+                                        Click="Generate_Click"/>
+                                <Button Content="上传效果图"
+                                        Style="{StaticResource Workspace.ActionButton}"
+                                        Click="Upload_Click"/>
+                            </WrapPanel>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <Border Grid.Row="2"
+                        Style="{StaticResource ModalFooterHost}"
+                        Padding="24,16">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0"
+                                    Orientation="Horizontal">
+                            <Button x:Name="BtnWearToday"
+                                    Content="今天穿了"
+                                    Style="{StaticResource Workspace.PrimaryButton}"
+                                    Width="140"
+                                    Click="WearToday_Click"/>
+                            <Button Content="编辑搭配"
+                                    Style="{StaticResource Workspace.ActionButton}"
+                                    Margin="10,0,0,0"
+                                    Click="Edit_Click"/>
+                            <Button Content="删除搭配"
+                                    Style="{StaticResource Workspace.ActionButton}"
+                                    Margin="10,0,0,0"
+                                    Foreground="{DynamicResource DangerBrush}"
+                                    Click="Delete_Click"/>
+                        </StackPanel>
+
+                        <Button Grid.Column="1"
+                                Content="关闭"
+                                Style="{StaticResource ModalCancelButton}"
+                                Click="Close_Click"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Border>
+</UserControl>

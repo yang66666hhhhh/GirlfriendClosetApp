@@ -194,5 +194,6 @@ public class GetWardrobeInsightsTests
         public Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath) => throw new NotImplementedException();
         public Task DeleteWornRecordAsync(Guid recordId) => throw new NotImplementedException();
         public Task<bool> ToggleFavoriteAsync(Guid outfitId) => throw new NotImplementedException();
+        public Task<IReadOnlyList<OutfitGeneratedImage>> GetGeneratedImagesAsync(Guid outfitId) => Task.FromResult<IReadOnlyList<OutfitGeneratedImage>>([]);
     }
 }

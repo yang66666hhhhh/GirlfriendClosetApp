@@ -30,6 +30,9 @@ public partial class SettingsTab : UserControl
             await LogMaintenancePanel.RefreshAsync();
             await BackupPanel.RefreshAsync();
             await WeatherPreferencesPanel.RefreshAsync();
+            await _viewModel.RefreshAiGenerationSettingsAsync();
+            AiImageGenerationPanel.DataContext = _viewModel;
+            await AiImageGenerationPanel.RefreshAsync();
         }
         catch (Exception ex)
         {

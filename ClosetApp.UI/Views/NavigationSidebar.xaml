@@ -103,7 +103,13 @@
 
             <!-- Logo / Brand Area -->
             <StackPanel Grid.Row="0" Margin="20,28,20,24">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Button x:Name="BtnProfile"
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        HorizontalAlignment="Stretch"
+                        Click="Profile_Click">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="34"
                             Height="34"
                             CornerRadius="17"
@@ -125,7 +131,8 @@
                                    Foreground="{DynamicResource TextPlaceholderBrush}"
                                    Margin="0,2,0,0"/>
                     </StackPanel>
-                </StackPanel>
+                    </StackPanel>
+                </Button>
                 <TextBlock x:Name="TxtClothingCount"
                            Text="0 件衣服"
                            FontSize="12"

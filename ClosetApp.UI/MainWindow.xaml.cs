@@ -1,5 +1,9 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Media.Media3D;
 using System.Windows.Media.Animation;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Views;
@@ -15,6 +19,8 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ClothesTabContent.ClothingCountChanged += ClothesTabContent_ClothingCountChanged;
+        Sidebar.PersonalProfileRequested += Sidebar_PersonalProfileRequested;
+        PreviewKeyDown += MainWindow_PreviewKeyDown;
         SizeChanged += MainWindow_SizeChanged;
         Loaded += MainWindow_Loaded;
     }
@@ -114,5 +120,86 @@ public partial class MainWindow : Window
                 await SettingsTabContent.RefreshAsync();
                 break;
         }
+    }
+
+    private async void Sidebar_PersonalProfileRequested(object? sender, EventArgs e)
+    {
+        await SettingsTabContent.RefreshAsync();
+    }
+
+    private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)
+    {
+        if ((Keyboard.Modifiers & ModifierKeys.Control) != ModifierKeys.Control)
+            return;
+
+        var textInput = FindAncestor<TextBoxBase>(Keyboard.FocusedElement as DependencyObject);
+        var passwordInput = FindAncestor<PasswordBox>(Keyboard.FocusedElement as DependencyObject);
+
+        if (textInput == null && passwordInput == null)
+            return;
+
+        switch (e.Key)
+        {
+            case Key.V:
+                if (textInput != null && !textInput.IsReadOnly)
+                {
+                    textInput.Paste();
+                    e.Handled = true;
+                }
+                else if (passwordInput != null)
+                {
+                    passwordInput.Paste();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.C:
+                if (textInput != null)
+                {
+                    textInput.Copy();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.X:
+                if (textInput != null && !textInput.IsReadOnly)
+                {
+                    textInput.Cut();
+                    e.Handled = true;
+                }
+                break;
+
+            case Key.A:
+                if (textInput != null)
+                {
+                    textInput.SelectAll();
+                    e.Handled = true;
+                }
+                else if (passwordInput != null)
+                {
+                    passwordInput.SelectAll();
+                    e.Handled = true;
+                }
+                break;
+        }
+    }
+
+    private static T? FindAncestor<T>(DependencyObject? current) where T : DependencyObject
+    {
+        while (current != null)
+        {
+            if (current is T match)
+                return match;
+
+            current = current switch
+            {
+                Visual visual => VisualTreeHelper.GetParent(visual),
+                Visual3D visual3D => VisualTreeHelper.GetParent(visual3D),
+                FrameworkContentElement contentElement => contentElement.Parent,
+                _ => LogicalTreeHelper.GetParent(current)
+            };
+        }
+
+        return null;
     }
 }

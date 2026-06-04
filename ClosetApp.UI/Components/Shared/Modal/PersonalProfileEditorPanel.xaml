@@ -1,0 +1,253 @@
+<UserControl x:Class="ClosetApp.UI.Components.Shared.Modal.PersonalProfileEditorPanel"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared">
+    <Border Style="{StaticResource ModalCardRoot}"
+            MinWidth="760"
+            MinHeight="620"
+            MaxWidth="1160"
+            MaxHeight="900"
+            Width="920"
+            Height="760">
+        <Border Style="{StaticResource ModalCardClip}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="60"/>
+                    <RowDefinition Height="*"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Border Grid.Row="0" Style="{StaticResource ModalHeaderHost}">
+                    <Grid Margin="24,0">
+                        <TextBlock Text="个人档案"
+                                   FontSize="18"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <Button x:Name="BtnClose"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Content="✕"
+                                Style="{StaticResource ModalCloseButton}"
+                                Click="Close_Click"/>
+                    </Grid>
+                </Border>
+
+                <ScrollViewer Grid.Row="1"
+                              VerticalScrollBarVisibility="Auto"
+                              Padding="24,18">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.1*"/>
+                            <ColumnDefinition Width="20"/>
+                            <ColumnDefinition Width="0.9*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel Grid.Column="0">
+                            <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="基础信息"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="这些信息会参与生成时的人物一致性描述。"
+                                               Style="{StaticResource PageSectionBodyText}"
+                                               Margin="0,6,0,0"/>
+
+                                    <TextBlock Text="昵称" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtDisplayName"
+                                             TextChanged="PromptInputChanged"/>
+
+                                    <TextBlock Text="身高（cm）" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtHeightCm"
+                                             TextChanged="PromptInputChanged"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="外形特征"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="尽量写得具体，但保持你愿意长期保存的程度。"
+                                               Style="{StaticResource PageSectionBodyText}"
+                                               Margin="0,6,0,0"/>
+
+                                    <TextBlock Text="身材描述" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtBodyShape"
+                                             TextChanged="PromptInputChanged"/>
+
+                                    <TextBlock Text="肤色" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtSkinTone"
+                                             TextChanged="PromptInputChanged"/>
+
+                                    <TextBlock Text="发长" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtHairLength"
+                                             TextChanged="PromptInputChanged"/>
+
+                                    <TextBlock Text="发色" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtHairColor"
+                                             TextChanged="PromptInputChanged"/>
+
+                                    <TextBlock Text="五官特征" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtFaceFeaturesSummary"
+                                             TextChanged="PromptInputChanged"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             MinHeight="78"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14" Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="风格偏好"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="这里决定提示词会强调什么，也会告诉模型避开什么。"
+                                               Style="{StaticResource PageSectionBodyText}"
+                                               Margin="0,6,0,0"/>
+
+                                    <TextBlock Text="喜欢的关键词" Margin="0,16,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtStyleKeywords"
+                                             TextChanged="PromptInputChanged"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             MinHeight="70"/>
+
+                                    <TextBlock Text="避开的关键词" Margin="0,14,0,6" Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBox x:Name="TxtAvoidKeywords"
+                                             TextChanged="PromptInputChanged"
+                                             AcceptsReturn="True"
+                                             TextWrapping="Wrap"
+                                             MinHeight="70"/>
+
+                                    <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                            BorderBrush="{DynamicResource BorderLightBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="12"
+                                            Margin="0,16,0,0">
+                                        <StackPanel>
+                                            <TextBlock Text="默认效果图提示词"
+                                                       FontSize="13"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                            <TextBlock Text="这里预览系统会如何把你的个人档案转成生成提示词骨架。正式生成时，还会自动拼上搭配单品和场景选项。"
+                                                       Style="{StaticResource PageMutedBodyText}"
+                                                       Margin="0,6,0,0"
+                                                       TextWrapping="Wrap"/>
+                                            <TextBox x:Name="TxtPromptPreview"
+                                                     Margin="0,10,0,0"
+                                                     IsReadOnly="True"
+                                                     AcceptsReturn="True"
+                                                     TextWrapping="Wrap"
+                                                     VerticalScrollBarVisibility="Auto"
+                                                     MinHeight="144"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="2">
+                            <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14" Padding="18" Margin="0,0,0,16">
+                                <StackPanel>
+                                    <TextBlock Text="参考照片"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="头像照为必填参考图；全身照可选，但补充后更有助于体态和比例贴近。保存后会用于云端生成。"
+                                               Style="{StaticResource PageSectionBodyText}"
+                                               Margin="0,6,0,0"/>
+
+                                    <Grid Margin="0,16,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+
+                                        <Border Grid.Column="0" Background="{DynamicResource SurfaceSectionBrush}" CornerRadius="12" Padding="12">
+                                            <StackPanel>
+                                                <TextBlock Text="头像照" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <Border Margin="0,10,0,10" Height="220" CornerRadius="12" Background="{DynamicResource SurfaceHeroBrush}">
+                                                    <Image x:Name="AvatarPreview" Stretch="UniformToFill"/>
+                                                </Border>
+                                                <WrapPanel>
+                                                    <Button Content="选择头像"
+                                                            Style="{StaticResource CapsuleButton}"
+                                                            Click="SelectAvatar_Click"/>
+                                                    <Button Content="移除"
+                                                            Style="{StaticResource SecondaryButton}"
+                                                            Margin="8,0,0,0"
+                                                            Click="RemoveAvatar_Click"/>
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+
+                                        <Border Grid.Column="2" Background="{DynamicResource SurfaceSectionBrush}" CornerRadius="12" Padding="12">
+                                            <StackPanel>
+                                                <TextBlock Text="全身照" FontWeight="SemiBold" Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                                <Border Margin="0,10,0,10" Height="220" CornerRadius="12" Background="{DynamicResource SurfaceHeroBrush}">
+                                                    <Image x:Name="FullBodyPreview" Stretch="UniformToFill"/>
+                                                </Border>
+                                                <WrapPanel>
+                                                    <Button Content="选择全身照"
+                                                            Style="{StaticResource CapsuleButton}"
+                                                            Click="SelectFullBody_Click"/>
+                                                    <Button Content="移除"
+                                                            Style="{StaticResource SecondaryButton}"
+                                                            Margin="8,0,0,0"
+                                                            Click="RemoveFullBody_Click"/>
+                                                </WrapPanel>
+                                            </StackPanel>
+                                        </Border>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14" Padding="18">
+                                <StackPanel>
+                                    <TextBlock Text="隐私同意"
+                                               FontSize="15"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                    <TextBlock Text="保存并勾选后，头像和全身照会被发送到你配置的云端图片服务，用于生成搭配效果图。"
+                                               Style="{StaticResource PageSectionBodyText}"
+                                               Margin="0,6,0,0"/>
+                                    <CheckBox x:Name="ChkConsent"
+                                              Margin="0,16,0,0"
+                                              Checked="PromptConsentChanged"
+                                              Unchecked="PromptConsentChanged"
+                                              Content="我同意把参考照片发送到云端图片生成服务"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+
+                <Border Grid.Row="2"
+                        Style="{StaticResource ModalFooterHost}"
+                        Padding="24,14">
+                    <Grid MaxWidth="380" HorizontalAlignment="Right">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="12"/>
+                            <ColumnDefinition Width="2*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Grid.Column="0"
+                                Content="取消"
+                                Style="{StaticResource ModalCancelButton}"
+                                Click="Close_Click"/>
+                        <Button Grid.Column="2"
+                                Content="保存档案"
+                                Style="{StaticResource ModalSaveButton}"
+                                Click="Save_Click"/>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Border>
+</UserControl>

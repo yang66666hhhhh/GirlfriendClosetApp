@@ -13,6 +13,8 @@ public class ClosetDbContext : DbContext
     public DbSet<OutfitClothing> OutfitClothes => Set<OutfitClothing>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<OutfitWornRecord> OutfitWornRecords => Set<OutfitWornRecord>();
+    public DbSet<PersonalProfile> PersonalProfiles => Set<PersonalProfile>();
+    public DbSet<OutfitGeneratedImage> OutfitGeneratedImages => Set<OutfitGeneratedImage>();
 
     private readonly string _dbPath;
 
@@ -76,6 +78,12 @@ public class ClosetDbContext : DbContext
             .WithMany(o => o.WornRecords)
             .HasForeignKey(r => r.OutfitId)
             .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<OutfitGeneratedImage>()
+            .HasOne(image => image.Outfit)
+            .WithMany(outfit => outfit.GeneratedImages)
+            .HasForeignKey(image => image.OutfitId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         SeedData(modelBuilder);
     }

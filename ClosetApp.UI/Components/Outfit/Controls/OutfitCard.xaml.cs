@@ -4,14 +4,12 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
+using ClosetApp.UI.Logic.Components.Outfit.Engine;
+using ClosetApp.UI.Components.Shared;
+using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Services;
 using OutfitScene = ClosetApp.Domain.Enums.OutfitScene;
 using Season = ClosetApp.Domain.Enums.Season;
-using ClosetApp.UI.Components.Outfit.Editor;
-using ClosetApp.UI.Logic.Components.Outfit.Engine;
-using ClosetApp.UI.Logic.Components.Outfit.Editor;
-using ClosetApp.UI.Components.Shared;
-using ClosetApp.UI.Components.Shared.Editor;
-using ClosetApp.UI.Components.Shared.Modal;
 
 namespace ClosetApp.UI.Components.Outfit.Controls;
 
@@ -21,6 +19,11 @@ using ClothingEntity = global::ClosetApp.Domain.Entities.Clothing;
 public partial class OutfitCard : UserControl
 {
     private static readonly OutfitCompositionEngine PreviewEngine = new();
+    private Point _mouseDownPos;
+
+    public static readonly RoutedEvent CardClickedEvent =
+        EventManager.RegisterRoutedEvent("CardClicked", RoutingStrategy.Bubble,
+            typeof(RoutedEventHandler), typeof(OutfitCard));
 
     public static readonly RoutedEvent EditClickedEvent =
         EventManager.RegisterRoutedEvent("EditClicked", RoutingStrategy.Bubble,
@@ -30,13 +33,15 @@ public partial class OutfitCard : UserControl
         EventManager.RegisterRoutedEvent("DeleteClicked", RoutingStrategy.Bubble,
             typeof(RoutedEventHandler), typeof(OutfitCard));
 
-    public static readonly RoutedEvent WornClickedEvent =
-        EventManager.RegisterRoutedEvent("WornClicked", RoutingStrategy.Bubble,
-            typeof(RoutedEventHandler), typeof(OutfitCard));
-
     public static readonly RoutedEvent FavoriteToggledEvent =
         EventManager.RegisterRoutedEvent("FavoriteToggled", RoutingStrategy.Bubble,
             typeof(RoutedEventHandler), typeof(OutfitCard));
+
+    public event RoutedEventHandler CardClicked
+    {
+        add => AddHandler(CardClickedEvent, value);
+        remove => RemoveHandler(CardClickedEvent, value);
+    }
 
     public event RoutedEventHandler EditClicked
     {
@@ -48,12 +53,6 @@ public partial class OutfitCard : UserControl
     {
         add => AddHandler(DeleteClickedEvent, value);
         remove => RemoveHandler(DeleteClickedEvent, value);
-    }
-
-    public event RoutedEventHandler WornClicked
-    {
-        add => AddHandler(WornClickedEvent, value);
-        remove => RemoveHandler(WornClickedEvent, value);
     }
 
     public event RoutedEventHandler FavoriteToggled
@@ -80,62 +79,99 @@ public partial class OutfitCard : UserControl
         InitializeComponent();
         MouseEnter += OnMouseEnter;
         MouseLeave += OnMouseLeave;
-        BtnEdit.Click += (s, e) =>
-        {
-            if (Outfit != null)
-            {
-                EditorModal.Show(new OutfitEditorPanel(Outfit), result =>
-                {
-                    if (result.Type == EditorResultType.Saved)
-                        EditCompleted?.Invoke(this, Outfit);
-                    return Task.CompletedTask;
-                });
-            }
-        };
-        BtnDelete.Click += async (s, e) =>
-        {
-            if (Outfit == null) return;
-            if (!await ConfirmModal.ShowDeleteAsync($"确定删除搭配「{Outfit.Name}」吗？"))
-                return;
-
-            DeleteRequested?.Invoke(this, Outfit);
-        };
-        BtnWorn.Click += (s, e) =>
-        {
-            RaiseEvent(new RoutedEventArgs(WornClickedEvent, this));
-            if (Outfit != null)
-                WornRequested?.Invoke(this, Outfit);
-        };
-        BtnFavorite.Click += (s, e) =>
-        {
-            RaiseEvent(new RoutedEventArgs(FavoriteToggledEvent, this));
-            e.Handled = true;
-        };
     }
-
-    public event EventHandler<OutfitEntity>? EditCompleted;
-    public event EventHandler<OutfitEntity>? DeleteRequested;
-    public event EventHandler<OutfitEntity>? WornRequested;
 
     private static void OnOutfitChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
-        if (d is OutfitCard card && e.NewValue is OutfitEntity outfit)
-        {
-            var clothes = GetValidClothes(outfit);
-            var chips = BuildMoodChips(outfit, clothes);
-            card.TxtName.Text = BuildDisplayName(outfit, clothes);
-            card.TxtMoodLine.Text = string.Empty;
-            card.TxtMoodLine.Visibility = Visibility.Collapsed;
-            card.TxtWearInfo.Text = outfit.WearCount > 0
-                ? $"穿过 {outfit.WearCount} 次 · 最近 {FormatWornDate(outfit.WornDate)}"
-                : "还没记录穿着";
-            card.PreviewCanvas.Clothes = clothes;
-            card.ApplyPreviewHeight(clothes);
-            card.ApplyPreviewBackdrop(outfit, clothes);
-            card.RenderMoodChips(chips);
-            card.ApplyFavoriteVisual(outfit);
-            card.ApplyChangeWarning(outfit, clothes);
-        }
+        if (d is not OutfitCard card || e.NewValue is not OutfitEntity outfit)
+            return;
+
+        var clothes = GetValidClothes(outfit);
+        card.TxtName.Text = BuildDisplayName(outfit, clothes);
+        card.TxtWearInfo.Text = outfit.WearCount > 0
+            ? $"穿过 {outfit.WearCount} 次 · 最近 {FormatWornDate(outfit.WornDate)}"
+            : "还没记录穿着";
+        card.ApplyPreviewHeight(clothes);
+        card.ApplyPreviewBackdrop(outfit, clothes);
+        card.ApplyPreviewCover(outfit, clothes);
+        card.RenderMoodChips(BuildMoodChips(outfit, clothes));
+        card.ApplyFavoriteVisual(outfit);
+        card.ApplyAiStatus(outfit);
+    }
+
+    private void Card_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        _mouseDownPos = e.GetPosition(CardRoot);
+    }
+
+    private void Card_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Left)
+            return;
+
+        if (e.OriginalSource is DependencyObject source && IsInsideCardAction(source))
+            return;
+
+        var currentPos = e.GetPosition(CardRoot);
+        if (Math.Abs(currentPos.X - _mouseDownPos.X) > 6 || Math.Abs(currentPos.Y - _mouseDownPos.Y) > 6)
+            return;
+
+        RaiseEvent(new RoutedEventArgs(CardClickedEvent, this));
+        e.Handled = true;
+    }
+
+    private void Favorite_Click(object sender, RoutedEventArgs e)
+    {
+        RaiseEvent(new RoutedEventArgs(FavoriteToggledEvent, this));
+        e.Handled = true;
+    }
+
+    private void MenuEdit_Click(object sender, RoutedEventArgs e)
+    {
+        RaiseEvent(new RoutedEventArgs(EditClickedEvent, this));
+        e.Handled = true;
+    }
+
+    private void MenuOpenAiWorkspace_Click(object sender, RoutedEventArgs e)
+    {
+        RaiseEvent(new RoutedEventArgs(CardClickedEvent, this));
+        e.Handled = true;
+    }
+
+    private async void MenuDelete_Click(object sender, RoutedEventArgs e)
+    {
+        if (Outfit == null)
+            return;
+
+        if (!await ConfirmModal.ShowDeleteAsync($"确定删除搭配「{Outfit.Name}」吗？"))
+            return;
+
+        RaiseEvent(new RoutedEventArgs(DeleteClickedEvent, this));
+        e.Handled = true;
+    }
+
+    private void MoreButton_Click(object sender, RoutedEventArgs e)
+    {
+        if (BtnMore.ContextMenu == null)
+            return;
+
+        BtnMore.ContextMenu.PlacementTarget = BtnMore;
+        BtnMore.ContextMenu.IsOpen = true;
+        e.Handled = true;
+    }
+
+    private void OnMouseEnter(object sender, MouseEventArgs e)
+    {
+        AnimateTranslate(-4);
+        AnimateScale(1.01);
+        AnimateShadow(28, 0.12);
+    }
+
+    private void OnMouseLeave(object sender, MouseEventArgs e)
+    {
+        AnimateTranslate(0);
+        AnimateScale(1.0);
+        AnimateShadow(16, 0.06);
     }
 
     private void ApplyPreviewHeight(IList<ClothingEntity>? clothes)
@@ -146,34 +182,70 @@ public partial class OutfitCard : UserControl
         PreviewCanvas.MinHeight = Math.Max(240, height - 10);
     }
 
-    private static string FormatWornDate(DateTime? wornDate)
+    private void ApplyPreviewBackdrop(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
-        if (!wornDate.HasValue)
-            return "未记录";
-
-        var date = wornDate.Value.Date;
-        var today = DateTime.Today;
-        if (date == today)
-            return "今天";
-        if (date == today.AddDays(-1))
-            return "昨天";
-        return date.ToString("M月d日");
+        PreviewShell.Background = new SolidColorBrush(ResolveBackdrop(outfit, clothes));
     }
 
-    private void OnMouseEnter(object sender, MouseEventArgs e)
+    private void ApplyPreviewCover(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
-        AnimateTranslate(-4);
-        AnimateScale(1.01);
-        AnimateShadow(28, 0.12);
-        ActionOverlay.Visibility = Visibility.Visible;
+        PreviewCanvas.Visibility = Visibility.Visible;
+        PreviewCanvas.Clothes = clothes;
     }
 
-    private void OnMouseLeave(object sender, MouseEventArgs e)
+    private void ApplyAiStatus(OutfitEntity outfit)
     {
-        AnimateTranslate(0);
-        AnimateScale(1.0);
-        AnimateShadow(16, 0.06);
-        ActionOverlay.Visibility = Visibility.Collapsed;
+        var state = OutfitGeneratedImageDisplayHelper.BuildState(outfit.GeneratedImages);
+        TopAiBadgeText.Text = state.Label;
+        InlineAiBadgeText.Text = state.Label;
+        TxtCoverHint.Text = state.SucceededCount > 0
+            ? "点击查看详情、历史效果图和大图预览。"
+            : "点击查看详情，生成或上传效果图。";
+
+        ApplyBadgeVisual(TopAiBadge, TopAiBadgeText, state.VisualStateKey);
+        ApplyBadgeVisual(InlineAiBadge, InlineAiBadgeText, state.VisualStateKey);
+    }
+
+    public void ApplyFavoriteVisual(OutfitEntity outfit)
+    {
+        var isFav = outfit.Favorites.Count > 0;
+        BtnFavorite.Content = isFav ? "♥" : "♡";
+        BtnFavorite.Foreground = isFav
+            ? (Brush)FindResource("DangerBrush")
+            : (Brush)FindResource("TextPlaceholderBrush");
+        BtnFavorite.Background = isFav
+            ? new SolidColorBrush(Color.FromRgb(255, 243, 246))
+            : new SolidColorBrush(Color.FromRgb(247, 251, 255));
+        BtnFavorite.BorderBrush = isFav
+            ? (Brush)FindResource("DangerBrush")
+            : (Brush)FindResource("BorderLightBrush");
+    }
+
+    private static void ApplyBadgeVisual(Border badge, TextBlock text, string stateKey)
+    {
+        switch (stateKey)
+        {
+            case "AiState.Success":
+                badge.Background = (Brush)System.Windows.Application.Current.FindResource("PrimaryLightBrush");
+                badge.BorderBrush = (Brush)System.Windows.Application.Current.FindResource("PrimaryBrush");
+                text.Foreground = (Brush)System.Windows.Application.Current.FindResource("PrimaryBrush");
+                break;
+            case "AiState.Pending":
+                badge.Background = (Brush)System.Windows.Application.Current.FindResource("TagAmberSurfaceBrush");
+                badge.BorderBrush = (Brush)System.Windows.Application.Current.FindResource("TagAmberBorderBrush");
+                text.Foreground = (Brush)System.Windows.Application.Current.FindResource("TagAmberTextBrush");
+                break;
+            case "AiState.Failed":
+                badge.Background = (Brush)System.Windows.Application.Current.FindResource("TagRoseSurfaceBrush");
+                badge.BorderBrush = (Brush)System.Windows.Application.Current.FindResource("TagRoseBorderBrush");
+                text.Foreground = (Brush)System.Windows.Application.Current.FindResource("TagRoseTextBrush");
+                break;
+            default:
+                badge.Background = (Brush)System.Windows.Application.Current.FindResource("SurfaceSectionBrush");
+                badge.BorderBrush = (Brush)System.Windows.Application.Current.FindResource("BorderLightBrush");
+                text.Foreground = (Brush)System.Windows.Application.Current.FindResource("TextSecondaryBrush");
+                break;
+        }
     }
 
     private void AnimateTranslate(double toY)
@@ -189,20 +261,71 @@ public partial class OutfitCard : UserControl
     {
         var duration = TimeSpan.FromMilliseconds(220);
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var animX = new DoubleAnimation(to, duration) { EasingFunction = ease };
-        var animY = new DoubleAnimation(to, duration) { EasingFunction = ease };
-        CardScale.BeginAnimation(ScaleTransform.ScaleXProperty, animX);
-        CardScale.BeginAnimation(ScaleTransform.ScaleYProperty, animY);
+        CardScale.BeginAnimation(ScaleTransform.ScaleXProperty, new DoubleAnimation(to, duration) { EasingFunction = ease });
+        CardScale.BeginAnimation(ScaleTransform.ScaleYProperty, new DoubleAnimation(to, duration) { EasingFunction = ease });
     }
 
     private void AnimateShadow(double blur, double opacity)
     {
         var duration = TimeSpan.FromMilliseconds(220);
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-        var blurAnim = new DoubleAnimation(blur, duration) { EasingFunction = ease };
-        var opacityAnim = new DoubleAnimation(opacity, duration) { EasingFunction = ease };
-        CardShadow.BeginAnimation(DropShadowEffect.BlurRadiusProperty, blurAnim);
-        CardShadow.BeginAnimation(DropShadowEffect.OpacityProperty, opacityAnim);
+        CardShadow.BeginAnimation(DropShadowEffect.BlurRadiusProperty, new DoubleAnimation(blur, duration) { EasingFunction = ease });
+        CardShadow.BeginAnimation(DropShadowEffect.OpacityProperty, new DoubleAnimation(opacity, duration) { EasingFunction = ease });
+    }
+
+    private bool IsInsideCardAction(DependencyObject source)
+    {
+        while (source != null)
+        {
+            if (ReferenceEquals(source, BtnFavorite) || ReferenceEquals(source, BtnMore) || source is MenuItem)
+                return true;
+
+            if (source is FrameworkElement element && (ReferenceEquals(element.ContextMenu, BtnMore.ContextMenu) || ReferenceEquals(element, BtnMore.ContextMenu)))
+                return true;
+
+            source = VisualTreeHelper.GetParent(source);
+        }
+
+        return false;
+    }
+
+    private void RenderMoodChips(IReadOnlyList<string> chips)
+    {
+        MoodChipPanel.Children.Clear();
+        foreach (var chip in chips.Take(4))
+        {
+            var palette = ThemeColorHelper.ResolveChipPalette(chip);
+            var border = new Border
+            {
+                Background = new SolidColorBrush(palette.Background),
+                BorderBrush = new SolidColorBrush(palette.Border),
+                BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(10),
+                Padding = new Thickness(8, 3, 8, 3),
+                Margin = new Thickness(0, 0, 6, 6)
+            };
+            border.Child = new TextBlock
+            {
+                Text = chip,
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = new SolidColorBrush(palette.Foreground)
+            };
+            MoodChipPanel.Children.Add(border);
+        }
+
+        MoodChipPanel.Visibility = MoodChipPanel.Children.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private static string FormatWornDate(DateTime? wornDate)
+    {
+        if (!wornDate.HasValue)
+            return "未记录";
+
+        var date = wornDate.Value.Date;
+        if (date == DateTime.Today) return "今天";
+        if (date == DateTime.Today.AddDays(-1)) return "昨天";
+        return date.ToString("M月d日");
     }
 
     private static double ResolvePreviewHeight(IList<ClothingEntity>? clothes)
@@ -233,11 +356,9 @@ public partial class OutfitCard : UserControl
             currentName is not "未命名" and not "新搭配" and not "新的搭配")
             return currentName!;
 
-        // 只有占位标题时才兜底，不覆盖用户自己起的名字。
         var tone = ResolveColorTone(clothes);
         var scene = ResolveSceneTitle(outfit.Scene);
         var season = ResolveSeasonTitle(outfit.Season);
-
         if (!string.IsNullOrWhiteSpace(tone) && !string.IsNullOrWhiteSpace(scene))
             return $"{tone}{scene}";
         if (!string.IsNullOrWhiteSpace(season) && !string.IsNullOrWhiteSpace(scene))
@@ -248,84 +369,7 @@ public partial class OutfitCard : UserControl
             return $"{scene}穿搭";
         if (!string.IsNullOrWhiteSpace(season))
             return $"{season}轻搭";
-
         return "今日穿搭";
-    }
-
-    private void ApplyPreviewBackdrop(OutfitEntity outfit, IList<ClothingEntity>? clothes)
-    {
-        var backdrop = ResolveBackdrop(outfit, clothes);
-        PreviewShell.Background = new SolidColorBrush(backdrop);
-    }
-
-    public void ApplyFavoriteVisual(OutfitEntity outfit)
-    {
-        var isFav = outfit.Favorites.Count > 0;
-        BtnFavorite.Content = isFav ? "♥" : "♡";
-        BtnFavorite.Foreground = isFav
-            ? (Brush)FindResource("DangerBrush")
-            : (Brush)FindResource("TextPlaceholderBrush");
-        BtnFavorite.Background = isFav
-            ? new SolidColorBrush(Color.FromRgb(255, 243, 246))
-            : new SolidColorBrush(Color.FromRgb(247, 251, 255));
-        BtnFavorite.BorderBrush = isFav
-            ? (Brush)FindResource("DangerBrush")
-            : (Brush)FindResource("BorderLightBrush");
-    }
-
-    private void ApplyChangeWarning(OutfitEntity outfit, IList<ClothingEntity>? clothes)
-    {
-        var currentCount = clothes?.Count ?? 0;
-        var originalCount = outfit.OriginalClothingCount;
-        var hasChanged = originalCount > 0 && currentCount < originalCount;
-
-        if (hasChanged)
-        {
-            ChangeWarningBorder.Visibility = Visibility.Visible;
-            ChangeWarningText.Text = $"搭配已变化（原 {originalCount} 件，现 {currentCount} 件）";
-        }
-        else
-        {
-            ChangeWarningBorder.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    private void RenderMoodChips(IReadOnlyList<string> chips)
-    {
-        MoodChipPanel.Children.Clear();
-
-        foreach (var chip in chips.Take(4))
-        {
-            var palette = ResolveChipPalette(chip);
-            var border = new Border
-            {
-                Background = new SolidColorBrush(palette.Background),
-                BorderBrush = new SolidColorBrush(palette.Border),
-                BorderThickness = new Thickness(1),
-                CornerRadius = new CornerRadius(10),
-                Padding = new Thickness(8, 3, 8, 3),
-                Margin = new Thickness(0, 0, 6, 6)
-            };
-
-            border.Child = new TextBlock
-            {
-                Text = chip,
-                FontSize = 10,
-                FontWeight = FontWeights.SemiBold,
-                Foreground = new SolidColorBrush(palette.Foreground)
-            };
-
-            MoodChipPanel.Children.Add(border);
-        }
-
-        MoodChipPanel.Visibility = MoodChipPanel.Children.Count > 0
-            ? Visibility.Visible
-            : Visibility.Collapsed;
-    }
-
-    private static (Color Background, Color Border, Color Foreground) ResolveChipPalette(string chip)
-    {
-        return ThemeColorHelper.ResolveChipPalette(chip);
     }
 
     private static Color ResolveBackdrop(OutfitEntity outfit, IList<ClothingEntity>? clothes)
@@ -342,69 +386,53 @@ public partial class OutfitCard : UserControl
         var scene = ResolveSceneChip(outfit.Scene);
         var silhouette = ResolveSilhouetteChip(clothes);
 
-        if (!string.IsNullOrWhiteSpace(season))
-            chips.Add(season);
-        if (!string.IsNullOrWhiteSpace(tone))
-            chips.Add(tone);
-        if (!string.IsNullOrWhiteSpace(scene))
-            chips.Add(scene);
-        if (!string.IsNullOrWhiteSpace(silhouette))
-            chips.Add(silhouette);
+        if (!string.IsNullOrWhiteSpace(season)) chips.Add(season);
+        if (!string.IsNullOrWhiteSpace(tone)) chips.Add(tone);
+        if (!string.IsNullOrWhiteSpace(scene)) chips.Add(scene);
+        if (!string.IsNullOrWhiteSpace(silhouette)) chips.Add(silhouette);
 
         return chips.Distinct().ToList();
     }
 
-    private static string ResolveSeasonChip(Season season)
+    private static string ResolveSeasonChip(Season season) => season switch
     {
-        return season switch
-        {
-            Season.Spring => "春",
-            Season.Summer => "夏",
-            Season.Autumn => "秋",
-            Season.Winter => "冬",
-            Season.AllSeason => "四季",
-            _ => string.Empty
-        };
-    }
+        Season.Spring => "春",
+        Season.Summer => "夏",
+        Season.Autumn => "秋",
+        Season.Winter => "冬",
+        Season.AllSeason => "四季",
+        _ => string.Empty
+    };
 
-    private static string ResolveSeasonTitle(Season season)
+    private static string ResolveSeasonTitle(Season season) => season switch
     {
-        return season switch
-        {
-            Season.Spring => "春日",
-            Season.Summer => "夏日",
-            Season.Autumn => "秋日",
-            Season.Winter => "冬日",
-            Season.AllSeason => "四季",
-            _ => string.Empty
-        };
-    }
+        Season.Spring => "春日",
+        Season.Summer => "夏日",
+        Season.Autumn => "秋日",
+        Season.Winter => "冬日",
+        Season.AllSeason => "四季",
+        _ => string.Empty
+    };
 
-    private static string ResolveSceneChip(OutfitScene scene)
+    private static string ResolveSceneChip(OutfitScene scene) => scene switch
     {
-        return scene switch
-        {
-            OutfitScene.Work => "通勤",
-            OutfitScene.Date => "约会",
-            OutfitScene.Travel => "出游",
-            OutfitScene.Party => "聚会",
-            OutfitScene.Casual => "休闲",
-            _ => string.Empty
-        };
-    }
+        OutfitScene.Work => "通勤",
+        OutfitScene.Date => "约会",
+        OutfitScene.Travel => "出游",
+        OutfitScene.Party => "聚会",
+        OutfitScene.Casual => "休闲",
+        _ => string.Empty
+    };
 
-    private static string ResolveSceneTitle(OutfitScene scene)
+    private static string ResolveSceneTitle(OutfitScene scene) => scene switch
     {
-        return scene switch
-        {
-            OutfitScene.Work => "通勤",
-            OutfitScene.Date => "约会",
-            OutfitScene.Travel => "出游",
-            OutfitScene.Party => "派对",
-            OutfitScene.Casual => "休闲",
-            _ => string.Empty
-        };
-    }
+        OutfitScene.Work => "通勤",
+        OutfitScene.Date => "约会",
+        OutfitScene.Travel => "出游",
+        OutfitScene.Party => "派对",
+        OutfitScene.Casual => "休闲",
+        _ => string.Empty
+    };
 
     private static string? ResolveSilhouetteChip(IList<ClothingEntity>? clothes)
     {
@@ -415,13 +443,9 @@ public partial class OutfitCard : UserControl
         bool hasSkirt = clothes.Any(c => IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Skirt, "skirt"));
         bool hasOuterwear = clothes.Any(c => IsType(c, global::ClosetApp.Domain.Enums.ClothingType.Outerwear, "coat", "jacket", "cardigan"));
 
-        if (hasDress)
-            return "连衣裙";
-        if (hasOuterwear)
-            return "叠穿";
-        if (hasSkirt)
-            return "裙装";
-
+        if (hasDress) return "连衣裙";
+        if (hasOuterwear) return "叠穿";
+        if (hasSkirt) return "裙装";
         return "轻搭";
     }
 
@@ -435,20 +459,13 @@ public partial class OutfitCard : UserControl
         if (colorTokens == null || colorTokens.Count == 0)
             return null;
 
-        if (colorTokens.Any(c => c!.Contains("pink") || c.Contains("粉")))
-            return "奶油粉";
-        if (colorTokens.Any(c => c!.Contains("white") || c.Contains("cream") || c.Contains("白") || c.Contains("米")))
-            return "奶油白";
-        if (colorTokens.Any(c => c!.Contains("blue") || c.Contains("蓝")))
-            return "雾蓝";
-        if (colorTokens.Any(c => c!.Contains("green") || c.Contains("绿")))
-            return "柔绿";
-        if (colorTokens.Any(c => c!.Contains("yellow") || c.Contains("黄")))
-            return "奶油黄";
-        if (colorTokens.Any(c => c!.Contains("brown") || c.Contains("棕") || c.Contains("咖")))
-            return "可可棕";
-        if (colorTokens.Any(c => c!.Contains("black") || c.Contains("黑") || c.Contains("gray") || c.Contains("grey") || c.Contains("灰")))
-            return "灰调";
+        if (colorTokens.Any(c => c!.Contains("pink") || c.Contains("粉"))) return "奶油粉";
+        if (colorTokens.Any(c => c!.Contains("white") || c.Contains("cream") || c.Contains("白") || c.Contains("米"))) return "奶油白";
+        if (colorTokens.Any(c => c!.Contains("blue") || c.Contains("蓝"))) return "雾蓝";
+        if (colorTokens.Any(c => c!.Contains("green") || c.Contains("绿"))) return "柔绿";
+        if (colorTokens.Any(c => c!.Contains("yellow") || c.Contains("黄"))) return "奶油黄";
+        if (colorTokens.Any(c => c!.Contains("brown") || c.Contains("棕") || c.Contains("咖"))) return "可可棕";
+        if (colorTokens.Any(c => c!.Contains("black") || c.Contains("黑") || c.Contains("gray") || c.Contains("grey") || c.Contains("灰"))) return "灰调";
 
         return null;
     }

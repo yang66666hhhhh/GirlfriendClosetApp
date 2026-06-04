@@ -16,7 +16,16 @@ public partial class OutfitsViewModel
     public async Task DeleteOutfitAsync(Outfit outfit)
     {
         await _outfitService.DeleteOutfitAsync(outfit.Id);
-        await LoadOutfitsAsync();
+        _state.RemoveOutfit(outfit.Id);
+        if (SelectedOutfit?.Id == outfit.Id)
+        {
+            SelectOutfit(_state.Outfits.FirstOrDefault());
+        }
+        InvalidateInsightsCache();
+        await RefreshDerivedStateAsync();
+        await RefreshCalendarIfLoadedAsync();
+        await RefreshRecommendationsForCurrentWeatherAsync();
+        NotifyStateChanged();
     }
 
     public async Task DeleteOutfitWithFeedbackAsync(Outfit outfit)
@@ -36,7 +45,7 @@ public partial class OutfitsViewModel
     public async Task RecordWornDateAsync(Outfit outfit, DateTime date)
     {
         await _outfitService.RecordWornDateAsync(outfit.Id, date);
-        await LoadOutfitsAsync();
+        await RefreshSingleOutfitAsync(outfit.Id);
     }
 
     public Task RecordOutfitWornTodayAsync(Outfit outfit) => RecordWornDateAsync(outfit, DateTime.Now);
@@ -98,13 +107,13 @@ public partial class OutfitsViewModel
         }
     }
 
-    public Task RefreshAfterOutfitSavedAsync() => LoadOutfitsAsync();
+    public Task RefreshAfterOutfitSavedAsync(Guid outfitId) => RefreshSingleOutfitAsync(outfitId);
 
-    public async Task RefreshAfterOutfitSavedWithFeedbackAsync(string title, string detail)
+    public async Task RefreshAfterOutfitSavedWithFeedbackAsync(Guid outfitId, string title, string detail)
     {
         try
         {
-            await RefreshAfterOutfitSavedAsync();
+            await RefreshAfterOutfitSavedAsync(outfitId);
             ToastService.Instance.ShowSuccess(title, detail);
         }
         catch (Exception ex)
@@ -116,7 +125,7 @@ public partial class OutfitsViewModel
     public async Task<bool> ToggleFavoriteAsync(Outfit outfit)
     {
         var isFav = await _outfitService.ToggleFavoriteAsync(outfit.Id);
-        await LoadOutfitsAsync();
+        await RefreshSingleOutfitAsync(outfit.Id);
         return isFav;
     }
 
@@ -137,6 +146,56 @@ public partial class OutfitsViewModel
             ToastService.Instance.ShowError($"收藏{displayName}失败", ex.Message);
             return null;
         }
+    }
+
+    public Task<IReadOnlyList<OutfitGeneratedImageDto>> GetGeneratedImagesAsync(Outfit outfit)
+    {
+        return _getOutfitGeneratedImages == null
+            ? Task.FromResult<IReadOnlyList<OutfitGeneratedImageDto>>([])
+            : _getOutfitGeneratedImages.ExecuteAsync(outfit.Id);
+    }
+
+    public async Task<OutfitGeneratedImageDto?> GenerateOutfitEffectImageWithFeedbackAsync(GenerateOutfitEffectImageRequest request)
+    {
+        try
+        {
+            if (_generateOutfitEffectImage == null)
+                throw new InvalidOperationException("当前环境还没有接入效果图生成服务。");
+
+            var image = await _generateOutfitEffectImage.ExecuteAsync(request);
+            await RefreshSingleOutfitAsync(request.OutfitId);
+            if (image.WasReused)
+            {
+                ToastService.Instance.ShowSuccess("已复用已保存效果图", "这套搭配在相同条件下已经生成过，直接使用了历史结果。");
+            }
+            else
+            {
+                ToastService.Instance.ShowSuccess("效果图已生成", "新的搭配效果图已经保存到这套搭配下。");
+            }
+
+            return image;
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("效果图生成失败", ex.Message);
+            return null;
+        }
+    }
+
+    public async Task SetPrimaryGeneratedImageAsync(Guid imageId)
+    {
+        if (_setPrimaryOutfitGeneratedImage == null)
+            return;
+
+        await _setPrimaryOutfitGeneratedImage.ExecuteAsync(imageId);
+    }
+
+    public async Task DeleteGeneratedImageAsync(Guid imageId)
+    {
+        if (_deleteOutfitGeneratedImage == null)
+            return;
+
+        await _deleteOutfitGeneratedImage.ExecuteAsync(imageId);
     }
 
     private void InvalidateInsightsCache()
