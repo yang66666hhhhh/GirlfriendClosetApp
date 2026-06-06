@@ -49,7 +49,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 ```
 ClosetApp.slnx
 ├── ClosetApp.Domain/          # 实体、枚举、仓储接口
-│   ├── Entities/              # Clothing, Outfit, Tag, Favorite, OutfitWornRecord
+│   ├── Entities/              # Clothing, Outfit, Tag, Favorite, OutfitWornRecord, PersonalProfile, OutfitGeneratedImage
 │   ├── Enums/                 # ClothingType, Season, OutfitScene, TagCategory, RecommendationRotationStrategy
 │   ├── Interfaces/            # IRepository<T>, IClothingRepository, IOutfitRepository...
 │   └── Clothing/              # GarmentType, DisplayCategory, LayerRole, ClothingMappings, ClothingTaxonomy
@@ -70,7 +70,7 @@ ClosetApp.slnx
 │   │   ├── Outfit/            # OutfitPreviewCanvas, OutfitCard, OutfitEditorPanel 等 WPF 控件
 │   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel, WardrobeSummaryPanel, WardrobeFilterPanel, WardrobeCollectionHeaderPanel 等 WPF 控件
 │   │   ├── Tags/              # TagEditorPanel, TagsOverviewPanel, TagsFilterPanel, TagSectionPanel, TagSelectionSection, SelectableTag
-│   │   ├── Settings/          # StorageLocationsSettingsPanel, LogMaintenanceSettingsPanel, ImageMaintenanceSettingsPanel, WeatherPreferencesSettingsPanel, AppearanceSettingsPanel, BackupSettingsPanel 等设置页稳定区块
+│   │   ├── Settings/          # StorageLocationsSettingsPanel, LogMaintenanceSettingsPanel, ImageMaintenanceSettingsPanel, WeatherPreferencesSettingsPanel, AppearanceSettingsPanel, BackupSettingsPanel, AiImageGenerationSettingsPanel 等设置页稳定区块
 │   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
 │   ├── Converters/            # ImagePathConverter, BoolToFavoriteColorConverter...
 │   ├── ViewModels/            # WardrobeViewModel, OutfitsViewModel, SettingsViewModel, TagsViewModel
@@ -175,7 +175,7 @@ MainWindow 2 列布局：
 | Tab | 职责 | State 类 |
 |-----|------|----------|
 | ClothesTab | 瀑布流展示、搜索、分类筛选、批量导入；顶部概览工具带由 `WardrobeSummaryPanel` 承接，展开筛选区由 `WardrobeFilterPanel` 承接，集合标题与排序区由 `WardrobeCollectionHeaderPanel` 承接 | `ClothesTabState` |
-| OutfitsTab | 搭配列表、创建/编辑/删除、天气推荐、穿着记录 | `OutfitsTabState` |
+| OutfitsTab | 搭配列表、创建/编辑/删除、天气推荐、穿着记录；推荐区优先收敛为左主右辅的单张总览卡，卡片点击打开 AI 效果图工作台浮窗 | `OutfitsTabState` |
 | TagsTab | 风格/场景标签管理、使用状态筛选、使用频次统计；季节标签由系统管理 | `TagsTabState` |
 | SettingsTab | 主题切换、天气、备份、图片维护；图片治理区由 `ImageMaintenanceSettingsPanel` 承接，天气推荐偏好区由 `WeatherPreferencesSettingsPanel` 承接，外观区由 `AppearanceSettingsPanel` 承接，备份恢复区由 `BackupSettingsPanel` 承接 | 无（使用 ViewModel） |
 
@@ -186,6 +186,8 @@ MainWindow 2 列布局：
 - State 负责：搜索文本、筛选器、加载标记、空状态、当前集合
 - 纯展示文案、排序标签、推荐提示等无副作用 helper 优先收敛到 `ClosetApp.UI.Logic/Services`
 - Code-behind 负责：点击处理、动画、弹窗编排
+- `Components/Outfit/Controls/OutfitCard` 优先保持浏览轻量化：卡片只保留原始搭配预览、收藏、更多和 AI 状态；效果图查看与管理统一进入 `Components/Shared/Modal/OutfitWorkspaceDialog`
+- 启动性能优先保证“窗口先出现”：数据库迁移链通过 `AppStartupCoordinator` 后台启动，各 Tab 在读取数据前统一等待 readiness；不要再让隐藏 Tab 依赖 `Loaded` 自动首刷制造二次刷新体感
 
 ### 7.4 穿着记录快照约定
 
