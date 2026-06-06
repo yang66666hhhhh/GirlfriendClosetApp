@@ -74,6 +74,38 @@ public class GetAiGenerationReadinessTests
     }
 
     [Fact]
+    public async Task ExecuteAsync_WithGptImage2AndNoAvatar_ReturnsReady()
+    {
+        var outfit = CreateOutfit(withValidClothes: true);
+        var useCase = new GetAiGenerationReadiness(
+            new FakePersonalProfileService(new PersonalProfileDto(
+                Guid.NewGuid(),
+                "小楠",
+                165,
+                "匀称",
+                "自然白",
+                "中长发",
+                "深棕",
+                "五官柔和",
+                "通勤、极简",
+                "过度夸张",
+                null,
+                null,
+                DateTime.Now)),
+            new FakeAiGenerationPreferencesService(new AiGenerationPreferences(
+                "https://api.sbbbbbbbbb.xyz",
+                "gpt-image-2",
+                180,
+                HasEncryptedApiKey: true)),
+            new FakeOutfitService(outfit));
+
+        var result = await useCase.ExecuteAsync(outfit.Id);
+
+        Assert.True(result.CanGenerate);
+        Assert.DoesNotContain(result.BlockingReasons, reason => reason.Contains("头像", StringComparison.Ordinal));
+    }
+
+    [Fact]
     public async Task ExecuteAsync_WithMissingProfileAndProviderConfig_ReturnsBlockingReasons()
     {
         var outfit = CreateOutfit(withValidClothes: false);

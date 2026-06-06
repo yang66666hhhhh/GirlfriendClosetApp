@@ -43,6 +43,43 @@ public class DeleteOutfitGeneratedImageTests
         Assert.True(repository.Images.Single().IsPrimary);
     }
 
+    [Fact]
+    public async Task ExecuteAsync_WhenDeletingFailedAttempt_DoesNotPromoteOtherImages()
+    {
+        var outfitId = Guid.NewGuid();
+        var failedAttempt = new OutfitGeneratedImage
+        {
+            Id = Guid.NewGuid(),
+            OutfitId = outfitId,
+            ResultImagePath = null,
+            IsPrimary = false,
+            Status = "Failed",
+            CreatedAt = DateTime.Now.AddMinutes(-1)
+        };
+        var primaryImage = new OutfitGeneratedImage
+        {
+            Id = Guid.NewGuid(),
+            OutfitId = outfitId,
+            ResultImagePath = "primary.png",
+            IsPrimary = true,
+            Status = "Succeeded",
+            CreatedAt = DateTime.Now.AddMinutes(-10)
+        };
+        var repository = new FakeOutfitGeneratedImageRepository(failedAttempt, primaryImage);
+        var deletedPaths = new List<string?>();
+        var useCase = new DeleteOutfitGeneratedImage(
+            repository,
+            new FakeAiAssetStorageService(path => deletedPaths.Add(path)));
+
+        await useCase.ExecuteAsync(failedAttempt.Id);
+
+        Assert.DoesNotContain(repository.Images, image => image.Id == failedAttempt.Id);
+        Assert.Single(repository.Images);
+        Assert.True(repository.Images.Single().IsPrimary);
+        Assert.Single(deletedPaths);
+        Assert.Null(deletedPaths[0]);
+    }
+
     private sealed class FakeOutfitGeneratedImageRepository : IOutfitGeneratedImageRepository
     {
         public List<OutfitGeneratedImage> Images { get; }

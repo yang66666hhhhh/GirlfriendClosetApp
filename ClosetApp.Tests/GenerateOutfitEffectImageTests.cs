@@ -4,6 +4,7 @@ using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Domain.Interfaces;
+using System.Net.Http;
 using Xunit;
 
 namespace ClosetApp.Tests;
@@ -71,6 +72,53 @@ public class GenerateOutfitEffectImageTests
         Assert.Equal(existingImage.Id, result.Id);
         Assert.Equal(0, generationService.CallCount);
         Assert.Equal(1, repository.Images.Count);
+    }
+
+    [Fact]
+    public async Task ExecuteAsync_WhenProviderFails_PersistsFailedAttempt()
+    {
+        var outfit = CreateOutfit();
+        var profileDto = new PersonalProfileDto(
+            Guid.NewGuid(),
+            "小楠",
+            165,
+            "匀称",
+            "自然白",
+            "中长发",
+            "深棕",
+            "五官柔和",
+            "通勤、极简",
+            "过度夸张",
+            "avatar.png",
+            "full-body.png",
+            DateTime.Now);
+        var request = new GenerateOutfitEffectImageRequest(
+            outfit.Id,
+            "通勤",
+            "站姿正面",
+            "城市街景",
+            "全身",
+            "松弛");
+        var repository = new FakeOutfitGeneratedImageRepository();
+        var useCase = new GenerateOutfitEffectImage(
+            new FakeOutfitService(outfit),
+            new FakePersonalProfileService(profileDto),
+            new FakeAiGenerationPreferencesService(),
+            new ThrowingAiImageGenerationService("status_code=524"),
+            repository,
+            new FakeAiAssetStorageService(),
+            new GetAiGenerationReadiness(
+                new FakePersonalProfileService(profileDto),
+                new FakeAiGenerationPreferencesService(),
+                new FakeOutfitService(outfit)));
+
+        var exception = await Assert.ThrowsAsync<HttpRequestException>(() => useCase.ExecuteAsync(request));
+
+        Assert.Contains("524", exception.Message);
+        var failedAttempt = Assert.Single(repository.Images);
+        Assert.Equal("Failed", failedAttempt.Status);
+        Assert.Equal("status_code=524", failedAttempt.FailureReason);
+        Assert.Null(failedAttempt.ResultImagePath);
     }
 
     private static Outfit CreateOutfit()
@@ -215,6 +263,28 @@ public class GenerateOutfitEffectImageTests
         {
             CallCount++;
             throw new InvalidOperationException("命中已保存结果时不应再调用生成服务。");
+        }
+    }
+
+    private sealed class ThrowingAiImageGenerationService : IAiImageGenerationService
+    {
+        private readonly string _message;
+
+        public ThrowingAiImageGenerationService(string message)
+        {
+            _message = message;
+        }
+
+        public Task TestConnectionAsync() => Task.CompletedTask;
+
+        public Task<AiImageGenerationResponse> GenerateOutfitEffectImageAsync(
+            PersonalProfile profile,
+            Outfit outfit,
+            GenerateOutfitEffectImageRequest request,
+            AiGenerationPreferences preferences,
+            string apiKey)
+        {
+            throw new HttpRequestException(_message);
         }
     }
 

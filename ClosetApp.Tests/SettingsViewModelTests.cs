@@ -4,6 +4,7 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Components.Shared;
+using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Xunit;
@@ -229,10 +230,24 @@ public class SettingsViewModelTests
         Assert.True(viewModel.IsRecommendationStatusVisible);
     }
 
+    [Fact]
+    public async Task SaveOutfitCardDisplayModeAsync_PersistsDisplayMode()
+    {
+        var displayPreferences = CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst);
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), outfitDisplayPreferences: displayPreferences);
+
+        await viewModel.SaveOutfitCardDisplayModeAsync(OutfitCardDisplayMode.EffectImageFirst);
+
+        var saved = await displayPreferences.GetAsync();
+        Assert.Equal(OutfitCardDisplayMode.EffectImageFirst, saved.DefaultCardDisplayMode);
+        Assert.Equal("当前默认：效果图优先", viewModel.OutfitCardDisplaySummary);
+    }
+
     private static SettingsViewModel CreateViewModel(
         FakeImageMaintenanceService imageMaintenance,
         FakeBackupService? backup = null,
-        FakeRecommendationPreferencesService? recommendationPreferences = null)
+        FakeRecommendationPreferencesService? recommendationPreferences = null,
+        OutfitDisplayPreferencesService? outfitDisplayPreferences = null)
     {
         return new SettingsViewModel(
             backup ?? new FakeBackupService(),
@@ -240,7 +255,8 @@ public class SettingsViewModelTests
             new FakeWeatherService(),
             new FakeWeatherPreferencesService(),
             recommendationPreferences ?? new FakeRecommendationPreferencesService(),
-            new ThemeService(new ThemePreferencesService(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json"))));
+            new ThemeService(new ThemePreferencesService(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json"))),
+            outfitDisplayPreferences ?? CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst));
     }
 
     private static BackupValidationResult CreateValidation(IReadOnlyList<string>? warnings = null)
@@ -333,6 +349,17 @@ public class SettingsViewModelTests
             SavedPreferences = preferences;
             return Task.CompletedTask;
         }
+    }
+
+    private static OutfitDisplayPreferencesService CreateDisplayPreferencesService(OutfitCardDisplayMode mode)
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}-settings-outfit-display.json");
+        var service = new OutfitDisplayPreferencesService(filePath);
+        service.SaveAsync(new OutfitDisplayPreferences
+        {
+            DefaultCardDisplayMode = mode
+        }).GetAwaiter().GetResult();
+        return service;
     }
 
     private sealed class FakeBackupService : IBackupService

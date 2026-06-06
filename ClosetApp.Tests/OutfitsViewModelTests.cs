@@ -1,3 +1,4 @@
+using System.IO;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Insights;
@@ -5,6 +6,8 @@ using ClosetApp.Application.UseCases.Outfits;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
+using ClosetApp.UI.Logic.Services;
+using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Xunit;
 
@@ -323,6 +326,90 @@ public class OutfitsViewModelTests
     }
 
     [Fact]
+    public async Task LoadOutfitsAsync_LoadsDefaultCardDisplayMode()
+    {
+        using var displayPreferences = CreateDisplayPreferencesService(OutfitCardDisplayMode.EffectImageFirst);
+        var viewModel = CreateViewModel([CreateOutfit("第一套", OutfitScene.Work, Season.Spring)], outfitDisplayPreferencesService: displayPreferences.Service);
+
+        await viewModel.LoadOutfitsAsync();
+
+        Assert.Equal(OutfitCardDisplayMode.EffectImageFirst, viewModel.CardDisplayMode);
+        Assert.True(viewModel.IsEffectImageFirstDisplayMode);
+    }
+
+    [Fact]
+    public async Task SetCardDisplayModeAsync_PersistsSelection()
+    {
+        using var displayPreferences = CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst);
+        var viewModel = CreateViewModel([CreateOutfit("第一套", OutfitScene.Work, Season.Spring)], outfitDisplayPreferencesService: displayPreferences.Service);
+
+        await viewModel.SetCardDisplayModeAsync(OutfitCardDisplayMode.EffectImageFirst);
+
+        var saved = await displayPreferences.Service.GetAsync();
+        Assert.Equal(OutfitCardDisplayMode.EffectImageFirst, saved.DefaultCardDisplayMode);
+        Assert.Equal(OutfitCardDisplayMode.EffectImageFirst, viewModel.CardDisplayMode);
+    }
+
+    [Fact]
+    public async Task PreferenceChanged_UpdatesExistingViewModelDisplayMode()
+    {
+        using var displayPreferences = CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst);
+        var viewModel = CreateViewModel([CreateOutfit("第一套", OutfitScene.Work, Season.Spring)], outfitDisplayPreferencesService: displayPreferences.Service);
+        await viewModel.LoadOutfitsAsync();
+
+        await displayPreferences.Service.SaveAsync(new OutfitDisplayPreferences
+        {
+            DefaultCardDisplayMode = OutfitCardDisplayMode.EffectImageFirst
+        });
+
+        Assert.Equal(OutfitCardDisplayMode.EffectImageFirst, viewModel.CardDisplayMode);
+    }
+
+    [Fact]
+    public async Task EffectImageOnlyFilter_ShowsOnlyOutfitsWithSucceededImages()
+    {
+        var withImage = CreateOutfit("有图搭配", OutfitScene.Work, Season.Spring);
+        withImage.GeneratedImages.Add(new OutfitGeneratedImage
+        {
+            Id = Guid.NewGuid(),
+            Status = "Succeeded",
+            ResultImagePath = "render.png",
+            CreatedAt = DateTime.Now
+        });
+        var withoutImage = CreateOutfit("没图搭配", OutfitScene.Work, Season.Spring);
+        var viewModel = CreateViewModel([withImage, withoutImage]);
+
+        await viewModel.LoadOutfitsAsync();
+        viewModel.EffectImageOnly = true;
+
+        var result = Assert.Single(viewModel.DisplayedOutfits);
+        Assert.Equal("有图搭配", result.Name);
+        Assert.Contains("仅有效果图", viewModel.FilterSummary);
+    }
+
+    [Fact]
+    public async Task ClearFiltersCommand_AlsoResetsEffectImageOnly()
+    {
+        var withImage = CreateOutfit("有图搭配", OutfitScene.Work, Season.Spring);
+        withImage.GeneratedImages.Add(new OutfitGeneratedImage
+        {
+            Id = Guid.NewGuid(),
+            Status = "Succeeded",
+            ResultImagePath = "render.png",
+            CreatedAt = DateTime.Now
+        });
+        var withoutImage = CreateOutfit("没图搭配", OutfitScene.Work, Season.Spring);
+        var viewModel = CreateViewModel([withImage, withoutImage]);
+
+        await viewModel.LoadOutfitsAsync();
+        viewModel.EffectImageOnly = true;
+        viewModel.ClearFiltersCommand.Execute(null);
+
+        Assert.False(viewModel.EffectImageOnly);
+        Assert.Equal(2, viewModel.DisplayedOutfits.Count);
+    }
+
+    [Fact]
     public async Task DeleteOutfitAsync_WhenSelected_RemovesSelectionOrFallsBack()
     {
         var first = CreateOutfit("第一套", OutfitScene.Work, Season.Spring);
@@ -344,7 +431,8 @@ public class OutfitsViewModelTests
         FakeOutfitService? outfitService = null,
         IWeatherService? weatherService = null,
         FakeRecommendationPreferencesService? recommendationPreferencesService = null,
-        FakeRecommendationService? recommendationService = null)
+        FakeRecommendationService? recommendationService = null,
+        OutfitDisplayPreferencesService? outfitDisplayPreferencesService = null)
     {
         var resolvedOutfitService = outfitService ?? new FakeOutfitService(outfits);
         var resolvedRecommendationService = recommendationService ?? new FakeRecommendationService(outfits);
@@ -359,6 +447,7 @@ public class OutfitsViewModelTests
             weatherService ?? new FakeWeatherService(null),
             new FakeWeatherPreferencesService("Shanghai"),
             recommendationPreferencesService ?? new FakeRecommendationPreferencesService(),
+            outfitDisplayPreferencesService ?? CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst).Service,
             getTodayRecommendations,
             getWardrobeInsights,
             getAnnualOutfitReport);
@@ -583,5 +672,34 @@ public class OutfitsViewModelTests
 
         public Task<RecommendationPreferences> GetAsync() => Task.FromResult(_preferences);
         public Task SaveAsync(RecommendationPreferences preferences) => Task.CompletedTask;
+    }
+
+    private static TemporaryDisplayPreferencesService CreateDisplayPreferencesService(OutfitCardDisplayMode mode)
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}-outfit-display.json");
+        var service = new OutfitDisplayPreferencesService(filePath);
+        service.SaveAsync(new OutfitDisplayPreferences
+        {
+            DefaultCardDisplayMode = mode
+        }).GetAwaiter().GetResult();
+        return new TemporaryDisplayPreferencesService(filePath, service);
+    }
+
+    private sealed class TemporaryDisplayPreferencesService : IDisposable
+    {
+        public TemporaryDisplayPreferencesService(string filePath, OutfitDisplayPreferencesService service)
+        {
+            FilePath = filePath;
+            Service = service;
+        }
+
+        public string FilePath { get; }
+        public OutfitDisplayPreferencesService Service { get; }
+
+        public void Dispose()
+        {
+            if (File.Exists(FilePath))
+                File.Delete(FilePath);
+        }
     }
 }
