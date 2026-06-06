@@ -17,6 +17,8 @@ using ClosetApp.UI.Services;
 using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
+using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace ClosetApp.UI;
 
@@ -61,6 +63,7 @@ public partial class App : System.Windows.Application
         };
 
         ConfigureServices();
+        EventManager.RegisterClassHandler(typeof(ComboBox), UIElement.PreviewMouseWheelEvent, new MouseWheelEventHandler(OnComboBoxPreviewMouseWheel), true);
         var themeService = Services.GetRequiredService<ThemeService>();
         themeService.InitializeAsync().GetAwaiter().GetResult();
         StartBackgroundInitialization();
@@ -172,5 +175,10 @@ public partial class App : System.Windows.Application
             MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(-1);
         }
+    }
+
+    private static void OnComboBoxPreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        ComboBoxWheelGuard.HandlePreviewMouseWheel(e);
     }
 }

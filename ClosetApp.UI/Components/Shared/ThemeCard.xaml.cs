@@ -152,6 +152,7 @@ public partial class ThemeCard : UserControl
         BtnSelect.Background = new SolidColorBrush(IsSelected ? SurfaceColor : primaryLight);
         BtnSelect.BorderBrush = new SolidColorBrush(IsSelected ? borderLight : primary);
         BtnSelect.Foreground = new SolidColorBrush(IsSelected ? textSecondary : primary);
+        BtnSelect.BorderThickness = new Thickness(1);
     }
 
     private void BtnSelect_Click(object sender, RoutedEventArgs e)

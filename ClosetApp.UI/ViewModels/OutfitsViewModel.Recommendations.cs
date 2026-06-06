@@ -43,6 +43,7 @@ public partial class OutfitsViewModel
         nameof(WeatherRecommendationHintText),
         nameof(TodayHeroRecommendationNameText),
         nameof(TodayHeroRecommendationSupportText),
+        nameof(TodayHeroCompactSummaryText),
         nameof(TodayHeroPrimaryActionText),
         nameof(TodayHeroStatusSummaryText),
         nameof(SecondaryWeatherRecommendationSectionBody)
@@ -107,6 +108,11 @@ public partial class OutfitsViewModel
         : HasTodayWornRecords
             ? $"{TodayWornStatusText}，{RecommendationReadinessDetail}"
             : RecommendationReadinessDetail;
+    public string TodayHeroCompactSummaryText => HasPrimaryWeatherRecommendation
+        ? PrimaryWeatherRecommendation!.ReasonSummaryText
+        : HasTodayWornRecords
+            ? TodayWornStatusText
+            : "先新建一套更容易开始今天。";
     public string TodayHeroPrimaryActionText => HasPrimaryWeatherRecommendation
         ? OutfitPresentationText.BuildTodayHeroPrimaryActionText(PrimaryWeatherRecommendation, HasTodayWornRecords)
         : "去新建一套";
@@ -114,8 +120,8 @@ public partial class OutfitsViewModel
         ? $"{RecommendationReadinessTitle} · {RecommendationMissingSeasonText}"
         : $"{RecommendationReadinessTitle} · {WeatherStatusText}";
     public string SecondaryWeatherRecommendationSectionBody => HasSecondaryWeatherRecommendations
-        ? "保留两套轻候选，换场景或换心情时不用重新翻。"
-        : "当前没有额外候选。";
+        ? "轻候选"
+        : string.Empty;
 
     [RelayCommand]
     public async Task ShowRecommendationDebugAsync()

@@ -7,95 +7,67 @@
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-        <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
+        <Style x:Key="SettingsWorkbenchHeroCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
             <Setter Property="Margin" Value="0,0,0,18"/>
-            <Setter Property="Padding" Value="22,20"/>
-            <Setter Property="CornerRadius" Value="22"/>
+            <Setter Property="Padding" Value="24,22"/>
+            <Setter Property="CornerRadius" Value="24"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Effect" Value="{x:Null}"/>
         </Style>
 
-        <Style x:Key="SettingsEyebrowText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextTertiaryBrush}"/>
-            <Setter Property="Margin" Value="0,0,0,6"/>
-        </Style>
-
-        <Style x:Key="SettingsEyebrowBadge" TargetType="Border">
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="8,3"/>
+        <Style x:Key="SettingsWorkbenchBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="11"/>
+            <Setter Property="Padding" Value="10,4"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
-        </Style>
-
-        <Style x:Key="SettingsEyebrowBadgeText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-
-        <Style x:Key="ThemeCurrentBadge" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="9"/>
-            <Setter Property="Padding" Value="8,3"/>
-            <Setter Property="HorizontalAlignment" Value="Right"/>
-            <Setter Property="VerticalAlignment" Value="Top"/>
-            <Setter Property="Visibility" Value="Collapsed"/>
         </Style>
 
-        <Style x:Key="ThemeCurrentBadgeText" TargetType="TextBlock">
+        <Style x:Key="SettingsWorkbenchBadgeText" TargetType="TextBlock">
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
         </Style>
 
-        <Style x:Key="SettingsStatCard" TargetType="Border">
+        <Style x:Key="SettingsWorkbenchMetricCard" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="14,12"/>
-            <Setter Property="Margin" Value="0,0,10,10"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Padding" Value="16,14"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
         </Style>
 
-        <Style x:Key="SettingsStatLabel" TargetType="TextBlock">
+        <Style x:Key="SettingsWorkbenchMetricLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
 
-        <Style x:Key="SettingsStatValue" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="14"/>
+        <Style x:Key="SettingsWorkbenchMetricValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="15"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Margin" Value="0,6,0,0"/>
+            <Setter Property="Margin" Value="0,7,0,0"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
 
-        <Style x:Key="SettingsActionWrap" TargetType="WrapPanel">
-            <Setter Property="Margin" Value="0,14,0,0"/>
-        </Style>
-
-        <Style x:Key="SettingsInsetCard" TargetType="Border" BasedOn="{StaticResource PageInsetCard}">
+        <Style x:Key="SettingsWorkbenchColumnBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
 
-        <Style x:Key="SettingsButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-        </Style>
-
-        <Style x:Key="ThemeChoiceButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="MinWidth" Value="0"/>
-            <Setter Property="Padding" Value="8,5"/>
-            <Setter Property="FontSize" Value="9"/>
-            <Setter Property="MinHeight" Value="34"/>
-            <Setter Property="HorizontalAlignment" Value="Stretch"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Style x:Key="SettingsWorkbenchColumnBadgeText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
     </UserControl.Resources>
 
@@ -119,46 +91,50 @@
                       VerticalScrollBarVisibility="Auto"
                       Padding="44,12,44,60">
             <StackPanel>
-                <Border Style="{StaticResource PageSummaryCard}"
-                        Margin="0,0,0,16"
-                        Padding="20,16">
+                <Border Style="{StaticResource SettingsWorkbenchHeroCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.05*"/>
-                            <ColumnDefinition Width="20"/>
-                            <ColumnDefinition Width="1.25*"/>
+                            <ColumnDefinition Width="1.16*"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="1.02*"/>
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
-                            <TextBlock Text="设置总览"
-                                       Style="{StaticResource PageSummaryTitleText}"/>
-                            <TextBlock Text="常用设置集中管理。"
-                                       Style="{StaticResource PageSummaryBodyText}"/>
+                            <Border Style="{StaticResource SettingsWorkbenchBadge}">
+                                <TextBlock Text="设置工作台"
+                                           Style="{StaticResource SettingsWorkbenchBadgeText}"/>
+                            </Border>
+                            <TextBlock Text="界面、偏好与维护"
+                                       Style="{StaticResource PageTitleText}"
+                                       Margin="0,12,0,0"/>
+                            <TextBlock Text="把外观偏好、天气联动、图片维护和备份整理到同一处，常用设置更容易扫一眼就找到。"
+                                       Style="{StaticResource PageSectionBodyText}"
+                                       Margin="0,8,0,0"/>
 
-                            <WrapPanel Margin="0,10,0,0">
+                            <WrapPanel Margin="0,12,0,0">
                                 <Border Style="{StaticResource PageSummaryBadge}" Margin="0,0,8,6">
                                     <StackPanel>
-                                        <TextBlock Text="维护"
+                                        <TextBlock Text="主题"
                                                    Style="{StaticResource PageSummaryHintText}"/>
-                                        <TextBlock Text="图片缓存 · 日志"
+                                        <TextBlock Text="{Binding ThemeSummary}"
                                                    Style="{StaticResource PageSummaryValueText}"
                                                    Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource PageSummaryBadge}" Margin="0,0,8,6">
                                     <StackPanel>
-                                        <TextBlock Text="偏好"
+                                        <TextBlock Text="搭配卡片"
                                                    Style="{StaticResource PageSummaryHintText}"/>
-                                        <TextBlock Text="天气城市 · 外观"
+                                        <TextBlock Text="{Binding OutfitCardDisplaySummary}"
                                                    Style="{StaticResource PageSummaryValueText}"
                                                    Margin="0,2,0,0"/>
                                     </StackPanel>
                                 </Border>
                                 <Border Style="{StaticResource PageSummaryBadge}" Margin="0,0,8,6">
                                     <StackPanel>
-                                        <TextBlock Text="安全"
+                                        <TextBlock Text="天气城市"
                                                    Style="{StaticResource PageSummaryHintText}"/>
-                                        <TextBlock Text="备份与恢复"
+                                        <TextBlock Text="{Binding WeatherCity}"
                                                    Style="{StaticResource PageSummaryValueText}"
                                                    Margin="0,2,0,0"/>
                                     </StackPanel>
@@ -169,66 +145,81 @@
                         <UniformGrid Grid.Column="2"
                                      Columns="2"
                                      Rows="2">
-                            <Border Style="{StaticResource SettingsStatCard}">
+                            <Border Style="{StaticResource SettingsWorkbenchMetricCard}">
                                 <StackPanel>
-                                    <TextBlock Text="原图规模" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock x:Name="TxtImageStats" Text="{Binding ImageStats}" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock Text="原图规模" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
+                                    <TextBlock x:Name="TxtImageStats" Text="{Binding ImageStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource SettingsStatCard}">
+                            <Border Style="{StaticResource SettingsWorkbenchMetricCard}">
                                 <StackPanel>
-                                    <TextBlock Text="缓存状态" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock x:Name="TxtCacheStats" Text="{Binding CacheStats}" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock Text="缓存状态" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
+                                    <TextBlock x:Name="TxtCacheStats" Text="{Binding CacheStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource SettingsStatCard}">
+                            <Border Style="{StaticResource SettingsWorkbenchMetricCard}">
                                 <StackPanel>
-                                    <TextBlock Text="默认城市" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock Text="{Binding WeatherCity}" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock Text="默认城市" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
+                                    <TextBlock Text="{Binding WeatherCity}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Style="{StaticResource SettingsStatCard}" Margin="0,0,0,10">
+                            <Border Style="{StaticResource SettingsWorkbenchMetricCard}" Margin="0,0,0,10">
                                 <StackPanel>
-                                    <TextBlock Text="日志状态" Style="{StaticResource SettingsStatLabel}"/>
-                                    <TextBlock x:Name="TxtLogStats" Text="{Binding LogStats}" Style="{StaticResource SettingsStatValue}"/>
+                                    <TextBlock Text="日志状态" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
+                                    <TextBlock x:Name="TxtLogStats" Text="{Binding LogStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
                     </Grid>
                 </Border>
 
-                <Grid Margin="0,0,0,12">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
-                    <StackPanel>
-                        <TextBlock Text="全部设置"
-                                   Style="{StaticResource PageSectionTitleText}"/>
-                        <TextBlock Text="目录、维护、天气和备份。"
-                                   Style="{StaticResource PageSectionBodyText}"
-                                   Margin="0,4,0,0"/>
-                    </StackPanel>
-                </Grid>
-
-                <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
-
-                <settings:StorageLocationsSettingsPanel/>
-
-                <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
-                                                        WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
-
-                <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
-
-                <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
-                                                          OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
-
                 <settings:AppearanceSettingsPanel x:Name="AppearancePanel"
                                                   ThemeChanged="AppearancePanel_ThemeChanged"
                                                   OutfitCardDisplayModeChanged="AppearancePanel_OutfitCardDisplayModeChanged"/>
 
-                <settings:BackupSettingsPanel x:Name="BackupPanel"
-                                              BackupImported="BackupPanel_BackupImported"
-                                              RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
+                <Grid Margin="0,0,0,12">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0">
+                        <Border Style="{StaticResource SettingsWorkbenchColumnBadge}">
+                            <TextBlock Text="偏好与联动"
+                                       Style="{StaticResource SettingsWorkbenchColumnBadgeText}"/>
+                        </Border>
+                        <TextBlock Text="日常使用"
+                                   Style="{StaticResource PageSectionTitleText}"/>
+                        <TextBlock Text="优先放天气、推荐和图片生成配置，进入设置后更快落到常用操作。"
+                                   Style="{StaticResource PageSectionBodyText}"
+                                   Margin="0,4,0,12"/>
+
+                        <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
+                                                                  OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
+                        <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Column="2">
+                        <Border Style="{StaticResource SettingsWorkbenchColumnBadge}">
+                            <TextBlock Text="维护与安全"
+                                       Style="{StaticResource SettingsWorkbenchColumnBadgeText}"/>
+                        </Border>
+                        <TextBlock Text="存储与治理"
+                                   Style="{StaticResource PageSectionTitleText}"/>
+                        <TextBlock Text="目录、缓存、日志和备份放在同一列，维护链路更完整，也不会把页面拉得过长。"
+                                   Style="{StaticResource PageSectionBodyText}"
+                                   Margin="0,4,0,12"/>
+
+                        <settings:StorageLocationsSettingsPanel/>
+                        <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
+                                                                WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
+                        <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
+                        <settings:BackupSettingsPanel x:Name="BackupPanel"
+                                                      BackupImported="BackupPanel_BackupImported"
+                                                      RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
+                    </StackPanel>
+                </Grid>
             </StackPanel>
         </ScrollViewer>
     </Grid>

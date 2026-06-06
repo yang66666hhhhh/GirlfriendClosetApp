@@ -159,12 +159,12 @@ public partial class OutfitsViewModel : ViewModelBase
     public bool HasActiveFilters => _state.HasActiveFilters;
     public string FilterSummary => _state.FilterSummary;
     public string FilterResultText => HasActiveFilters
-        ? $"{FilterSummary} · {OutfitCount} 套结果"
-        : $"{FilterSummary} · {OutfitCount} 套";
-    public string CollectionSectionTitle => HasActiveFilters ? "当前结果" : "全部搭配";
-    public string CollectionSectionBody => HasActiveFilters
-        ? $"{FilterSummary} · {OutfitCount} 套"
-        : "按筛选条件查看搭配。";
+        ? $"{OutfitCount} 套结果"
+        : $"{OutfitCount} 套搭配";
+    public string CollectionSectionTitle => HasActiveFilters
+        ? $"筛选结果（{OutfitCount}）"
+        : $"全部搭配（{OutfitCount}）";
+    public string CollectionSectionBody => string.Empty;
     public bool FavoriteOnly
     {
         get => _state.FavoriteOnly;
