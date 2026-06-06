@@ -13,6 +13,7 @@ namespace ClosetApp.UI.Components.Settings;
 public partial class LogMaintenanceSettingsPanel : UserControl
 {
     private readonly IImageMaintenanceService _imageMaintenanceService;
+    private bool _isBusy;
 
     public LogMaintenanceSettingsPanel()
     {
@@ -34,16 +35,40 @@ public partial class LogMaintenanceSettingsPanel : UserControl
         Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
     }
 
-    private void OpenLogsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.LogsDir);
+    private void OpenLogsDir_Click(object sender, RoutedEventArgs e)
+    {
+        if (_isBusy)
+            return;
+
+        OpenPath(AppPaths.LogsDir);
+    }
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
     {
-        await RefreshAsync();
-        ToastService.Instance.ShowInfo("统计信息已刷新。");
+        if (_isBusy)
+            return;
+
+        try
+        {
+            SetBusyState(true, "正在刷新日志状态...");
+            await RefreshAsync();
+            ToastService.Instance.ShowInfo("统计信息已刷新。");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新日志状态失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async void ClearLogs_Click(object sender, RoutedEventArgs e)
     {
+        if (_isBusy)
+            return;
+
         var result = MessageBox.Show(
             "确定清理历史日志吗？今天正在写入的日志会保留。",
             "清理日志",
@@ -53,9 +78,32 @@ public partial class LogMaintenanceSettingsPanel : UserControl
         if (result != MessageBoxResult.OK)
             return;
 
-        await _imageMaintenanceService.CleanupLogsAsync();
-        await RefreshAsync();
-        MessageBox.Show("历史日志已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("历史日志已清理");
+        try
+        {
+            SetBusyState(true, "正在清理历史日志...");
+            await _imageMaintenanceService.CleanupLogsAsync();
+            await RefreshAsync();
+            ToastService.Instance.ShowSuccess("历史日志已清理");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("清理历史日志失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
+    }
+
+    private void SetBusyState(bool isBusy, string? statusText = null)
+    {
+        _isBusy = isBusy;
+
+        BtnOpenLogsDir.IsEnabled = !isBusy;
+        BtnRefreshStats.IsEnabled = !isBusy;
+        BtnClearLogs.IsEnabled = !isBusy;
+
+        TxtLogOperationStatus.Text = statusText ?? string.Empty;
+        TxtLogOperationStatus.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
     }
 }

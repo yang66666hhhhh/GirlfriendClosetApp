@@ -27,17 +27,8 @@ public sealed class AiGenerationPreferencesService : IAiGenerationPreferencesSer
 
         try
         {
-            await using var stream = File.OpenRead(_filePath);
-            var document = await JsonSerializer.DeserializeAsync<AiGenerationPreferencesDocument>(stream, JsonOptions);
-            if (document == null)
-                return BuildDefault();
-
-            return new AiGenerationPreferences(
-                document.BaseUrl ?? BuildDefault().BaseUrl,
-                document.Model ?? BuildDefault().Model,
-                document.TimeoutSeconds > 0 ? document.TimeoutSeconds : 60,
-                document.LastConnectionCheckAt,
-                !string.IsNullOrWhiteSpace(document.EncryptedApiKey));
+            var document = await LoadDocumentAsync();
+            return ToPreferences(document);
         }
         catch
         {
@@ -82,21 +73,11 @@ public sealed class AiGenerationPreferencesService : IAiGenerationPreferencesSer
     private async Task<AiGenerationPreferencesDocument> LoadDocumentAsync()
     {
         if (!File.Exists(_filePath))
-            return new AiGenerationPreferencesDocument
-            {
-                BaseUrl = BuildDefault().BaseUrl,
-                Model = BuildDefault().Model,
-                TimeoutSeconds = BuildDefault().TimeoutSeconds
-            };
+            return CreateDefaultDocument();
 
-        await using var stream = File.OpenRead(_filePath);
-        return await JsonSerializer.DeserializeAsync<AiGenerationPreferencesDocument>(stream, JsonOptions)
-            ?? new AiGenerationPreferencesDocument
-            {
-                BaseUrl = BuildDefault().BaseUrl,
-                Model = BuildDefault().Model,
-                TimeoutSeconds = BuildDefault().TimeoutSeconds
-            };
+        await using var stream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        var document = await JsonSerializer.DeserializeAsync<AiGenerationPreferencesDocument>(stream, JsonOptions);
+        return NormalizeDocument(document);
     }
 
     private async Task SaveDocumentAsync(AiGenerationPreferencesDocument document)
@@ -110,8 +91,42 @@ public sealed class AiGenerationPreferencesService : IAiGenerationPreferencesSer
     {
         return new AiGenerationPreferences(
             "https://api.openai.com/v1",
-            "gpt-image-1",
-            60);
+            "gpt-image-2",
+            180);
+    }
+
+    private static AiGenerationPreferencesDocument CreateDefaultDocument()
+    {
+        var defaults = BuildDefault();
+        return new AiGenerationPreferencesDocument
+        {
+            BaseUrl = defaults.BaseUrl,
+            Model = defaults.Model,
+            TimeoutSeconds = defaults.TimeoutSeconds
+        };
+    }
+
+    private static AiGenerationPreferencesDocument NormalizeDocument(AiGenerationPreferencesDocument? document)
+    {
+        var defaults = BuildDefault();
+        return new AiGenerationPreferencesDocument
+        {
+            BaseUrl = string.IsNullOrWhiteSpace(document?.BaseUrl) ? defaults.BaseUrl : document.BaseUrl.Trim(),
+            Model = string.IsNullOrWhiteSpace(document?.Model) ? defaults.Model : document.Model.Trim(),
+            TimeoutSeconds = document?.TimeoutSeconds > 0 ? document.TimeoutSeconds : defaults.TimeoutSeconds,
+            LastConnectionCheckAt = document?.LastConnectionCheckAt,
+            EncryptedApiKey = document?.EncryptedApiKey
+        };
+    }
+
+    private static AiGenerationPreferences ToPreferences(AiGenerationPreferencesDocument document)
+    {
+        return new AiGenerationPreferences(
+            document.BaseUrl ?? BuildDefault().BaseUrl,
+            document.Model ?? BuildDefault().Model,
+            document.TimeoutSeconds > 0 ? document.TimeoutSeconds : 60,
+            document.LastConnectionCheckAt,
+            !string.IsNullOrWhiteSpace(document.EncryptedApiKey));
     }
 
     private static string Protect(string value)

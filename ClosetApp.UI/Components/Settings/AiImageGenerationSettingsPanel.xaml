@@ -26,9 +26,10 @@
         </Style>
 
         <Style x:Key="PresetButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="MinHeight" Value="64"/>
-            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="MinHeight" Value="76"/>
+            <Setter Property="Padding" Value="14,12"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Style.Triggers>
@@ -44,23 +45,24 @@
         <StackPanel>
             <TextBlock Text="AI 图片生成"
                        Style="{StaticResource PageSectionTitleText}"/>
-            <TextBlock Text="配置 OpenAI 兼容接口、模型与 API Key，并快速检查个人档案是否准备好。"
+            <TextBlock Text="配置接口、模型和 API Key。"
                        Style="{StaticResource PageSectionBodyText}"
                        Margin="0,6,0,0"/>
 
             <TextBlock Text="一键切换"
                        Margin="0,16,0,6"
                        Foreground="{DynamicResource TextSecondaryBrush}"/>
-            <UniformGrid Columns="3">
+            <UniformGrid Columns="2">
                 <Button x:Name="BtnPresetOpenAiMain"
                         Style="{StaticResource PresetButton}"
+                        Margin="0,0,10,10"
                         Click="Preset_Click">
                     <StackPanel>
                         <TextBlock x:Name="TxtPresetOpenAiMain"
-                                   Text="OpenAI 标准"
+                                   Text="GPT Image 2"
                                    FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        <TextBlock Text="gpt-image-1 · 官方默认"
+                        <TextBlock Text="gpt-image-2 · 当前中转主路线"
                                    Style="{StaticResource PageMutedBodyText}"
                                    Margin="0,4,0,0"
                                    TextWrapping="Wrap"/>
@@ -68,7 +70,7 @@
                 </Button>
                 <Button x:Name="BtnPresetOpenAi15"
                         Style="{StaticResource PresetButton}"
-                        Margin="10,0,0,0"
+                        Margin="0,0,0,10"
                         Click="Preset_Click">
                     <StackPanel>
                         <TextBlock x:Name="TxtPresetOpenAi15"
@@ -83,7 +85,7 @@
                 </Button>
                 <Button x:Name="BtnPresetOpenAiMini"
                         Style="{StaticResource PresetButton}"
-                        Margin="10,0,0,0"
+                        Margin="0,0,10,0"
                         Click="Preset_Click">
                     <StackPanel>
                         <TextBlock x:Name="TxtPresetOpenAiMini"
@@ -94,10 +96,24 @@
                                    Style="{StaticResource PageMutedBodyText}"
                                    Margin="0,4,0,0"
                                    TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Button>
+                <Button x:Name="BtnPresetOpenAi55"
+                        Style="{StaticResource PresetButton}"
+                        Click="Preset_Click">
+                    <StackPanel>
+                        <TextBlock x:Name="TxtPresetOpenAi55"
+                                   Text="GPT-5.5"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="实验兼容 · responses 路由"
+                                   Style="{StaticResource PageMutedBodyText}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap"/>
                     </StackPanel>
                 </Button>
             </UniformGrid>
-            <TextBlock Text="点击预设会立即把 Base URL、模型和超时切换到对应组合，并保留你当前保存的 API Key；如果已有 API Key，会自动测试连接，失败则回滚。"
+            <TextBlock Text="预设会保留已保存的 API Key，并自动测试连通性。"
                        Style="{StaticResource PageMutedBodyText}"
                        Margin="0,8,0,0"
                        TextWrapping="Wrap"/>
@@ -116,16 +132,19 @@
                 <ComboBox x:Name="CmbModelPreset"
                           Grid.Column="0"
                           SelectionChanged="ModelPreset_SelectionChanged">
+                    <ComboBoxItem Content="gpt-image-2" Tag="gpt-image-2"/>
                     <ComboBoxItem Content="gpt-image-1" Tag="gpt-image-1"/>
                     <ComboBoxItem Content="gpt-image-1.5" Tag="gpt-image-1.5"/>
                     <ComboBoxItem Content="gpt-image-1-mini" Tag="gpt-image-1-mini"/>
+                    <ComboBoxItem Content="gpt-5.5" Tag="gpt-5.5"/>
+                    <ComboBoxItem Content="gpt-5.4" Tag="gpt-5.4"/>
                     <ComboBoxItem Content="自定义" Tag="__custom__"/>
                 </ComboBox>
                 <TextBox x:Name="TxtModel"
                          Grid.Column="2"
                          Text="{Binding AiModel, UpdateSourceTrigger=PropertyChanged}"/>
             </Grid>
-            <TextBlock Text="推荐优先用 GPT Image 系列模型；如果你的兼容服务暴露了别的图片模型，也可以切到“自定义”。"
+            <TextBlock Text="gpt-image-2 走文生图；支持编辑的图片模型才会上传参考图。"
                        Style="{StaticResource PageMutedBodyText}"
                        Margin="0,6,0,0"
                        TextWrapping="Wrap"/>
@@ -152,7 +171,7 @@
                         Click="ToggleApiKeyVisibility_Click"/>
             </Grid>
             <TextBlock x:Name="TxtApiKeyHint"
-                       Text="已保存的 API Key 会常驻显示在这里，你可以通过右侧按钮切换明文或隐藏。"
+                       Text="可切换显示或隐藏。"
                        Style="{StaticResource PageMutedBodyText}"
                        Margin="0,6,0,0"
                        TextWrapping="Wrap"/>
@@ -162,18 +181,26 @@
                      Text="{Binding AiTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}"/>
 
             <WrapPanel Margin="0,16,0,0">
-                <Button Content="保存配置"
+                <Button x:Name="BtnSaveConfig"
+                        Content="保存配置"
                         Style="{StaticResource SettingsButton}"
+                        Margin="0,0,8,8"
                         Click="Save_Click"/>
-                <Button Content="测试连接"
+                <Button x:Name="BtnTestConnection"
+                        Content="测试连接"
                         Style="{StaticResource CapsuleButton}"
-                        Margin="10,0,0,0"
+                        Margin="0,0,8,8"
                         Click="TestConnection_Click"/>
-                <Button Content="编辑个人档案"
+                <Button x:Name="BtnOpenProfile"
+                        Content="编辑个人档案"
                         Style="{StaticResource CapsuleButton}"
-                        Margin="10,0,0,0"
+                        Margin="0,0,8,8"
                         Click="OpenProfile_Click"/>
             </WrapPanel>
+            <TextBlock x:Name="TxtAiOperationStatus"
+                       Style="{StaticResource PageMutedBodyText}"
+                       Margin="0,2,0,0"
+                       Visibility="Collapsed"/>
 
             <Border Background="{DynamicResource SurfaceSectionBrush}"
                     BorderBrush="{DynamicResource BorderLightBrush}"

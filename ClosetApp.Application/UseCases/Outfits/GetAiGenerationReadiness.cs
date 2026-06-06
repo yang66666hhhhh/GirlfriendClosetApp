@@ -37,7 +37,7 @@ public sealed class GetAiGenerationReadiness
             if (string.IsNullOrWhiteSpace(profile.DisplayName))
                 reasons.Add("个人档案还缺少昵称。");
 
-            if (!profile.HasAvatarPhoto)
+            if (!profile.HasAvatarPhoto && RequiresReferenceImages(preferences.Model))
                 reasons.Add("请先上传至少一张头像照。");
 
             if (!profile.HasConsent)
@@ -59,5 +59,13 @@ public sealed class GetAiGenerationReadiness
             reasons.Add("当前搭配至少需要 2 件有效单品。");
 
         return new AiGenerationReadinessResult(reasons.Count == 0, reasons, profile, preferences);
+    }
+
+    private static bool RequiresReferenceImages(string? model)
+    {
+        if (string.IsNullOrWhiteSpace(model))
+            return true;
+
+        return !string.Equals(model.Trim(), "gpt-image-2", StringComparison.OrdinalIgnoreCase);
     }
 }

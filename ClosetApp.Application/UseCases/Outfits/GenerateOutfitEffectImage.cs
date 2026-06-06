@@ -85,6 +85,22 @@ public sealed class GenerateOutfitEffectImage
         if (reusableImage != null)
             return reusableImage.ToDto() with { WasReused = true };
 
+        var pendingImage = new OutfitGeneratedImage
+        {
+            OutfitId = outfit.Id,
+            ProviderKind = "OpenAI-Compatible",
+            Model = preferences.Model,
+            PromptSnapshot = string.Empty,
+            ProfileSnapshotJson = profileSnapshot,
+            OutfitSnapshotJson = outfitSnapshot,
+            OptionSnapshotJson = optionSnapshot,
+            ResultImagePath = null,
+            IsPrimary = false,
+            Status = "Pending",
+            FailureReason = null
+        };
+        await _generatedImageRepository.AddAsync(pendingImage);
+
         string? storedFileName = null;
         try
         {
@@ -111,17 +127,33 @@ public sealed class GenerateOutfitEffectImage
                 FailureReason = null
             };
 
-            if (image.IsPrimary)
+            pendingImage.ProviderKind = image.ProviderKind;
+            pendingImage.Model = image.Model;
+            pendingImage.PromptSnapshot = image.PromptSnapshot;
+            pendingImage.ProfileSnapshotJson = image.ProfileSnapshotJson;
+            pendingImage.OutfitSnapshotJson = image.OutfitSnapshotJson;
+            pendingImage.OptionSnapshotJson = image.OptionSnapshotJson;
+            pendingImage.ResultImagePath = image.ResultImagePath;
+            pendingImage.IsPrimary = image.IsPrimary;
+            pendingImage.Status = image.Status;
+            pendingImage.FailureReason = null;
+
+            if (pendingImage.IsPrimary)
                 await _generatedImageRepository.ClearPrimaryAsync(outfit.Id);
 
-            await _generatedImageRepository.AddAsync(image);
-            return image.ToDto();
+            await _generatedImageRepository.UpdateAsync(pendingImage);
+            return pendingImage.ToDto();
         }
-        catch
+        catch (Exception ex)
         {
             if (!string.IsNullOrWhiteSpace(storedFileName))
                 await _assetStorageService.TryDeleteGeneratedImageAsync(storedFileName);
 
+            pendingImage.Status = "Failed";
+            pendingImage.FailureReason = ex.Message;
+            pendingImage.ResultImagePath = null;
+            pendingImage.IsPrimary = false;
+            await _generatedImageRepository.UpdateAsync(pendingImage);
             throw;
         }
     }

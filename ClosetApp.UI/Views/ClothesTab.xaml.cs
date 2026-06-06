@@ -22,13 +22,16 @@ namespace ClosetApp.UI.Views;
 public partial class ClothesTab : UserControl
 {
     private readonly WardrobeViewModel _viewModel;
+    private readonly AppStartupCoordinator _startupCoordinator;
     private readonly DispatcherTimer _resizeTimer;
+    private Task? _refreshTask;
 
     public event EventHandler<int>? ClothingCountChanged;
 
     public ClothesTab()
     {
         _viewModel = App.Services.GetRequiredService<WardrobeViewModel>();
+        _startupCoordinator = App.Services.GetRequiredService<AppStartupCoordinator>();
         InitializeComponent();
         DataContext = _viewModel;
 
@@ -47,15 +50,21 @@ public partial class ClothesTab : UserControl
             if (e.PropertyName == nameof(WardrobeViewModel.TotalCount))
                 ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
         };
-        Loaded += async (_, _) => await RefreshAsync();
         SizeChanged += (_, _) => _resizeTimer.Start();
         ContentScroller.ScrollChanged += ContentScroller_ScrollChanged;
     }
 
-    public async Task RefreshAsync()
+    public Task RefreshAsync()
+    {
+        _refreshTask ??= RefreshCoreAsync();
+        return _refreshTask;
+    }
+
+    private async Task RefreshCoreAsync()
     {
         try
         {
+            await _startupCoordinator.WaitUntilReadyAsync();
             await _viewModel.LoadClothesAsync();
             ClothingCountChanged?.Invoke(this, _viewModel.TotalCount);
             UpdateCardWidth();
@@ -63,6 +72,10 @@ public partial class ClothesTab : UserControl
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("衣柜列表刷新失败", $"无法加载最新衣物数据：{ex.Message}");
+        }
+        finally
+        {
+            _refreshTask = null;
         }
     }
 

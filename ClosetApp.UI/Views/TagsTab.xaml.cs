@@ -14,24 +14,37 @@ namespace ClosetApp.UI.Views;
 public partial class TagsTab : UserControl
 {
     private readonly TagsViewModel _viewModel;
+    private readonly AppStartupCoordinator _startupCoordinator;
+    private Task? _refreshTask;
 
     public TagsTab()
     {
         _viewModel = App.Services.GetRequiredService<TagsViewModel>();
+        _startupCoordinator = App.Services.GetRequiredService<AppStartupCoordinator>();
         InitializeComponent();
         DataContext = _viewModel;
-        Loaded += async (_, _) => await RefreshAsync();
     }
 
-    public async Task RefreshAsync()
+    public Task RefreshAsync()
+    {
+        _refreshTask ??= RefreshCoreAsync();
+        return _refreshTask;
+    }
+
+    private async Task RefreshCoreAsync()
     {
         try
         {
+            await _startupCoordinator.WaitUntilReadyAsync();
             await _viewModel.LoadTagsAsync();
         }
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("标签列表刷新失败", $"无法加载最新标签数据：{ex.Message}");
+        }
+        finally
+        {
+            _refreshTask = null;
         }
     }
 

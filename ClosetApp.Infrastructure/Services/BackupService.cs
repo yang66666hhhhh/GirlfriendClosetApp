@@ -990,7 +990,7 @@ public sealed class BackupService : IBackupService
 
         EnsureAiAssetStorageAvailable();
 
-        var path = _aiAssetStorageService.GetProfileReferenceFullPath(imagePath);
+        var path = _aiAssetStorageService!.GetProfileReferenceFullPath(imagePath);
         return File.Exists(path) ? path : null;
     }
 
@@ -1001,7 +1001,7 @@ public sealed class BackupService : IBackupService
 
         EnsureAiAssetStorageAvailable();
 
-        var path = _aiAssetStorageService.GetGeneratedImageFullPath(imagePath);
+        var path = _aiAssetStorageService!.GetGeneratedImageFullPath(imagePath);
         return File.Exists(path) ? path : null;
     }
 

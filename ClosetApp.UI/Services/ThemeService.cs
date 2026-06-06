@@ -116,10 +116,13 @@ public sealed class ThemeService
 
         UpdateColor("Theme.Amber.Surface", palette.AmberSurface);
         UpdateBrush("ThemeAmberSurfaceBrush", palette.AmberSurface);
+        UpdateBrush("TagAmberSurfaceBrush", palette.AmberSurface);
         UpdateColor("Theme.Amber.Border", palette.AmberBorder);
         UpdateBrush("ThemeAmberBorderBrush", palette.AmberBorder);
+        UpdateBrush("TagAmberBorderBrush", palette.AmberBorder);
         UpdateColor("Theme.Amber.Text", palette.AmberText);
         UpdateBrush("ThemeAmberTextBrush", palette.AmberText);
+        UpdateBrush("TagAmberTextBrush", palette.AmberText);
 
         UpdateColor("Theme.Lavender.Surface", palette.LavenderSurface);
         UpdateBrush("ThemeLavenderSurfaceBrush", palette.LavenderSurface);

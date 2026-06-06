@@ -32,7 +32,7 @@ public partial class GeneratedImagePreviewDialog : UserControl
             image.IsPrimary,
             image.Model,
             $"{image.CreatedAt:yyyy-MM-dd HH:mm}",
-            image.IsPrimary ? "当前搭配默认展示这张效果图。" : "点击左侧缩略图可切换大图查看。",
+            image.IsPrimary ? "在效果图优先模式下，这张图会优先出现在搭配卡片里。" : "点击左侧缩略图可切换大图查看。",
             BuildImageBitmap(image.ResultImagePath!, 180, preferThumbnail: true)))
             .ToList();
         RenderSelectedImage();
@@ -56,11 +56,11 @@ public partial class GeneratedImagePreviewDialog : UserControl
         _selectedImageId = image.Id;
         PreviewImage.Source = BuildImageBitmap(image.ResultImagePath!, 1200, preferThumbnail: false);
         TxtSubtitle.Text = image.IsPrimary
-            ? "当前查看的是这套搭配的主效果图。"
+            ? "当前查看的是这套搭配的首选效果图。"
             : "当前查看的是这套搭配的历史效果图。";
         TxtMeta.Text = $"{image.Model} · {image.CreatedAt:yyyy-MM-dd HH:mm}";
         TxtHint.Text = image.IsPrimary
-            ? "这张图会优先显示在搭配卡片和效果图概览里。"
+            ? "在效果图优先模式下，这张图会优先显示在搭配卡片和效果图概览里。"
             : "保留历史图可以对比不同场景、构图和氛围。";
         PrimaryBadge.Visibility = image.IsPrimary ? Visibility.Visible : Visibility.Collapsed;
     }

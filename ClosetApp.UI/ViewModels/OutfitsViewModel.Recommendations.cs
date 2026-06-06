@@ -43,7 +43,9 @@ public partial class OutfitsViewModel
         nameof(WeatherRecommendationHintText),
         nameof(TodayHeroRecommendationNameText),
         nameof(TodayHeroRecommendationSupportText),
-        nameof(TodayHeroPrimaryActionText)
+        nameof(TodayHeroPrimaryActionText),
+        nameof(TodayHeroStatusSummaryText),
+        nameof(SecondaryWeatherRecommendationSectionBody)
     ];
 
     private readonly IOutfitRecommendationService _outfitRecommendationService;
@@ -108,6 +110,12 @@ public partial class OutfitsViewModel
     public string TodayHeroPrimaryActionText => HasPrimaryWeatherRecommendation
         ? OutfitPresentationText.BuildTodayHeroPrimaryActionText(PrimaryWeatherRecommendation, HasTodayWornRecords)
         : "去新建一套";
+    public string TodayHeroStatusSummaryText => HasRecommendationGap
+        ? $"{RecommendationReadinessTitle} · {RecommendationMissingSeasonText}"
+        : $"{RecommendationReadinessTitle} · {WeatherStatusText}";
+    public string SecondaryWeatherRecommendationSectionBody => HasSecondaryWeatherRecommendations
+        ? "保留两套轻候选，换场景或换心情时不用重新翻。"
+        : "当前没有额外候选。";
 
     [RelayCommand]
     public async Task ShowRecommendationDebugAsync()
@@ -251,6 +259,30 @@ public partial class OutfitsViewModel
         catch (Exception ex)
         {
             Log.Warning(ex, "Failed to refresh recommendations with cached weather context");
+        }
+    }
+
+    private async Task RefreshWeatherRecommendationsInBackgroundAsync()
+    {
+        try
+        {
+            await RefreshWeatherRecommendationsAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to refresh weather recommendations in background");
+        }
+    }
+
+    private async Task RefreshRecommendationsForCurrentWeatherInBackgroundAsync()
+    {
+        try
+        {
+            await RefreshRecommendationsForCurrentWeatherAsync();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to refresh cached weather recommendations in background");
         }
     }
 

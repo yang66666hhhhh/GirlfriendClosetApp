@@ -2,41 +2,51 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
+using ClosetApp.UI.Logic.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Views;
 
 public partial class SettingsTab : UserControl
 {
-    private readonly ThemeService _themeService;
     private readonly SettingsViewModel _viewModel;
+    private readonly AppStartupCoordinator _startupCoordinator;
+    private Task? _refreshTask;
 
     public SettingsTab()
     {
-        _themeService = App.Services.GetRequiredService<ThemeService>();
         _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
+        _startupCoordinator = App.Services.GetRequiredService<AppStartupCoordinator>();
         InitializeComponent();
         DataContext = _viewModel;
-        Loaded += async (_, _) => await RefreshAsync();
     }
 
-    public async Task RefreshAsync()
+    public Task RefreshAsync()
+    {
+        _refreshTask ??= RefreshCoreAsync();
+        return _refreshTask;
+    }
+
+    private async Task RefreshCoreAsync()
     {
         try
         {
+            await _startupCoordinator.WaitUntilReadyAsync();
             await _viewModel.InitializeAsync();
             AppearancePanel.Refresh();
             await ImageMaintenancePanel.RefreshAsync();
             await LogMaintenancePanel.RefreshAsync();
             await BackupPanel.RefreshAsync();
             await WeatherPreferencesPanel.RefreshAsync();
-            await _viewModel.RefreshAiGenerationSettingsAsync();
-            AiImageGenerationPanel.DataContext = _viewModel;
             await AiImageGenerationPanel.RefreshAsync();
         }
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("设置页面刷新失败", $"无法加载最新设置数据：{ex.Message}");
+        }
+        finally
+        {
+            _refreshTask = null;
         }
     }
 
@@ -81,5 +91,11 @@ public partial class SettingsTab : UserControl
     private async void AppearancePanel_ThemeChanged(object sender, AppThemeKind e)
     {
         await ApplyThemeAsync(e);
+    }
+
+    private async void AppearancePanel_OutfitCardDisplayModeChanged(object sender, OutfitCardDisplayMode e)
+    {
+        await _viewModel.SaveOutfitCardDisplayModeAsync(e);
+        await RequestAppRefreshAsync(outfits: true);
     }
 }

@@ -35,6 +35,36 @@
                               VerticalScrollBarVisibility="Auto"
                               Padding="24,18">
                     <StackPanel>
+                        <Border x:Name="ActionStatusSection"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14"
+                                Padding="18"
+                                Margin="0,0,0,16"
+                                Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock x:Name="TxtActionStatusTitle"
+                                           FontSize="14"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock x:Name="TxtActionStatusBody"
+                                           Style="{StaticResource PageSectionBodyText}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock x:Name="TxtActionStatusMeta"
+                                           Style="{StaticResource PageMutedBodyText}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap"
+                                           Visibility="Collapsed"/>
+                                <ProgressBar x:Name="BusyProgressBar"
+                                             Margin="0,12,0,0"
+                                             Height="6"
+                                             IsIndeterminate="True"
+                                             Visibility="Collapsed"/>
+                            </StackPanel>
+                        </Border>
+
                         <Border Background="{DynamicResource SurfaceCardBrush}" CornerRadius="14" Padding="18" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock x:Name="TxtReadinessTitle"
@@ -45,6 +75,10 @@
                                 <TextBlock x:Name="TxtReadinessBody"
                                            Style="{StaticResource PageSectionBodyText}"
                                            Margin="0,6,0,0"/>
+                                <TextBlock x:Name="TxtActiveProvider"
+                                           Style="{StaticResource PageMutedBodyText}"
+                                           Margin="0,10,0,0"
+                                           TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
@@ -62,6 +96,18 @@
                                 <TextBlock x:Name="TxtSavedImagesSummary"
                                            Style="{StaticResource PageSectionBodyText}"
                                            Margin="0,6,0,0"/>
+                                <Border Background="{DynamicResource PrimaryLightBrush}"
+                                        BorderBrush="{DynamicResource PrimaryBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="10,8"
+                                        Margin="0,12,0,0">
+                                    <TextBlock Text="把某张图设为首选效果图后，只要搭配列表切到“效果图优先”，这张图就会优先显示在卡片里。"
+                                               Foreground="{DynamicResource PrimaryBrush}"
+                                               FontSize="10.5"
+                                               FontWeight="SemiBold"
+                                               TextWrapping="Wrap"/>
+                                </Border>
                                 <ItemsControl x:Name="SavedImagesList"
                                               Margin="0,14,0,0">
                                     <ItemsControl.ItemTemplate>
@@ -152,6 +198,85 @@
                                                         </WrapPanel>
                                                     </StackPanel>
                                                 </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border x:Name="RecentFailuresSection"
+                                Background="{DynamicResource SurfaceCardBrush}"
+                                CornerRadius="14"
+                                Padding="18"
+                                Margin="0,0,0,16"
+                                Visibility="Collapsed">
+                            <StackPanel>
+                                <TextBlock Text="最近生成状态"
+                                           FontSize="15"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock x:Name="TxtRecentFailuresSummary"
+                                           Style="{StaticResource PageSectionBodyText}"
+                                           Margin="0,6,0,0"/>
+                                <ItemsControl x:Name="RecentFailuresList"
+                                              Margin="0,14,0,0">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource PageInsetCard}"
+                                                    Margin="0,0,0,12">
+                                                <StackPanel>
+                                                    <WrapPanel>
+                                                        <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="10"
+                                                                Padding="8,3"
+                                                                Margin="0,0,8,8">
+                                                            <TextBlock Text="{Binding StatusText}"
+                                                                       FontSize="10"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                        </Border>
+                                                        <Border Background="{DynamicResource PrimaryLightBrush}"
+                                                                BorderBrush="{DynamicResource PrimaryBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="10"
+                                                                Padding="8,3"
+                                                                Margin="0,0,0,8">
+                                                            <TextBlock Text="{Binding OptionSummary}"
+                                                                       FontSize="10"
+                                                                       FontWeight="SemiBold"
+                                                                       Foreground="{DynamicResource PrimaryBrush}"/>
+                                                        </Border>
+                                                    </WrapPanel>
+
+                                                    <TextBlock Text="{Binding MetaText}"
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                                               FontSize="12.5"
+                                                               FontWeight="SemiBold"
+                                                               TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding FailureReason}"
+                                                               Style="{StaticResource PageSectionBodyText}"
+                                                               Margin="0,6,0,0"
+                                                               TextWrapping="Wrap"/>
+
+                                                    <WrapPanel Margin="0,12,0,0">
+                                                        <Button Content="按这组条件重试"
+                                                                Style="{StaticResource PageToolbarCapsuleButton}"
+                                                                Padding="12,6"
+                                                                Tag="{Binding Id}"
+                                                                IsEnabled="{Binding CanRetry}"
+                                                                Click="RetrySavedAttempt_Click"/>
+                                                        <Button Content="删除记录"
+                                                                Style="{StaticResource PageToolbarCapsuleButton}"
+                                                                Padding="12,6"
+                                                                Margin="8,0,0,0"
+                                                                Foreground="{DynamicResource DangerBrush}"
+                                                                Tag="{Binding Id}"
+                                                                Click="DeleteFailedAttempt_Click"/>
+                                                    </WrapPanel>
+                                                </StackPanel>
                                             </Border>
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>

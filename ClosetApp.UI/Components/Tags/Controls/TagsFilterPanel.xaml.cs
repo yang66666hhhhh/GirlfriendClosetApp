@@ -27,6 +27,7 @@ public partial class TagsFilterPanel : UserControl
         if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
             return;
 
+        ArgumentNullException.ThrowIfNull(viewModel);
         var category = item.Tag?.ToString() switch
         {
             "Style" => TagCategory.Style,
@@ -45,6 +46,7 @@ public partial class TagsFilterPanel : UserControl
         if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
             return;
 
+        ArgumentNullException.ThrowIfNull(viewModel);
         var sortBy = item.Tag?.ToString() switch
         {
             "Name" => TagSortBy.Name,
@@ -64,6 +66,7 @@ public partial class TagsFilterPanel : UserControl
         if (sender is not ComboBox { SelectedItem: ComboBoxItem item })
             return;
 
+        ArgumentNullException.ThrowIfNull(viewModel);
         var usageFilter = item.Tag?.ToString() switch
         {
             "Used" => TagUsageFilter.Used,
@@ -79,6 +82,7 @@ public partial class TagsFilterPanel : UserControl
         if (!TryGetViewModel(out var viewModel))
             return;
 
+        ArgumentNullException.ThrowIfNull(viewModel);
         viewModel.ClearFilters();
 
         if (CategoryFilterComboBox.Items.Count > 0)

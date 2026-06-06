@@ -23,7 +23,7 @@
     </UserControl.Resources>
 
     <Border x:Name="CardRoot"
-            Width="304"
+            HorizontalAlignment="Stretch"
             Style="{StaticResource Card.Container}"
             BorderBrush="{DynamicResource BorderLightBrush}"
             BorderThickness="1">
@@ -52,12 +52,21 @@
                     Grid.Row="0"
                     Style="{StaticResource Card.PreviewArea}">
                 <Grid>
+                    <Border x:Name="EffectImageFrame"
+                            Margin="12,12,12,10"
+                            CornerRadius="14"
+                            Background="{DynamicResource SurfaceCardBrush}"
+                            ClipToBounds="True"
+                            Opacity="0"
+                            Visibility="Collapsed"/>
+
                     <Border Width="164"
                             HorizontalAlignment="Center"
                             VerticalAlignment="Stretch"
                             Margin="0,10,0,14"
                             CornerRadius="88"
-                            Opacity="0.34">
+                            Opacity="0.34"
+                            x:Name="PreviewGlow">
                         <Border.Background>
                             <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
                                 <GradientStop Color="#30FFFFFF" Offset="0"/>
@@ -73,6 +82,7 @@
                              VerticalAlignment="Bottom"
                              Margin="0,0,0,22"
                              Opacity="0.18"
+                             x:Name="PreviewShadow"
                              IsHitTestVisible="False">
                         <Ellipse.Fill>
                             <RadialGradientBrush RadiusX="0.76" RadiusY="0.84">
@@ -88,18 +98,10 @@
                                                 VerticalAlignment="Stretch"
                                                 IsHitTestVisible="False"/>
 
-                    <Grid Margin="12"
+                    <Grid Margin="14"
                           VerticalAlignment="Top"
                           HorizontalAlignment="Stretch">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="8"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-
                         <Border x:Name="TopAiBadge"
-                                Grid.Column="0"
                                 Style="{StaticResource Card.AiStateBadge}"
                                 HorizontalAlignment="Left"
                                 VerticalAlignment="Top">
@@ -107,39 +109,21 @@
                                        Style="{StaticResource Card.AiStateBadgeText}"/>
                         </Border>
 
-                        <Button x:Name="BtnFavorite"
-                                Grid.Column="1"
-                                Style="{StaticResource Card.FavoriteButtonBase}"
-                                Content="♡"
-                                FontSize="{StaticResource Card.FavoriteFontSize}"
-                                Click="Favorite_Click"/>
-
-                        <Button x:Name="BtnMore"
-                                Grid.Column="3"
-                                Content="⋯"
-                                Style="{StaticResource WardrobeCard.MoreButton}"
-                                HorizontalAlignment="Right"
+                        <Border x:Name="PrimaryEffectBadge"
+                                HorizontalAlignment="Left"
                                 VerticalAlignment="Top"
-                                ToolTip="更多操作"
-                                Visibility="Visible"
-                                Click="MoreButton_Click">
-                            <Button.ContextMenu>
-                                <ContextMenu x:Name="MoreMenu"
-                                             Style="{StaticResource WardrobeCard.MoreMenu}"
-                                             ItemContainerStyle="{StaticResource WardrobeCard.MoreMenuItem}"
-                                             Placement="Bottom"
-                                             HorizontalOffset="-6"
-                                             VerticalOffset="6">
-                                    <MenuItem Header="编辑搭配"
-                                              Click="MenuEdit_Click"/>
-                                    <MenuItem Header="查看效果图"
-                                              Click="MenuOpenAiWorkspace_Click"/>
-                                    <MenuItem Header="删除搭配"
-                                              Tag="Danger"
-                                              Click="MenuDelete_Click"/>
-                                </ContextMenu>
-                            </Button.ContextMenu>
-                        </Button>
+                                Margin="0,38,0,0"
+                                CornerRadius="10"
+                                Padding="8,4"
+                                Background="{DynamicResource PrimaryLightBrush}"
+                                BorderBrush="{DynamicResource PrimaryBrush}"
+                                BorderThickness="1"
+                                Visibility="Collapsed">
+                            <TextBlock Text="首选效果图"
+                                       FontSize="10"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryBrush}"/>
+                        </Border>
                     </Grid>
                 </Grid>
             </Border>
@@ -159,22 +143,53 @@
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0"
+                                    Margin="0,0,10,0"
                                     VerticalAlignment="Center">
                             <TextBlock x:Name="TxtName"
-                                       Style="{StaticResource Card.Title}"/>
+                                       Style="{StaticResource Card.Title}"
+                                       TextTrimming="CharacterEllipsis"/>
 
                             <WrapPanel x:Name="MoodChipPanel"
                                        Style="{StaticResource Card.ChipPanel}"/>
                         </StackPanel>
 
-                        <Border x:Name="InlineAiBadge"
-                                Grid.Column="1"
-                                Style="{StaticResource Card.AiStateBadge}"
-                                Margin="12,0,0,0"
-                                VerticalAlignment="Top">
-                            <TextBlock x:Name="InlineAiBadgeText"
-                                       Style="{StaticResource Card.AiStateBadgeText}"/>
-                        </Border>
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top">
+                            <Button x:Name="BtnFavorite"
+                                    Style="{StaticResource Card.FavoriteButtonBase}"
+                                    Content="♡"
+                                    FontSize="{StaticResource Card.FavoriteFontSize}"
+                                    Click="Favorite_Click"/>
+
+                            <Button x:Name="BtnMore"
+                                    Content="⋯"
+                                    Style="{StaticResource WardrobeCard.MoreButton}"
+                                    Margin="8,0,0,0"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    ToolTip="更多操作"
+                                    Visibility="Visible"
+                                    Click="MoreButton_Click">
+                                <Button.ContextMenu>
+                                    <ContextMenu x:Name="MoreMenu"
+                                                 Style="{StaticResource WardrobeCard.MoreMenu}"
+                                                 ItemContainerStyle="{StaticResource WardrobeCard.MoreMenuItem}"
+                                                 Placement="Bottom"
+                                                 HorizontalOffset="-6"
+                                                 VerticalOffset="6">
+                                        <MenuItem Header="编辑搭配"
+                                                  Click="MenuEdit_Click"/>
+                                        <MenuItem Header="查看效果图"
+                                                  Click="MenuOpenAiWorkspace_Click"/>
+                                        <MenuItem Header="删除搭配"
+                                                  Tag="Danger"
+                                                  Click="MenuDelete_Click"/>
+                                    </ContextMenu>
+                                </Button.ContextMenu>
+                            </Button>
+                        </StackPanel>
                     </Grid>
 
                     <StackPanel Grid.Row="1"

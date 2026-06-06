@@ -14,6 +14,7 @@ namespace ClosetApp.UI;
 public partial class MainWindow : Window
 {
     private int _currentTabIndex = 0;
+    private bool _hasLoadedInitialTab;
 
     public MainWindow()
     {
@@ -28,6 +29,11 @@ public partial class MainWindow : Window
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
         ApplyResponsiveSidebar();
+        if (_hasLoadedInitialTab)
+            return;
+
+        _hasLoadedInitialTab = true;
+        _ = RefreshVisibleTabAsync(_currentTabIndex);
     }
 
     private void ClothesTabContent_ClothingCountChanged(object? sender, int count)
@@ -50,6 +56,9 @@ public partial class MainWindow : Window
 
     private async void Sidebar_NavigationChanged(object? sender, int tabIndex)
     {
+        if (_currentTabIndex == tabIndex && _hasLoadedInitialTab)
+            return;
+
         ShowTab(tabIndex);
         await RefreshVisibleTabAsync(tabIndex);
     }
@@ -96,6 +105,7 @@ public partial class MainWindow : Window
     private void ShowTab(int tabIndex)
     {
         _currentTabIndex = tabIndex;
+        Sidebar.SetSelectedTab(tabIndex);
         ClothesTabContent.Visibility = tabIndex == 0 ? Visibility.Visible : Visibility.Collapsed;
         OutfitsTabContent.Visibility = tabIndex == 1 ? Visibility.Visible : Visibility.Collapsed;
         TagsTabContent.Visibility = tabIndex == 2 ? Visibility.Visible : Visibility.Collapsed;

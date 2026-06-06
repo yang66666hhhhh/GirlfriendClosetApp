@@ -145,7 +145,7 @@
                                             CornerRadius="10"
                                             Padding="8,4"
                                             Visibility="Collapsed">
-                                        <TextBlock Text="主效果图"
+                                        <TextBlock Text="首选效果图"
                                                    FontSize="10"
                                                    FontWeight="SemiBold"
                                                    Foreground="{DynamicResource PrimaryBrush}"/>
@@ -185,13 +185,25 @@
                                     <TextBlock x:Name="TxtAiPanelSummary"
                                                Margin="0,6,0,0"
                                                Style="{StaticResource Workspace.SectionBody}"/>
+                                    <Border Background="{DynamicResource PrimaryLightBrush}"
+                                            BorderBrush="{DynamicResource PrimaryBrush}"
+                                            BorderThickness="1"
+                                            CornerRadius="12"
+                                            Padding="10,8"
+                                            Margin="0,12,0,0">
+                                        <TextBlock Text="把某张图设为首选效果图后，只要列表切到“效果图优先”，这张图就会优先显示在搭配卡片里。"
+                                                   Foreground="{DynamicResource PrimaryBrush}"
+                                                   FontSize="10.5"
+                                                   FontWeight="SemiBold"
+                                                   TextWrapping="Wrap"/>
+                                    </Border>
                                     <WrapPanel Margin="0,14,0,0">
-                                        <Button Content="管理效果图"
+                                        <Button Content="查看效果图"
                                                 Style="{StaticResource Workspace.PrimaryButton}"
                                                 Width="132"
                                                 Margin="0,0,8,8"
                                                 Click="ManageAi_Click"/>
-                                        <Button Content="生成新图"
+                                        <Button Content="继续生成"
                                                 Style="{StaticResource Workspace.ActionButton}"
                                                 Margin="0,0,0,8"
                                                 Click="Generate_Click"/>

@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Media.Effects;
 using ClosetApp.UI.Logic.Components.Outfit.Engine;
+using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
@@ -68,10 +69,23 @@ public partial class OutfitCard : UserControl
             typeof(OutfitCard),
             new PropertyMetadata(null, OnOutfitChanged));
 
+    public static readonly DependencyProperty DisplayModeProperty =
+        DependencyProperty.Register(
+            nameof(DisplayMode),
+            typeof(OutfitCardDisplayMode),
+            typeof(OutfitCard),
+            new PropertyMetadata(OutfitCardDisplayMode.OutfitFirst, OnDisplayModeChanged));
+
     public OutfitEntity? Outfit
     {
         get => (OutfitEntity?)GetValue(OutfitProperty);
         set => SetValue(OutfitProperty, value);
+    }
+
+    public OutfitCardDisplayMode DisplayMode
+    {
+        get => (OutfitCardDisplayMode)GetValue(DisplayModeProperty);
+        set => SetValue(DisplayModeProperty, value);
     }
 
     public OutfitCard()
@@ -86,17 +100,29 @@ public partial class OutfitCard : UserControl
         if (d is not OutfitCard card || e.NewValue is not OutfitEntity outfit)
             return;
 
+        card.ApplyOutfit(outfit);
+    }
+
+    private static void OnDisplayModeChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is not OutfitCard card || card.Outfit is not { } outfit)
+            return;
+
+        card.ApplyOutfit(outfit);
+    }
+
+    private void ApplyOutfit(OutfitEntity outfit)
+    {
         var clothes = GetValidClothes(outfit);
-        card.TxtName.Text = BuildDisplayName(outfit, clothes);
-        card.TxtWearInfo.Text = outfit.WearCount > 0
+        TxtName.Text = BuildDisplayName(outfit, clothes);
+        TxtWearInfo.Text = outfit.WearCount > 0
             ? $"穿过 {outfit.WearCount} 次 · 最近 {FormatWornDate(outfit.WornDate)}"
             : "还没记录穿着";
-        card.ApplyPreviewHeight(clothes);
-        card.ApplyPreviewBackdrop(outfit, clothes);
-        card.ApplyPreviewCover(outfit, clothes);
-        card.RenderMoodChips(BuildMoodChips(outfit, clothes));
-        card.ApplyFavoriteVisual(outfit);
-        card.ApplyAiStatus(outfit);
+        ApplyPreviewHeight(clothes);
+        ApplyPreviewBackdrop(outfit, clothes);
+        RenderMoodChips(BuildMoodChips(outfit, clothes));
+        ApplyFavoriteVisual(outfit);
+        ApplyAiStatus(outfit, clothes);
     }
 
     private void Card_MouseDown(object sender, MouseButtonEventArgs e)
@@ -176,7 +202,11 @@ public partial class OutfitCard : UserControl
 
     private void ApplyPreviewHeight(IList<ClothingEntity>? clothes)
     {
-        double height = ResolvePreviewHeight(clothes);
+        ApplyPreviewHeight(ResolvePreviewHeight(clothes));
+    }
+
+    private void ApplyPreviewHeight(double height)
+    {
         PreviewRow.Height = new GridLength(height);
         PreviewCanvas.Height = Math.Max(240, height - 10);
         PreviewCanvas.MinHeight = Math.Max(240, height - 10);
@@ -187,23 +217,69 @@ public partial class OutfitCard : UserControl
         PreviewShell.Background = new SolidColorBrush(ResolveBackdrop(outfit, clothes));
     }
 
-    private void ApplyPreviewCover(OutfitEntity outfit, IList<ClothingEntity>? clothes)
-    {
-        PreviewCanvas.Visibility = Visibility.Visible;
-        PreviewCanvas.Clothes = clothes;
-    }
-
-    private void ApplyAiStatus(OutfitEntity outfit)
+    private void ApplyAiStatus(OutfitEntity outfit, IList<ClothingEntity>? clothes)
     {
         var state = OutfitGeneratedImageDisplayHelper.BuildState(outfit.GeneratedImages);
+        var presentation = OutfitCardPresentationStateBuilder.Build(outfit, DisplayMode);
         TopAiBadgeText.Text = state.Label;
-        InlineAiBadgeText.Text = state.Label;
-        TxtCoverHint.Text = state.SucceededCount > 0
-            ? "点击查看详情、历史效果图和大图预览。"
-            : "点击查看详情，生成或上传效果图。";
+        TxtCoverHint.Text = presentation.HintText;
 
-        ApplyBadgeVisual(TopAiBadge, TopAiBadgeText, state.VisualStateKey);
-        ApplyBadgeVisual(InlineAiBadge, InlineAiBadgeText, state.VisualStateKey);
+        ApplyPresentationState(presentation, clothes);
+
+        ApplyTopBadgeVisual(state.VisualStateKey, presentation);
+    }
+
+    private void ApplyPresentationState(OutfitCardPresentationState presentation, IList<ClothingEntity>? clothes)
+    {
+        if (presentation.VisualMode == OutfitCardVisualMode.EffectImage &&
+            presentation.EffectImagePath is { Length: > 0 } effectImagePath)
+        {
+            var effectImageSource = OutfitGeneratedImageDisplayHelper.BuildBitmap(effectImagePath, 720, preferThumbnail: false);
+            EffectImageFrame.Visibility = effectImageSource != null ? Visibility.Visible : Visibility.Collapsed;
+            if (effectImageSource is ImageSource source)
+            {
+                EffectImageFrame.Background = new ImageBrush(source)
+                {
+                    Stretch = Stretch.Uniform,
+                    AlignmentX = AlignmentX.Center,
+                    AlignmentY = AlignmentY.Center
+                };
+                ApplyPreviewHeight(ResolveEffectImageHeight(source));
+            }
+            var hasEffectImage = effectImageSource != null;
+            PreviewCanvas.Visibility = hasEffectImage ? Visibility.Collapsed : Visibility.Visible;
+            PreviewCanvas.Clothes = clothes;
+            PreviewGlow.Visibility = hasEffectImage ? Visibility.Collapsed : Visibility.Visible;
+            PreviewShadow.Visibility = hasEffectImage ? Visibility.Collapsed : Visibility.Visible;
+            PrimaryEffectBadge.Visibility = presentation.IsPrimaryImage && hasEffectImage
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            if (hasEffectImage)
+            {
+                EffectImageFrame.BeginAnimation(OpacityProperty, new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(180))
+                {
+                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+                });
+            }
+            return;
+        }
+
+        EffectImageFrame.Background = (Brush)FindResource("SurfaceCardBrush");
+        EffectImageFrame.Visibility = Visibility.Collapsed;
+        EffectImageFrame.Opacity = 0;
+        PreviewCanvas.Visibility = Visibility.Visible;
+        PreviewCanvas.Clothes = clothes;
+        PreviewGlow.Visibility = Visibility.Visible;
+        PreviewShadow.Visibility = Visibility.Visible;
+        PrimaryEffectBadge.Visibility = Visibility.Collapsed;
+    }
+
+    private double ResolveEffectImageHeight(ImageSource source)
+    {
+        var width = source.Width;
+        var height = source.Height;
+        var cardWidth = ActualWidth > 0 ? ActualWidth : 296;
+        return OutfitCardEffectImageLayout.ResolvePreviewRowHeight(width, height, cardWidth);
     }
 
     public void ApplyFavoriteVisual(OutfitEntity outfit)
@@ -246,6 +322,20 @@ public partial class OutfitCard : UserControl
                 text.Foreground = (Brush)System.Windows.Application.Current.FindResource("TextSecondaryBrush");
                 break;
         }
+    }
+
+    private void ApplyTopBadgeVisual(string stateKey, OutfitCardPresentationState presentation)
+    {
+        if (DisplayMode == OutfitCardDisplayMode.EffectImageFirst && presentation.IsFallbackToOutfitPreview)
+        {
+            TopAiBadge.Background = (Brush)System.Windows.Application.Current.FindResource("SurfaceCardBrush");
+            TopAiBadge.BorderBrush = (Brush)System.Windows.Application.Current.FindResource("BorderLightBrush");
+            TopAiBadgeText.Foreground = (Brush)System.Windows.Application.Current.FindResource("TextSecondaryBrush");
+            TopAiBadgeText.Text = presentation.HasFailedAttempt ? "等待替换效果图" : "等待上传效果图";
+            return;
+        }
+
+        ApplyBadgeVisual(TopAiBadge, TopAiBadgeText, stateKey);
     }
 
     private void AnimateTranslate(double toY)

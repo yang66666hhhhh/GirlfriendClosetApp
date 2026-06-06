@@ -56,11 +56,11 @@ public partial class OutfitWorkspaceDialog : UserControl
             ? BuildHeroMetaText(primaryImage)
             : string.Empty;
         TxtCurrentImageHint.Text = primaryImage != null
-            ? $"已保存 {_succeededImages.Count} 张效果图。点击主图查看大图，点右侧历史图切换当前展示。"
+            ? $"已保存 {_succeededImages.Count} 张效果图。点击大图查看预览，点右侧历史图切换当前展示。"
             : string.Empty;
         TxtAiPanelSummary.Text = _succeededImages.Count > 0
             ? $"已保存 {_succeededImages.Count} 张效果图，当前打开就是这套搭配的成图工作台。"
-            : "还没有效果图，可以直接生成或上传。";
+            : BuildNoImageSummary(outfit.GeneratedImages);
         TxtHistorySummary.Text = _succeededImages.Count > 1
             ? $"共 {_succeededImages.Count} 张效果图，点缩略图切换当前展示。"
             : "当前只有这一张效果图。";
@@ -68,7 +68,7 @@ public partial class OutfitWorkspaceDialog : UserControl
         var historyItems = _succeededImages
             .Select(image => new GeneratedImageHistoryItem(
                 image.Id,
-                image.IsPrimary ? "主效果图" : "历史效果图",
+                image.IsPrimary ? "首选效果图" : "历史效果图",
                 $"{image.Model} · {image.CreatedAt:MM-dd HH:mm}",
                 OutfitGeneratedImageDisplayHelper.BuildBitmap(image.ResultImagePath!, 220, preferThumbnail: true),
                 image.Id == _selectedImageId))
@@ -282,8 +282,8 @@ public partial class OutfitWorkspaceDialog : UserControl
             HeroPrimaryBadge.Visibility = image.IsPrimary ? Visibility.Visible : Visibility.Collapsed;
             TxtCurrentImageMeta.Text = BuildHeroMetaText(image);
             TxtCurrentImageHint.Text = image.IsPrimary
-                ? "这是当前主效果图。点击主图查看大图，右侧可以切换其他历史效果图。"
-                : "这是历史效果图。点击主图查看大图，右侧可以继续切换。";
+                ? "这是当前首选效果图。效果图优先模式下，它会优先显示在搭配卡片里。"
+                : "这是历史效果图。点击右侧缩略图可以继续切换。";
             return;
         }
 
@@ -298,7 +298,7 @@ public partial class OutfitWorkspaceDialog : UserControl
         var historyItems = _succeededImages
             .Select(image => new GeneratedImageHistoryItem(
                 image.Id,
-                image.IsPrimary ? "主效果图" : "历史效果图",
+                image.IsPrimary ? "首选效果图" : "历史效果图",
                 $"{image.Model} · {image.CreatedAt:MM-dd HH:mm}",
                 OutfitGeneratedImageDisplayHelper.BuildBitmap(image.ResultImagePath!, 220, preferThumbnail: true),
                 image.Id == _selectedImageId))
@@ -309,8 +309,27 @@ public partial class OutfitWorkspaceDialog : UserControl
 
     private static string BuildHeroMetaText(OutfitGeneratedImageEntity image)
     {
-        var label = image.IsPrimary ? "主效果图" : "历史效果图";
+        var label = image.IsPrimary ? "首选效果图" : "历史效果图";
         return $"{label} · {image.Model} · {image.CreatedAt:MM-dd HH:mm}";
+    }
+
+    private static string BuildNoImageSummary(IEnumerable<OutfitGeneratedImageEntity> images)
+    {
+        var pending = images
+            .Where(image => string.Equals(image.Status, "Pending", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(image => image.CreatedAt)
+            .FirstOrDefault();
+        if (pending != null)
+            return $"这套搭配还有一条生成请求在处理中，发起时间 {pending.CreatedAt:MM-dd HH:mm}。你可以继续查看状态，或再试一组新条件。";
+
+        var failed = images
+            .Where(image => string.Equals(image.Status, "Failed", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(image => image.CreatedAt)
+            .FirstOrDefault();
+        if (failed != null)
+            return "这套搭配最近一次生成没有成功，点“查看效果图”可以直接看到失败原因并按原条件重试。";
+
+        return "还没有效果图，可以直接生成或上传。";
     }
 
     private sealed record GeneratedImageHistoryItem(

@@ -18,7 +18,7 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
-            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(o => o!.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
             .ToListAsync();
     }
@@ -54,7 +54,7 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
-            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(o => o!.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
             .Where(r => r.WornDate >= start && r.WornDate <= end)
             .OrderByDescending(r => r.WornDate)
@@ -65,7 +65,7 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
-            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(o => o!.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
             .Where(r => r.OutfitId == outfitId)
             .OrderByDescending(r => r.WornDate)
@@ -76,7 +76,7 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
     {
         return await _context.OutfitWornRecords
             .Include(r => r.Outfit)
-            .ThenInclude(o => o.OutfitClothes)
+            .ThenInclude(o => o!.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
             .OrderByDescending(r => r.WornDate)
             .Take(count)

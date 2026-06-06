@@ -46,15 +46,8 @@
             <TextBlock Text="把主题调性和应用信息放在同一块，右侧阅读会更顺。"
                        Style="{StaticResource PageSectionBodyText}"/>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0"
-                        Style="{StaticResource SettingsInsetCard}">
+            <StackPanel>
+                <Border Style="{StaticResource SettingsInsetCard}">
                     <StackPanel>
                         <TextBlock Text="系统配色"
                                    Style="{StaticResource PageFieldLabelText}"/>
@@ -92,11 +85,58 @@
                         <TextBlock Text="{Binding ThemeDescription}"
                                    Style="{StaticResource PageMutedBodyText}"
                                    Margin="0,6,0,0"/>
+
+                        <Border Style="{StaticResource SettingsInsetCard}"
+                                Margin="0,18,0,0"
+                                Padding="16">
+                            <StackPanel>
+                                <TextBlock Text="搭配卡片展示"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <TextBlock Text="决定搭配列表优先展示原始搭配，还是优先展示你保存的效果图。没有效果图时会自动回退。"
+                                           Style="{StaticResource PageMutedBodyText}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap"/>
+
+                                <Border Background="{DynamicResource SurfaceCardBrush}"
+                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="14"
+                                        Padding="4"
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Left">
+                                    <UniformGrid Columns="2">
+                                        <RadioButton x:Name="RadioOutfitFirst"
+                                                     Content="搭配优先"
+                                                     GroupName="OutfitDisplayMode"
+                                                     Style="{StaticResource CategoryChip}"
+                                                     Padding="0"
+                                                     Margin="0"
+                                                     Checked="OutfitDisplayMode_Checked"/>
+                                        <RadioButton x:Name="RadioEffectImageFirst"
+                                                     Content="效果图优先"
+                                                     GroupName="OutfitDisplayMode"
+                                                     Style="{StaticResource CategoryChip}"
+                                                     Padding="0"
+                                                     Margin="0"
+                                                     Checked="OutfitDisplayMode_Checked"/>
+                                    </UniformGrid>
+                                </Border>
+
+                                <TextBlock Text="{Binding OutfitCardDisplaySummary}"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                           FontWeight="SemiBold"
+                                           Margin="0,12,0,0"/>
+                                <TextBlock Text="{Binding OutfitCardDisplayDetail}"
+                                           Style="{StaticResource PageMutedBodyText}"
+                                           Margin="0,6,0,0"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2"
-                        Style="{StaticResource SettingsInsetCard}">
+                <Border Style="{StaticResource SettingsInsetCard}"
+                        Margin="0,12,0,0">
                     <StackPanel>
                         <TextBlock Text="应用信息"
                                    Style="{StaticResource PageFieldLabelText}"/>
@@ -115,7 +155,7 @@
                                 Click="OpenAppDir_Click"/>
                     </StackPanel>
                 </Border>
-            </Grid>
+            </StackPanel>
         </StackPanel>
     </Border>
 </UserControl>

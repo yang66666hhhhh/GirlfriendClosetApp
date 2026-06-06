@@ -1,9 +1,13 @@
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Threading;
+using ClosetApp.UI.Components;
 using ClosetApp.UI.Components.Outfit.Controls;
+using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Outfit.Editor;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -14,13 +18,16 @@ namespace ClosetApp.UI.Views;
 public partial class OutfitsTab : UserControl
 {
     private readonly OutfitsViewModel _viewModel;
+    private readonly AppStartupCoordinator _startupCoordinator;
     private Task? _refreshTask;
 
     public OutfitsTab()
     {
         _viewModel = App.Services.GetRequiredService<OutfitsViewModel>();
+        _startupCoordinator = App.Services.GetRequiredService<AppStartupCoordinator>();
         InitializeComponent();
         DataContext = _viewModel;
+        _viewModel.PropertyChanged += ViewModel_PropertyChanged;
     }
 
     public Task RefreshAsync()
@@ -33,7 +40,9 @@ public partial class OutfitsTab : UserControl
     {
         try
         {
+            await _startupCoordinator.WaitUntilReadyAsync();
             await _viewModel.LoadOutfitsAsync();
+            ApplyDisplayModeSelection();
         }
         catch (Exception ex)
         {
@@ -125,6 +134,50 @@ public partial class OutfitsTab : UserControl
                 _viewModel.SelectOutfit(result.Entity);
             }
         });
+    }
+
+    private async void DisplayMode_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RadioButton radioButton || radioButton.IsChecked != true)
+            return;
+
+        var mode = ReferenceEquals(radioButton, DisplayModeEffectImageFirst)
+            ? OutfitCardDisplayMode.EffectImageFirst
+            : OutfitCardDisplayMode.OutfitFirst;
+
+        await _viewModel.SetCardDisplayModeAsync(mode);
+    }
+
+    private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
+    {
+        if (e.PropertyName == nameof(OutfitsViewModel.CardDisplayMode))
+        {
+            ApplyDisplayModeSelection();
+            RefreshOutfitsMasonryLayout();
+        }
+    }
+
+    private void ApplyDisplayModeSelection()
+    {
+        DisplayModeOutfitFirst.IsChecked = _viewModel.CardDisplayMode == OutfitCardDisplayMode.OutfitFirst;
+        DisplayModeEffectImageFirst.IsChecked = _viewModel.CardDisplayMode == OutfitCardDisplayMode.EffectImageFirst;
+    }
+
+    private void RefreshOutfitsMasonryLayout()
+    {
+        Dispatcher.InvokeAsync(() =>
+        {
+            var masonry = VisualTreeHelperExtensions.FindVisualChild<MasonryPanel>(OutfitsList);
+            if (masonry == null)
+                return;
+
+            foreach (UIElement child in masonry.Children)
+                child.InvalidateMeasure();
+
+            masonry.InvalidateMeasure();
+            masonry.InvalidateArrange();
+            OutfitsList.InvalidateMeasure();
+        }, DispatcherPriority.Background);
     }
 
 }

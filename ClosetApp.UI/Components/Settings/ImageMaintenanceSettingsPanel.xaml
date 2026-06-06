@@ -81,10 +81,11 @@
                 <StackPanel>
                     <TextBlock Text="图片资产"
                                Style="{StaticResource PageSectionTitleText}"/>
-                    <TextBlock Text="把缓存、缺失修复和孤儿原图治理收进同一组，减少来回切换。"
+                    <TextBlock Text="缓存、缺图和孤儿原图。"
                                Style="{StaticResource PageSectionBodyText}"/>
                 </StackPanel>
-                <Button Grid.Column="1"
+                <Button x:Name="BtnRefreshStats"
+                        Grid.Column="1"
                         Content="刷新"
                         Style="{StaticResource SettingsButton}"
                         Click="RefreshStats_Click"
@@ -141,26 +142,35 @@
             </Grid>
 
             <WrapPanel Style="{StaticResource SettingsActionWrap}">
-                <Button Content="重建缺失缓存"
+                <Button x:Name="BtnRebuildThumbnails"
+                        Content="重建缺失缓存"
                         Style="{StaticResource SettingsButton}"
                         Click="RebuildThumbnails_Click"
                         Margin="0,0,8,8"/>
-                <Button Content="修复缺失图片"
+                <Button x:Name="BtnRepairMissingImages"
+                        Content="修复缺失图片"
                         Style="{StaticResource SettingsButton}"
                         Click="RepairMissingImages_Click"
                         Margin="0,0,8,8"/>
-                <Button Content="检查历史图片"
+                <Button x:Name="BtnCheckWornRecordImages"
+                        Content="检查历史图片"
                         Style="{StaticResource SettingsButton}"
                         Click="CheckWornRecordImages_Click"
                         Margin="0,0,8,8"/>
-                <Button Content="清理图片缓存"
+                <Button x:Name="BtnClearThumbnails"
+                        Content="清理图片缓存"
                         Style="{StaticResource PageToolbarDangerButton}"
                         Click="ClearThumbnails_Click"
                         Margin="0,0,8,8"/>
-                <Button Content="清理孤儿原图"
+                <Button x:Name="BtnCleanupOrphanOriginals"
+                        Content="清理孤儿原图"
                         Style="{StaticResource PageToolbarDangerButton}"
                         Click="CleanupOrphanOriginals_Click"/>
             </WrapPanel>
+            <TextBlock x:Name="TxtImageOperationStatus"
+                       Style="{StaticResource PageMutedBodyText}"
+                       Margin="0,2,0,0"
+                       Visibility="Collapsed"/>
         </StackPanel>
     </Border>
 </UserControl>

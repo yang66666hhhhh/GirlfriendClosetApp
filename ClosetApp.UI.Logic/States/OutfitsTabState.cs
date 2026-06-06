@@ -29,6 +29,7 @@ public sealed class OutfitsTabState
     private OutfitScene? _selectedScene;
     private Season? _selectedSeason;
     private bool _favoriteOnly;
+    private bool _effectImageOnly;
 
     public IReadOnlyList<Outfit> Outfits => _outfits;
     public IReadOnlyList<RecentWornListItem> RecentWornRecords => _recentWornRecords;
@@ -44,11 +45,13 @@ public sealed class OutfitsTabState
     public OutfitScene? SelectedScene => _selectedScene;
     public Season? SelectedSeason => _selectedSeason;
     public bool FavoriteOnly => _favoriteOnly;
+    public bool EffectImageOnly => _effectImageOnly;
     public bool HasActiveFilters =>
         !string.IsNullOrWhiteSpace(_searchText) ||
         _selectedScene != null ||
         _selectedSeason != null ||
-        _favoriteOnly;
+        _favoriteOnly ||
+        _effectImageOnly;
     public string FilterSummary => BuildFilterSummary();
     public DateTime CalendarMonth => _calendarMonth;
     public string CalendarMonthText => _calendarMonth.ToString("yyyy年 M月");
@@ -125,6 +128,12 @@ public sealed class OutfitsTabState
         ApplyFilters();
     }
 
+    public void SetEffectImageOnly(bool effectImageOnly)
+    {
+        _effectImageOnly = effectImageOnly;
+        ApplyFilters();
+    }
+
     private void ApplyFilters()
     {
         IEnumerable<Outfit> items = _allOutfits;
@@ -140,6 +149,9 @@ public sealed class OutfitsTabState
 
         if (_favoriteOnly)
             items = items.Where(outfit => outfit.Favorites.Count > 0);
+
+        if (_effectImageOnly)
+            items = items.Where(HasSucceededEffectImage);
 
         _outfits = ApplySorting(items).ToList();
     }
@@ -208,7 +220,17 @@ public sealed class OutfitsTabState
         if (_favoriteOnly)
             parts.Add("仅收藏");
 
+        if (_effectImageOnly)
+            parts.Add("仅有效果图");
+
         return parts.Count == 0 ? "全部搭配" : string.Join(" + ", parts);
+    }
+
+    private static bool HasSucceededEffectImage(Outfit outfit)
+    {
+        return outfit.GeneratedImages.Any(image =>
+            string.Equals(image.Status, "Succeeded", StringComparison.OrdinalIgnoreCase) &&
+            !string.IsNullOrWhiteSpace(image.ResultImagePath));
     }
 
     public void ToggleHistoryExpanded() => _isHistoryExpanded = !_isHistoryExpanded;

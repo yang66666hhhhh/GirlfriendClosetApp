@@ -45,9 +45,9 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="12"/>
-            <Setter Property="Padding" Value="16"/>
-            <Setter Property="MinHeight" Value="248"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="14,13"/>
+            <Setter Property="MinHeight" Value="190"/>
         </Style>
 
         <Style x:Key="WeatherRecommendationChip" TargetType="Border">
@@ -126,8 +126,70 @@
             <GradientStop Color="#00FFFFFF" Offset="1"/>
         </LinearGradientBrush>
 
+        <Style x:Key="TodayHeroInlineActionButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="MinHeight" Value="34"/>
+        </Style>
+
+        <Style x:Key="SecondaryRecommendationActionButton" TargetType="Button" BasedOn="{StaticResource OutfitSkyButton}">
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="MinHeight" Value="34"/>
+        </Style>
+
+        <Style x:Key="SecondaryRecommendationDetailButton" TargetType="Button" BasedOn="{StaticResource TodayHeroSecondaryActionButton}">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="MinHeight" Value="22"/>
+        </Style>
+
+        <Style x:Key="OutfitToolbarLabelText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="OutfitDisplayModeSegmentButton" TargetType="RadioButton">
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="MinWidth" Value="62"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="RadioButton">
+                        <Border x:Name="SegmentRoot"
+                                Background="Transparent"
+                                CornerRadius="11"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                MinWidth="{TemplateBinding MinWidth}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="SegmentRoot" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SegmentRoot" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter Property="Foreground" Value="White"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="SegmentRoot" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <DataTemplate x:Key="OutfitCardTemplate">
             <outfit:OutfitCard Outfit="{Binding}"
+                               DisplayMode="{Binding DataContext.CardDisplayMode, RelativeSource={RelativeSource AncestorType=UserControl}}"
                                CardClicked="OutfitCard_CardClicked"
                                EditClicked="OutfitCard_EditClicked"
                                DeleteClicked="OutfitCard_DeleteClicked"
@@ -180,492 +242,429 @@
                       Padding="44,12,44,30"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
-                <Grid Margin="0,0,0,18">
+                <Grid Margin="0,0,0,14">
                     <Border Background="{StaticResource TodayHeroBackgroundBrush}"
                             BorderBrush="{DynamicResource BorderLightBrush}"
                             BorderThickness="1"
-                            CornerRadius="20"
-                            Padding="24,20,24,18">
-                        <Grid MinHeight="236">
+                            CornerRadius="18"
+                            Padding="20,18">
+                        <Grid>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="1.05*"/>
-                                <ColumnDefinition Width="1.15*"/>
+                                <ColumnDefinition Width="1.35*"/>
+                                <ColumnDefinition Width="0.92*"/>
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Grid.Column="0"
-                                        VerticalAlignment="Center"
-                                        Margin="0,0,24,0"
-                                        MaxWidth="356">
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="{Binding WeatherCompactSummaryText}"
-                                               Foreground="{StaticResource OutfitSkyTextBrush}"
-                                               Style="{StaticResource TodayHeroMetaText}"/>
-                                    <Border Width="1"
-                                            Height="12"
-                                            Background="{DynamicResource BorderDividerBrush}"
-                                            Margin="10,0"
-                                            VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding WeatherCityCompactText}"
-                                               Style="{StaticResource TodayHeroMetaText}"/>
-                                    <Border Width="1"
-                                            Height="12"
-                                            Background="{DynamicResource BorderDividerBrush}"
-                                            Margin="10,0"
-                                            VerticalAlignment="Center"/>
-                                    <TextBlock Text="{Binding TodayWornStatusText}"
-                                               Style="{StaticResource TodayHeroMetaText}"/>
-                                </StackPanel>
-
-                                <TextBlock Text="今天穿什么"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                           FontSize="24"
-                                           FontWeight="SemiBold"
-                                           Margin="0,16,0,0"/>
-
-                                <StackPanel Margin="0,12,0,0">
-                                    <TextBlock Text="{Binding TodayHeroRecommendationNameText}"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"
-                                               FontSize="24"
-                                               FontWeight="SemiBold"
-                                               TextWrapping="Wrap"
-                                               MaxWidth="320"/>
-                                    <TextBlock Text="{Binding TodayHeroRecommendationSupportText}"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                               FontSize="12.5"
-                                               Margin="0,6,0,0"
-                                               TextWrapping="Wrap"
-                                               MaxWidth="292"/>
-
-                                    <WrapPanel Margin="0,10,0,0"
-                                               Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                Margin="0,0,8,8">
-                                            <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
-                                                       Style="{StaticResource RecommendationStatusBadgeText}"/>
-                                        </Border>
-                                        <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                Margin="0,0,8,8"
-                                                Background="{StaticResource OutfitLavenderSurfaceBrush}"
-                                                BorderBrush="{StaticResource OutfitLavenderBorderBrush}">
-                                            <TextBlock Text="{Binding RecommendationReadinessCountText}"
-                                                       Style="{StaticResource RecommendationStatusBadgeText}"
-                                                       Foreground="{StaticResource OutfitLavenderTextBrush}"/>
-                                        </Border>
-                                        <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                Margin="0,0,0,8"
-                                                Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                            <TextBlock Text="{Binding RecommendationMissingSeasonText}"
-                                                       Style="{StaticResource RecommendationStatusBadgeText}"/>
-                                        </Border>
-                                    </WrapPanel>
-
-                                    <StackPanel Margin="0,16,0,0">
-                                        <Button Content="{Binding TodayHeroPrimaryActionText}"
-                                                Style="{StaticResource OutfitMintButton}"
-                                                Padding="18,10"
-                                                HorizontalAlignment="Left"
-                                                Command="{Binding RecordRecommendedOutfitWornCommand}"
-                                                CommandParameter="{Binding PrimaryWeatherRecommendation}"
-                                                Click="TodayHeroPrimaryAction_Click"/>
-
-                                        <StackPanel Orientation="Horizontal"
-                                                    Margin="0,12,0,0"
-                                                    VerticalAlignment="Center">
-                                            <Button Content="查看记录"
-                                                    Style="{StaticResource TodayHeroSecondaryActionButton}"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Click="OpenOutfitHistory_Click"/>
-                                            <TextBlock Style="{StaticResource TodayHeroToolDivider}"/>
-                                            <Button Content="推荐详情"
-                                                    Style="{StaticResource TodayHeroSecondaryActionButton}"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Command="{Binding ShowRecommendationDebugCommand}"/>
-                                            <TextBlock Style="{StaticResource TodayHeroToolDivider}"/>
-                                            <Button Content="刷新推荐"
-                                                    Style="{StaticResource TodayHeroSecondaryActionButton}"
-                                                    HorizontalAlignment="Left"
-                                                    VerticalAlignment="Center"
-                                                    Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
-                                                    IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
-                                        </StackPanel>
-                                    </StackPanel>
-                                </StackPanel>
-                            </StackPanel>
-
-                            <Grid Grid.Column="1"
-                                  Margin="0,0,0,0"
-                                  VerticalAlignment="Stretch">
-                                <Grid>
-                                    <Border HorizontalAlignment="Stretch"
-                                            VerticalAlignment="Stretch"
-                                            Margin="72,18,8,18"
-                                            Background="{StaticResource TodayHeroAtmosphereBrush}"
-                                            CornerRadius="120,24,24,120"
-                                            Opacity="0.42"/>
-
-                                    <Grid Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                        <Border Width="118"
-                                                HorizontalAlignment="Center"
-                                                VerticalAlignment="Stretch"
-                                                Margin="0,18,0,20"
-                                                CornerRadius="60"
-                                                Opacity="0.1">
-                                            <Border.Background>
-                                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
-                                                    <GradientStop Color="{DynamicResource Primary.Glow}" Offset="0"/>
-                                                    <GradientStop Color="#12FFFFFF" Offset="0.48"/>
-                                                    <GradientStop Color="#00FFFFFF" Offset="1"/>
-                                                </LinearGradientBrush>
-                                            </Border.Background>
-                                        </Border>
-
-                                        <Ellipse Width="112"
-                                                 Height="12"
-                                                 HorizontalAlignment="Center"
-                                                 VerticalAlignment="Bottom"
-                                                 Margin="0,0,0,18"
-                                                 Opacity="0.06"
-                                                 IsHitTestVisible="False">
-                                            <Ellipse.Fill>
-                                                <RadialGradientBrush RadiusX="0.78" RadiusY="0.9">
-                                                    <GradientStop Color="#26000000" Offset="0"/>
-                                                    <GradientStop Color="#00000000" Offset="1"/>
-                                                </RadialGradientBrush>
-                                            </Ellipse.Fill>
-                                        </Ellipse>
-
-                                        <outfit:OutfitPreviewCanvas Clothes="{Binding PrimaryWeatherRecommendation.PreviewClothes}"
-                                                                    Margin="32,0,8,-8"
-                                                                    HorizontalAlignment="Stretch"
-                                                                    VerticalAlignment="Center"/>
-                                    </Grid>
-
-                                    <StackPanel HorizontalAlignment="Center"
-                                                VerticalAlignment="Center"
-                                                Margin="32,0,32,0"
-                                                Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
-                                        <TextBlock Text="今天还没有合适推荐"
-                                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                                   FontSize="16"
-                                                   FontWeight="SemiBold"
-                                                   HorizontalAlignment="Center"/>
-                                        <TextBlock Text="{Binding RecommendationReadinessDetail}"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   FontSize="12"
-                                                   Margin="0,8,0,0"
-                                                   TextWrapping="Wrap"
-                                                   TextAlignment="Center"
-                                                   MaxWidth="220"/>
-                                    </StackPanel>
-                                </Grid>
-                            </Grid>
-
-                        </Grid>
-                    </Border>
-                </Grid>
-
-                <Border Style="{StaticResource PageInsetCard}"
-                        Margin="0,0,0,16"
-                        Padding="16,14"
-                        Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <WrapPanel>
-                                <Border Style="{StaticResource RecommendationStatusBadge}"
-                                        Margin="0,0,8,8"
-                                        Background="{StaticResource OutfitMintSurfaceBrush}"
-                                        BorderBrush="{StaticResource OutfitMintBorderBrush}">
-                                    <TextBlock Text="{Binding RecommendationReadinessTitle}"
-                                               Style="{StaticResource RecommendationStatusBadgeText}"
-                                               Foreground="{StaticResource OutfitMintTextBrush}"/>
-                                </Border>
-                                <Border Style="{StaticResource RecommendationStatusBadge}"
-                                        Margin="0,0,0,8">
-                                    <TextBlock Text="{Binding WeatherStatusText}"
-                                               Style="{StaticResource RecommendationStatusBadgeText}"/>
-                                </Border>
-                            </WrapPanel>
-                            <TextBlock Text="{Binding RecommendationReadinessDetail}"
-                                       Style="{StaticResource PageSummaryBodyText}"
-                                       Margin="0,2,0,0"/>
-                            <TextBlock Text="{Binding WeatherRecommendationHintText}"
-                                       Style="{StaticResource PageSummaryBodyText}"
-                                       Margin="0,6,0,0"/>
-                            <TextBlock Text="{Binding RecommendationMissingSeasonText}"
-                                       Style="{StaticResource RecommendationActionHintText}"
-                                       Margin="0,8,0,0"
-                                       Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                            <StackPanel Orientation="Horizontal"
-                                        Margin="0,12,0,0">
-                                <Button Content="去调整偏好"
-                                        Style="{StaticResource PageToolbarCapsuleButton}"
-                                        Margin="0,0,8,0"
-                                        Click="OpenSettings_Click"/>
-                                <Button Content="+ 新建搭配"
-                                        Style="{StaticResource OutfitMintButton}"
-                                        Padding="12,7"
-                                        Click="CreateOutfit_Click"/>
-                            </StackPanel>
-                            <TextBlock Text="先补季节标注和常穿搭配，通常比一口气新建很多套更快见效。"
-                                       Style="{StaticResource RecommendationActionHintText}"
-                                       Margin="0,8,0,0"
-                                       Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                        </StackPanel>
-                        <Button Grid.Column="1"
-                                Content="{Binding RefreshWeatherButtonText}"
-                                Style="{StaticResource PageToolbarCapsuleButton}"
-                                Margin="16,0,0,0"
-                                VerticalAlignment="Top"
-                                Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
-                                IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
-                    </Grid>
-                </Border>
-
-                <StackPanel Margin="0,0,0,16"
-                            Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
-                    <Grid Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <StackPanel Grid.Column="0">
-                            <TextBlock Text="今天还可以考虑"
-                                       Style="{StaticResource PageSectionTitleText}"/>
-                            <TextBlock Text="把主推荐之外的两套也摆出来，换场景或换心情时不用重新翻。"
-                                       Style="{StaticResource PageSectionBodyText}"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
-                        <Border Grid.Column="1"
-                                Style="{StaticResource PageSummaryBadge}"
-                                Background="{StaticResource OutfitSkySurfaceBrush}"
-                                BorderBrush="{StaticResource OutfitSkyBorderBrush}"
-                                BorderThickness="1"
-                                Padding="10,7"
-                                VerticalAlignment="Top">
-                            <StackPanel>
-                                <TextBlock Text="{Binding WeatherRecommendationCountText}"
-                                           Style="{StaticResource PageSummaryValueText}"/>
-                                <TextBlock Text="天气候选"
-                                           Style="{StaticResource PageSummaryHintText}"
-                                           Margin="0,2,0,0"/>
-                            </StackPanel>
-                        </Border>
-                    </Grid>
-
-                    <ItemsControl ItemsSource="{Binding SecondaryWeatherRecommendations}">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <UniformGrid Columns="2"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Border Style="{StaticResource WeatherRecommendationCard}"
-                                        Margin="0,0,16,12">
+                            <Grid>
+                                <Border Background="{DynamicResource SurfaceCardBrush}"
+                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="16"
+                                        Padding="18,16"
+                                        Margin="0,0,16,0">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="136"/>
-                                            <ColumnDefinition Width="18"/>
                                             <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="156"/>
                                         </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0"
+                                                    VerticalAlignment="Top"
+                                                    Margin="0,0,16,0">
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock Text="{Binding WeatherCompactSummaryText}"
+                                                           Foreground="{StaticResource OutfitSkyTextBrush}"
+                                                           Style="{StaticResource TodayHeroMetaText}"/>
+                                                <Border Width="1"
+                                                        Height="12"
+                                                        Background="{DynamicResource BorderDividerBrush}"
+                                                        Margin="10,0"
+                                                        VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding WeatherCityCompactText}"
+                                                           Style="{StaticResource TodayHeroMetaText}"/>
+                                                <Border Width="1"
+                                                        Height="12"
+                                                        Background="{DynamicResource BorderDividerBrush}"
+                                                        Margin="10,0"
+                                                        VerticalAlignment="Center"/>
+                                                <TextBlock Text="{Binding TodayWornStatusText}"
+                                                           Style="{StaticResource TodayHeroMetaText}"/>
+                                            </StackPanel>
 
-                                        <Border Grid.Column="0"
+                                            <TextBlock Text="今天穿什么"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       FontSize="15"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,12,0,0"/>
+
+                                            <TextBlock Text="{Binding TodayHeroRecommendationNameText}"
+                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                       FontSize="24"
+                                                       FontWeight="SemiBold"
+                                                       Margin="0,6,0,0"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="440"/>
+
+                                            <TextBlock Text="{Binding TodayHeroRecommendationSupportText}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       FontSize="12.5"
+                                                       Margin="0,4,0,0"
+                                                       TextWrapping="Wrap"
+                                                       MaxWidth="430"/>
+
+                                            <WrapPanel Margin="0,10,0,0"
+                                                       Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                        Margin="0,0,8,8">
+                                                    <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
+                                                               Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                                </Border>
+                                                <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                        Margin="0,0,8,8"
+                                                        Background="{StaticResource OutfitMintSurfaceBrush}"
+                                                        BorderBrush="{StaticResource OutfitMintBorderBrush}">
+                                                    <TextBlock Text="{Binding RecommendationReadinessTitle}"
+                                                               Style="{StaticResource RecommendationStatusBadgeText}"
+                                                               Foreground="{StaticResource OutfitMintTextBrush}"/>
+                                                </Border>
+                                                <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                        Margin="0,0,8,8"
+                                                        Background="{StaticResource OutfitLavenderSurfaceBrush}"
+                                                        BorderBrush="{StaticResource OutfitLavenderBorderBrush}">
+                                                    <TextBlock Text="{Binding RecommendationReadinessCountText}"
+                                                               Style="{StaticResource RecommendationStatusBadgeText}"
+                                                               Foreground="{StaticResource OutfitLavenderTextBrush}"/>
+                                                </Border>
+                                                <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                        Margin="0,0,0,8"
+                                                        Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <TextBlock Text="{Binding RecommendationMissingSeasonText}"
+                                                               Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                                </Border>
+                                            </WrapPanel>
+
+                                            <TextBlock Text="{Binding TodayHeroStatusSummaryText}"
+                                                       Style="{StaticResource RecommendationActionHintText}"
+                                                       Margin="0,0,0,0"
+                                                       Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+                                            <StackPanel Orientation="Horizontal"
+                                                        Margin="0,12,0,0">
+                                                <Button Content="{Binding TodayHeroPrimaryActionText}"
+                                                        Style="{StaticResource OutfitMintButton}"
+                                                        Padding="16,9"
+                                                        Margin="0,0,10,0"
+                                                        HorizontalAlignment="Left"
+                                                        Command="{Binding RecordRecommendedOutfitWornCommand}"
+                                                        CommandParameter="{Binding PrimaryWeatherRecommendation}"
+                                                        Click="TodayHeroPrimaryAction_Click"/>
+                                                <Button Content="{Binding RefreshWeatherButtonText}"
+                                                        Style="{StaticResource TodayHeroInlineActionButton}"
+                                                        Margin="0,0,10,0"
+                                                        Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
+                                                        IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
+                                                <Button Content="去调整偏好"
+                                                        Style="{StaticResource TodayHeroInlineActionButton}"
+                                                        Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                        Click="OpenSettings_Click"/>
+                                            </StackPanel>
+
+                                            <StackPanel Orientation="Horizontal"
+                                                        Margin="0,10,0,0"
+                                                        VerticalAlignment="Center">
+                                                <Button Content="查看记录"
+                                                        Style="{StaticResource TodayHeroSecondaryActionButton}"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Center"
+                                                        Click="OpenOutfitHistory_Click"/>
+                                                <TextBlock Style="{StaticResource TodayHeroToolDivider}"/>
+                                                <Button Content="推荐详情"
+                                                        Style="{StaticResource TodayHeroSecondaryActionButton}"
+                                                        HorizontalAlignment="Left"
+                                                        VerticalAlignment="Center"
+                                                        Command="{Binding ShowRecommendationDebugCommand}"/>
+                                            </StackPanel>
+                                        </StackPanel>
+
+                                        <Border Grid.Column="1"
                                                 Background="{DynamicResource SurfaceHeroBrush}"
                                                 BorderBrush="{DynamicResource BorderLightBrush}"
                                                 BorderThickness="1"
-                                                CornerRadius="10"
-                                                Height="168"
-                                                Padding="12"
-                                                VerticalAlignment="Top">
-                                            <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"/>
+                                                CornerRadius="14"
+                                                Padding="10"
+                                                MinHeight="184">
+                                            <Grid>
+                                                <Grid Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <outfit:OutfitPreviewCanvas Clothes="{Binding PrimaryWeatherRecommendation.PreviewClothes}"
+                                                                                HorizontalAlignment="Stretch"
+                                                                                VerticalAlignment="Center"/>
+                                                </Grid>
+
+                                                <StackPanel HorizontalAlignment="Center"
+                                                            VerticalAlignment="Center"
+                                                            Margin="10,0"
+                                                            Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
+                                                    <TextBlock Text="今天还没有合适推荐"
+                                                               Foreground="{DynamicResource TextPrimaryBrush}"
+                                                               FontSize="14"
+                                                               FontWeight="SemiBold"
+                                                               HorizontalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding RecommendationReadinessDetail}"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                               FontSize="11"
+                                                               Margin="0,6,0,0"
+                                                               TextWrapping="Wrap"
+                                                               TextAlignment="Center"
+                                                               MaxWidth="126"/>
+                                                </StackPanel>
+                                            </Grid>
                                         </Border>
+                                    </Grid>
+                                </Border>
+                            </Grid>
 
-                                        <Grid Grid.Column="2">
-                                            <Grid.RowDefinitions>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="Auto"/>
-                                                <RowDefinition Height="*"/>
-                                                <RowDefinition Height="Auto"/>
-                                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Column="1"
+                                        Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Border Background="{DynamicResource SurfaceCardBrush}"
+                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="12,10"
+                                        Margin="0,0,0,12">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                Background="{StaticResource OutfitSkySurfaceBrush}"
+                                                BorderBrush="{StaticResource OutfitSkyBorderBrush}"
+                                                Padding="8,3"
+                                                Margin="0,0,10,0">
+                                            <TextBlock Text="备选搭配"
+                                                       Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding SecondaryWeatherRecommendationSectionBody}"
+                                                   Style="{StaticResource RecommendationActionHintText}"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
 
-                                            <Border Style="{StaticResource WeatherRecommendationChip}">
-                                                <TextBlock Text="{Binding ReasonChipText}"
-                                                           Style="{StaticResource WeatherRecommendationChipText}"/>
-                                            </Border>
+                                <ItemsControl ItemsSource="{Binding SecondaryWeatherRecommendations}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Style="{StaticResource WeatherRecommendationCard}"
+                                                    Margin="0,0,0,12">
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="112"/>
+                                                        <ColumnDefinition Width="14"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
 
-                                            <StackPanel Grid.Row="1"
-                                                        Margin="0,10,0,0">
-                                                <TextBlock Text="{Binding Name}"
-                                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                                           FontSize="16"
-                                                           FontWeight="SemiBold"
-                                                           TextWrapping="Wrap"/>
+                                                    <Border Grid.Column="0"
+                                                            Background="{DynamicResource SurfaceHeroBrush}"
+                                                            BorderBrush="{DynamicResource BorderLightBrush}"
+                                                            BorderThickness="1"
+                                                            CornerRadius="12"
+                                                            Height="126"
+                                                            Padding="10"
+                                                            VerticalAlignment="Top">
+                                                        <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"/>
+                                                    </Border>
 
-                                                <TextBlock Text="{Binding UserReasonHeadline}"
-                                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                                           FontSize="12"
-                                                           Margin="0,6,0,0"
-                                                           TextWrapping="Wrap"/>
+                                                    <Grid Grid.Column="2">
+                                                        <Grid.RowDefinitions>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                            <RowDefinition Height="*"/>
+                                                            <RowDefinition Height="Auto"/>
+                                                        </Grid.RowDefinitions>
 
-                                                <TextBlock Text="{Binding ReasonSummaryText}"
-                                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                                           FontSize="11.5"
-                                                           Margin="0,6,0,0"
-                                                           TextWrapping="Wrap"/>
-
-                                                <ItemsControl ItemsSource="{Binding HighlightTags}"
-                                                              Margin="0,8,0,0">
-                                                    <ItemsControl.ItemsPanel>
-                                                        <ItemsPanelTemplate>
-                                                            <WrapPanel/>
-                                                        </ItemsPanelTemplate>
-                                                    </ItemsControl.ItemsPanel>
-                                                    <ItemsControl.ItemTemplate>
-                                                        <DataTemplate>
+                                                        <WrapPanel>
+                                                            <Border Style="{StaticResource WeatherRecommendationChip}"
+                                                                    Margin="0,0,6,6">
+                                                                <TextBlock Text="{Binding ReasonChipText}"
+                                                                           Style="{StaticResource WeatherRecommendationChipText}"/>
+                                                            </Border>
                                                             <Border Background="{DynamicResource SurfaceSectionBrush}"
                                                                     BorderBrush="{DynamicResource BorderLightBrush}"
                                                                     BorderThickness="1"
                                                                     CornerRadius="8"
-                                                                    Margin="0,0,6,6"
-                                                                    Padding="8,3">
-                                                                <TextBlock Text="{Binding}"
+                                                                    Padding="8,3"
+                                                                    Margin="0,0,0,6">
+                                                                <TextBlock Text="{Binding WearSummaryText}"
                                                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                           FontSize="10.5"
+                                                                           FontSize="10"
                                                                            FontWeight="SemiBold"/>
                                                             </Border>
-                                                        </DataTemplate>
-                                                    </ItemsControl.ItemTemplate>
-                                                </ItemsControl>
-                                            </StackPanel>
+                                                        </WrapPanel>
 
-                                            <StackPanel Grid.Row="2"
-                                                        Margin="0,12,0,0"
-                                                        VerticalAlignment="Top">
-                                                <TextBlock Text="{Binding WearSummaryText}"
-                                                           Style="{StaticResource WeatherRecommendationMetaText}"/>
-                                                <TextBlock Text="{Binding PrimaryReason}"
-                                                           Style="{StaticResource WeatherRecommendationMetaText}"
-                                                           Margin="0,4,0,0"
-                                                           TextWrapping="Wrap"
-                                                           MaxHeight="52"/>
-                                                <TextBlock Text="{Binding CautionText}"
-                                                           Style="{StaticResource WeatherRecommendationMetaText}"
-                                                           Margin="0,6,0,0"
-                                                           Foreground="{DynamicResource AmberBrush}"
-                                                           TextWrapping="Wrap"
-                                                           Visibility="{Binding CautionText, Converter={StaticResource NullToVisibilityConverter}}"/>
-                                            </StackPanel>
+                                                        <StackPanel Grid.Row="1"
+                                                                    Margin="0,2,0,0">
+                                                            <TextBlock Text="{Binding Name}"
+                                                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                       FontSize="15"
+                                                                       FontWeight="SemiBold"
+                                                                       TextWrapping="Wrap"
+                                                                       MaxHeight="38"/>
+                                                            <TextBlock Text="{Binding UserReasonHeadline}"
+                                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                       FontSize="11"
+                                                                       Margin="0,4,0,0"
+                                                                       TextWrapping="Wrap"
+                                                                       MaxHeight="32"/>
+                                                        </StackPanel>
 
-                                            <StackPanel Grid.Row="3"
-                                                        Orientation="Horizontal"
-                                                        Margin="0,14,0,0"
-                                                        VerticalAlignment="Bottom">
-                                                <Button Content="记这套"
-                                                        Style="{StaticResource OutfitSkyButton}"
-                                                        Padding="14,8"
-                                                        HorizontalAlignment="Left"
-                                                        Command="{Binding DataContext.RecordRecommendedOutfitWornCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                        CommandParameter="{Binding}"/>
-                                                <Button Content="详情"
-                                                        Style="{StaticResource OutfitSkyButton}"
-                                                        Padding="10,8"
-                                                        Margin="8,0,0,0"
-                                                        HorizontalAlignment="Left"
-                                                        Command="{Binding DataContext.ShowRecommendationDebugForOutfitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                        CommandParameter="{Binding}"/>
-                                            </StackPanel>
-                                        </Grid>
-                                    </Grid>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
+                                                        <WrapPanel Grid.Row="2"
+                                                                   Margin="0,10,0,0"
+                                                                   MaxHeight="52">
+                                                            <ItemsControl ItemsSource="{Binding HighlightTags}">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <WrapPanel/>
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                                                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                                                                BorderThickness="1"
+                                                                                CornerRadius="8"
+                                                                                Margin="0,0,6,6"
+                                                                                Padding="7,3">
+                                                                            <TextBlock Text="{Binding}"
+                                                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                                       FontSize="9.5"
+                                                                                       FontWeight="SemiBold"/>
+                                                                        </Border>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
+                                                        </WrapPanel>
 
-                <Grid Margin="0,0,0,6">
-                    <Border Style="{StaticResource PageFilterCard}"
-                            Margin="0,0,0,12"
-                            Padding="16,14"
-                            Grid.ColumnSpan="2">
-                        <StackPanel>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="筛选搭配"
-                                               Style="{StaticResource PageSummaryTitleText}"/>
-                                    <TextBlock Text="先按名称、场景、季节和收藏缩小范围，再决定今天穿哪套。"
-                                               Style="{StaticResource PageSummaryBodyText}"/>
-                                </StackPanel>
-                                <Button Grid.Column="1"
-                                        Content="清除筛选"
-                                        Style="{StaticResource PageToolbarCapsuleButton}"
-                                        Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                        Command="{Binding ClearFiltersCommand}"/>
-                            </Grid>
-
-                            <UniformGrid Columns="4"
-                                         Margin="0,10,0,0">
-                                <StackPanel Margin="0,0,12,0">
-                                    <TextBlock Text="搜索"
-                                               Style="{StaticResource PageFieldLabelText}"/>
-                                    <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                             MinHeight="36"
-                                             Padding="12,9"
-                                             Margin="0,6,0,0"/>
-                                </StackPanel>
-
-                                <StackPanel Margin="0,0,12,0">
-                                    <TextBlock Text="场景"
-                                               Style="{StaticResource PageFieldLabelText}"/>
-                                    <ComboBox x:Name="SceneFilterComboBox"
-                                              MinHeight="36"
-                                              Margin="0,6,0,0"
-                                              ItemsSource="{Binding SceneFilterOptions}"
-                                              DisplayMemberPath="Label"
-                                              SelectedValuePath="Value"
-                                              SelectedValue="{Binding SelectedScene, Mode=TwoWay}"/>
-                                </StackPanel>
-
-                                <StackPanel Margin="0,0,12,0">
-                                    <TextBlock Text="季节"
-                                               Style="{StaticResource PageFieldLabelText}"/>
-                                    <ComboBox x:Name="SeasonFilterComboBox"
-                                              MinHeight="36"
-                                              Margin="0,6,0,0"
-                                              ItemsSource="{Binding SeasonFilterOptions}"
-                                              DisplayMemberPath="Label"
-                                              SelectedValuePath="Value"
-                                              SelectedValue="{Binding SelectedSeason, Mode=TwoWay}"/>
-                                </StackPanel>
-
-                                <Border Style="{StaticResource PageInsetCard}"
-                                        Padding="12,8"
-                                        Margin="0,24,0,0"
-                                        Background="{StaticResource OutfitLavenderSurfaceBrush}"
-                                        BorderBrush="{StaticResource OutfitLavenderBorderBrush}"
-                                        BorderThickness="1">
-                                    <CheckBox Content="仅看收藏"
-                                              IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"
-                                              Foreground="{StaticResource OutfitLavenderTextBrush}"
-                                              VerticalAlignment="Center"/>
-                                </Border>
-                            </UniformGrid>
-
-                            <TextBlock Text="{Binding FilterResultText}"
-                                       Style="{StaticResource PageSummaryBodyText}"
-                                       Margin="0,10,0,0"/>
-                        </StackPanel>
+                                                        <Grid Grid.Row="3"
+                                                              Margin="0,12,0,0">
+                                                            <Grid.ColumnDefinitions>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="Auto"/>
+                                                                <ColumnDefinition Width="*"/>
+                                                            </Grid.ColumnDefinitions>
+                                                            <Button Grid.Column="0"
+                                                                    Content="记这套"
+                                                                    Style="{StaticResource SecondaryRecommendationActionButton}"
+                                                                    HorizontalAlignment="Left"
+                                                                    Command="{Binding DataContext.RecordRecommendedOutfitWornCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                    CommandParameter="{Binding}"/>
+                                                            <Button Grid.Column="1"
+                                                                    Content="详情"
+                                                                    Style="{StaticResource SecondaryRecommendationDetailButton}"
+                                                                    Margin="8,0,0,0"
+                                                                    HorizontalAlignment="Left"
+                                                                    Command="{Binding DataContext.ShowRecommendationDebugForOutfitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                    CommandParameter="{Binding}"/>
+                                                        </Grid>
+                                                    </Grid>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Grid>
                     </Border>
                 </Grid>
+
+                <Border Style="{StaticResource PageFilterCard}"
+                        Margin="0,0,0,14"
+                        Padding="14,12">
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+
+                        <Grid Grid.Row="0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="筛选搭配"
+                                           Style="{StaticResource PageSummaryTitleText}"/>
+                                <TextBlock Text="{Binding FilterResultText}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           FontSize="11"
+                                           Margin="12,2,0,0"
+                                           VerticalAlignment="Center"/>
+                            </StackPanel>
+
+                            <Button Grid.Column="1"
+                                    Content="清除筛选"
+                                    Style="{StaticResource PageToolbarCapsuleButton}"
+                                    Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    Command="{Binding ClearFiltersCommand}"/>
+                        </Grid>
+
+                        <Grid Grid.Row="1"
+                              Margin="0,10,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="1.2*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="搜索"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                                         MinHeight="34"
+                                         Padding="12,8"
+                                         Margin="0,5,0,0"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="场景"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <ComboBox x:Name="SceneFilterComboBox"
+                                          MinHeight="34"
+                                          Margin="0,5,0,0"
+                                          ItemsSource="{Binding SceneFilterOptions}"
+                                          DisplayMemberPath="Label"
+                                          SelectedValuePath="Value"
+                                          SelectedValue="{Binding SelectedScene, Mode=TwoWay}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="季节"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <ComboBox x:Name="SeasonFilterComboBox"
+                                          MinHeight="34"
+                                          Margin="0,5,0,0"
+                                          ItemsSource="{Binding SeasonFilterOptions}"
+                                          DisplayMemberPath="Label"
+                                          SelectedValuePath="Value"
+                                          SelectedValue="{Binding SelectedSeason, Mode=TwoWay}"/>
+                            </StackPanel>
+
+                            <Border Grid.Column="6"
+                                    Background="{StaticResource OutfitLavenderSurfaceBrush}"
+                                    BorderBrush="{StaticResource OutfitLavenderBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="12,8"
+                                    Margin="0,19,0,0"
+                                    VerticalAlignment="Top">
+                                <CheckBox Content="收藏"
+                                          IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"
+                                          Foreground="{StaticResource OutfitLavenderTextBrush}"
+                                          FontSize="11"
+                                          VerticalAlignment="Center"/>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </Border>
 
                 <Grid Style="{StaticResource PageCollectionHeaderGrid}">
                     <Grid.ColumnDefinitions>
@@ -678,24 +677,87 @@
                         <TextBlock Text="{Binding CollectionSectionBody}"
                                    Style="{StaticResource PageCollectionBodyText}"/>
                     </StackPanel>
-                    <StackPanel Grid.Column="1"
-                                Width="120"
-                                VerticalAlignment="Top">
-                        <TextBlock Text="排序"
-                                   Style="{StaticResource PageFieldLabelText}"
-                                   HorizontalAlignment="Left"/>
-                        <ComboBox x:Name="SortComboBox"
-                                  MinWidth="108"
-                                  Margin="0,6,0,0"
-                                  ItemsSource="{Binding SortOptions}"
-                                  SelectedItem="{Binding SortBy, Mode=TwoWay}">
-                            <ComboBox.ItemTemplate>
-                                <DataTemplate>
-                                    <TextBlock Text="{Binding Converter={StaticResource OutfitSortByLabelConverter}}"/>
-                                </DataTemplate>
-                            </ComboBox.ItemTemplate>
-                        </ComboBox>
-                    </StackPanel>
+
+                    <Border Grid.Column="1"
+                            Background="{DynamicResource SurfaceElevatedBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="14"
+                            Padding="8,6"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Top">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="8"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <TextBlock Grid.Column="0"
+                                       Text="展示"
+                                       Style="{StaticResource OutfitToolbarLabelText}"/>
+
+                            <Border Grid.Column="2"
+                                    Background="{DynamicResource SurfaceSectionBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="13"
+                                    Padding="2"
+                                    VerticalAlignment="Center">
+                                <UniformGrid Columns="2">
+                                    <RadioButton x:Name="DisplayModeOutfitFirst"
+                                                 Content="搭配"
+                                                 GroupName="OutfitsDisplayMode"
+                                                 Style="{StaticResource OutfitDisplayModeSegmentButton}"
+                                                 Checked="DisplayMode_Checked"/>
+                                    <RadioButton x:Name="DisplayModeEffectImageFirst"
+                                                 Content="效果图"
+                                                 GroupName="OutfitsDisplayMode"
+                                                 Style="{StaticResource OutfitDisplayModeSegmentButton}"
+                                                 Checked="DisplayMode_Checked"/>
+                                </UniformGrid>
+                            </Border>
+
+                            <Border Grid.Column="4"
+                                    Background="{StaticResource OutfitSkySurfaceBrush}"
+                                    BorderBrush="{StaticResource OutfitSkyBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="9,6"
+                                    VerticalAlignment="Center"
+                                    Visibility="{Binding IsEffectImageFirstDisplayMode, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <CheckBox Content="有效果图"
+                                          IsChecked="{Binding EffectImageOnly, Mode=TwoWay}"
+                                          Foreground="{StaticResource OutfitSkyTextBrush}"
+                                          FontSize="11"
+                                          VerticalAlignment="Center"/>
+                            </Border>
+
+                            <TextBlock Grid.Column="6"
+                                       Text="排序"
+                                       Style="{StaticResource OutfitToolbarLabelText}"/>
+
+                            <ComboBox x:Name="SortComboBox"
+                                      Grid.Column="8"
+                                      Width="116"
+                                      MinHeight="32"
+                                      VerticalAlignment="Center"
+                                      ItemsSource="{Binding SortOptions}"
+                                      SelectedItem="{Binding SortBy, Mode=TwoWay}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource OutfitSortByLabelConverter}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </Grid>
+                    </Border>
                 </Grid>
 
                 <Border Style="{StaticResource PageFilteredEmptyCard}"

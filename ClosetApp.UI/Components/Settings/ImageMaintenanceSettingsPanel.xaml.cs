@@ -1,5 +1,6 @@
 using System.Windows;
 using System.Windows.Controls;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Modal;
@@ -14,6 +15,7 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
 {
     private readonly IImageMaintenanceService _imageMaintenanceService;
     private readonly IOutfitService _outfitService;
+    private bool _isBusy;
 
     public ImageMaintenanceSettingsPanel()
     {
@@ -33,8 +35,23 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
     {
-        await RefreshAsync();
-        ToastService.Instance.ShowInfo("图片状态已刷新。");
+        if (_isBusy)
+            return;
+
+        try
+        {
+            SetBusyState(true, "正在刷新图片状态...");
+            await RefreshAsync();
+            ToastService.Instance.ShowInfo("图片状态已刷新。");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("刷新图片状态失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
@@ -48,27 +65,73 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
         if (result != MessageBoxResult.OK)
             return;
 
-        await _imageMaintenanceService.CleanupImageCacheAsync();
-        ClothingImageLoader.ClearMemoryCaches();
-        await RefreshAsync();
-        MessageBox.Show("图片缓存已清理。", "完成", MessageBoxButton.OK, MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("图片缓存已清理");
+        if (_isBusy)
+            return;
+
+        try
+        {
+            SetBusyState(true, "正在清理图片缓存...");
+            await _imageMaintenanceService.CleanupImageCacheAsync();
+            ClothingImageLoader.ClearMemoryCaches();
+            await RefreshAsync();
+            ToastService.Instance.ShowSuccess("图片缓存已清理");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("清理图片缓存失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async void RebuildThumbnails_Click(object sender, RoutedEventArgs e)
     {
-        var result = await _imageMaintenanceService.RebuildMissingThumbnailsAsync();
-        await RefreshAsync();
-        MessageBox.Show(result.Summary, "图片缓存", MessageBoxButton.OK, MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("图片缓存已重建", result.Summary);
+        if (_isBusy)
+            return;
+
+        try
+        {
+            SetBusyState(true, "正在重建缺失缓存...");
+            var result = await _imageMaintenanceService.RebuildMissingThumbnailsAsync();
+            await RefreshAsync();
+            ToastService.Instance.ShowSuccess("图片缓存已重建", result.Summary);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("重建图片缓存失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async void CleanupOrphanOriginals_Click(object sender, RoutedEventArgs e)
     {
-        var analysis = await _imageMaintenanceService.AnalyzeOrphanOriginalsAsync();
+        if (_isBusy)
+            return;
+
+        OrphanOriginalsResult analysis;
+        try
+        {
+            SetBusyState(true, "正在分析孤儿原图...");
+            analysis = await _imageMaintenanceService.AnalyzeOrphanOriginalsAsync();
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("分析孤儿原图失败", ex.Message);
+            return;
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
+
         if (!analysis.HasOrphans)
         {
-            MessageBox.Show("没有发现可清理的孤儿原图。", "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
+            ToastService.Instance.ShowInfo("没有发现可清理的孤儿原图。");
             return;
         }
 
@@ -81,10 +144,21 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
         if (confirm != MessageBoxResult.OK)
             return;
 
-        var result = await _imageMaintenanceService.CleanupOrphanOriginalsAsync();
-        await RefreshAsync();
-        MessageBox.Show(result.Summary, "原图治理", MessageBoxButton.OK, MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess("孤儿原图已清理", result.Summary);
+        try
+        {
+            SetBusyState(true, "正在清理孤儿原图...");
+            var result = await _imageMaintenanceService.CleanupOrphanOriginalsAsync();
+            await RefreshAsync();
+            ToastService.Instance.ShowSuccess("孤儿原图已清理", result.Summary);
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("清理孤儿原图失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async void RepairMissingImages_Click(object sender, RoutedEventArgs e)
@@ -94,6 +168,9 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
 
     public async Task RepairMissingImagesAsync()
     {
+        if (_isBusy)
+            return;
+
         var dialog = new OpenFolderDialog
         {
             Title = "选择旧图片所在目录，应用会按文件名尝试重连缺失图片。"
@@ -102,30 +179,40 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
         if (dialog.ShowDialog() != true || string.IsNullOrWhiteSpace(dialog.FolderName))
             return;
 
-        var repairedCount = await _imageMaintenanceService.RelinkMissingImagesAsync(dialog.FolderName);
-        await RefreshAsync();
-        WardrobeImagesChanged?.Invoke(this, EventArgs.Empty);
+        try
+        {
+            SetBusyState(true, "正在修复缺失图片...");
+            var repairedCount = await _imageMaintenanceService.RelinkMissingImagesAsync(dialog.FolderName);
+            await RefreshAsync();
+            WardrobeImagesChanged?.Invoke(this, EventArgs.Empty);
 
-        MessageBox.Show(
-            repairedCount == 0
-                ? "没有找到可重连的图片文件。"
-                : $"已修复 {repairedCount} 张缺失图片。",
-            "图片修复",
-            MessageBoxButton.OK,
-            MessageBoxImage.Information);
-        ToastService.Instance.ShowSuccess(
-            repairedCount == 0 ? "没有需要修复的图片" : "缺失图片已重连",
-            repairedCount == 0 ? null : $"共修复 {repairedCount} 张图片。");
+            ToastService.Instance.ShowSuccess(
+                repairedCount == 0 ? "没有需要修复的图片" : "缺失图片已重连",
+                repairedCount == 0 ? null : $"共修复 {repairedCount} 张图片。");
+        }
+        catch (Exception ex)
+        {
+            ToastService.Instance.ShowError("修复缺失图片失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async void CheckWornRecordImages_Click(object sender, RoutedEventArgs e)
     {
+        if (_isBusy)
+            return;
+
         try
         {
+            SetBusyState(true, "正在检查历史图片...");
             var result = await _outfitService.AnalyzeWornRecordImageHealthAsync();
+            SetBusyState(false);
+
             if (!result.HasMissingImages)
             {
-                MessageBox.Show(result.Summary, "穿着历史图片", MessageBoxButton.OK, MessageBoxImage.Information);
                 ToastService.Instance.ShowSuccess("历史图片检查完成", result.Summary);
                 return;
             }
@@ -151,6 +238,10 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
         {
             ToastService.Instance.ShowError("历史图片检查失败", ex.Message);
         }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async Task OpenWornRecordDayAsync(DateTime date)
@@ -159,5 +250,20 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
         var end = start.AddDays(1).AddTicks(-1);
         var records = (await _outfitService.GetWornRecordsAsync(start, end)).ToList();
         ModalService.Instance.Show(new WornDayDetailsDialog(start, records));
+    }
+
+    private void SetBusyState(bool isBusy, string? statusText = null)
+    {
+        _isBusy = isBusy;
+
+        BtnRefreshStats.IsEnabled = !isBusy;
+        BtnRebuildThumbnails.IsEnabled = !isBusy;
+        BtnRepairMissingImages.IsEnabled = !isBusy;
+        BtnCheckWornRecordImages.IsEnabled = !isBusy;
+        BtnClearThumbnails.IsEnabled = !isBusy;
+        BtnCleanupOrphanOriginals.IsEnabled = !isBusy;
+
+        TxtImageOperationStatus.Text = statusText ?? string.Empty;
+        TxtImageOperationStatus.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
     }
 }

@@ -17,35 +17,33 @@ public partial class AiImageGenerationSettingsPanel : UserControl
     private static readonly IReadOnlyDictionary<string, AiConfigPreset> Presets =
         new Dictionary<string, AiConfigPreset>(StringComparer.OrdinalIgnoreCase)
         {
-            ["openai-main"] = new("openai-main", "https://api.openai.com/v1", "gpt-image-1", 120, "已切换到 OpenAI 标准图片配置"),
+            ["openai-main"] = new("openai-main", "https://api.openai.com/v1", "gpt-image-2", 180, "已切换到 GPT Image 2 图片配置"),
             ["openai-1_5"] = new("openai-1_5", "https://api.openai.com/v1", "gpt-image-1.5", 120, "已切换到 OpenAI 1.5 图片配置"),
-            ["openai-mini"] = new("openai-mini", "https://api.openai.com/v1", "gpt-image-1-mini", 90, "已切换到 OpenAI Mini 图片配置")
+            ["openai-mini"] = new("openai-mini", "https://api.openai.com/v1", "gpt-image-1-mini", 90, "已切换到 OpenAI Mini 图片配置"),
+            ["openai-gpt55"] = new("openai-gpt55", "https://api.openai.com/v1", "gpt-5.5", 180, "已切换到 GPT-5.5 兼容实验配置")
         };
 
     private readonly SettingsViewModel _viewModel;
     private readonly IAiGenerationPreferencesService _preferencesService;
     private bool _isShowingApiKey;
     private bool _isSyncingApiKey;
+    private bool _isBusy;
 
     public AiImageGenerationSettingsPanel()
     {
         InitializeComponent();
         _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
         _preferencesService = App.Services.GetRequiredService<IAiGenerationPreferencesService>();
-        Loaded += AiImageGenerationSettingsPanel_Loaded;
-    }
-
-    public event EventHandler? PersonalProfileUpdated;
-
-    private async void AiImageGenerationSettingsPanel_Loaded(object sender, RoutedEventArgs e)
-    {
-        await RefreshAsync();
     }
 
     private async void Save_Click(object sender, RoutedEventArgs e)
     {
+        if (_isBusy)
+            return;
+
         try
         {
+            SetBusyState(true, "正在保存 AI 配置...");
             await PersistCurrentInputsAsync();
             await RefreshAsync();
             ToastService.Instance.ShowSuccess("AI 配置已保存");
@@ -54,21 +52,33 @@ public partial class AiImageGenerationSettingsPanel : UserControl
         {
             ToastService.Instance.ShowError("AI 配置保存失败", ex.Message);
         }
+        finally
+        {
+            SetBusyState(false);
+        }
     }
 
     private async void TestConnection_Click(object sender, RoutedEventArgs e)
     {
+        if (_isBusy)
+            return;
+
         try
         {
+            SetBusyState(true, "正在测试接口连通性...");
             await PersistCurrentInputsAsync();
             await RefreshAsync();
             await _viewModel.TestAiConnectionAsync();
             await RefreshAsync();
-            ToastService.Instance.ShowSuccess("连接测试通过");
+            ToastService.Instance.ShowSuccess("接口连通性测试通过", "当前配置至少可以访问模型列表；图片生成能力仍取决于中转和上游是否真正支持。");
         }
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("连接测试失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
         }
     }
 
@@ -79,7 +89,6 @@ public partial class AiImageGenerationSettingsPanel : UserControl
             if (result.Type == EditorResultType.Saved)
             {
                 await _viewModel.RefreshAiGenerationSettingsAsync();
-                PersonalProfileUpdated?.Invoke(this, EventArgs.Empty);
             }
         });
     }
@@ -117,6 +126,9 @@ public partial class AiImageGenerationSettingsPanel : UserControl
 
     private async void Preset_Click(object sender, RoutedEventArgs e)
     {
+        if (_isBusy)
+            return;
+
         if (sender is not Button button)
             return;
 
@@ -125,6 +137,7 @@ public partial class AiImageGenerationSettingsPanel : UserControl
             nameof(BtnPresetOpenAiMain) => "openai-main",
             nameof(BtnPresetOpenAi15) => "openai-1_5",
             nameof(BtnPresetOpenAiMini) => "openai-mini",
+            nameof(BtnPresetOpenAi55) => "openai-gpt55",
             _ => string.Empty
         };
 
@@ -133,6 +146,7 @@ public partial class AiImageGenerationSettingsPanel : UserControl
 
         try
         {
+            SetBusyState(true, "正在切换 AI 配置...");
             var previousPreferences = await _preferencesService.GetAsync();
             TxtBaseUrl.Text = preset.BaseUrl;
             TxtModel.Text = preset.Model;
@@ -147,7 +161,7 @@ public partial class AiImageGenerationSettingsPanel : UserControl
                 {
                     await _viewModel.TestAiConnectionAsync();
                     await RefreshAsync();
-                    ToastService.Instance.ShowSuccess($"{preset.SuccessMessage}，连接测试通过");
+                    ToastService.Instance.ShowSuccess($"{preset.SuccessMessage}，接口连通性测试通过");
                 }
                 catch (Exception testEx)
                 {
@@ -169,6 +183,10 @@ public partial class AiImageGenerationSettingsPanel : UserControl
         catch (Exception ex)
         {
             ToastService.Instance.ShowError("切换 AI 配置失败", ex.Message);
+        }
+        finally
+        {
+            SetBusyState(false);
         }
     }
 
@@ -225,6 +243,23 @@ public partial class AiImageGenerationSettingsPanel : UserControl
         BtnToggleApiKeyVisibility.ToolTip = _isShowingApiKey ? "隐藏 API Key" : "显示 API Key";
     }
 
+    private void SetBusyState(bool isBusy, string? statusText = null)
+    {
+        _isBusy = isBusy;
+
+        BtnPresetOpenAiMain.IsEnabled = !isBusy;
+        BtnPresetOpenAi15.IsEnabled = !isBusy;
+        BtnPresetOpenAiMini.IsEnabled = !isBusy;
+        BtnPresetOpenAi55.IsEnabled = !isBusy;
+        BtnSaveConfig.IsEnabled = !isBusy;
+        BtnTestConnection.IsEnabled = !isBusy;
+        BtnOpenProfile.IsEnabled = !isBusy;
+        BtnToggleApiKeyVisibility.IsEnabled = !isBusy;
+
+        TxtAiOperationStatus.Text = statusText ?? string.Empty;
+        TxtAiOperationStatus.Visibility = isBusy ? Visibility.Visible : Visibility.Collapsed;
+    }
+
     private string GetCurrentApiKeyValue()
     {
         return _isShowingApiKey ? TxtApiKeyVisible.Text : TxtApiKey.Password;
@@ -261,6 +296,7 @@ public partial class AiImageGenerationSettingsPanel : UserControl
         SetPresetState(BtnPresetOpenAiMain, TxtPresetOpenAiMain, IsPresetActive(preferences, "openai-main"));
         SetPresetState(BtnPresetOpenAi15, TxtPresetOpenAi15, IsPresetActive(preferences, "openai-1_5"));
         SetPresetState(BtnPresetOpenAiMini, TxtPresetOpenAiMini, IsPresetActive(preferences, "openai-mini"));
+        SetPresetState(BtnPresetOpenAi55, TxtPresetOpenAi55, IsPresetActive(preferences, "openai-gpt55"));
     }
 
     private static bool IsPresetActive(AiGenerationPreferences preferences, string presetKey)

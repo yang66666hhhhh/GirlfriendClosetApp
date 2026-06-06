@@ -62,7 +62,7 @@
                                     CornerRadius="10"
                                     Padding="8,4"
                                     Visibility="Collapsed">
-                                <TextBlock Text="当前主图"
+                                <TextBlock Text="首选图"
                                            FontSize="10"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource PrimaryBrush}"/>
@@ -141,7 +141,7 @@
                                                                 CornerRadius="10"
                                                                 Padding="8,3"
                                                                 Margin="0,0,8,8">
-                                                            <TextBlock Text="主图"
+                                                            <TextBlock Text="首选图"
                                                                        FontSize="10"
                                                                        FontWeight="SemiBold"
                                                                        Foreground="{DynamicResource PrimaryBrush}"/>

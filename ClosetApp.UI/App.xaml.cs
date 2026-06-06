@@ -1,6 +1,5 @@
 using System.Windows;
 using System.IO;
-using System.Windows.Threading;
 using Microsoft.Extensions.DependencyInjection;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.Images;
@@ -62,12 +61,10 @@ public partial class App : System.Windows.Application
         };
 
         ConfigureServices();
-        Services.GetRequiredService<ThemeService>().InitializeAsync().GetAwaiter().GetResult();
-
-        var dbContext = Services.GetRequiredService<ClosetDbContext>();
-        Log.Information("Initializing database migration chain");
-        ClosetDatabaseInitializer.InitializeAsync(dbContext).GetAwaiter().GetResult();
-        Log.Information("Application startup completed");
+        var themeService = Services.GetRequiredService<ThemeService>();
+        themeService.InitializeAsync().GetAwaiter().GetResult();
+        StartBackgroundInitialization();
+        Log.Information("Application startup prepared");
     }
 
     protected override void OnExit(ExitEventArgs e)
@@ -149,7 +146,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<ToastService>();
         services.AddSingleton<ModalService>();
         services.AddSingleton<ThemePreferencesService>();
+        services.AddSingleton<OutfitDisplayPreferencesService>();
         services.AddSingleton<ThemeService>();
+        services.AddSingleton<AppStartupCoordinator>();
 
         services.AddTransient<ViewModels.MainViewModel>();
         services.AddTransient<ViewModels.WardrobeViewModel>();
@@ -158,5 +157,20 @@ public partial class App : System.Windows.Application
         services.AddTransient<ViewModels.SettingsViewModel>();
 
         Services = services.BuildServiceProvider();
+    }
+
+    private void StartBackgroundInitialization()
+    {
+        try
+        {
+            _ = Services.GetRequiredService<AppStartupCoordinator>().EnsureStartedAsync();
+            Log.Information("Application startup completed");
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "Application startup failed");
+            MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown(-1);
+        }
     }
 }

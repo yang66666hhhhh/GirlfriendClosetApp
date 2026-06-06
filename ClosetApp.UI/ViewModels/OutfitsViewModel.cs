@@ -37,6 +37,7 @@ public partial class OutfitsViewModel : ViewModelBase
         nameof(CollectionSectionTitle),
         nameof(CollectionSectionBody),
         nameof(FavoriteOnly),
+        nameof(EffectImageOnly),
         nameof(SelectedScene),
         nameof(SelectedSeason),
         nameof(SearchText),
@@ -61,6 +62,7 @@ public partial class OutfitsViewModel : ViewModelBase
     private readonly GetOutfitGeneratedImages? _getOutfitGeneratedImages;
     private readonly DeleteOutfitGeneratedImage? _deleteOutfitGeneratedImage;
     private readonly SetPrimaryOutfitGeneratedImage? _setPrimaryOutfitGeneratedImage;
+    private readonly OutfitDisplayPreferencesService _outfitDisplayPreferencesService;
     private readonly OutfitsTabState _state = new();
     private IReadOnlyList<Outfit> _displayedOutfits = [];
     private int _displayedOutfitCount = 20;
@@ -68,6 +70,8 @@ public partial class OutfitsViewModel : ViewModelBase
     private Outfit? _selectedOutfit;
 
     private string _searchText = string.Empty;
+    private OutfitCardDisplayMode _cardDisplayMode = OutfitCardDisplayMode.OutfitFirst;
+    private bool _hasLoadedCardDisplayMode;
 
     public OutfitsViewModel(
         IOutfitService outfitService,
@@ -75,6 +79,7 @@ public partial class OutfitsViewModel : ViewModelBase
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
+        OutfitDisplayPreferencesService outfitDisplayPreferencesService,
         GetTodayRecommendations getTodayRecommendations,
         GetWardrobeInsights getWardrobeInsights,
         GetAnnualOutfitReport getAnnualOutfitReport,
@@ -88,6 +93,7 @@ public partial class OutfitsViewModel : ViewModelBase
         _weatherService = weatherService;
         _weatherPreferencesService = weatherPreferencesService;
         _recommendationPreferencesService = recommendationPreferencesService;
+        _outfitDisplayPreferencesService = outfitDisplayPreferencesService;
         _getTodayRecommendations = getTodayRecommendations;
         _getWardrobeInsights = getWardrobeInsights;
         _getAnnualOutfitReport = getAnnualOutfitReport;
@@ -95,6 +101,7 @@ public partial class OutfitsViewModel : ViewModelBase
         _getOutfitGeneratedImages = getOutfitGeneratedImages;
         _deleteOutfitGeneratedImage = deleteOutfitGeneratedImage;
         _setPrimaryOutfitGeneratedImage = setPrimaryOutfitGeneratedImage;
+        _outfitDisplayPreferencesService.PreferenceChanged += OutfitDisplayPreferencesService_PreferenceChanged;
     }
 
     public IReadOnlyList<Outfit> Outfits => _state.Outfits;
@@ -138,6 +145,13 @@ public partial class OutfitsViewModel : ViewModelBase
     public bool IsLoading => _state.IsLoading;
     public bool IsEmpty => _state.IsEmpty;
     public bool IsFilteredEmpty => _state.IsFilteredEmpty;
+    public OutfitCardDisplayMode CardDisplayMode
+    {
+        get => _cardDisplayMode;
+        private set => SetProperty(ref _cardDisplayMode, value);
+    }
+    public bool IsOutfitFirstDisplayMode => CardDisplayMode == OutfitCardDisplayMode.OutfitFirst;
+    public bool IsEffectImageFirstDisplayMode => CardDisplayMode == OutfitCardDisplayMode.EffectImageFirst;
     public int OutfitCount => _state.OutfitCount;
     public int TotalCount => _state.TotalCount;
     public string OutfitCountText => $"{OutfitCount} 套搭配";
@@ -149,8 +163,8 @@ public partial class OutfitsViewModel : ViewModelBase
         : $"{FilterSummary} · {OutfitCount} 套";
     public string CollectionSectionTitle => HasActiveFilters ? "当前结果" : "全部搭配";
     public string CollectionSectionBody => HasActiveFilters
-        ? $"按 {FilterSummary} 缩小到了 {OutfitCount} 套，继续改条件会更快。"
-        : "按场景、季节、名称和收藏状态收窄结果，会更快找到今天那套。";
+        ? $"{FilterSummary} · {OutfitCount} 套"
+        : "按筛选条件查看搭配。";
     public bool FavoriteOnly
     {
         get => _state.FavoriteOnly;
@@ -160,6 +174,19 @@ public partial class OutfitsViewModel : ViewModelBase
                 return;
 
             _state.SetFavoriteOnly(value);
+            NotifyStateChanged();
+        }
+    }
+
+    public bool EffectImageOnly
+    {
+        get => _state.EffectImageOnly;
+        set
+        {
+            if (_state.EffectImageOnly == value)
+                return;
+
+            _state.SetEffectImageOnly(value);
             NotifyStateChanged();
         }
     }
@@ -236,6 +263,7 @@ public partial class OutfitsViewModel : ViewModelBase
 
     public async Task LoadOutfitsAsync(bool refreshWeather = false)
     {
+        await EnsureCardDisplayModeLoadedAsync();
         _state.BeginLoad();
         NotifyStateChanged();
 
@@ -248,20 +276,20 @@ public partial class OutfitsViewModel : ViewModelBase
             await RefreshDerivedStateAsync();
             await RefreshCalendarIfLoadedAsync();
 
-            if (refreshWeather || WeatherRecommendations.Count == 0)
-            {
-                await RefreshWeatherRecommendationsAsync();
-            }
-            else
-            {
-                await RefreshRecommendationsForCurrentWeatherAsync();
-            }
-
             Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
         }
         finally
         {
             NotifyStateChanged();
+        }
+
+        if (refreshWeather || WeatherRecommendations.Count == 0)
+        {
+            _ = RefreshWeatherRecommendationsInBackgroundAsync();
+        }
+        else
+        {
+            _ = RefreshRecommendationsForCurrentWeatherInBackgroundAsync();
         }
     }
 
@@ -292,6 +320,7 @@ public partial class OutfitsViewModel : ViewModelBase
         SetSelectedScene(null);
         SetSelectedSeason(null);
         FavoriteOnly = false;
+        EffectImageOnly = false;
         _displayedOutfitCount = PageSize;
         NotifyStateChanged();
     }
@@ -301,6 +330,17 @@ public partial class OutfitsViewModel : ViewModelBase
     {
         _displayedOutfitCount += PageSize;
         NotifyStateChanged();
+    }
+
+    public async Task SetCardDisplayModeAsync(OutfitCardDisplayMode mode)
+    {
+        if (CardDisplayMode == mode)
+            return;
+
+        await _outfitDisplayPreferencesService.SaveAsync(new OutfitDisplayPreferences
+        {
+            DefaultCardDisplayMode = mode
+        });
     }
 
     private void NotifyStateChanged()
@@ -339,6 +379,31 @@ public partial class OutfitsViewModel : ViewModelBase
             return null;
 
         return _state.Outfits.FirstOrDefault(outfit => outfit.Id == outfitId);
+    }
+
+    private async Task EnsureCardDisplayModeLoadedAsync()
+    {
+        if (_hasLoadedCardDisplayMode)
+            return;
+
+        var preferences = await _outfitDisplayPreferencesService.GetAsync();
+        _hasLoadedCardDisplayMode = true;
+        ApplyCardDisplayMode(preferences.DefaultCardDisplayMode);
+    }
+
+    private void ApplyCardDisplayMode(OutfitCardDisplayMode mode)
+    {
+        if (CardDisplayMode == mode)
+            return;
+
+        CardDisplayMode = mode;
+        NotifyPropertiesChanged(nameof(CardDisplayMode), nameof(IsOutfitFirstDisplayMode), nameof(IsEffectImageFirstDisplayMode));
+    }
+
+    private void OutfitDisplayPreferencesService_PreferenceChanged(object? sender, OutfitDisplayPreferencesChangedEventArgs e)
+    {
+        _hasLoadedCardDisplayMode = true;
+        ApplyCardDisplayMode(e.Preferences.DefaultCardDisplayMode);
     }
 
 }

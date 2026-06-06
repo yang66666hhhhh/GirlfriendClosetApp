@@ -33,7 +33,7 @@ public class MasonryPanel : Panel
             ? Children.Count * (colW + gap)
             : availableSize.Width;
 
-        int columns = Math.Max(1, (int)((usableWidth + gap) / (colW + gap)));
+        int columns = GetColumnCount(usableWidth, colW, gap);
 
         double[] columnHeights = new double[columns];
 
@@ -57,7 +57,7 @@ public class MasonryPanel : Panel
     {
         double colW = ColumnWidth;
         double gap = Spacing;
-        int columns = Math.Max(1, (int)((finalSize.Width + gap) / (colW + gap)));
+        int columns = GetColumnCount(finalSize.Width, colW, gap);
         double totalContentWidth = columns * colW + (columns - 1) * gap;
         double offsetX = (finalSize.Width - totalContentWidth) / 2.0;
 
@@ -80,5 +80,11 @@ public class MasonryPanel : Panel
 
         double maxHeight = columnHeights.Length > 0 ? columnHeights.Max() : 0;
         return new Size(finalSize.Width, maxHeight);
+    }
+
+    private int GetColumnCount(double width, double columnWidth, double gap)
+    {
+        int availableColumns = Math.Max(1, (int)((width + gap) / (columnWidth + gap)));
+        return Math.Max(1, Math.Min(availableColumns, InternalChildren.Count));
     }
 }

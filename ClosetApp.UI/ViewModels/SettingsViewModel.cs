@@ -6,6 +6,7 @@ using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Components.Shared;
+using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.ViewModels;
@@ -21,18 +22,7 @@ public partial class SettingsViewModel : ObservableObject
     private readonly IPersonalProfileService? _personalProfileService;
     private readonly IAiImageGenerationService? _aiImageGenerationService;
     private readonly ThemeService _themeService;
-
-    [ObservableProperty]
-    private string _dataDir = AppPaths.BaseDir;
-
-    [ObservableProperty]
-    private string _imagesDir = AppPaths.ImagesDir;
-
-    [ObservableProperty]
-    private string _logDir = AppPaths.LogsDir;
-
-    [ObservableProperty]
-    private string _version = GetVersion();
+    private readonly OutfitDisplayPreferencesService _outfitDisplayPreferencesService;
 
     [ObservableProperty]
     private string _weatherCity = "Shanghai";
@@ -45,6 +35,15 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     private string _themeDescription = "柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。";
+
+    [ObservableProperty]
+    private OutfitCardDisplayMode _defaultOutfitCardDisplayMode = OutfitCardDisplayMode.OutfitFirst;
+
+    [ObservableProperty]
+    private string _outfitCardDisplaySummary = "当前默认：搭配优先";
+
+    [ObservableProperty]
+    private string _outfitCardDisplayDetail = "搭配列表会优先展示原始搭配预览；没有效果图管理压力时会更稳。";
 
     [ObservableProperty]
     private string _imageStats = "";
@@ -96,7 +95,14 @@ public partial class SettingsViewModel : ObservableObject
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CanEditWeather))]
+    [NotifyPropertyChangedFor(nameof(WeatherSaveButtonText))]
+    [NotifyPropertyChangedFor(nameof(WeatherRefreshButtonText))]
     private bool _isWeatherBusy;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(CanEditRecommendationPreferences))]
+    [NotifyPropertyChangedFor(nameof(RecommendationSaveButtonText))]
+    private bool _isRecommendationBusy;
 
     [ObservableProperty]
     private string _backupValidation = "";
@@ -150,7 +156,7 @@ public partial class SettingsViewModel : ObservableObject
     private string _aiBaseUrl = "https://api.openai.com/v1";
 
     [ObservableProperty]
-    private string _aiModel = "gpt-image-1";
+    private string _aiModel = "gpt-image-2";
 
     [ObservableProperty]
     private string _aiTimeoutSeconds = "60";
@@ -170,6 +176,7 @@ public partial class SettingsViewModel : ObservableObject
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
         ThemeService themeService,
+        OutfitDisplayPreferencesService outfitDisplayPreferencesService,
         IAiGenerationPreferencesService? aiGenerationPreferencesService = null,
         IPersonalProfileService? personalProfileService = null,
         IAiImageGenerationService? aiImageGenerationService = null)
@@ -180,13 +187,18 @@ public partial class SettingsViewModel : ObservableObject
         _weatherPreferencesService = weatherPreferencesService;
         _recommendationPreferencesService = recommendationPreferencesService;
         _themeService = themeService;
+        _outfitDisplayPreferencesService = outfitDisplayPreferencesService;
         _aiGenerationPreferencesService = aiGenerationPreferencesService;
         _personalProfileService = personalProfileService;
         _aiImageGenerationService = aiImageGenerationService;
+        _outfitDisplayPreferencesService.PreferenceChanged += OutfitDisplayPreferencesService_PreferenceChanged;
     }
 
-    public AppThemeKind CurrentThemeValue => _themeService.CurrentTheme;
     public bool CanEditWeather => !IsWeatherBusy;
+    public string WeatherSaveButtonText => IsWeatherBusy ? "处理中..." : "保存";
+    public string WeatherRefreshButtonText => IsWeatherBusy ? "刷新中..." : "刷新天气";
+    public bool CanEditRecommendationPreferences => !IsRecommendationBusy;
+    public string RecommendationSaveButtonText => IsRecommendationBusy ? "保存中..." : "保存推荐偏好";
     public IReadOnlyList<OutfitSceneFilterOption> RecommendationSceneOptions { get; } =
     [
         new("不限场景", null),
@@ -202,11 +214,11 @@ public partial class SettingsViewModel : ObservableObject
         new("优先少穿", RecommendationRotationStrategy.PreferLessWorn),
         new("优先收藏", RecommendationRotationStrategy.PreferFavorites)
     ];
-
     public async Task InitializeAsync()
     {
         await LoadWeatherPreferencesAsync();
         await LoadRecommendationPreferencesAsync();
+        await LoadOutfitDisplayPreferencesAsync();
         await RefreshAiGenerationSettingsAsync();
         CurrentTheme = _themeService.CurrentTheme;
         UpdateThemeText();
@@ -243,16 +255,29 @@ public partial class SettingsViewModel : ObservableObject
             ? "AI 图片生成已准备好。"
             : "AI 图片生成还差一点准备。";
 
+        var protocolHint = string.IsNullOrWhiteSpace(preferences.Model)
+            ? "协议待定。"
+            : string.Equals(preferences.Model, "gpt-image-2", StringComparison.OrdinalIgnoreCase)
+                ? "当前会走 images 文生图接口，不上传参考图。"
+            : preferences.Model.StartsWith("gpt-image-", StringComparison.OrdinalIgnoreCase)
+                ? "当前会走 images 图片编辑接口。"
+                : "当前会走 responses 图片生成接口；这类非图片模型在部分中转上更容易因为参考图输入过大或网关超时而失败。";
+
         var detailParts = new List<string>();
         detailParts.Add(providerReady
             ? $"当前使用 {preferences.Model} · 已保存 API Key。"
             : "还没有完成 provider 配置。");
         detailParts.Add(profileReady
             ? $"个人档案已完成：{profile!.DisplayName}。"
-            : "个人档案还缺少昵称、头像照或云端同意。");
+            : string.Equals(preferences.Model, "gpt-image-2", StringComparison.OrdinalIgnoreCase)
+                ? "个人档案还缺少昵称或云端同意。"
+                : "个人档案还缺少昵称、头像照或云端同意。");
 
         if (preferences.LastConnectionCheckAt.HasValue)
-            detailParts.Add($"最近一次测试：{preferences.LastConnectionCheckAt:yyyy-MM-dd HH:mm}。");
+            detailParts.Add($"最近一次接口连通性测试：{preferences.LastConnectionCheckAt:yyyy-MM-dd HH:mm}。");
+
+        detailParts.Add(protocolHint);
+        detailParts.Add($"当前超时 {preferences.TimeoutSeconds} 秒。");
 
         AiSettingsDetail = string.Join(" ", detailParts);
     }
@@ -297,22 +322,55 @@ public partial class SettingsViewModel : ObservableObject
         RecommendationRotationStrategy = preferences.RotationStrategy;
     }
 
+    private async Task LoadOutfitDisplayPreferencesAsync()
+    {
+        var preferences = await _outfitDisplayPreferencesService.GetAsync();
+        ApplyOutfitCardDisplayMode(preferences.DefaultCardDisplayMode);
+    }
+
     public async Task SaveRecommendationPreferencesAsync()
     {
-        await _recommendationPreferencesService.SaveAsync(new RecommendationPreferences
-        {
-            DefaultScene = RecommendationDefaultScene,
-            AvoidWornToday = RecommendationAvoidWornToday,
-            RotationStrategy = RecommendationRotationStrategy
-        });
+        if (IsRecommendationBusy)
+            return;
 
-        RecommendationStatus = "今日推荐偏好已保存。";
+        IsRecommendationBusy = true;
+        RecommendationStatus = "正在保存今日推荐偏好...";
         IsRecommendationStatusVisible = true;
-        ToastService.Instance.ShowSuccess("已保存推荐偏好");
+
+        try
+        {
+            await _recommendationPreferencesService.SaveAsync(new RecommendationPreferences
+            {
+                DefaultScene = RecommendationDefaultScene,
+                AvoidWornToday = RecommendationAvoidWornToday,
+                RotationStrategy = RecommendationRotationStrategy
+            });
+
+            RecommendationStatus = "今日推荐偏好已保存。";
+            ToastService.Instance.ShowSuccess("已保存推荐偏好");
+        }
+        finally
+        {
+            IsRecommendationBusy = false;
+        }
+    }
+
+    public async Task SaveOutfitCardDisplayModeAsync(OutfitCardDisplayMode mode)
+    {
+        if (DefaultOutfitCardDisplayMode == mode)
+            return;
+
+        await _outfitDisplayPreferencesService.SaveAsync(new OutfitDisplayPreferences
+        {
+            DefaultCardDisplayMode = mode
+        });
     }
 
     public async Task SaveWeatherCityAsync(string city)
     {
+        if (IsWeatherBusy)
+            return;
+
         city = city.Trim();
         if (string.IsNullOrWhiteSpace(city))
         {
@@ -320,13 +378,23 @@ public partial class SettingsViewModel : ObservableObject
             return;
         }
 
-        await _weatherPreferencesService.SaveAsync(new WeatherPreferences
+        IsWeatherBusy = true;
+        ShowWeatherStatus("正在保存默认城市...");
+
+        try
         {
-            DefaultCity = city
-        });
-        WeatherCity = city;
-        ShowWeatherStatus($"默认城市已保存为 {city}。");
-        ToastService.Instance.ShowSuccess("已保存默认城市", city);
+            await _weatherPreferencesService.SaveAsync(new WeatherPreferences
+            {
+                DefaultCity = city
+            });
+            WeatherCity = city;
+            ShowWeatherStatus($"默认城市已保存为 {city}。");
+            ToastService.Instance.ShowSuccess("已保存默认城市", city);
+        }
+        finally
+        {
+            IsWeatherBusy = false;
+        }
     }
 
     public async Task RefreshWeatherAsync(bool showStatus)
@@ -582,10 +650,20 @@ public partial class SettingsViewModel : ObservableObject
         return string.IsNullOrWhiteSpace(timezone) ? string.Empty : $" · {timezone}";
     }
 
-    private static string GetVersion()
+    private void ApplyOutfitCardDisplayMode(OutfitCardDisplayMode mode)
     {
-        var version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version;
-        return version == null ? "开发版" : $"{version.Major}.{version.Minor}.{version.Build}";
+        DefaultOutfitCardDisplayMode = mode;
+        OutfitCardDisplaySummary = mode == OutfitCardDisplayMode.EffectImageFirst
+            ? "当前默认：效果图优先"
+            : "当前默认：搭配优先";
+        OutfitCardDisplayDetail = mode == OutfitCardDisplayMode.EffectImageFirst
+            ? "搭配列表会优先展示你保存的首选效果图；没有效果图时会自动回退到原始搭配。"
+            : "搭配列表会优先展示原始搭配预览；没有效果图管理压力时会更稳。";
+    }
+
+    private void OutfitDisplayPreferencesService_PreferenceChanged(object? sender, OutfitDisplayPreferencesChangedEventArgs e)
+    {
+        ApplyOutfitCardDisplayMode(e.Preferences.DefaultCardDisplayMode);
     }
 }
 

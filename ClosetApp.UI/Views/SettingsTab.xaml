@@ -6,21 +6,6 @@
              xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
-        
 
         <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
             <Setter Property="Margin" Value="0,0,0,18"/>
@@ -147,7 +132,7 @@
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="设置总览"
                                        Style="{StaticResource PageSummaryTitleText}"/>
-                            <TextBlock Text="把目录、图片维护、天气和备份集中到一页里，整理和排障都更顺手。"
+                            <TextBlock Text="常用设置集中管理。"
                                        Style="{StaticResource PageSummaryBodyText}"/>
 
                             <WrapPanel Margin="0,10,0,0">
@@ -219,42 +204,31 @@
                     <StackPanel>
                         <TextBlock Text="全部设置"
                                    Style="{StaticResource PageSectionTitleText}"/>
-                        <TextBlock Text="目录、维护、天气和备份都在这一层展开，排查问题时不用来回切页。"
+                        <TextBlock Text="目录、维护、天气和备份。"
                                    Style="{StaticResource PageSectionBodyText}"
                                    Margin="0,4,0,0"/>
                     </StackPanel>
                 </Grid>
 
-                <Grid>
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="1.08*"/>
-                        <ColumnDefinition Width="20"/>
-                        <ColumnDefinition Width="0.92*"/>
-                    </Grid.ColumnDefinitions>
+                <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
 
-                    <StackPanel Grid.Column="0">
-                        <settings:StorageLocationsSettingsPanel/>
+                <settings:StorageLocationsSettingsPanel/>
 
-                        <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
-                                                                WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
+                <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
+                                                        WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
 
-                        <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
-                    </StackPanel>
+                <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
 
-                    <StackPanel Grid.Column="2">
-                        <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
+                <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
+                                                          OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
 
-                        <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
-                                                                  OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
+                <settings:AppearanceSettingsPanel x:Name="AppearancePanel"
+                                                  ThemeChanged="AppearancePanel_ThemeChanged"
+                                                  OutfitCardDisplayModeChanged="AppearancePanel_OutfitCardDisplayModeChanged"/>
 
-                        <settings:AppearanceSettingsPanel x:Name="AppearancePanel"
-                                                          ThemeChanged="AppearancePanel_ThemeChanged"/>
-
-                        <settings:BackupSettingsPanel x:Name="BackupPanel"
-                                                      BackupImported="BackupPanel_BackupImported"
-                                                      RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
-                    </StackPanel>
-                </Grid>
+                <settings:BackupSettingsPanel x:Name="BackupPanel"
+                                              BackupImported="BackupPanel_BackupImported"
+                                              RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
             </StackPanel>
         </ScrollViewer>
     </Grid>

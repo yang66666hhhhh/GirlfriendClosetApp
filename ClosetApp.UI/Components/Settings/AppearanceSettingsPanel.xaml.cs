@@ -3,6 +3,7 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -19,16 +20,17 @@ public partial class AppearanceSettingsPanel : UserControl
         InitializeComponent();
         _themeService = App.Services.GetRequiredService<ThemeService>();
         _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
-        Loaded += (_, _) => Refresh();
     }
 
     public void Refresh()
     {
         TxtVersion.Text = $"版本 {GetVersion()}";
         ApplyThemeCardSelection(_themeService.CurrentTheme);
+        ApplyOutfitCardDisplaySelection(_viewModel.DefaultOutfitCardDisplayMode);
     }
 
     public event EventHandler<AppThemeKind>? ThemeChanged;
+    public event EventHandler<OutfitCardDisplayMode>? OutfitCardDisplayModeChanged;
 
     private static string GetVersion()
     {
@@ -55,8 +57,28 @@ public partial class AppearanceSettingsPanel : UserControl
         ThemeBlueCard.IsSelected = theme == AppThemeKind.Blue;
     }
 
+    public void ApplyOutfitCardDisplaySelection(OutfitCardDisplayMode mode)
+    {
+        RadioOutfitFirst.IsChecked = mode == OutfitCardDisplayMode.OutfitFirst;
+        RadioEffectImageFirst.IsChecked = mode == OutfitCardDisplayMode.EffectImageFirst;
+    }
+
     private void OpenAppDir_Click(object sender, RoutedEventArgs e)
     {
         OpenPath(AppDomain.CurrentDomain.BaseDirectory);
+    }
+
+    private void OutfitDisplayMode_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RadioButton radioButton || radioButton.IsChecked != true)
+            return;
+
+        if (Equals(radioButton.Content, "效果图优先"))
+        {
+            OutfitCardDisplayModeChanged?.Invoke(this, OutfitCardDisplayMode.EffectImageFirst);
+            return;
+        }
+
+        OutfitCardDisplayModeChanged?.Invoke(this, OutfitCardDisplayMode.OutfitFirst);
     }
 }

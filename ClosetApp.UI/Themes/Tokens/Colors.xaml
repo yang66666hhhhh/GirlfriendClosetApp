@@ -81,6 +81,9 @@
     <SolidColorBrush x:Key="ThemeAmberBorderBrush" Color="{StaticResource Theme.Amber.Border}"/>
     <Color x:Key="Theme.Amber.Text">#FFA67942</Color>
     <SolidColorBrush x:Key="ThemeAmberTextBrush" Color="{StaticResource Theme.Amber.Text}"/>
+    <SolidColorBrush x:Key="TagAmberSurfaceBrush" Color="{StaticResource Theme.Amber.Surface}"/>
+    <SolidColorBrush x:Key="TagAmberBorderBrush" Color="{StaticResource Theme.Amber.Border}"/>
+    <SolidColorBrush x:Key="TagAmberTextBrush" Color="{StaticResource Theme.Amber.Text}"/>
 
     <Color x:Key="Theme.Lavender.Surface">#FFF2EFFB</Color>
     <SolidColorBrush x:Key="ThemeLavenderSurfaceBrush" Color="{StaticResource Theme.Lavender.Surface}"/>

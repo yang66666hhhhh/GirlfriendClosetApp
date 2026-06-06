@@ -60,10 +60,11 @@
                 <StackPanel>
                     <TextBlock Text="数据备份与恢复"
                                Style="{StaticResource PageSectionTitleText}"/>
-                    <TextBlock Text="导出前先看状态，导入后立刻看到结果和建议，整个闭环会更清楚。"
+                    <TextBlock Text="导出、导入和历史记录。"
                                Style="{StaticResource PageSectionBodyText}"/>
                 </StackPanel>
-                <Button Grid.Column="1"
+                <Button x:Name="BtnRefreshBackupState"
+                        Grid.Column="1"
                         Content="刷新状态"
                         Style="{StaticResource SettingsButton}"
                         Click="RefreshBackupState_Click"
@@ -80,15 +81,18 @@
                                TextWrapping="Wrap"
                                Margin="0,4,0,10"/>
                     <WrapPanel>
-                        <Button Content="导出 ZIP 备份包"
+                        <Button x:Name="BtnExportBackup"
+                                Content="导出 ZIP 备份包"
                                 Style="{StaticResource SettingsButton}"
                                 Click="ExportBackup_Click"
                                 Margin="0,0,8,8"/>
-                        <Button Content="一键快速导出"
+                        <Button x:Name="BtnQuickExportBackup"
+                                Content="一键快速导出"
                                 Style="{StaticResource SettingsButton}"
                                 Click="QuickExportBackup_Click"
                                 Margin="0,0,8,8"/>
-                        <Button Content="打开备份目录"
+                        <Button x:Name="BtnOpenBackupsDir"
+                                Content="打开备份目录"
                                 Style="{StaticResource SettingsButton}"
                                 Click="OpenBackupsDir_Click"/>
                     </WrapPanel>
@@ -104,7 +108,8 @@
                                FontSize="11"
                                TextWrapping="Wrap"
                                Margin="0,4,0,10"/>
-                    <Button Content="导入备份文件"
+                    <Button x:Name="BtnImportBackup"
+                            Content="导入备份文件"
                             Style="{StaticResource PageToolbarDangerButton}"
                             Click="ImportBackup_Click"
                             HorizontalAlignment="Left"/>
@@ -178,7 +183,8 @@
                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                            TextWrapping="Wrap"
                                            Margin="0,6,0,0"/>
-                                <Button Content="立即修复缺失图片"
+                                <Button x:Name="BtnRepairMissingImages"
+                                        Content="立即修复缺失图片"
                                         Style="{StaticResource SettingsButton}"
                                         HorizontalAlignment="Left"
                                         Margin="0,10,0,0"
@@ -210,7 +216,8 @@
                     <DockPanel LastChildFill="False">
                         <TextBlock Text="备份历史"
                                    Style="{StaticResource PageFieldLabelText}"/>
-                        <Button Content="清空历史"
+                        <Button x:Name="BtnClearBackupHistory"
+                                Content="清空历史"
                                 Style="{StaticResource PageToolbarDangerButton}"
                                 HorizontalAlignment="Right"
                                 Click="ClearBackupHistory_Click"/>
@@ -225,16 +232,23 @@
                                         Padding="12"
                                         Margin="0,0,0,10">
                                     <StackPanel>
-                                        <DockPanel LastChildFill="False">
-                                            <TextBlock Text="{Binding Summary}"
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="12"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Grid.Column="0"
+                                                       Text="{Binding Summary}"
                                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                                        FontWeight="SemiBold"
-                                                       TextWrapping="Wrap"
-                                                       Width="220"/>
-                                            <TextBlock Text="{Binding StatusText}"
+                                                       TextWrapping="Wrap"/>
+                                            <TextBlock Grid.Column="2"
+                                                       Text="{Binding StatusText}"
                                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       HorizontalAlignment="Right"/>
-                                        </DockPanel>
+                                                       HorizontalAlignment="Right"
+                                                       TextWrapping="Wrap"/>
+                                        </Grid>
                                         <TextBlock Text="{Binding MetaText}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                    Margin="0,6,0,0"/>
@@ -265,6 +279,10 @@
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                Margin="0,8,0,0"
                                Visibility="{Binding IsBackupHistoryEmpty, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    <TextBlock x:Name="TxtBackupOperationStatus"
+                               Style="{StaticResource PageMutedBodyText}"
+                               Margin="0,8,0,0"
+                               Visibility="Collapsed"/>
                 </StackPanel>
             </Border>
         </StackPanel>
