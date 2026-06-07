@@ -19,6 +19,7 @@ using Serilog;
 using Serilog.Events;
 using System.Windows.Controls;
 using System.Windows.Input;
+using ClosetApp.UI.Views;
 
 namespace ClosetApp.UI;
 
@@ -63,10 +64,12 @@ public partial class App : System.Windows.Application
         };
 
         ConfigureServices();
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
         EventManager.RegisterClassHandler(typeof(ComboBox), UIElement.PreviewMouseWheelEvent, new MouseWheelEventHandler(OnComboBoxPreviewMouseWheel), true);
         var themeService = Services.GetRequiredService<ThemeService>();
         themeService.InitializeAsync().GetAwaiter().GetResult();
         StartBackgroundInitialization();
+        ShowLoginWindow();
         Log.Information("Application startup prepared");
     }
 
@@ -101,6 +104,7 @@ public partial class App : System.Windows.Application
         services.AddDbContextFactory<ClosetDbContext>();
         services.AddScoped(sp => sp.GetRequiredService<IDbContextFactory<ClosetDbContext>>().CreateDbContext());
 
+        services.AddScoped<ILocalUserRepository, LocalUserRepository>();
         services.AddScoped<IClothingRepository, ClothingRepository>();
         services.AddScoped<IOutfitRepository, OutfitRepository>();
         services.AddScoped<ITagRepository, TagRepository>();
@@ -114,6 +118,7 @@ public partial class App : System.Windows.Application
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<IOutfitRecommendationService, OutfitRecommendationService>();
         services.AddScoped<IPersonalProfileService, PersonalProfileService>();
+        services.AddScoped<ILocalUserService, LocalUserService>();
         services.AddScoped<GetWardrobeOverview>();
         services.AddScoped<CompleteClothingMetadataBatch>();
         services.AddScoped<ClearWardrobeByTypes>();
@@ -137,9 +142,16 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IImageStorageService, ImageStorageService>();
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
         services.AddSingleton<IAiAssetStorageService, AiAssetStorageService>();
-        services.AddSingleton<IAiGenerationPreferencesService, AiGenerationPreferencesService>();
-        services.AddSingleton<IWeatherPreferencesService, WeatherPreferencesService>();
-        services.AddSingleton<IRecommendationPreferencesService, RecommendationPreferencesService>();
+        services.AddSingleton<IAuthSessionContext, AuthSessionContext>();
+        services.AddSingleton<ICurrentUserContext>(sp =>
+            new CurrentUserContext(authSessionContext: sp.GetRequiredService<IAuthSessionContext>()));
+        services.AddScoped<ILocalAuthService, LocalAuthService>();
+        services.AddSingleton<IAiGenerationPreferencesService>(sp =>
+            new AiGenerationPreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
+        services.AddSingleton<IWeatherPreferencesService>(sp =>
+            new WeatherPreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
+        services.AddSingleton<IRecommendationPreferencesService>(sp =>
+            new RecommendationPreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<IAiImageGenerationService, OpenAiCompatibleImageGenerationService>();
         services.AddHttpClient<IWeatherService, WeatherService>(client =>
         {
@@ -148,8 +160,8 @@ public partial class App : System.Windows.Application
         });
         services.AddSingleton<ToastService>();
         services.AddSingleton<ModalService>();
-        services.AddSingleton<ThemePreferencesService>();
-        services.AddSingleton<OutfitDisplayPreferencesService>();
+        services.AddSingleton(sp => new ThemePreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
+        services.AddSingleton(sp => new OutfitDisplayPreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<ThemeService>();
         services.AddSingleton<AppStartupCoordinator>();
 
@@ -175,6 +187,13 @@ public partial class App : System.Windows.Application
             MessageBox.Show($"启动失败: {ex.Message}", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
             Shutdown(-1);
         }
+    }
+
+    public void ShowLoginWindow()
+    {
+        var loginWindow = new LoginWindow();
+        MainWindow = loginWindow;
+        loginWindow.Show();
     }
 
     private static void OnComboBoxPreviewMouseWheel(object sender, MouseWheelEventArgs e)

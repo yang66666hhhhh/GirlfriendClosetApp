@@ -14,10 +14,12 @@ public sealed class AiGenerationPreferencesService : IAiGenerationPreferencesSer
     };
 
     private readonly string _filePath;
+    private readonly UserScopedSettingsPath _settingsPath;
 
-    public AiGenerationPreferencesService(string? filePath = null)
+    public AiGenerationPreferencesService(string? filePath = null, ICurrentUserContext? currentUserContext = null)
     {
         _filePath = filePath ?? Path.Combine(AppPaths.BaseDir, "ai-generation-settings.json");
+        _settingsPath = new UserScopedSettingsPath(currentUserContext, _filePath);
     }
 
     public async Task<AiGenerationPreferences> GetAsync()
@@ -72,18 +74,21 @@ public sealed class AiGenerationPreferencesService : IAiGenerationPreferencesSer
 
     private async Task<AiGenerationPreferencesDocument> LoadDocumentAsync()
     {
-        if (!File.Exists(_filePath))
+        await _settingsPath.MigrateGlobalFileIfNeededAsync();
+        var path = await _settingsPath.ResolveAsync();
+        if (!File.Exists(path))
             return CreateDefaultDocument();
 
-        await using var stream = new FileStream(_filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        await using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         var document = await JsonSerializer.DeserializeAsync<AiGenerationPreferencesDocument>(stream, JsonOptions);
         return NormalizeDocument(document);
     }
 
     private async Task SaveDocumentAsync(AiGenerationPreferencesDocument document)
     {
-        Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-        await using var stream = File.Create(_filePath);
+        var path = await _settingsPath.ResolveAsync();
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        await using var stream = File.Create(path);
         await JsonSerializer.SerializeAsync(stream, document, JsonOptions);
     }
 

@@ -5,6 +5,8 @@ namespace ClosetApp.Domain.Entities;
 
 public class Clothing : BaseEntity
 {
+    public Guid? LocalUserId { get; set; }
+    public LocalUser? LocalUser { get; set; }
     public string Name { get; set; } = string.Empty;
     public ClothingType Type { get; set; }
     public GarmentType? GarmentType { get; set; }

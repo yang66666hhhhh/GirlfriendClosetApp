@@ -7,6 +7,8 @@ using System.Windows.Media.Media3D;
 using System.Windows.Media.Animation;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Views;
+using ClosetApp.Application.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
 namespace ClosetApp.UI;
@@ -21,9 +23,11 @@ public partial class MainWindow : Window
         InitializeComponent();
         ClothesTabContent.ClothingCountChanged += ClothesTabContent_ClothingCountChanged;
         Sidebar.PersonalProfileRequested += Sidebar_PersonalProfileRequested;
+        App.Services.GetRequiredService<ICurrentUserContext>().CurrentUserChanged += MainWindow_CurrentUserChanged;
         PreviewKeyDown += MainWindow_PreviewKeyDown;
         SizeChanged += MainWindow_SizeChanged;
         Loaded += MainWindow_Loaded;
+        Closed += MainWindow_Closed;
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
@@ -34,6 +38,13 @@ public partial class MainWindow : Window
 
         _hasLoadedInitialTab = true;
         _ = RefreshVisibleTabAsync(_currentTabIndex);
+    }
+
+    private void MainWindow_Closed(object? sender, EventArgs e)
+    {
+        var authSession = App.Services.GetRequiredService<IAuthSessionContext>();
+        if (authSession.IsAuthenticated)
+            global::System.Windows.Application.Current.Shutdown();
     }
 
     private void ClothesTabContent_ClothingCountChanged(object? sender, int count)
@@ -135,6 +146,11 @@ public partial class MainWindow : Window
     private async void Sidebar_PersonalProfileRequested(object? sender, EventArgs e)
     {
         await SettingsTabContent.RefreshAsync();
+    }
+
+    private async void MainWindow_CurrentUserChanged(object? sender, CurrentUserChangedEventArgs e)
+    {
+        await RefreshDataTabsAsync(clothes: true, outfits: true, tags: true, settings: true);
     }
 
     private void MainWindow_PreviewKeyDown(object sender, KeyEventArgs e)

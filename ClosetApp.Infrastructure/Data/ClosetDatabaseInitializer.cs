@@ -8,6 +8,7 @@ namespace ClosetApp.Infrastructure.Data;
 public static class ClosetDatabaseInitializer
 {
     private const string EfCoreProductVersion = "8.0.0";
+    private const string AddLocalUserAccountNameMigrationId = "20260607123000_AddLocalUserAccountName";
 
     public static async Task InitializeAsync(ClosetDbContext dbContext, CancellationToken cancellationToken = default)
     {
@@ -28,6 +29,16 @@ public static class ClosetDatabaseInitializer
         if (await HasCurrentModelSchemaAsync(dbContext, cancellationToken))
         {
             await InsertMigrationHistoryAsync(dbContext, migrationIds, cancellationToken);
+            return;
+        }
+
+        if (await HasSchemaBeforeLocalUserAccountNameAsync(dbContext, cancellationToken))
+        {
+            await InsertMigrationHistoryAsync(
+                dbContext,
+                migrationIds.TakeWhile(id => !string.Equals(id, AddLocalUserAccountNameMigrationId, StringComparison.Ordinal)),
+                cancellationToken);
+            await dbContext.Database.MigrateAsync(cancellationToken);
             return;
         }
 
@@ -78,6 +89,12 @@ public static class ClosetDatabaseInitializer
     }
 
     private static async Task<bool> HasCurrentModelSchemaAsync(ClosetDbContext dbContext, CancellationToken cancellationToken)
+    {
+        return await HasSchemaBeforeLocalUserAccountNameAsync(dbContext, cancellationToken)
+            && await ColumnExistsAsync(dbContext, "LocalUsers", "AccountName", cancellationToken);
+    }
+
+    private static async Task<bool> HasSchemaBeforeLocalUserAccountNameAsync(ClosetDbContext dbContext, CancellationToken cancellationToken)
     {
         return await ColumnExistsAsync(dbContext, "Outfits", "OriginalClothingCount", cancellationToken)
             && await ColumnExistsAsync(dbContext, "OutfitWornRecords", "OutfitNameSnapshot", cancellationToken)

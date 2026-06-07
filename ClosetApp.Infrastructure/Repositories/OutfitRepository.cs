@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -11,15 +12,18 @@ namespace ClosetApp.Infrastructure.Repositories;
 public class OutfitRepository : IOutfitRepository
 {
     private readonly Data.ClosetDbContext _context;
+    private readonly ICurrentUserContext? _currentUserContext;
 
-    public OutfitRepository(Data.ClosetDbContext context)
+    public OutfitRepository(Data.ClosetDbContext context, ICurrentUserContext? currentUserContext = null)
     {
         _context = context;
+        _currentUserContext = currentUserContext;
     }
 
     public async Task<IEnumerable<Outfit>> GetAllAsync()
     {
-        return await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        return await query
             .AsNoTracking()
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
@@ -32,7 +36,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task<Outfit?> GetByIdAsync(Guid id)
     {
-        return await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        return await query
             .AsNoTracking()
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
@@ -45,7 +50,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task<Outfit?> GetByIdForUpdateAsync(Guid id)
     {
-        return await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        return await query
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
             .Include(o => o.Favorites)
@@ -56,6 +62,7 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task AddAsync(Outfit entity)
     {
+        await AssignCurrentUserAsync(entity);
         _context.Outfits.Add(entity);
         await _context.SaveChangesAsync();
     }
@@ -67,7 +74,9 @@ public class OutfitRepository : IOutfitRepository
             .Distinct()
             .ToList();
 
-        var outfit = await _context.Outfits
+        await AssignCurrentUserAsync(entity);
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        var outfit = await query
             .Include(o => o.OutfitClothes)
             .FirstOrDefaultAsync(o => o.Id == entity.Id);
 
@@ -102,7 +111,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task DeleteAsync(Guid id)
     {
-        var outfit = await _context.Outfits.FindAsync(id);
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        var outfit = await query.FirstOrDefaultAsync(item => item.Id == id);
         if (outfit != null)
         {
             _context.Outfits.Remove(outfit);
@@ -112,7 +122,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task DeleteEmptyOutfitsAsync()
     {
-        var emptyOutfits = await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        var emptyOutfits = await query
             .Where(o => !o.OutfitClothes.Any())
             .ToListAsync();
 
@@ -126,7 +137,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task<IEnumerable<Outfit>> GetOutfitsByClothingIdAsync(Guid clothingId)
     {
-        return await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        return await query
             .Include(o => o.OutfitClothes)
             .Where(o => o.OutfitClothes.Any(oc => oc.ClothingId == clothingId))
             .ToListAsync();
@@ -136,7 +148,8 @@ public class OutfitRepository : IOutfitRepository
     {
         var results = new List<OutfitUpdateResult>();
         
-        var outfitsWithClothing = await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        var outfitsWithClothing = await query
             .Include(o => o.OutfitClothes)
             .ThenInclude(oc => oc.Clothing)
             .Where(o => o.OutfitClothes.Any(oc => oc.ClothingId == excludedClothingId))
@@ -239,7 +252,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene)
     {
-        return await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        return await query
             .AsNoTracking()
             .Where(o => o.Scene == scene)
             .Include(o => o.OutfitClothes)
@@ -253,7 +267,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task<IEnumerable<Outfit>> GetBySeasonAsync(Season season)
     {
-        return await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        return await query
             .AsNoTracking()
             .Where(o => o.Season == season)
             .Include(o => o.OutfitClothes)
@@ -267,7 +282,8 @@ public class OutfitRepository : IOutfitRepository
 
     public async Task<IEnumerable<Outfit>> GetRecentlyWornAsync(int count)
     {
-        return await _context.Outfits
+        var query = await ForCurrentUserAsync(_context.Outfits);
+        return await query
             .AsNoTracking()
             .Where(o => o.WornDate != null)
             .OrderByDescending(o => o.WornDate)
@@ -279,5 +295,22 @@ public class OutfitRepository : IOutfitRepository
             .Include(o => o.Favorites)
             .Include(o => o.GeneratedImages)
             .ToListAsync();
+    }
+
+    private async Task<IQueryable<Outfit>> ForCurrentUserAsync(IQueryable<Outfit> query)
+    {
+        if (_currentUserContext == null)
+            return query;
+
+        var userId = await _currentUserContext.GetRequiredCurrentUserIdAsync();
+        return query.Where(outfit => outfit.LocalUserId == userId);
+    }
+
+    private async Task AssignCurrentUserAsync(Outfit entity)
+    {
+        if (_currentUserContext == null || entity.LocalUserId.HasValue)
+            return;
+
+        entity.LocalUserId = await _currentUserContext.GetRequiredCurrentUserIdAsync();
     }
 }

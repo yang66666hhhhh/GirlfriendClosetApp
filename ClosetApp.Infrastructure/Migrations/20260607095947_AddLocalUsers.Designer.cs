@@ -3,6 +3,7 @@ using System;
 using ClosetApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClosetApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ClosetDbContext))]
-    partial class ClosetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607095947_AddLocalUsers")]
+    partial class AddLocalUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -115,18 +118,10 @@ namespace ClosetApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("AccountName")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("admin");
-
                     b.Property<string>("AvatarPhotoPath")
                         .HasColumnType("TEXT");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<DateTime?>("CredentialUpdatedAt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("DisplayName")
@@ -136,28 +131,7 @@ namespace ClosetApp.Infrastructure.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("INTEGER");
 
-                    b.Property<DateTime?>("LastLoginAt")
-                        .HasColumnType("TEXT");
-
                     b.Property<string>("LinkedAccountId")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("PasswordIterations")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("PasswordSalt")
-                        .HasColumnType("TEXT");
-
-                    b.Property<string>("PinHash")
-                        .HasColumnType("TEXT");
-
-                    b.Property<int>("PinIterations")
-                        .HasColumnType("INTEGER");
-
-                    b.Property<string>("PinSalt")
                         .HasColumnType("TEXT");
 
                     b.Property<string>("Role")
@@ -168,9 +142,6 @@ namespace ClosetApp.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountName")
-                        .HasDatabaseName("IX_LocalUsers_AccountName");
 
                     b.HasIndex("Role");
 

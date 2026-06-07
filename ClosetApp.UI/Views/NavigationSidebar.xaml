@@ -102,36 +102,88 @@
             </Grid.RowDefinitions>
 
             <!-- Logo / Brand Area -->
-            <StackPanel Grid.Row="0" Margin="20,28,20,24">
+            <StackPanel x:Name="HeaderPanel" Grid.Row="0" Margin="20,28,20,24">
                 <Button x:Name="BtnProfile"
                         Background="Transparent"
                         BorderThickness="0"
-                        Padding="0"
+                        Padding="8"
+                        MinHeight="52"
                         HorizontalAlignment="Stretch"
+                        ToolTip="切换用户或编辑当前用户档案"
                         Click="Profile_Click">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Width="34"
-                            Height="34"
-                            CornerRadius="17"
-                            Background="{DynamicResource PrimaryLightBrush}">
-                        <Image Source="/ClosetApp.UI;component/Assets/Icons/app-avatar.png"
-                               Width="24"
-                               Height="24"
-                               Stretch="Uniform"
-                               HorizontalAlignment="Center"
-                               VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock Text="私人衣橱"
-                                   FontSize="15"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
-                        <TextBlock Text="Closet Companion"
-                                   FontSize="11"
+                    <Button.Template>
+                        <ControlTemplate TargetType="Button">
+                            <Border x:Name="ProfileShell"
+                                    Background="Transparent"
+                                    CornerRadius="14"
+                                    Padding="{TemplateBinding Padding}"
+                                    HorizontalAlignment="Stretch"
+                                    VerticalAlignment="Center">
+                                <ContentPresenter HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Center"/>
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                    <Button.ContextMenu>
+                        <ContextMenu x:Name="ProfileMenu"
+                                     Style="{StaticResource WardrobeCard.MoreMenu}">
+                            <MenuItem Header="编辑当前档案"
+                                      Style="{StaticResource WardrobeCard.MoreMenuItem}"
+                                      Click="EditCurrentProfile_Click"/>
+                            <Separator/>
+                            <MenuItem x:Name="MenuManageUsers"
+                                      Header="用户管理"
+                                      Style="{StaticResource WardrobeCard.MoreMenuItem}"
+                                      Click="ManageUsers_Click"/>
+                            <MenuItem Header="退出登录"
+                                      Style="{StaticResource WardrobeCard.MoreMenuItem}"
+                                      Click="Logout_Click"/>
+                        </ContextMenu>
+                    </Button.ContextMenu>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid Width="36" Height="36" HorizontalAlignment="Center" VerticalAlignment="Center">
+                            <Ellipse Fill="{DynamicResource PrimaryLightBrush}"/>
+                            <Ellipse x:Name="AvatarPhotoFill"
+                                     Width="30"
+                                     Height="30"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"/>
+                        </Grid>
+                        <StackPanel x:Name="ProfileTextPanel"
+                                    Grid.Column="1"
+                                    Margin="12,0,0,0"
+                                    VerticalAlignment="Center">
+                            <TextBlock x:Name="TxtCurrentUserName"
+                                       Text="私人衣橱"
+                                       FontSize="15"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       TextTrimming="CharacterEllipsis"/>
+                            <TextBlock x:Name="TxtCurrentUserRole"
+                                       Text="点击切换用户"
+                                       FontSize="11"
+                                       Foreground="{DynamicResource TextPlaceholderBrush}"
+                                       Margin="0,2,0,0"
+                                       TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                        <TextBlock x:Name="ProfileChevron"
+                                   Grid.Column="2"
+                                   Text="⌄"
+                                   FontSize="13"
                                    Foreground="{DynamicResource TextPlaceholderBrush}"
-                                   Margin="0,2,0,0"/>
-                    </StackPanel>
-                    </StackPanel>
+                                   VerticalAlignment="Center"
+                                   Margin="6,0,0,0"/>
+                    </Grid>
                 </Button>
                 <TextBlock x:Name="TxtClothingCount"
                            Text="0 件衣服"

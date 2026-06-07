@@ -75,6 +75,37 @@ public class DatabaseLifecycleTests
     }
 
     [Fact]
+    public async Task InitializeAsync_WithLegacyCurrentSchemaMissingAccountName_AppliesLatestMigration()
+    {
+        var tempDir = CreateTempDir();
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var options = CreateOptions(dbPath);
+
+        try
+        {
+            await using (var setupContext = new ClosetDbContext(options))
+            {
+                await setupContext.Database.EnsureDeletedAsync();
+                await setupContext.Database.EnsureCreatedAsync();
+                await setupContext.Database.ExecuteSqlRawAsync("DROP INDEX IF EXISTS IX_LocalUsers_AccountName;");
+                await setupContext.Database.ExecuteSqlRawAsync("ALTER TABLE LocalUsers DROP COLUMN AccountName;");
+            }
+
+            await using (var initContext = new ClosetDbContext(options))
+            {
+                await ClosetDatabaseInitializer.InitializeAsync(initContext);
+            }
+
+            await using var assertContext = new ClosetDbContext(options);
+            Assert.True(await ColumnExistsAsync(dbPath, "LocalUsers", "AccountName"));
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
     public async Task InitializeAsync_AfterBackupRestore_KeepsImportedDataAccessible()
     {
         var tempDir = CreateTempDir();
@@ -155,6 +186,22 @@ public class DatabaseLifecycleTests
         await using var countCommand = connection.CreateCommand();
         countCommand.CommandText = """SELECT COUNT(1) FROM "__EFMigrationsHistory";""";
         return Convert.ToInt32(await countCommand.ExecuteScalarAsync());
+    }
+
+    private static async Task<bool> ColumnExistsAsync(string dbPath, string tableName, string columnName)
+    {
+        await using var connection = new SqliteConnection($"Data Source={dbPath}");
+        await connection.OpenAsync();
+
+        await using var command = connection.CreateCommand();
+        command.CommandText = """
+            SELECT COUNT(1)
+            FROM pragma_table_info($tableName)
+            WHERE name = $columnName;
+            """;
+        command.Parameters.AddWithValue("$tableName", tableName);
+        command.Parameters.AddWithValue("$columnName", columnName);
+        return Convert.ToInt32(await command.ExecuteScalarAsync()) > 0;
     }
 
     private static string CreateTempDir()

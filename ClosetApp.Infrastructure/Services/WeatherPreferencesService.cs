@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ClosetApp.Application.Interfaces;
 
 namespace ClosetApp.Infrastructure.Services;
 
@@ -11,10 +12,12 @@ public class WeatherPreferencesService : IWeatherPreferencesService
 
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private readonly string _filePath;
+    private readonly UserScopedSettingsPath _settingsPath;
 
-    public WeatherPreferencesService(string? filePath = null)
+    public WeatherPreferencesService(string? filePath = null, ICurrentUserContext? currentUserContext = null)
     {
         _filePath = filePath ?? Path.Combine(AppPaths.BaseDir, "weather-settings.json");
+        _settingsPath = new UserScopedSettingsPath(currentUserContext, _filePath);
     }
 
     public async Task<WeatherPreferences> GetAsync()
@@ -22,10 +25,12 @@ public class WeatherPreferencesService : IWeatherPreferencesService
         await Gate.WaitAsync();
         try
         {
-            if (!File.Exists(_filePath))
+            await _settingsPath.MigrateGlobalFileIfNeededAsync();
+            var path = await _settingsPath.ResolveAsync();
+            if (!File.Exists(path))
                 return CreateDefaultPreferences();
 
-            await using var stream = File.OpenRead(_filePath);
+            await using var stream = File.OpenRead(path);
             var preferences = await JsonSerializer.DeserializeAsync<WeatherPreferences>(stream, JsonOptions);
             return Normalize(preferences);
         }
@@ -46,11 +51,12 @@ public class WeatherPreferencesService : IWeatherPreferencesService
         await Gate.WaitAsync();
         try
         {
-            var directory = Path.GetDirectoryName(_filePath);
+            var path = await _settingsPath.ResolveAsync();
+            var directory = Path.GetDirectoryName(path);
             if (!string.IsNullOrWhiteSpace(directory))
                 Directory.CreateDirectory(directory);
 
-            await using var stream = File.Create(_filePath);
+            await using var stream = File.Create(path);
             await JsonSerializer.SerializeAsync(stream, normalized, JsonOptions);
         }
         finally

@@ -3,6 +3,7 @@ using System;
 using ClosetApp.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ClosetApp.Infrastructure.Migrations
 {
     [DbContext(typeof(ClosetDbContext))]
-    partial class ClosetDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260607105715_AddLocalUserCredentials")]
+    partial class AddLocalUserCredentials
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "8.0.0");
@@ -115,11 +118,6 @@ namespace ClosetApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("TEXT");
 
-                    b.Property<string>("AccountName")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasDefaultValue("admin");
-
                     b.Property<string>("AvatarPhotoPath")
                         .HasColumnType("TEXT");
 
@@ -168,9 +166,6 @@ namespace ClosetApp.Infrastructure.Migrations
                         .HasColumnType("TEXT");
 
                     b.HasKey("Id");
-
-                    b.HasIndex("AccountName")
-                        .HasDatabaseName("IX_LocalUsers_AccountName");
 
                     b.HasIndex("Role");
 

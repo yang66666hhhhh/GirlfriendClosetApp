@@ -2,7 +2,6 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
-using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
@@ -84,13 +83,7 @@ public partial class AiImageGenerationSettingsPanel : UserControl
 
     private void OpenProfile_Click(object sender, RoutedEventArgs e)
     {
-        EditorModal.Show(new PersonalProfileEditorPanel(), async result =>
-        {
-            if (result.Type == EditorResultType.Saved)
-            {
-                await _viewModel.RefreshAiGenerationSettingsAsync();
-            }
-        });
+        ModalService.Instance.Show(new PersonalProfileEditorPanel());
     }
 
     public async Task RefreshAsync()

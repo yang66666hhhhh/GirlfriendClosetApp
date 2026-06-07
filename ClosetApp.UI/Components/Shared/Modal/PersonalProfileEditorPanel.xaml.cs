@@ -206,7 +206,8 @@ public partial class PersonalProfileEditorPanel : UserControl, IEditorPanel<Pers
                 _removeFullBodyPhoto));
 
             ToastService.Instance.ShowSuccess("个人档案已保存");
-            EditorCompleted?.Invoke(this, new EditorResult<PersonalProfileDto>(EditorResultType.Saved, saved));
+            _currentProfile = saved;
+            BindProfile(saved);
         }
         catch (Exception ex)
         {
@@ -217,6 +218,7 @@ public partial class PersonalProfileEditorPanel : UserControl, IEditorPanel<Pers
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         EditorCompleted?.Invoke(this, new EditorResult<PersonalProfileDto>(EditorResultType.Cancelled));
+        Services.ModalService.Instance.Hide();
     }
 
     private static string? SelectImageFile(string title)

@@ -1,4 +1,5 @@
 using ClosetApp.Infrastructure.Data;
+using ClosetApp.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 
@@ -41,6 +42,7 @@ public sealed class AppStartupCoordinator
 
             Log.Information("Initializing database migration chain in background");
             await ClosetDatabaseInitializer.InitializeAsync(dbContext, CancellationToken.None).ConfigureAwait(false);
+            await scope.ServiceProvider.GetRequiredService<ILocalUserService>().EnsureInitializedAsync().ConfigureAwait(false);
             Log.Information("Background startup initialization completed");
             _startupReadyTcs.TrySetResult();
         }

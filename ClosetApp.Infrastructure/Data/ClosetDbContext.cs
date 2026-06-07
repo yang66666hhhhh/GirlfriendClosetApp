@@ -1,11 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using ClosetApp.Domain.Entities;
-using ClosetApp.Domain.Enums;
 
 namespace ClosetApp.Infrastructure.Data;
 
 public class ClosetDbContext : DbContext
 {
+    public DbSet<LocalUser> LocalUsers => Set<LocalUser>();
     public DbSet<Clothing> Clothes => Set<Clothing>();
     public DbSet<Outfit> Outfits => Set<Outfit>();
     public DbSet<Tag> Tags => Set<Tag>();
@@ -42,6 +42,63 @@ public class ClosetDbContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<LocalUser>()
+            .Property(user => user.Role)
+            .HasConversion<string>();
+
+        modelBuilder.Entity<LocalUser>()
+            .Property(user => user.AccountName)
+            .HasDefaultValue("admin");
+
+        modelBuilder.Entity<LocalUser>()
+            .HasIndex(user => user.AccountName)
+            .HasDatabaseName("IX_LocalUsers_AccountName");
+
+        modelBuilder.Entity<LocalUser>()
+            .HasIndex(user => user.Role);
+
+        modelBuilder.Entity<Clothing>()
+            .HasOne(clothing => clothing.LocalUser)
+            .WithMany(user => user.Clothes)
+            .HasForeignKey(clothing => clothing.LocalUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Outfit>()
+            .HasOne(outfit => outfit.LocalUser)
+            .WithMany(user => user.Outfits)
+            .HasForeignKey(outfit => outfit.LocalUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Tag>()
+            .HasOne(tag => tag.LocalUser)
+            .WithMany(user => user.Tags)
+            .HasForeignKey(tag => tag.LocalUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<Favorite>()
+            .HasOne(favorite => favorite.LocalUser)
+            .WithMany(user => user.Favorites)
+            .HasForeignKey(favorite => favorite.LocalUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<OutfitWornRecord>()
+            .HasOne(record => record.LocalUser)
+            .WithMany(user => user.WornRecords)
+            .HasForeignKey(record => record.LocalUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<PersonalProfile>()
+            .HasOne(profile => profile.LocalUser)
+            .WithMany(user => user.PersonalProfiles)
+            .HasForeignKey(profile => profile.LocalUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<OutfitGeneratedImage>()
+            .HasOne(image => image.LocalUser)
+            .WithMany(user => user.OutfitGeneratedImages)
+            .HasForeignKey(image => image.LocalUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+
         modelBuilder.Entity<OutfitClothing>()
             .HasKey(oc => new { oc.OutfitId, oc.ClothingId });
 
@@ -85,49 +142,5 @@ public class ClosetDbContext : DbContext
             .HasForeignKey(image => image.OutfitId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        SeedData(modelBuilder);
-    }
-
-    private void SeedData(ModelBuilder modelBuilder)
-    {
-        var seededAt = new DateTime(2026, 5, 1, 0, 0, 0, DateTimeKind.Utc);
-        var styleTags = new[] {
-            ("韩系", "#D8B7A3"),
-            ("极简", "#C8C2B8"),
-            ("通勤", "#B7C4B2"),
-            ("甜妹", "#E7C7C0"),
-            ("美式", "#C89B7B"),
-            ("复古", "#C4A98F"),
-            ("Clean Fit", "#A8B5A0"),
-            ("Y2K", "#D4A5C9")
-        };
-        var sceneTags = new[] {
-            ("约会", "#E88D8D"),
-            ("上班", "#8BA8D9"),
-            ("出游", "#A8D4A8"),
-            ("派对", "#D4A5E8")
-        };
-
-        int id = 1;
-        foreach (var (name, color) in styleTags)
-            modelBuilder.Entity<Tag>().HasData(new Tag
-            {
-                Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"),
-                Name = name,
-                Color = color,
-                Category = TagCategory.Style,
-                CreatedAt = seededAt,
-                UpdatedAt = seededAt
-            });
-        foreach (var (name, color) in sceneTags)
-            modelBuilder.Entity<Tag>().HasData(new Tag
-            {
-                Id = Guid.Parse($"00000000-0000-0000-0000-{id++:D12}"),
-                Name = name,
-                Color = color,
-                Category = TagCategory.Scene,
-                CreatedAt = seededAt,
-                UpdatedAt = seededAt
-            });
     }
 }

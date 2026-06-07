@@ -1,6 +1,8 @@
 using System.IO;
 using System.Text.Json;
+using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
+using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Logic.Services;
 
 namespace ClosetApp.UI.Services;
@@ -29,10 +31,12 @@ public sealed class OutfitDisplayPreferencesService
 
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private readonly string _filePath;
+    private readonly UserScopedSettingsPath _settingsPath;
 
-    public OutfitDisplayPreferencesService(string? filePath = null)
+    public OutfitDisplayPreferencesService(string? filePath = null, ICurrentUserContext? currentUserContext = null)
     {
         _filePath = filePath ?? Path.Combine(AppPaths.BaseDir, "outfit-display-settings.json");
+        _settingsPath = new UserScopedSettingsPath(currentUserContext, _filePath);
     }
 
     public event EventHandler<OutfitDisplayPreferencesChangedEventArgs>? PreferenceChanged;
@@ -42,10 +46,12 @@ public sealed class OutfitDisplayPreferencesService
         await Gate.WaitAsync().ConfigureAwait(false);
         try
         {
-            if (!File.Exists(_filePath))
+            await _settingsPath.MigrateGlobalFileIfNeededAsync().ConfigureAwait(false);
+            var path = await _settingsPath.ResolveAsync().ConfigureAwait(false);
+            if (!File.Exists(path))
                 return new OutfitDisplayPreferences();
 
-            await using var stream = File.OpenRead(_filePath);
+            await using var stream = File.OpenRead(path);
             var preferences = await JsonSerializer.DeserializeAsync<OutfitDisplayPreferences>(stream, JsonOptions).ConfigureAwait(false);
             return Normalize(preferences);
         }
@@ -66,11 +72,12 @@ public sealed class OutfitDisplayPreferencesService
         await Gate.WaitAsync().ConfigureAwait(false);
         try
         {
-            var directory = Path.GetDirectoryName(_filePath);
+            var path = await _settingsPath.ResolveAsync().ConfigureAwait(false);
+            var directory = Path.GetDirectoryName(path);
             if (!string.IsNullOrWhiteSpace(directory))
                 Directory.CreateDirectory(directory);
 
-            await using var stream = File.Create(_filePath);
+            await using var stream = File.Create(path);
             await JsonSerializer.SerializeAsync(stream, normalized, JsonOptions).ConfigureAwait(false);
         }
         finally

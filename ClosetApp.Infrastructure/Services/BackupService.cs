@@ -249,6 +249,10 @@ public sealed class BackupService : IBackupService
 
         return new ClosetBackupDocument
         {
+            LocalUsers = await context.LocalUsers
+                .AsNoTracking()
+                .OrderBy(user => user.CreatedAt)
+                .ToListAsync(),
             Tags = await context.Tags
                 .AsNoTracking()
                 .OrderBy(t => t.Name)
@@ -270,6 +274,7 @@ public sealed class BackupService : IBackupService
                     Notes = c.Notes,
                     Season = c.Season,
                     FavoriteLevel = c.FavoriteLevel,
+                    LocalUserId = c.LocalUserId,
                     TagIds = c.ClothingTags.Select(ct => ct.TagId).ToList()
                 })
                 .OrderBy(c => c.Name)
@@ -289,6 +294,8 @@ public sealed class BackupService : IBackupService
                     Notes = o.Notes,
                     WornDate = o.WornDate,
                     WearCount = o.WearCount,
+                    OriginalClothingCount = o.OriginalClothingCount,
+                    LocalUserId = o.LocalUserId,
                     ClothingIds = o.OutfitClothes.Select(oc => oc.ClothingId).ToList()
                 })
                 .OrderBy(o => o.Name)
@@ -305,6 +312,10 @@ public sealed class BackupService : IBackupService
                 .AsNoTracking()
                 .OrderBy(profile => profile.CreatedAt)
                 .FirstOrDefaultAsync(),
+            PersonalProfiles = await context.PersonalProfiles
+                .AsNoTracking()
+                .OrderBy(profile => profile.CreatedAt)
+                .ToListAsync(),
             OutfitGeneratedImages = await context.OutfitGeneratedImages
                 .AsNoTracking()
                 .OrderBy(image => image.CreatedAt)
@@ -386,26 +397,28 @@ public sealed class BackupService : IBackupService
                 wornRecord.ClothingDetailsSnapshot = JsonSerializer.Serialize(snapshotClothes, JsonOptions);
         }
 
-        if (document.PersonalProfile != null)
+        foreach (var profile in document.PersonalProfiles)
         {
             UpdateAiImagePath(
-                document.PersonalProfile.AvatarPhotoPath,
-                document.PersonalProfile.Id,
+                profile.AvatarPhotoPath,
+                profile.Id,
                 packagedBySource,
                 usedNames,
                 packagedImages,
-                imagePath => document.PersonalProfile.AvatarPhotoPath = imagePath,
+                imagePath => profile.AvatarPhotoPath = imagePath,
                 resolvePath: ResolveAiProfileImageSourcePath);
 
             UpdateAiImagePath(
-                document.PersonalProfile.FullBodyPhotoPath,
-                document.PersonalProfile.Id,
+                profile.FullBodyPhotoPath,
+                profile.Id,
                 packagedBySource,
                 usedNames,
                 packagedImages,
-                imagePath => document.PersonalProfile.FullBodyPhotoPath = imagePath,
+                imagePath => profile.FullBodyPhotoPath = imagePath,
                 resolvePath: ResolveAiProfileImageSourcePath);
         }
+
+        document.PersonalProfile = document.PersonalProfiles.OrderBy(profile => profile.CreatedAt).FirstOrDefault();
 
         foreach (var generatedImage in document.OutfitGeneratedImages)
         {
@@ -547,6 +560,11 @@ public sealed class BackupService : IBackupService
 
         await ClearExistingDataAsync(context);
 
+        var defaultUserId = EnsureBackupUsers(document);
+        context.LocalUsers.AddRange(document.LocalUsers);
+
+        foreach (var tag in document.Tags)
+            tag.LocalUserId ??= defaultUserId;
         context.Tags.AddRange(document.Tags);
 
         var clothes = document.Clothes.Select(item =>
@@ -564,7 +582,8 @@ public sealed class BackupService : IBackupService
                 Brand = item.Brand,
                 Notes = item.Notes,
                 Season = item.Season,
-                FavoriteLevel = item.FavoriteLevel
+                FavoriteLevel = item.FavoriteLevel,
+                LocalUserId = item.LocalUserId ?? defaultUserId
             };
 
             clothing.ClothingTags = item.TagIds
@@ -588,7 +607,8 @@ public sealed class BackupService : IBackupService
                 Notes = item.Notes,
                 WornDate = item.WornDate,
                 WearCount = item.WearCount,
-                OriginalClothingCount = item.OriginalClothingCount
+                OriginalClothingCount = item.OriginalClothingCount,
+                LocalUserId = item.LocalUserId ?? defaultUserId
             };
 
             outfit.OutfitClothes = item.ClothingIds
@@ -598,14 +618,57 @@ public sealed class BackupService : IBackupService
         }).ToList();
         context.Outfits.AddRange(outfits);
 
+        foreach (var record in document.WornRecords)
+            record.LocalUserId ??= defaultUserId;
         context.OutfitWornRecords.AddRange(document.WornRecords);
+
+        foreach (var favorite in document.Favorites)
+            favorite.LocalUserId ??= defaultUserId;
         context.Favorites.AddRange(document.Favorites);
-        if (document.PersonalProfile != null)
-            context.PersonalProfiles.Add(document.PersonalProfile);
+
+        if (document.PersonalProfiles.Count == 0 && document.PersonalProfile != null)
+            document.PersonalProfiles.Add(document.PersonalProfile);
+
+        foreach (var profile in document.PersonalProfiles)
+            profile.LocalUserId ??= defaultUserId;
+        context.PersonalProfiles.AddRange(document.PersonalProfiles);
+
+        foreach (var image in document.OutfitGeneratedImages)
+            image.LocalUserId ??= defaultUserId;
         context.OutfitGeneratedImages.AddRange(document.OutfitGeneratedImages);
 
         await context.SaveChangesAsync();
         await transaction.CommitAsync();
+    }
+
+    private static Guid EnsureBackupUsers(ClosetBackupDocument document)
+    {
+        if (document.LocalUsers.Count == 0)
+        {
+            document.LocalUsers.Add(new LocalUser
+            {
+                Id = Guid.NewGuid(),
+                DisplayName = "私人衣橱",
+                Role = Domain.Enums.LocalUserRole.SuperAdmin,
+                IsActive = true,
+                CreatedAt = DateTime.Now,
+                UpdatedAt = DateTime.Now
+            });
+        }
+
+        var superAdmin = document.LocalUsers
+            .Where(user => user.Role == Domain.Enums.LocalUserRole.SuperAdmin)
+            .OrderBy(user => user.CreatedAt)
+            .FirstOrDefault();
+
+        if (superAdmin == null)
+        {
+            superAdmin = document.LocalUsers.OrderBy(user => user.CreatedAt).First();
+            superAdmin.Role = Domain.Enums.LocalUserRole.SuperAdmin;
+            superAdmin.IsActive = true;
+        }
+
+        return superAdmin.Id;
     }
 
     private static bool IsZipBackup(string filePath)
@@ -903,10 +966,13 @@ public sealed class BackupService : IBackupService
     {
         var references = new List<AiImageReference>();
 
-        if (document.PersonalProfile != null)
+        if (document.PersonalProfiles.Count == 0 && document.PersonalProfile != null)
+            document.PersonalProfiles.Add(document.PersonalProfile);
+
+        foreach (var profile in document.PersonalProfiles)
         {
-            AddAiReference(references, document.PersonalProfile.AvatarPhotoPath, "profile", fileName => document.PersonalProfile.AvatarPhotoPath = fileName);
-            AddAiReference(references, document.PersonalProfile.FullBodyPhotoPath, "profile", fileName => document.PersonalProfile.FullBodyPhotoPath = fileName);
+            AddAiReference(references, profile.AvatarPhotoPath, "profile", fileName => profile.AvatarPhotoPath = fileName);
+            AddAiReference(references, profile.FullBodyPhotoPath, "profile", fileName => profile.FullBodyPhotoPath = fileName);
         }
 
         foreach (var image in document.OutfitGeneratedImages)
@@ -1041,6 +1107,7 @@ public sealed class BackupService : IBackupService
         context.Outfits.RemoveRange(await context.Outfits.ToListAsync());
         context.Clothes.RemoveRange(await context.Clothes.ToListAsync());
         context.Tags.RemoveRange(await context.Tags.ToListAsync());
+        context.LocalUsers.RemoveRange(await context.LocalUsers.ToListAsync());
         await context.SaveChangesAsync();
     }
 }
