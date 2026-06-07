@@ -71,7 +71,7 @@ ClosetApp.slnx
 │   │   ├── Clothing/          # PremiumClothingCard, ClothingEditorPanel, WardrobeSummaryPanel, WardrobeFilterPanel, WardrobeCollectionHeaderPanel 等 WPF 控件
 │   │   ├── Tags/              # TagEditorPanel, TagsOverviewPanel, TagsFilterPanel, TagSectionPanel, TagSelectionSection, SelectableTag
 │   │   ├── Settings/          # StorageLocationsSettingsPanel, LogMaintenanceSettingsPanel, ImageMaintenanceSettingsPanel, WeatherPreferencesSettingsPanel, AppearanceSettingsPanel, BackupSettingsPanel, AiImageGenerationSettingsPanel 等设置页稳定区块
-│   │   └── Shared/            # EnumRadioGroup, ThemeCard, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
+│   │   └── Shared/            # EnumRadioGroup, ThemeCard, LocalUserAvatar, FileSizeFormatter, AnimationHelper, ThemeColorHelper, Modal, Form, States, Editor
 │   ├── Converters/            # ImagePathConverter, BoolToFavoriteColorConverter...
 │   ├── ViewModels/            # WardrobeViewModel, OutfitsViewModel, SettingsViewModel, TagsViewModel
 │   ├── Services/              # ThemeService, ModalService, ToastService
@@ -317,6 +317,7 @@ ModalService (Singleton)
 |------|------|
 | `EnumRadioGroup<TEnum>` | 泛型 RadioButton 选择组 |
 | `ThemeCard` | 主题选择卡片自定义控件 |
+| `LocalUserAvatar` | 本地用户头像控件，统一侧边栏、登录页和用户管理弹窗的头像展示 |
 | `FileSizeFormatter` | 文件大小格式化（B/KB/MB/GB） |
 | `AnimationHelper` | Shake 抖动动画 |
 | `ThemeColorHelper` | 主题感知颜色解析 |

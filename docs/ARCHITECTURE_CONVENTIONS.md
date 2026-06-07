@@ -186,6 +186,7 @@
 - 新 UI 优先复用 token，不要硬编码颜色、阴影、圆角和间距
 - 共享控件优先放 `Components/Shared`
 - 自定义控件优先用 DependencyProperty，不要用大量命令式视觉同步
+- 本地用户头像统一使用 `Components/Shared/LocalUserAvatar`；侧边栏、登录页、用户管理弹窗不要各自手写头像壳。
 
 ## 13. 命名空间安全
 

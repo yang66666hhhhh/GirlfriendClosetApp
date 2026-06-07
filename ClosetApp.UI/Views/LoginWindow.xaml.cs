@@ -195,6 +195,7 @@ public partial class LoginWindow : Window
         public Guid Id => User.Id;
         public string AccountName => User.AccountName;
         public string DisplayName => User.DisplayName;
+        public string? AvatarPath => User.AvatarPhotoPath;
         public string AvatarInitial => string.IsNullOrWhiteSpace(DisplayName) ? "衣" : DisplayName.Trim()[0].ToString();
         public string SummaryText => User.Role == LocalUserRole.SuperAdmin
             ? "超级管理员"

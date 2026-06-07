@@ -19,6 +19,24 @@ public class LocalUserManagementDialogLayoutTests
         Assert.True(IsInContentRow(element!), $"{elementName} {attributeValue} is assigned to a spacer Grid.Row.");
     }
 
+    [Fact]
+    public void UserSurfaces_UseSharedLocalUserAvatarControl()
+    {
+        Assert.True(
+            File.Exists(FindProjectFile("ClosetApp.UI/Components/Shared/LocalUserAvatar.xaml")),
+            "The local user avatar should be a shared themed control.");
+
+        Assert.Contains(
+            "shared:LocalUserAvatar",
+            File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml")));
+        Assert.Contains(
+            "shared:LocalUserAvatar",
+            File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml")));
+        Assert.Contains(
+            "shared:LocalUserAvatar",
+            File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml")));
+    }
+
     private static XElement? FindElement(XDocument document, string elementName, string attributeName, string attributeValue)
     {
         var xamlNamespace = XNamespace.Get("http://schemas.microsoft.com/winfx/2006/xaml");

@@ -154,6 +154,7 @@ public partial class LocalUserManagementDialog : UserControl
         public Guid Id => User.Id;
         public string AccountName => User.AccountName;
         public string DisplayName => User.DisplayName;
+        public string? AvatarPath => User.AvatarPhotoPath;
         public string EditableAccountName { get; set; }
         public string EditableName { get; set; }
         public bool IsCurrent { get; }

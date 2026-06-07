@@ -1,6 +1,7 @@
 <UserControl x:Class="ClosetApp.UI.Views.NavigationSidebar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              Width="220">
     <UserControl.Resources>
@@ -88,6 +89,21 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="ProfileMenuHeaderItemStyle" TargetType="MenuItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <ContentPresenter ContentSource="Header"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Center"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <!-- Main Sidebar Container -->
@@ -106,24 +122,30 @@
                 <Button x:Name="BtnProfile"
                         Background="Transparent"
                         BorderThickness="0"
-                        Padding="8"
-                        MinHeight="52"
+                        Padding="10"
+                        MinHeight="58"
                         HorizontalAlignment="Stretch"
-                        ToolTip="切换用户或编辑当前用户档案"
+                        ToolTip="账号菜单：编辑档案、切换用户或退出登录"
                         Click="Profile_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="ProfileShell"
-                                    Background="Transparent"
-                                    CornerRadius="14"
+                                    Background="{DynamicResource SurfaceCardBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="18"
                                     Padding="{TemplateBinding Padding}"
-                                    HorizontalAlignment="Stretch"
+                                    HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
                                     VerticalAlignment="Center">
                                 <ContentPresenter HorizontalAlignment="Stretch"
                                                   VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
+                                    <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                                    <Setter TargetName="ProfileShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                                 </Trigger>
                             </ControlTemplate.Triggers>
@@ -131,19 +153,7 @@
                     </Button.Template>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="ProfileMenu"
-                                     Style="{StaticResource WardrobeCard.MoreMenu}">
-                            <MenuItem Header="编辑当前档案"
-                                      Style="{StaticResource WardrobeCard.MoreMenuItem}"
-                                      Click="EditCurrentProfile_Click"/>
-                            <Separator/>
-                            <MenuItem x:Name="MenuManageUsers"
-                                      Header="用户管理"
-                                      Style="{StaticResource WardrobeCard.MoreMenuItem}"
-                                      Click="ManageUsers_Click"/>
-                            <MenuItem Header="退出登录"
-                                      Style="{StaticResource WardrobeCard.MoreMenuItem}"
-                                      Click="Logout_Click"/>
-                        </ContextMenu>
+                                     Style="{StaticResource WardrobeCard.MoreMenu}"/>
                     </Button.ContextMenu>
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>
@@ -151,14 +161,9 @@
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <Grid Width="36" Height="36" HorizontalAlignment="Center" VerticalAlignment="Center">
-                            <Ellipse Fill="{DynamicResource PrimaryLightBrush}"/>
-                            <Ellipse x:Name="AvatarPhotoFill"
-                                     Width="30"
-                                     Height="30"
-                                     HorizontalAlignment="Center"
-                                     VerticalAlignment="Center"/>
-                        </Grid>
+                        <shared:LocalUserAvatar x:Name="CurrentUserAvatar"
+                                                Width="42"
+                                                Height="42"/>
                         <StackPanel x:Name="ProfileTextPanel"
                                     Grid.Column="1"
                                     Margin="12,0,0,0"
@@ -170,7 +175,7 @@
                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                        TextTrimming="CharacterEllipsis"/>
                             <TextBlock x:Name="TxtCurrentUserRole"
-                                       Text="点击切换用户"
+                                       Text="账号菜单"
                                        FontSize="11"
                                        Foreground="{DynamicResource TextPlaceholderBrush}"
                                        Margin="0,2,0,0"
@@ -178,11 +183,11 @@
                         </StackPanel>
                         <TextBlock x:Name="ProfileChevron"
                                    Grid.Column="2"
-                                   Text="⌄"
-                                   FontSize="13"
+                                   Text="›"
+                                   FontSize="16"
                                    Foreground="{DynamicResource TextPlaceholderBrush}"
                                    VerticalAlignment="Center"
-                                   Margin="6,0,0,0"/>
+                                   Margin="8,0,0,0"/>
                     </Grid>
                 </Button>
                 <TextBlock x:Name="TxtClothingCount"

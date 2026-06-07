@@ -1,13 +1,10 @@
-using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using System.Windows.Media.Animation;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.Infrastructure;
 using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Components.Shared.Editor;
 using ClosetApp.UI.Components.Shared.Modal;
@@ -45,8 +42,9 @@ public partial class NavigationSidebar : UserControl
         _currentUser = await _localUserService.GetCurrentAsync();
         TxtCurrentUserName.Text = _currentUser.DisplayName;
         TxtCurrentUserRole.Text = _currentUser.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "本地用户";
-        MenuManageUsers.Visibility = _currentUser.Role == LocalUserRole.SuperAdmin ? Visibility.Visible : Visibility.Collapsed;
-        ApplyAvatar(_currentUser.AvatarPhotoPath);
+        CurrentUserAvatar.AvatarPath = _currentUser.AvatarPhotoPath;
+        CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
+        CurrentUserAvatar.IsCurrent = true;
         await RebuildUserMenuAsync();
     }
 
@@ -137,15 +135,38 @@ public partial class NavigationSidebar : UserControl
 
     private async Task RebuildUserMenuAsync()
     {
-        while (ProfileMenu.Items.Count > 4)
-            ProfileMenu.Items.RemoveAt(4);
+        while (ProfileMenu.Items.Count > 0)
+            ProfileMenu.Items.RemoveAt(0);
+
+        if (_currentUser != null)
+        {
+            ProfileMenu.Items.Add(BuildCurrentUserMenuHeader(_currentUser));
+            ProfileMenu.Items.Add(new Separator());
+        }
+
+        ProfileMenu.Items.Add(new MenuItem
+        {
+            Header = "编辑当前档案",
+            Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
+        });
+        ((MenuItem)ProfileMenu.Items[^1]).Click += EditCurrentProfile_Click;
+
+        if (_currentUser?.Role == LocalUserRole.SuperAdmin)
+        {
+            ProfileMenu.Items.Add(new MenuItem
+            {
+                Header = "用户管理",
+                Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
+            });
+            ((MenuItem)ProfileMenu.Items[^1]).Click += ManageUsers_Click;
+        }
 
         ProfileMenu.Items.Add(new Separator());
         foreach (var user in await _localUserService.GetAllAsync())
         {
             var item = new MenuItem
             {
-                Header = user.Id == _currentUser?.Id ? $"{user.DisplayName} ✓" : user.DisplayName,
+                Header = BuildUserSwitchMenuHeader(user, user.Id == _currentUser?.Id),
                 Tag = user.Id,
                 IsEnabled = user.Id != _currentUser?.Id,
                 Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
@@ -153,6 +174,14 @@ public partial class NavigationSidebar : UserControl
             item.Click += SwitchUser_Click;
             ProfileMenu.Items.Add(item);
         }
+
+        ProfileMenu.Items.Add(new Separator());
+        ProfileMenu.Items.Add(new MenuItem
+        {
+            Header = "退出登录",
+            Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
+        });
+        ((MenuItem)ProfileMenu.Items[^1]).Click += Logout_Click;
     }
 
     private void Profile_Click(object sender, RoutedEventArgs e)
@@ -200,34 +229,125 @@ public partial class NavigationSidebar : UserControl
         Window.GetWindow(this)?.Close();
     }
 
-    private void ApplyAvatar(string? avatarPath)
+    private FrameworkElement BuildCurrentUserMenuHeader(LocalUser user)
     {
-        var fullPath = string.IsNullOrWhiteSpace(avatarPath)
-            ? null
-            : Path.Combine(AppPaths.AiProfileDir, avatarPath);
-
-        var bitmap = string.IsNullOrWhiteSpace(fullPath) || !File.Exists(fullPath)
-            ? LoadAvatarBitmap(new Uri("pack://application:,,,/ClosetApp.UI;component/Assets/Icons/app-avatar.png"))
-            : LoadAvatarBitmap(new Uri(fullPath));
-
-        AvatarPhotoFill.Fill = new ImageBrush(bitmap)
+        var avatar = new LocalUserAvatar
         {
-            Stretch = Stretch.UniformToFill,
-            AlignmentX = AlignmentX.Center,
-            AlignmentY = AlignmentY.Center
+            Width = 46,
+            Height = 46,
+            AvatarPath = user.AvatarPhotoPath,
+            Initial = BuildAvatarInitial(user.DisplayName),
+            IsCurrent = true
+        };
+
+        var name = new TextBlock
+        {
+            Text = user.DisplayName,
+            FontSize = 14,
+            FontWeight = FontWeights.SemiBold,
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        name.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
+
+        var account = new TextBlock
+        {
+            Text = $"@{user.AccountName} · {(user.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "本地用户")}",
+            Margin = new Thickness(0, 4, 0, 0),
+            FontSize = 11,
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        account.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+
+        var text = new StackPanel
+        {
+            Margin = new Thickness(12, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            MaxWidth = 180
+        };
+        text.Children.Add(name);
+        text.Children.Add(account);
+
+        var grid = new Grid();
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        Grid.SetColumn(text, 1);
+        grid.Children.Add(avatar);
+        grid.Children.Add(text);
+
+        var shell = new Border
+        {
+            Margin = new Thickness(2, 2, 2, 6),
+            Padding = new Thickness(10),
+            CornerRadius = new CornerRadius(12),
+            Child = grid,
+            IsHitTestVisible = false,
+            Focusable = false
+        };
+        shell.MinWidth = 220;
+        shell.SetResourceReference(Border.BackgroundProperty, "SurfaceSectionBrush");
+        shell.SetResourceReference(Border.BorderBrushProperty, "BorderLightBrush");
+        shell.BorderThickness = new Thickness(1);
+        return new MenuItem
+        {
+            Header = shell,
+            IsEnabled = false,
+            Style = (Style)FindResource("ProfileMenuHeaderItemStyle")
         };
     }
 
-    private static BitmapImage LoadAvatarBitmap(Uri uri)
+    private FrameworkElement BuildUserSwitchMenuHeader(LocalUser user, bool isCurrent)
     {
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.UriSource = uri;
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.DecodePixelWidth = 96;
-        bitmap.EndInit();
-        bitmap.Freeze();
-        return bitmap;
+        var avatar = new LocalUserAvatar
+        {
+            Width = 30,
+            Height = 30,
+            AvatarPath = user.AvatarPhotoPath,
+            Initial = BuildAvatarInitial(user.DisplayName),
+            IsCurrent = isCurrent,
+            ShowStatus = true
+        };
+
+        var title = new TextBlock
+        {
+            Text = user.DisplayName,
+            FontSize = 12,
+            FontWeight = FontWeights.SemiBold,
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        title.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
+
+        var hint = new TextBlock
+        {
+            Text = isCurrent ? $"@{user.AccountName} · 当前" : $"@{user.AccountName}",
+            Margin = new Thickness(0, 2, 0, 0),
+            FontSize = 10.5,
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+        hint.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
+
+        var text = new StackPanel
+        {
+            Margin = new Thickness(9, 0, 0, 0),
+            VerticalAlignment = VerticalAlignment.Center,
+            MaxWidth = 170
+        };
+        text.Children.Add(title);
+        text.Children.Add(hint);
+
+        var grid = new Grid { MinWidth = 206 };
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        Grid.SetColumn(text, 1);
+        grid.Children.Add(avatar);
+        grid.Children.Add(text);
+        return grid;
+    }
+
+    private static string BuildAvatarInitial(string? displayName)
+    {
+        return string.IsNullOrWhiteSpace(displayName)
+            ? "衣"
+            : displayName.Trim()[0].ToString();
     }
 
     private void UpdateProfileCompactState()
@@ -237,7 +357,10 @@ public partial class NavigationSidebar : UserControl
             : new Thickness(20, 28, 20, 24);
         BtnProfile.Padding = _isCollapsed
             ? new Thickness(8)
-            : new Thickness(8);
+            : new Thickness(10);
+        BtnProfile.HorizontalContentAlignment = _isCollapsed
+            ? HorizontalAlignment.Center
+            : HorizontalAlignment.Stretch;
         ProfileTextPanel.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         ProfileChevron.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         TxtClothingCount.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
