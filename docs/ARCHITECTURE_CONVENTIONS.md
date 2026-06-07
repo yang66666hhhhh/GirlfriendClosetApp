@@ -1,6 +1,6 @@
 # Architecture Conventions
 
-> 最后更新时间：2026-06-06
+> 最后更新时间：2026-06-07
 > 本文档记录当前项目的高价值架构约束，重点是分层、页面职责、AI 工作流边界、历史快照和图片资产规则。
 
 ## 1. 分层与依赖
@@ -20,6 +20,16 @@
   - 数据库初始化由 `AppStartupCoordinator` 后台执行
   - 页面真正读取数据前统一等待 readiness
 - 不要把数据库迁移重新挪回主窗口显示前。
+- 数据库 ready 后必须初始化 `LocalUser` 工作区，确保当前用户上下文存在后再刷新页面数据。
+
+## 2.1 本地多用户工作区
+
+- `LocalUser` 是本地数据隔离边界；本地登录认证绑定到该实体，后续远端账号只绑定 `LinkedAccountId`。
+- `Clothing`、`Outfit`、`Tag`、`Favorite`、`OutfitWornRecord`、`PersonalProfile`、`OutfitGeneratedImage` 都必须带 `LocalUserId`。
+- 仓储默认按 `ICurrentUserContext` 过滤当前用户数据；新增实体要自动写入当前用户 ID。
+- 旧数据升级后归属超级管理员；超级管理员不可删除。
+- 本地登录使用 `AccountName` + 密码/PIN 凭证；账号名作为本地登录标识，密码和 PIN 必须使用 PBKDF2 + 随机 salt 存储，禁止保存明文。
+- 普通用户不能看到或打开用户管理入口；超级管理员负责创建、重置和删除普通用户。
 
 ## 3. UseCase 与服务边界
 
@@ -98,7 +108,8 @@
 
 ## 7. PersonalProfile 与设置页分区
 
-- 个人档案使用 `PersonalProfile` 单例实体，走 SQLite，不走普通 JSON 偏好。
+- 个人档案使用 `PersonalProfile`，按 `LocalUserId` 隔离，走 SQLite，不走普通 JSON 偏好。
+- 主题、天气、推荐、AI 图片生成和搭配卡片展示设置按当前本地用户隔离。
 - API Key 不明文存普通设置 JSON。
 - 设置页稳定分区组件放在 `Components/Settings`：
   - `StorageLocationsSettingsPanel`
@@ -155,7 +166,8 @@
 - ZIP 备份包含图片资产
 - JSON 备份只导核心结构化数据
 - AI 相关备份范围应包含：
-  - `PersonalProfile`
+  - `LocalUser`
+  - 每个用户的 `PersonalProfile`
   - 个人参考图
   - `OutfitGeneratedImage` 元数据
   - 生成结果图

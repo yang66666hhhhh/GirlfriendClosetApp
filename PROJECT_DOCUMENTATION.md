@@ -1,6 +1,6 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-06-06
+> 最后更新时间：2026-06-07
 > 文档目标：对齐当前代码真实状态，作为项目结构、运行机制、AI 效果图能力与维护约定的主说明文档
 
 ---
@@ -18,6 +18,7 @@ GirlfriendClosetApp 是一款运行在 Windows 上的私人数字衣橱应用。
 - 基于天气和偏好辅助每日决策
 - 为搭配生成或上传 AI 效果图
 - 在搭配列表中按“搭配优先 / 效果图优先”切换浏览重心
+- 支持本地多用户衣橱工作区，每个用户拥有独立衣柜、搭配、标签、记录、个人档案和设置，并通过本地账号 + 密码/PIN 登录
 - 让数据库、图片资产、备份恢复都可维护
 
 ---
@@ -102,6 +103,7 @@ View / Component
   - `ITagRepository`
   - `IFavoriteRepository`
   - `IOutfitWornRecordRepository`
+  - `ILocalUserRepository`
   - `IPersonalProfileRepository`
   - `IOutfitGeneratedImageRepository`
 - 业务服务：
@@ -110,6 +112,7 @@ View / Component
   - `ITagService`
   - `IOutfitRecommendationService`
   - `IPersonalProfileService`
+  - `ILocalUserService`
   - `IAiGenerationPreferencesService`
   - `IAiImageGenerationService`
   - `IImageStorageService`
@@ -151,6 +154,8 @@ View / Component
 5. 主窗口显示
 6. `AppStartupCoordinator` 在后台触发数据库初始化
 7. 各页面在真正读取数据前调用 `WaitUntilReadyAsync()`
+8. `ILocalUserService.EnsureInitializedAsync()` 创建或修复本地超级管理员，并把旧数据归属到该用户
+9. 登录窗口在数据库 ready 后显示；首次升级时若超级管理员无凭证，先设置管理员密码，再进入主窗口
 
 `AppStartupCoordinator` 位于 [`D:\03_Projects\Personal\GirlfriendClosetApp\ClosetApp.UI\Services\AppStartupCoordinator.cs`](D:/03_Projects/Personal/GirlfriendClosetApp/ClosetApp.UI/Services/AppStartupCoordinator.cs)。
 
@@ -166,9 +171,23 @@ View / Component
 
 ### 6.1 核心实体
 
+#### LocalUser
+
+本地用户工作区实体：
+
+- `DisplayName`
+- `AccountName`
+- `AvatarPhotoPath`
+- `Role`：`SuperAdmin` / `Member`
+- `IsActive`
+- `LinkedAccountId`
+
+超级管理员账号不可删除，默认登录账号为 `admin`。本地密码/PIN 使用 PBKDF2 + 随机 salt 存储；旧数据升级后仍归属超级管理员，首次启动需要设置管理员账号密码。
+
 #### Clothing
 
 - `Id`
+- `LocalUserId`
 - `Name`
 - `Type`
 - `GarmentType`
@@ -181,6 +200,7 @@ View / Component
 #### Outfit
 
 - `Id`
+- `LocalUserId`
 - `Name`
 - `Scene`
 - `Season`
@@ -195,6 +215,7 @@ View / Component
 #### Tag
 
 - `Id`
+- `LocalUserId`
 - `Name`
 - `Color`
 - `Category`
@@ -218,7 +239,7 @@ View / Component
 
 #### PersonalProfile
 
-当前为单例个人档案，主要字段：
+当前为按本地用户隔离的个人档案，主要字段：
 
 - `DisplayName`
 - `HeightCm`

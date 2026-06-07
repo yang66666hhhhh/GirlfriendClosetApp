@@ -131,13 +131,22 @@ Domain ← Application ← Infrastructure
 
 | Entity | Key Fields | Relationships |
 |--------|-----------|---------------|
-| `Clothing` | Name, Type, GarmentType, ImagePath, Color, Brand, Season, FavoriteLevel | M:N with Outfit (via OutfitClothing), M:N with Tag (via ClothingTag) |
-| `Outfit` | Name, Scene, Season, Rating, WearCount, WornDate, OriginalClothingCount | M:N with Clothing, 1:N Favorite, 1:N OutfitWornRecord |
-| `Tag` | Name, Color, Category | M:N with Clothing (via ClothingTag) |
+| `LocalUser` | AccountName, DisplayName, AvatarPhotoPath, Role, IsActive, LinkedAccountId, PasswordHash, PinHash | 本地多用户工作区根实体 |
+| `Clothing` | LocalUserId, Name, Type, GarmentType, ImagePath, Color, Brand, Season, FavoriteLevel | M:N with Outfit (via OutfitClothing), M:N with Tag (via ClothingTag) |
+| `Outfit` | LocalUserId, Name, Scene, Season, Rating, WearCount, WornDate, OriginalClothingCount | M:N with Clothing, 1:N Favorite, 1:N OutfitWornRecord |
+| `Tag` | LocalUserId, Name, Color, Category | M:N with Clothing (via ClothingTag) |
 | `Favorite` | OutfitId | FK to Outfit |
 | `OutfitWornRecord` | OutfitId(nullable), WornDate, OutfitNameSnapshot, OutfitClothingIdsSnapshot, ClothingCountSnapshot, ClothingDetailsSnapshot, IsSnapshotComplete, PreviewSnapshotPath | Optional FK to Outfit; snapshot keeps history after outfit/clothing deletion |
 
 所有实体继承 `BaseEntity`，使用 `Guid Id`（非 int）。
+
+### 6.1.1 本地多用户约定
+
+- `LocalUser` 是衣柜数据隔离边界；本地登录认证绑定到该实体，后续远端登录应绑定到 `LinkedAccountId`，不要绕过本地用户模型。
+- `Clothing`、`Outfit`、`Tag`、`Favorite`、`OutfitWornRecord`、`PersonalProfile`、`OutfitGeneratedImage` 读取必须按当前 `LocalUserId` 隔离。
+- 新增用户数据必须自动写入当前用户 ID。
+- 旧数据升级后归属超级管理员；超级管理员不可删除。
+- 本地登录使用 `AccountName` + 密码/PIN，凭证必须 PBKDF2 + 随机 salt 存储，禁止保存明文；普通用户不能看到或打开用户管理入口。
 
 ### 6.2 枚举
 

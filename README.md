@@ -2,7 +2,7 @@
 
 Windows 桌面端私人数字衣橱应用，面向个人衣物整理、搭配管理、穿着记录，以及 AI 搭配效果图生成与管理。
 
-> 最后更新：2026-06-06
+> 最后更新：2026-06-07
 > 当前运行时：`ClosetApp.UI` / `ClosetApp.Tests` 为 `net10.0-windows`，Domain / Application / Infrastructure 为 `net8.0`
 
 ## 项目定位
@@ -13,6 +13,7 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 - 组合搭配并记录穿着历史
 - 基于天气与偏好给出今日推荐
 - 为搭配生成或上传 AI 效果图
+- 支持本地多用户衣橱工作区，并使用本地账号 + 密码/PIN 登录隔离会话
 - 保障本地图片、数据库、备份与恢复的可维护性
 
 ## 当前能力
@@ -34,7 +35,7 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 
 ### AI 效果图
 
-- 个人档案：昵称、身高、外形、风格关键词、头像照、全身照、云端同意
+- 当前用户档案：昵称、身高、外形、风格关键词、头像照、全身照、云端同意
 - OpenAI 兼容接口配置：`Base URL`、模型、超时、API Key
 - 支持远端生成搭配效果图
 - 支持手动上传效果图，进入同一套历史管理链路
@@ -45,6 +46,7 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 ### 数据治理
 
 - SQLite 本地数据库
+- 本地用户隔离：衣物、搭配、标签、记录、效果图、个人档案和主要设置按用户隔离
 - 三层图片缓存：`originals / display / thumbnails`
 - AI 资产独立目录：`ai/profile`、`ai/renders/*`
 - ZIP 备份与恢复
@@ -62,10 +64,10 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 
 几个和最近迭代强相关的入口：
 
-- 左侧栏头像可点击，打开 `PersonalProfileEditorPanel`
+- 左侧栏头像可悬停提示，点击打开用户菜单，可退出登录、编辑当前档案；超级管理员可进入用户管理并为普通用户设置账号和初始密码
 - `SettingsTab` 中使用 `AiImageGenerationSettingsPanel` 管理 AI 配置
 - `OutfitCard` 只保留浏览职责
-- 搭配页支持“搭配优先 / 效果图优先”卡片展示切换，并保存为全局默认偏好
+- 搭配页支持“搭配优先 / 效果图优先”卡片展示切换，并保存为当前用户默认偏好
 - 点击搭配卡片会打开 `OutfitWorkspaceDialog`
 - `OutfitWorkspaceDialog` 直接作为效果图工作台，主视觉优先展示当前效果图
 
