@@ -45,7 +45,7 @@ public partial class NavigationSidebar : UserControl
         CurrentUserAvatar.AvatarPath = _currentUser.AvatarPhotoPath;
         CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
         CurrentUserAvatar.IsCurrent = true;
-        await RebuildUserMenuAsync();
+        RebuildUserMenu();
     }
 
     public void SetClothingCount(int count)
@@ -133,7 +133,7 @@ public partial class NavigationSidebar : UserControl
         await Dispatcher.InvokeAsync(async () => await RefreshCurrentUserAsync());
     }
 
-    private async Task RebuildUserMenuAsync()
+    private void RebuildUserMenu()
     {
         while (ProfileMenu.Items.Count > 0)
             ProfileMenu.Items.RemoveAt(0);
@@ -159,20 +159,6 @@ public partial class NavigationSidebar : UserControl
                 Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
             });
             ((MenuItem)ProfileMenu.Items[^1]).Click += ManageUsers_Click;
-        }
-
-        ProfileMenu.Items.Add(new Separator());
-        foreach (var user in await _localUserService.GetAllAsync())
-        {
-            var item = new MenuItem
-            {
-                Header = BuildUserSwitchMenuHeader(user, user.Id == _currentUser?.Id),
-                Tag = user.Id,
-                IsEnabled = user.Id != _currentUser?.Id,
-                Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
-            };
-            item.Click += SwitchUser_Click;
-            ProfileMenu.Items.Add(item);
         }
 
         ProfileMenu.Items.Add(new Separator());
@@ -208,17 +194,6 @@ public partial class NavigationSidebar : UserControl
         }
 
         ModalService.Instance.Show(new LocalUserManagementDialog());
-    }
-
-    private async void SwitchUser_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is MenuItem { Tag: Guid userId })
-        {
-            await _localAuthService.LogoutAsync();
-            if (global::System.Windows.Application.Current is App app)
-                app.ShowLoginWindow();
-            Window.GetWindow(this)?.Close();
-        }
     }
 
     private async void Logout_Click(object sender, RoutedEventArgs e)
@@ -293,54 +268,6 @@ public partial class NavigationSidebar : UserControl
             IsEnabled = false,
             Style = (Style)FindResource("ProfileMenuHeaderItemStyle")
         };
-    }
-
-    private FrameworkElement BuildUserSwitchMenuHeader(LocalUser user, bool isCurrent)
-    {
-        var avatar = new LocalUserAvatar
-        {
-            Width = 30,
-            Height = 30,
-            AvatarPath = user.AvatarPhotoPath,
-            Initial = BuildAvatarInitial(user.DisplayName),
-            IsCurrent = isCurrent,
-            ShowStatus = true
-        };
-
-        var title = new TextBlock
-        {
-            Text = user.DisplayName,
-            FontSize = 12,
-            FontWeight = FontWeights.SemiBold,
-            TextTrimming = TextTrimming.CharacterEllipsis
-        };
-        title.SetResourceReference(TextBlock.ForegroundProperty, "TextPrimaryBrush");
-
-        var hint = new TextBlock
-        {
-            Text = isCurrent ? $"@{user.AccountName} · 当前" : $"@{user.AccountName}",
-            Margin = new Thickness(0, 2, 0, 0),
-            FontSize = 10.5,
-            TextTrimming = TextTrimming.CharacterEllipsis
-        };
-        hint.SetResourceReference(TextBlock.ForegroundProperty, "TextSecondaryBrush");
-
-        var text = new StackPanel
-        {
-            Margin = new Thickness(9, 0, 0, 0),
-            VerticalAlignment = VerticalAlignment.Center,
-            MaxWidth = 170
-        };
-        text.Children.Add(title);
-        text.Children.Add(hint);
-
-        var grid = new Grid { MinWidth = 206 };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        Grid.SetColumn(text, 1);
-        grid.Children.Add(avatar);
-        grid.Children.Add(text);
-        return grid;
     }
 
     private static string BuildAvatarInitial(string? displayName)

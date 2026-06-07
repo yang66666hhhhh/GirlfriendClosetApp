@@ -1,5 +1,4 @@
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Input;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
@@ -48,29 +47,21 @@ public partial class LoginWindow : Window
         _superAdmin = users.FirstOrDefault(user => user.Role == LocalUserRole.SuperAdmin);
         _isSetupMode = _superAdmin != null && !_superAdmin.HasPasswordCredential;
 
-        var visibleUsers = _isSetupMode && _superAdmin != null
-            ? [_superAdmin]
-            : users.ToList();
-
-        UsersList.ItemsSource = visibleUsers.Select(user => new LoginUserRow(user)).ToList();
-        UsersList.SelectedIndex = 0;
-
         SetupPanel.Visibility = _isSetupMode ? Visibility.Visible : Visibility.Collapsed;
         LoginPanel.Visibility = _isSetupMode ? Visibility.Collapsed : Visibility.Visible;
-        UsersList.IsEnabled = !_isSetupMode;
         TxtModeTitle.Text = _isSetupMode ? "首次设置管理员密码" : "登录";
         TxtModeDescription.Text = _isSetupMode
             ? "旧数据已归属超级管理员。先设置本机密码，之后每次启动都需要登录。"
             : "输入账号和密码，进入对应衣柜工作区。";
         TxtSubtitle.Text = _isSetupMode
             ? "完成管理员账号密码后，再创建或管理其它本地用户。"
-            : "左侧用户只用于快速填入账号；登录仍以账号密码区分用户。";
+            : "请输入本地账号和密码。登录后如需更换用户，请先退出登录。";
         BtnSubmit.Content = _isSetupMode ? "完成设置并进入" : "登录";
         if (_isSetupMode && _superAdmin != null)
             SetupAccountBox.Text = string.IsNullOrWhiteSpace(_superAdmin.AccountName)
                 ? "admin"
                 : _superAdmin.AccountName;
-        UpdateSelectedUserText();
+        TxtSelectedUser.Text = "账号";
         (_isSetupMode ? SetupAccountBox : LoginAccountBox).Focus();
     }
 
@@ -81,16 +72,6 @@ public partial class LoginWindow : Window
 
         Submit_Click(BtnSubmit, new RoutedEventArgs());
         e.Handled = true;
-    }
-
-    private void UsersList_SelectionChanged(object sender, SelectionChangedEventArgs e)
-    {
-        UpdateSelectedUserText();
-        ClearError();
-        if (UsersList.SelectedItem is LoginUserRow row)
-            LoginAccountBox.Text = row.AccountName;
-        LoginPasswordBox.Clear();
-        LoginPinBox.Clear();
     }
 
     private async void Submit_Click(object sender, RoutedEventArgs e)
@@ -162,44 +143,15 @@ public partial class LoginWindow : Window
             global::System.Windows.Application.Current.Shutdown();
     }
 
-    private void UpdateSelectedUserText()
-    {
-        if (UsersList.SelectedItem is LoginUserRow row)
-        {
-            TxtSelectedUser.Text = $"账号 · {row.DisplayName}";
-            if (string.IsNullOrWhiteSpace(LoginAccountBox.Text))
-                LoginAccountBox.Text = row.AccountName;
-        }
-    }
-
     private void ShowError(string message)
     {
         TxtError.Text = message;
-        TxtError.Visibility = Visibility.Visible;
+        LoginErrorHost.Visibility = Visibility.Visible;
     }
 
     private void ClearError()
     {
         TxtError.Text = string.Empty;
-        TxtError.Visibility = Visibility.Collapsed;
-    }
-
-    private sealed class LoginUserRow
-    {
-        public LoginUserRow(LocalUser user)
-        {
-            User = user;
-        }
-
-        public LocalUser User { get; }
-        public Guid Id => User.Id;
-        public string AccountName => User.AccountName;
-        public string DisplayName => User.DisplayName;
-        public string? AvatarPath => User.AvatarPhotoPath;
-        public string AvatarInitial => string.IsNullOrWhiteSpace(DisplayName) ? "衣" : DisplayName.Trim()[0].ToString();
-        public string SummaryText => User.Role == LocalUserRole.SuperAdmin
-            ? "超级管理员"
-            : User.HasPasswordCredential ? "普通用户" : "普通用户 · 未设置密码";
-        public string AccountHint => $"账号 {AccountName}";
+        LoginErrorHost.Visibility = Visibility.Collapsed;
     }
 }

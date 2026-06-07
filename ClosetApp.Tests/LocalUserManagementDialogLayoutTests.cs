@@ -31,9 +31,6 @@ public class LocalUserManagementDialogLayoutTests
             File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml")));
         Assert.Contains(
             "shared:LocalUserAvatar",
-            File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml")));
-        Assert.Contains(
-            "shared:LocalUserAvatar",
             File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml")));
     }
 

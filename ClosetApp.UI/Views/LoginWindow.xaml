@@ -1,7 +1,6 @@
 <Window x:Class="ClosetApp.UI.Views.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared"
         Title="登录我的衣橱"
         Icon="../Assets/Icons/app-avatar.png"
         Width="980"
@@ -93,45 +92,11 @@
             </Setter>
         </Style>
 
-        <Style x:Key="LoginUserItem" TargetType="ListBoxItem">
-            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
-            <Setter Property="Padding" Value="0"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="ListBoxItem">
-                        <Border x:Name="Shell"
-                                Background="{DynamicResource SurfaceCardBrush}"
-                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                BorderThickness="1"
-                                CornerRadius="18"
-                                Padding="14">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="3"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <Border x:Name="SelectedRail"
-                                        Background="{DynamicResource PrimaryBrush}"
-                                        CornerRadius="2"
-                                        Opacity="0"/>
-                                <ContentPresenter Grid.Column="2"/>
-                            </Grid>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="Shell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsSelected" Value="True">
-                                <Setter TargetName="Shell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                                <Setter TargetName="Shell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter TargetName="SelectedRail" Property="Opacity" Value="1"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+        <Style x:Key="LoginInfoText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="LineHeight" Value="22"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
     </Window.Resources>
 
@@ -182,46 +147,41 @@
                                Foreground="{DynamicResource TextSecondaryBrush}"/>
                 </StackPanel>
 
-                <ListBox x:Name="UsersList"
-                         Grid.Row="1"
-                         Margin="0,28,0,0"
-                         BorderThickness="0"
-                         Background="Transparent"
-                         ItemContainerStyle="{StaticResource LoginUserItem}"
-                         SelectionChanged="UsersList_SelectionChanged">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <shared:LocalUserAvatar Width="46"
-                                                        Height="46"
-                                                        AvatarPath="{Binding AvatarPath}"
-                                                        Initial="{Binding AvatarInitial}"
-                                                        ShowStatus="False"/>
-                                <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                                    <TextBlock Text="{Binding DisplayName}"
-                                               FontSize="15"
-                                               FontWeight="SemiBold"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                    <TextBlock Text="{Binding SummaryText}"
-                                               Margin="0,4,0,0"
-                                               FontSize="11"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                    <TextBlock Text="{Binding AccountHint}"
-                                               Margin="0,3,0,0"
-                                               FontSize="11"
-                                               TextTrimming="CharacterEllipsis"
-                                               Foreground="{DynamicResource TextPlaceholderBrush}"/>
-                                </StackPanel>
-                            </Grid>
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
+                <StackPanel Grid.Row="1"
+                            Margin="0,42,0,0"
+                            VerticalAlignment="Bottom">
+                    <Border Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="18"
+                            Padding="18">
+                        <StackPanel>
+                            <TextBlock Text="账号密码登录"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="每个本地账号对应一个独立衣柜。登录后如需更换用户，请先退出登录。"
+                                       Margin="0,8,0,0"
+                                       Style="{StaticResource LoginInfoText}"/>
+                        </StackPanel>
+                    </Border>
+                    <Border Margin="0,14,0,0"
+                            Background="{DynamicResource PrimaryLightBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="18"
+                            Padding="18">
+                        <StackPanel>
+                            <TextBlock Text="数据隔离"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="衣物、搭配、标签、效果图和个人档案都只属于当前登录账号。"
+                                       Margin="0,8,0,0"
+                                       Style="{StaticResource LoginInfoText}"/>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
             </Grid>
         </Border>
 
@@ -251,10 +211,14 @@
                                Foreground="{DynamicResource TextSecondaryBrush}"/>
                 </StackPanel>
 
-                <StackPanel Grid.Row="1"
-                            MaxWidth="520"
-                            HorizontalAlignment="Stretch"
-                            VerticalAlignment="Center">
+                <ScrollViewer x:Name="LoginFormScrollViewer"
+                              Grid.Row="1"
+                              Margin="0,22,0,0"
+                              VerticalScrollBarVisibility="Auto"
+                              HorizontalScrollBarVisibility="Disabled">
+                    <StackPanel MaxWidth="520"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Top">
 
                 <StackPanel x:Name="SetupPanel" Visibility="Collapsed">
                     <TextBlock Text="管理员账号" Style="{StaticResource LoginInputLabel}"/>
@@ -303,12 +267,20 @@
                                Foreground="{DynamicResource TextPlaceholderBrush}"/>
                 </StackPanel>
 
-                <TextBlock x:Name="TxtError"
-                           Margin="0,16,0,0"
-                           FontSize="12"
-                           Foreground="{DynamicResource DangerBrush}"
-                           TextWrapping="Wrap"
-                           Visibility="Collapsed"/>
+                <Border x:Name="LoginErrorHost"
+                        Margin="0,16,0,0"
+                        Padding="12,10"
+                        Background="#FFFFF1F2"
+                        BorderBrush="{DynamicResource DangerBrush}"
+                        BorderThickness="1"
+                        CornerRadius="12"
+                        Visibility="Collapsed">
+                    <TextBlock x:Name="TxtError"
+                               FontSize="12"
+                               LineHeight="19"
+                               Foreground="{DynamicResource DangerBrush}"
+                               TextWrapping="Wrap"/>
+                </Border>
 
                 <Button x:Name="BtnSubmit"
                         Content="登录"
@@ -317,7 +289,8 @@
                         HorizontalContentAlignment="Center"
                         Style="{StaticResource PrimaryButton}"
                         Click="Submit_Click"/>
-            </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
             </Grid>
         </Border>
     </Grid>

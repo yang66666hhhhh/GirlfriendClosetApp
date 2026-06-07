@@ -364,8 +364,6 @@
                                     <ColumnDefinition Width="Auto"/>
                                     <ColumnDefinition Width="10"/>
                                     <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="10"/>
-                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
                                 <Button Content="删除用户"
                                         Grid.Column="0"
@@ -378,11 +376,6 @@
                                         IsEnabled="{Binding HasSelection}"
                                         Click="SaveUser_Click"/>
                                 <Button Grid.Column="4"
-                                        Content="重新登录"
-                                        Style="{StaticResource UserManager.PrimaryButton}"
-                                        IsEnabled="{Binding CanSwitch}"
-                                        Click="SwitchUser_Click"/>
-                                <Button Grid.Column="6"
                                         Content="重置凭证"
                                         Style="{StaticResource UserManager.SecondaryButton}"
                                         IsEnabled="{Binding CanResetCredential}"

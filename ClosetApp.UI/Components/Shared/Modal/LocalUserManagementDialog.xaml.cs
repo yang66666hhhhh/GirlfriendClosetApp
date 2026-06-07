@@ -74,18 +74,6 @@ public partial class LocalUserManagementDialog : UserControl
         }
     }
 
-    private async void SwitchUser_Click(object sender, RoutedEventArgs e)
-    {
-        if ((sender as FrameworkElement)?.DataContext is not LocalUserRow row || !row.CanSwitch)
-            return;
-
-        await _localAuthService.LogoutAsync();
-        ModalService.Instance.Hide();
-        if (global::System.Windows.Application.Current is App app)
-            app.ShowLoginWindow();
-        Window.GetWindow(this)?.Close();
-    }
-
     private async void SaveUser_Click(object sender, RoutedEventArgs e)
     {
         if ((sender as FrameworkElement)?.DataContext is not LocalUserRow row)
@@ -159,7 +147,6 @@ public partial class LocalUserManagementDialog : UserControl
         public string EditableName { get; set; }
         public bool IsCurrent { get; }
         public bool HasSelection => true;
-        public bool CanSwitch => !IsCurrent;
         public bool CanDelete => User.Role != LocalUserRole.SuperAdmin;
         public bool CanResetCredential => IsCurrent || User.Role != LocalUserRole.SuperAdmin;
         public string AvatarInitial => string.IsNullOrWhiteSpace(DisplayName) ? "衣" : DisplayName.Trim()[0].ToString();
