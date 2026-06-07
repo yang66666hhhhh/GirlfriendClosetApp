@@ -4,9 +4,9 @@
              xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared">
     <UserControl.Resources>
         <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
-            <Setter Property="Margin" Value="0,0,0,18"/>
-            <Setter Property="Padding" Value="24,22"/>
-            <Setter Property="CornerRadius" Value="24"/>
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="Padding" Value="22,18"/>
+            <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -14,10 +14,10 @@
         </Style>
 
         <Style x:Key="SettingsEyebrowBadge" TargetType="Border">
-            <Setter Property="CornerRadius" Value="11"/>
-            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="CornerRadius" Value="9"/>
+            <Setter Property="Padding" Value="8,3"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Margin" Value="0,0,0,10"/>
+            <Setter Property="Margin" Value="0,0,0,8"/>
             <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
@@ -33,174 +33,141 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="18"/>
-            <Setter Property="Padding" Value="16"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="14"/>
         </Style>
 
         <Style x:Key="SettingsMicroCard" TargetType="Border">
             <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,10"/>
         </Style>
 
     </UserControl.Resources>
 
     <Border Style="{StaticResource SettingsSectionCard}">
-        <StackPanel>
-            <Border Style="{StaticResource SettingsEyebrowBadge}">
-                <TextBlock Text="外观与界面"
-                           Style="{StaticResource SettingsEyebrowBadgeText}"/>
-            </Border>
+        <Grid>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1.26*"/>
+                <ColumnDefinition Width="18"/>
+                <ColumnDefinition Width="0.9*"/>
+            </Grid.ColumnDefinitions>
 
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.18*"/>
-                    <ColumnDefinition Width="18"/>
-                    <ColumnDefinition Width="0.92*"/>
-                </Grid.ColumnDefinitions>
+            <StackPanel Grid.Column="0">
+                <Border Style="{StaticResource SettingsEyebrowBadge}">
+                    <TextBlock Text="外观与界面"
+                               Style="{StaticResource SettingsEyebrowBadgeText}"/>
+                </Border>
+                <TextBlock Text="主题与列表显示"
+                           Style="{StaticResource PageSectionTitleText}"/>
+                <TextBlock Text="选择整体配色，并设置搭配卡片默认展示方式。"
+                           Style="{StaticResource PageSectionBodyText}"
+                           Margin="0,6,0,0"/>
 
-                <StackPanel Grid.Column="0">
-                    <TextBlock Text="主题与搭配列表显示"
-                               Style="{StaticResource PageSectionTitleText}"/>
-                    <TextBlock Text="把两套主题和卡片默认展示方式放在同一处，切换后页面气质和搭配浏览节奏会一起更新。"
-                               Style="{StaticResource PageSectionBodyText}"
-                               Margin="0,8,0,0"/>
+                <TextBlock Text="系统主题"
+                           Style="{StaticResource PageFieldLabelText}"
+                           Margin="0,14,0,0"/>
+                <Grid Margin="0,10,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="12"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                    <Border Style="{StaticResource SettingsSurfacePanel}"
-                            Margin="0,16,0,0">
-                        <StackPanel>
-                            <TextBlock Text="系统主题"
-                                       Style="{StaticResource PageFieldLabelText}"/>
-                            <Grid Margin="0,12,0,0">
+                    <shared:ThemeCard x:Name="ThemeRoseCard"
+                                      Grid.Column="0"
+                                      ThemeKind="Rose"
+                                      DisplayName="柔粉"
+                                      Description="柔和、生活化。"
+                                      PrimaryColor="#CA9C9F"
+                                      SoftColor="#F7F0EE"
+                                      SurfaceColor="#F9F5F1"
+                                      Selected="ThemeCard_Selected"/>
+
+                    <shared:ThemeCard x:Name="ThemeBlueCard"
+                                      Grid.Column="2"
+                                      ThemeKind="Blue"
+                                      DisplayName="清蓝"
+                                      Description="克制、工具感。"
+                                      PrimaryColor="#5881D6"
+                                      SoftColor="#E0ECFF"
+                                      SurfaceColor="#F0F5FC"
+                                      Selected="ThemeCard_Selected"/>
+                </Grid>
+            </StackPanel>
+
+            <StackPanel Grid.Column="2">
+                <Border Style="{StaticResource SettingsSurfacePanel}">
+                    <StackPanel>
+                        <TextBlock Text="搭配卡片展示"
+                                   Style="{StaticResource PageFieldLabelText}"/>
+
+                        <Border Style="{StaticResource AppSegmentedTabShell}"
+                                Margin="0,10,0,0">
+                            <UniformGrid Columns="2">
+                                <RadioButton x:Name="RadioOutfitFirst"
+                                             Content="搭配优先"
+                                             GroupName="OutfitDisplayMode"
+                                             Style="{StaticResource AppSegmentedTabButton}"
+                                             Checked="OutfitDisplayMode_Checked"/>
+                                <RadioButton x:Name="RadioEffectImageFirst"
+                                             Content="效果图优先"
+                                             GroupName="OutfitDisplayMode"
+                                             Style="{StaticResource AppSegmentedTabButton}"
+                                             Checked="OutfitDisplayMode_Checked"/>
+                            </UniformGrid>
+                        </Border>
+
+                        <Border Style="{StaticResource SettingsMicroCard}"
+                                Margin="0,12,0,0">
+                            <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-
-                                <shared:ThemeCard x:Name="ThemeRoseCard"
-                                                  Grid.Column="0"
-                                                  ThemeKind="Rose"
-                                                  DisplayName="柔粉"
-                                                  Description="更柔和，也更适合让照片和穿搭本身成为视觉重点。"
-                                                  PrimaryColor="#CA9C9F"
-                                                  SoftColor="#F7F0EE"
-                                                  SurfaceColor="#F9F5F1"
-                                                  Selected="ThemeCard_Selected"/>
-
-                                <shared:ThemeCard x:Name="ThemeBlueCard"
-                                                  Grid.Column="2"
-                                                  ThemeKind="Blue"
-                                                  DisplayName="清蓝"
-                                                  Description="更冷静，更像一个利落的衣橱工具台。"
-                                                  PrimaryColor="#5881D6"
-                                                  SoftColor="#E0ECFF"
-                                                  SurfaceColor="#F0F5FC"
-                                                  Selected="ThemeCard_Selected"/>
-                            </Grid>
-
-                            <Grid Margin="0,14,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <Border Grid.Column="0"
-                                        Style="{StaticResource SettingsMicroCard}">
-                                    <StackPanel>
-                                        <TextBlock Text="当前主题"
-                                                   Style="{StaticResource PageSummaryHintText}"/>
-                                        <TextBlock Text="{Binding ThemeSummary}"
-                                                   Style="{StaticResource PageSummaryValueText}"
-                                                   Margin="0,6,0,0"
-                                                   TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding ThemeDescription}"
-                                                   Style="{StaticResource PageMutedBodyText}"
-                                                   Margin="0,8,0,0"/>
-                                    </StackPanel>
-                                </Border>
-
-                                <Border Grid.Column="2"
-                                        Style="{StaticResource SettingsMicroCard}">
-                                    <StackPanel>
-                                        <TextBlock Text="搭配卡片默认展示"
-                                                   Style="{StaticResource PageSummaryHintText}"/>
-                                        <TextBlock Text="{Binding OutfitCardDisplaySummary}"
-                                                   Style="{StaticResource PageSummaryValueText}"
-                                                   Margin="0,6,0,0"
-                                                   TextWrapping="Wrap"/>
-                                        <TextBlock Text="{Binding OutfitCardDisplayDetail}"
-                                                   Style="{StaticResource PageMutedBodyText}"
-                                                   Margin="0,8,0,0"/>
-                                    </StackPanel>
-                                </Border>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-
-                <StackPanel Grid.Column="2">
-                    <Border Style="{StaticResource SettingsSurfacePanel}">
-                        <StackPanel>
-                            <TextBlock Text="搭配卡片展示"
-                                       Style="{StaticResource PageFieldLabelText}"/>
-                            <TextBlock Text="没有效果图时会自动回退到原始搭配，不会出现空白卡片。"
-                                       Style="{StaticResource PageMutedBodyText}"
-                                       Margin="0,8,0,0"/>
-
-                            <Border Style="{StaticResource AppSegmentedTabShell}"
-                                    Margin="0,14,0,0">
-                                <UniformGrid Columns="2">
-                                    <RadioButton x:Name="RadioOutfitFirst"
-                                                 Content="搭配优先"
-                                                 GroupName="OutfitDisplayMode"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="OutfitDisplayMode_Checked"/>
-                                    <RadioButton x:Name="RadioEffectImageFirst"
-                                                 Content="效果图优先"
-                                                 GroupName="OutfitDisplayMode"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="OutfitDisplayMode_Checked"/>
-                                </UniformGrid>
-                            </Border>
-
-                            <Border Style="{StaticResource SettingsMicroCard}"
-                                    Margin="0,14,0,0">
                                 <StackPanel>
-                                    <TextBlock Text="使用建议"
+                                    <TextBlock Text="当前默认"
                                                Style="{StaticResource PageSummaryHintText}"/>
-                                    <TextBlock Text="柔粉更生活化，清蓝更克制；列表模式建议跟你现在管理效果图的习惯一起设。"
-                                               Style="{StaticResource PageMutedBodyText}"
-                                               Margin="0,8,0,0"/>
+                                    <TextBlock Text="{Binding OutfitCardDisplaySummary}"
+                                               Style="{StaticResource PageSummaryValueText}"
+                                               Margin="0,4,0,0"
+                                               TextWrapping="Wrap"/>
                                 </StackPanel>
-                            </Border>
-                        </StackPanel>
-                    </Border>
+                                <TextBlock Grid.Column="1"
+                                           Text="自动回退"
+                                           Style="{StaticResource PageSummaryHintText}"
+                                           VerticalAlignment="Center"
+                                           Margin="12,0,0,0"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
 
-                    <Border Style="{StaticResource SettingsSurfacePanel}"
-                            Margin="0,16,0,0">
+                <Border Style="{StaticResource SettingsSurfacePanel}"
+                        Margin="0,12,0,0">
+                    <DockPanel LastChildFill="True">
+                        <Button DockPanel.Dock="Right"
+                                Content="打开目录"
+                                Style="{StaticResource PageToolbarCapsuleButton}"
+                                Margin="12,0,0,0"
+                                MinWidth="86"
+                                Click="OpenAppDir_Click"/>
                         <StackPanel>
                             <TextBlock Text="应用信息"
                                        Style="{StaticResource PageFieldLabelText}"/>
                             <TextBlock x:Name="TxtVersion"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"
-                                       Margin="0,10,0,0"/>
-                            <TextBlock Text=".NET WPF / SQLite / Clean Architecture"
+                                       Margin="0,7,0,0"/>
+                            <TextBlock Text=".NET WPF / SQLite"
                                        Style="{StaticResource PageMutedBodyText}"
-                                       Margin="0,6,0,0"/>
-                            <Button Content="打开应用目录"
-                                    Style="{StaticResource PageToolbarCapsuleButton}"
-                                    HorizontalAlignment="Left"
-                                    Margin="0,14,0,0"
-                                    Click="OpenAppDir_Click"/>
+                                       Margin="0,4,0,0"/>
                         </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
-        </StackPanel>
+                    </DockPanel>
+                </Border>
+            </StackPanel>
+        </Grid>
     </Border>
 </UserControl>

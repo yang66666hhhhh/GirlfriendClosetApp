@@ -1,7 +1,8 @@
 <UserControl x:Class="ClosetApp.UI.Components.Tags.Controls.TagsFilterPanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:conv="clr-namespace:ClosetApp.UI.Converters">
+             xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
+             xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
     </UserControl.Resources>
@@ -34,10 +35,10 @@
                     <StackPanel Margin="0,0,12,0">
                         <TextBlock Text="搜索"
                                    Style="{StaticResource PageFieldLabelText}"/>
-                        <TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
-                                 MinHeight="36"
-                                 Padding="12,9"
-                                 Margin="0,6,0,0"/>
+                        <shared:SearchBox Margin="0,6,0,0"
+                                          BoxHeight="36"
+                                          Placeholder="搜索标签名称..."
+                                          Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
                     </StackPanel>
 
                     <StackPanel Margin="0,0,12,0">

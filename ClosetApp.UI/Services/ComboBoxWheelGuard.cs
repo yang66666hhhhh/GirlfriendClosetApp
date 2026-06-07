@@ -15,7 +15,9 @@ public static class ComboBoxWheelGuard
             return;
         }
 
-        if (FindComboBox(e.OriginalSource as DependencyObject) is not ComboBox comboBox)
+        var eventSource = e.OriginalSource as DependencyObject ?? e.Source as DependencyObject;
+
+        if (FindComboBox(eventSource) is not ComboBox comboBox)
         {
             return;
         }

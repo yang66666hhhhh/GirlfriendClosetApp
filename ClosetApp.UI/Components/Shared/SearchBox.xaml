@@ -1,0 +1,49 @@
+<UserControl x:Class="ClosetApp.UI.Components.Shared.SearchBox"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             UseLayoutRounding="True"
+             TextOptions.TextFormattingMode="Display"
+             x:Name="Root">
+    <Border x:Name="Shell"
+            Height="{Binding BoxHeight, ElementName=Root}"
+            Background="{DynamicResource SurfaceElevatedBrush}"
+            BorderBrush="{DynamicResource BorderLightBrush}"
+            BorderThickness="1"
+            CornerRadius="10"
+            SnapsToDevicePixels="True">
+        <Grid>
+            <TextBox x:Name="InputBox"
+                     Margin="14,0,14,0"
+                     Height="26"
+                     Background="Transparent"
+                     BorderThickness="0"
+                     Padding="0"
+                     FontSize="12.5"
+                     Foreground="{DynamicResource TextPrimaryBrush}"
+                     CaretBrush="{DynamicResource PrimaryBrush}"
+                     VerticalContentAlignment="Center"
+                     VerticalAlignment="Center"
+                     TextWrapping="NoWrap"
+                     AcceptsReturn="False"
+                     Text="{Binding Text, ElementName=Root, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+
+            <TextBlock Text="{Binding Placeholder, ElementName=Root}"
+                       Margin="14,0,14,0"
+                       Foreground="{DynamicResource TextPlaceholderBrush}"
+                       FontSize="12.5"
+                       VerticalAlignment="Center"
+                       IsHitTestVisible="False">
+                <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                        <Setter Property="Visibility" Value="Collapsed"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding Text, ElementName=InputBox}" Value="">
+                                <Setter Property="Visibility" Value="Visible"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBlock.Style>
+            </TextBlock>
+        </Grid>
+    </Border>
+</UserControl>

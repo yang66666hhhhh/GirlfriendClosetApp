@@ -1,4 +1,5 @@
 using ClosetApp.UI.Services;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using Xunit;
@@ -16,12 +17,12 @@ public class ComboBoxWheelGuardTests
             comboBox.Items.Add("A");
             comboBox.Items.Add("B");
             comboBox.SelectedIndex = 0;
+            comboBox.RaiseEvent(new RoutedEventArgs(FrameworkElement.LoadedEvent));
 
             var args = new MouseWheelEventArgs(Mouse.PrimaryDevice, 0, -120)
             {
                 RoutedEvent = UIElement.PreviewMouseWheelEvent,
-                Source = comboBox,
-                OriginalSource = comboBox
+                Source = comboBox
             };
 
             ComboBoxWheelGuard.HandlePreviewMouseWheel(args);
@@ -36,21 +37,24 @@ public class ComboBoxWheelGuardTests
     {
         RunOnStaThread(() =>
         {
+            var window = new Window();
             var comboBox = new ComboBox();
             comboBox.Items.Add("A");
             comboBox.Items.Add("B");
+            window.Content = comboBox;
+            window.Show();
             comboBox.IsDropDownOpen = true;
 
             var args = new MouseWheelEventArgs(Mouse.PrimaryDevice, 0, -120)
             {
                 RoutedEvent = UIElement.PreviewMouseWheelEvent,
-                Source = comboBox,
-                OriginalSource = comboBox
+                Source = comboBox
             };
 
             ComboBoxWheelGuard.HandlePreviewMouseWheel(args);
 
             Assert.False(args.Handled);
+            window.Close();
         });
     }
 
