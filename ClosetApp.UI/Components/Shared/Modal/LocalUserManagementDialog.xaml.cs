@@ -12,6 +12,7 @@ public partial class LocalUserManagementDialog : UserControl
 {
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
+    private List<LocalUserRow> _allRows = [];
     private Guid? _selectedUserId;
     private Guid? _currentUserId;
 
@@ -41,18 +42,30 @@ public partial class LocalUserManagementDialog : UserControl
         _currentUserId = currentUser.Id;
         _selectedUserId ??= currentUser.Id;
 
-        var rows = (await _localUserService.GetAllAsync())
+        _allRows = (await _localUserService.GetAllAsync())
             .Select(user => new LocalUserRow(user, _currentUserId.Value))
             .ToList();
 
-        UsersList.ItemsSource = rows;
-        UsersList.SelectedItem = rows.FirstOrDefault(row => row.Id == _selectedUserId) ?? rows.FirstOrDefault();
+        UpdateStats(currentUser);
+        ApplyUserFilter();
     }
 
     private void UsersList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (UsersList.SelectedItem is LocalUserRow row)
             _selectedUserId = row.Id;
+    }
+
+    private void UserSearch_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        ApplyUserFilter();
+    }
+
+    private void ShowCreateUser_Click(object sender, RoutedEventArgs e)
+    {
+        CreateUserPanel.Visibility = CreateUserPanel.Visibility == Visibility.Visible
+            ? Visibility.Collapsed
+            : Visibility.Visible;
     }
 
     private async void CreateUser_Click(object sender, RoutedEventArgs e)
@@ -65,6 +78,7 @@ public partial class LocalUserManagementDialog : UserControl
             TxtNewUserName.Clear();
             NewUserPasswordBox.Clear();
             NewUserPinBox.Clear();
+            CreateUserPanel.Visibility = Visibility.Collapsed;
             await RefreshAsync();
             ToastService.Instance.ShowSuccess("用户已创建");
         }
@@ -126,6 +140,28 @@ public partial class LocalUserManagementDialog : UserControl
     private void Close_Click(object sender, RoutedEventArgs e)
     {
         ModalService.Instance.Hide();
+    }
+
+    private void ApplyUserFilter()
+    {
+        var keyword = TxtUserSearch?.Text?.Trim();
+        var rows = string.IsNullOrWhiteSpace(keyword)
+            ? _allRows
+            : _allRows
+                .Where(row =>
+                    row.DisplayName.Contains(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    row.AccountName.Contains(keyword, StringComparison.OrdinalIgnoreCase))
+                .ToList();
+
+        UsersList.ItemsSource = rows;
+        UsersList.SelectedItem = rows.FirstOrDefault(row => row.Id == _selectedUserId) ?? rows.FirstOrDefault();
+    }
+
+    private void UpdateStats(LocalUser currentUser)
+    {
+        TxtTotalUsers.Text = _allRows.Count.ToString();
+        TxtMemberUsers.Text = _allRows.Count(row => row.User.Role == LocalUserRole.Member).ToString();
+        TxtCurrentSession.Text = currentUser.DisplayName;
     }
 
     private sealed class LocalUserRow

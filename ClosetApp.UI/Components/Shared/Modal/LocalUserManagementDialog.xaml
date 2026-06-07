@@ -98,6 +98,15 @@
             <Setter Property="Margin" Value="0,0,0,6"/>
         </Style>
 
+        <Style x:Key="UserManager.StatCard" TargetType="Border">
+            <Setter Property="MinWidth" Value="118"/>
+            <Setter Property="Padding" Value="14,10"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+        </Style>
+
         <Style x:Key="UserManager.ListItem" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Padding" Value="0"/>
@@ -162,15 +171,89 @@
                 </Border>
 
                 <Grid Grid.Row="1" Margin="28,18">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="308"/>
-                        <ColumnDefinition Width="24"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="16"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
 
-                    <Grid>
+                    <Border x:Name="UserManagerStatsBar"
+                            Background="{DynamicResource SurfaceCardBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="18"
+                            Padding="16">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource UserManager.StatCard}">
+                                <StackPanel>
+                                    <TextBlock Text="总用户"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock x:Name="TxtTotalUsers"
+                                               Text="0"
+                                               Margin="0,4,0,0"
+                                               FontSize="20"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2"
+                                    Style="{StaticResource UserManager.StatCard}">
+                                <StackPanel>
+                                    <TextBlock Text="普通用户"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock x:Name="TxtMemberUsers"
+                                               Text="0"
+                                               Margin="0,4,0,0"
+                                               FontSize="20"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="4"
+                                    Style="{StaticResource UserManager.StatCard}">
+                                <StackPanel>
+                                    <TextBlock Text="当前会话"
+                                               FontSize="11"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                    <TextBlock x:Name="TxtCurrentSession"
+                                               Text="管理员"
+                                               Margin="0,4,0,0"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               TextTrimming="CharacterEllipsis"
+                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                </StackPanel>
+                            </Border>
+                            <Button x:Name="BtnShowCreateUser"
+                                    Grid.Column="6"
+                                    Content="新增用户"
+                                    Style="{StaticResource UserManager.PrimaryButton}"
+                                    Click="ShowCreateUser_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="2">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="320"/>
+                            <ColumnDefinition Width="24"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <Grid>
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
@@ -180,44 +263,19 @@
                                 CornerRadius="18"
                                 Padding="16">
                             <StackPanel>
-                                <TextBlock Text="新增本地用户"
+                                <TextBlock Text="用户列表"
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <StackPanel Margin="0,12,0,0">
-                                    <TextBlock Text="账号"
-                                               Style="{StaticResource UserManager.FieldLabel}"/>
-                                    <TextBox x:Name="TxtNewAccountName"
-                                             Style="{StaticResource UserManager.Input}"
-                                             Tag="例如：xiaoyu"/>
-                                    <TextBlock Text="显示名称"
-                                               Margin="0,10,0,6"
-                                               Style="{StaticResource UserManager.FieldLabel}"/>
-                                    <TextBox x:Name="TxtNewUserName"
-                                             Style="{StaticResource UserManager.Input}"
-                                             Tag="例如：小鱼"/>
-                                    <TextBlock Text="初始密码"
-                                               Margin="0,10,0,6"
-                                               Style="{StaticResource UserManager.FieldLabel}"/>
-                                    <PasswordBox x:Name="NewUserPasswordBox"
-                                                 Style="{StaticResource UserManager.PasswordInput}"/>
-                                    <TextBlock Text="快捷 PIN（可选）"
-                                               Margin="0,10,0,6"
-                                               Style="{StaticResource UserManager.FieldLabel}"/>
-                                    <PasswordBox x:Name="NewUserPinBox"
-                                                 Style="{StaticResource UserManager.PasswordInput}"/>
-                                    <Button Content="新增用户"
-                                            Margin="0,14,0,0"
-                                            Style="{StaticResource UserManager.PrimaryButton}"
-                                            HorizontalAlignment="Stretch"
-                                            Click="CreateUser_Click"/>
-                                </StackPanel>
+                                <TextBox x:Name="TxtUserSearch"
+                                         Margin="0,12,0,0"
+                                         Style="{StaticResource UserManager.Input}"
+                                         TextChanged="UserSearch_TextChanged"/>
                             </StackPanel>
                         </Border>
 
                         <ListBox x:Name="UsersList"
-                                 Grid.Row="1"
-                                 Margin="0,16,0,0"
+                                 Grid.Row="2"
                                  BorderThickness="0"
                                  Background="Transparent"
                                  ItemContainerStyle="{StaticResource UserManager.ListItem}"
@@ -259,7 +317,61 @@
                         </ListBox>
                     </Grid>
 
-                    <Border Grid.Column="2"
+                    <Grid Grid.Column="2">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="12"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Border x:Name="CreateUserPanel"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="18"
+                                Padding="16"
+                                Visibility="Collapsed">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="账号" Style="{StaticResource UserManager.FieldLabel}"/>
+                                    <TextBox x:Name="TxtNewAccountName"
+                                             Style="{StaticResource UserManager.Input}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="显示名称" Style="{StaticResource UserManager.FieldLabel}"/>
+                                    <TextBox x:Name="TxtNewUserName"
+                                             Style="{StaticResource UserManager.Input}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="初始密码" Style="{StaticResource UserManager.FieldLabel}"/>
+                                    <PasswordBox x:Name="NewUserPasswordBox"
+                                                 Style="{StaticResource UserManager.PasswordInput}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="6">
+                                    <TextBlock Text="PIN（可选）" Style="{StaticResource UserManager.FieldLabel}"/>
+                                    <PasswordBox x:Name="NewUserPinBox"
+                                                 Style="{StaticResource UserManager.PasswordInput}"/>
+                                </StackPanel>
+                                <Button Grid.Column="7"
+                                        Content="创建"
+                                        Margin="12,18,0,0"
+                                        Style="{StaticResource UserManager.PrimaryButton}"
+                                        Click="CreateUser_Click"/>
+                            </Grid>
+                        </Border>
+
+                    <Border x:Name="UserDetailPanel"
+                            Grid.Row="2"
                             Background="{DynamicResource SurfaceCardBrush}"
                             BorderBrush="{DynamicResource BorderLightBrush}"
                             BorderThickness="1"
@@ -371,7 +483,7 @@
                                         IsEnabled="{Binding CanDelete}"
                                         Click="DeleteUser_Click"/>
                                 <Button Grid.Column="2"
-                                        Content="保存"
+                                        Content="保存资料"
                                         Style="{StaticResource UserManager.SecondaryButton}"
                                         IsEnabled="{Binding HasSelection}"
                                         Click="SaveUser_Click"/>
@@ -383,6 +495,8 @@
                             </Grid>
                         </Grid>
                     </Border>
+                    </Grid>
+                    </Grid>
                 </Grid>
 
                 <Border Grid.Row="2"

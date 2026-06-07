@@ -7,7 +7,7 @@ namespace ClosetApp.Tests;
 public class LocalUserManagementDialogLayoutTests
 {
     [Theory]
-    [InlineData("TextBlock", "Text", "快捷 PIN（可选）")]
+    [InlineData("TextBlock", "Text", "PIN（可选）")]
     [InlineData("PasswordBox", "x:Name", "NewUserPinBox")]
     [InlineData("Button", "Content", "新增用户")]
     public void NewUserFormControls_AreNotPlacedInSpacerRows(string elementName, string attributeName, string attributeValue)

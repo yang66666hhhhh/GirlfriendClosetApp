@@ -22,10 +22,27 @@ public class LoginWindowLayoutTests
 
         Assert.Contains("x:Name=\"LoginFormScrollViewer\"", xaml);
         Assert.Contains("x:Name=\"LoginErrorHost\"", xaml);
+        Assert.Contains("x:Key=\"LoginSubmitButton\"", xaml);
+        Assert.Contains("<Setter Property=\"MinHeight\" Value=\"52\"/>", xaml);
         Assert.Contains("VerticalAlignment=\"Top\"", xaml);
         Assert.DoesNotContain(
             "MaxWidth=\"520\"\r\n                            HorizontalAlignment=\"Stretch\"\r\n                            VerticalAlignment=\"Center\"",
             xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_UsesManagementConsoleLayout()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("x:Name=\"UserManagerStatsBar\"", xaml);
+        Assert.Contains("x:Name=\"TxtUserSearch\"", xaml);
+        Assert.Contains("x:Name=\"BtnShowCreateUser\"", xaml);
+        Assert.Contains("x:Name=\"CreateUserPanel\"", xaml);
+        Assert.Contains("x:Name=\"UserDetailPanel\"", xaml);
+        Assert.Contains("Content=\"保存资料\"", xaml);
+        Assert.Contains("Content=\"重置凭证\"", xaml);
+        Assert.Contains("Content=\"删除用户\"", xaml);
     }
 
     [Fact]
