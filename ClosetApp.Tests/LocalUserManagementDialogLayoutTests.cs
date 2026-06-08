@@ -34,6 +34,21 @@ public class LocalUserManagementDialogLayoutTests
             File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml")));
     }
 
+    [Fact]
+    public void UserManagementDialog_ExposesAvatarUploadActions()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml.cs"));
+
+        Assert.Contains("x:Name=\"SelectedUserAvatar\"", xaml);
+        Assert.Contains("Content=\"更换头像\"", xaml);
+        Assert.Contains("Content=\"移除头像\"", xaml);
+        Assert.Contains("SelectAvatar_Click", xaml);
+        Assert.Contains("RemoveAvatar_Click", xaml);
+        Assert.Contains("SelectAvatar_Click", code);
+        Assert.Contains("RemoveAvatar_Click", code);
+    }
+
     private static XElement? FindElement(XDocument document, string elementName, string attributeName, string attributeValue)
     {
         var xamlNamespace = XNamespace.Get("http://schemas.microsoft.com/winfx/2006/xaml");

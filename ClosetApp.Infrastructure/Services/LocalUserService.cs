@@ -11,11 +11,16 @@ public sealed class LocalUserService : ILocalUserService
     private const string DefaultAdminName = "私人衣橱";
     private readonly ILocalUserRepository _repository;
     private readonly ICurrentUserContext _currentUserContext;
+    private readonly IAiAssetStorageService? _assetStorageService;
 
-    public LocalUserService(ILocalUserRepository repository, ICurrentUserContext currentUserContext)
+    public LocalUserService(
+        ILocalUserRepository repository,
+        ICurrentUserContext currentUserContext,
+        IAiAssetStorageService? assetStorageService = null)
     {
         _repository = repository;
         _currentUserContext = currentUserContext;
+        _assetStorageService = assetStorageService;
     }
 
     public async Task<LocalUser> EnsureInitializedAsync()
@@ -189,7 +194,13 @@ public sealed class LocalUserService : ILocalUserService
         }
     }
 
-    public async Task<LocalUser> UpdateAsync(Guid userId, string displayName, string? avatarPhotoPath = null, string? accountName = null)
+    public async Task<LocalUser> UpdateAsync(
+        Guid userId,
+        string displayName,
+        string? avatarPhotoPath = null,
+        string? accountName = null,
+        string? avatarSourcePath = null,
+        bool removeAvatarPhoto = false)
     {
         var user = await _repository.GetActiveByIdAsync(userId).ConfigureAwait(false)
             ?? throw new InvalidOperationException("要编辑的用户不存在。");
@@ -205,8 +216,27 @@ public sealed class LocalUserService : ILocalUserService
         }
 
         user.DisplayName = string.IsNullOrWhiteSpace(displayName) ? user.DisplayName : displayName.Trim();
-        if (avatarPhotoPath != null)
+        if (removeAvatarPhoto)
+        {
+            if (_assetStorageService != null)
+                await _assetStorageService.TryDeleteProfileReferenceImageAsync(user.AvatarPhotoPath).ConfigureAwait(false);
+            user.AvatarPhotoPath = null;
+        }
+        else if (!string.IsNullOrWhiteSpace(avatarSourcePath) && _assetStorageService != null)
+        {
+            if (!string.IsNullOrWhiteSpace(user.AvatarPhotoPath))
+                await _assetStorageService.TryDeleteProfileReferenceImageAsync(user.AvatarPhotoPath).ConfigureAwait(false);
+
+            var slotName = $"user-{user.Id:N}-avatar";
+            user.AvatarPhotoPath = await _assetStorageService
+                .SaveProfileReferenceImageAsync(avatarSourcePath, slotName)
+                .ConfigureAwait(false);
+        }
+        else if (avatarPhotoPath != null)
+        {
             user.AvatarPhotoPath = avatarPhotoPath;
+        }
+
         user.UpdatedAt = DateTime.Now;
         await _repository.UpdateAsync(user).ConfigureAwait(false);
         return user;

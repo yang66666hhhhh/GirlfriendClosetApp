@@ -41,7 +41,9 @@ public sealed class PersonalProfileService : IPersonalProfileService
         }
         else if (!string.IsNullOrWhiteSpace(request.AvatarSourcePath))
         {
-            var storedFileName = await _assetStorageService.SaveProfileReferenceImageAsync(request.AvatarSourcePath, "avatar");
+            var storedFileName = await _assetStorageService.SaveProfileReferenceImageAsync(
+                request.AvatarSourcePath,
+                await BuildProfileSlotNameAsync("avatar"));
             profile.AvatarPhotoPath = storedFileName;
         }
 
@@ -52,7 +54,9 @@ public sealed class PersonalProfileService : IPersonalProfileService
         }
         else if (!string.IsNullOrWhiteSpace(request.FullBodySourcePath))
         {
-            var storedFileName = await _assetStorageService.SaveProfileReferenceImageAsync(request.FullBodySourcePath, "full-body");
+            var storedFileName = await _assetStorageService.SaveProfileReferenceImageAsync(
+                request.FullBodySourcePath,
+                await BuildProfileSlotNameAsync("full-body"));
             profile.FullBodyPhotoPath = storedFileName;
         }
 
@@ -96,5 +100,14 @@ public sealed class PersonalProfileService : IPersonalProfileService
         user.AvatarPhotoPath = avatarPhotoPath;
         user.UpdatedAt = DateTime.Now;
         await _localUserRepository.UpdateAsync(user);
+    }
+
+    private async Task<string> BuildProfileSlotNameAsync(string slotSuffix)
+    {
+        if (_currentUserContext == null)
+            return slotSuffix;
+
+        var userId = await _currentUserContext.GetRequiredCurrentUserIdAsync();
+        return $"user-{userId:N}-{slotSuffix}";
     }
 }

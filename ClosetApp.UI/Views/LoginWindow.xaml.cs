@@ -183,6 +183,7 @@ public partial class LoginWindow : Window
         {
             Width = 40,
             Height = 40,
+            AvatarPath = account.AvatarPath,
             Initial = account.Initial,
             IsCurrent = false
         };

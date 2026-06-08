@@ -103,6 +103,8 @@ public class LoginWindowLayoutTests
         Assert.DoesNotContain("BuildUserSwitchMenuHeader", code);
         Assert.DoesNotContain("SwitchUser_Click", code);
         Assert.DoesNotContain("GetAllAsync()", code);
+        Assert.DoesNotContain("new Separator()", code);
+        Assert.Contains("BuildProfileMenuDivider", code);
     }
 
     [Fact]

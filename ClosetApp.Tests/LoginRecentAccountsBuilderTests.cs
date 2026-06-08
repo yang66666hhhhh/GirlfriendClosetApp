@@ -27,6 +27,7 @@ public class LoginRecentAccountsBuilderTests
                 Id = Guid.NewGuid(),
                 AccountName = "xiaoyu",
                 DisplayName = "小鱼",
+                AvatarPhotoPath = "user-xiaoyu-avatar.png",
                 Role = LocalUserRole.Member,
                 IsActive = true,
                 LastLoginAt = now.AddMinutes(-15),
@@ -50,6 +51,7 @@ public class LoginRecentAccountsBuilderTests
         Assert.Equal(3, state.RecentAccounts.Count);
         Assert.Equal("xiaoyu", state.RecentAccounts[0].AccountName);
         Assert.True(state.RecentAccounts[0].HasPinCredential);
+        Assert.Equal("user-xiaoyu-avatar.png", state.RecentAccounts[0].AvatarPath);
         Assert.Equal("小", state.RecentAccounts[0].Initial);
         Assert.Equal("15 分钟前", state.RecentAccounts[0].LastLoginText);
         Assert.Equal("2 小时前", state.RecentAccounts[1].LastLoginText);

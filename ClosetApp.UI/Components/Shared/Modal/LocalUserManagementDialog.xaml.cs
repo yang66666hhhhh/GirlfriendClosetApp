@@ -1,10 +1,14 @@
 using System.Windows;
+using System.IO;
 using System.Windows.Controls;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
 
 namespace ClosetApp.UI.Components.Shared.Modal;
 
@@ -12,6 +16,8 @@ public partial class LocalUserManagementDialog : UserControl
 {
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
+    private string? _avatarSourcePath;
+    private bool _removeAvatarPhoto;
     private List<LocalUserRow> _allRows = [];
     private Guid? _selectedUserId;
     private Guid? _currentUserId;
@@ -53,7 +59,11 @@ public partial class LocalUserManagementDialog : UserControl
     private void UsersList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (UsersList.SelectedItem is LocalUserRow row)
+        {
             _selectedUserId = row.Id;
+            _avatarSourcePath = null;
+            _removeAvatarPhoto = false;
+        }
     }
 
     private void UserSearch_TextChanged(object sender, TextChangedEventArgs e)
@@ -93,7 +103,14 @@ public partial class LocalUserManagementDialog : UserControl
         if ((sender as FrameworkElement)?.DataContext is not LocalUserRow row)
             return;
 
-        await _localUserService.UpdateAsync(row.Id, row.EditableName, accountName: row.EditableAccountName);
+        await _localUserService.UpdateAsync(
+            row.Id,
+            row.EditableName,
+            accountName: row.EditableAccountName,
+            avatarSourcePath: _avatarSourcePath,
+            removeAvatarPhoto: _removeAvatarPhoto);
+        _avatarSourcePath = null;
+        _removeAvatarPhoto = false;
         await RefreshAsync();
         ToastService.Instance.ShowSuccess("用户信息已保存");
     }
@@ -142,6 +159,30 @@ public partial class LocalUserManagementDialog : UserControl
         ModalService.Instance.Hide();
     }
 
+    private void SelectAvatar_Click(object sender, RoutedEventArgs e)
+    {
+        if (UsersList.SelectedItem is not LocalUserRow)
+            return;
+
+        var path = SelectImageFile("选择用户头像");
+        if (path == null)
+            return;
+
+        _avatarSourcePath = path;
+        _removeAvatarPhoto = false;
+        ((LocalUserRow)UsersList.SelectedItem).AvatarPath = path;
+    }
+
+    private void RemoveAvatar_Click(object sender, RoutedEventArgs e)
+    {
+        if (UsersList.SelectedItem is not LocalUserRow row)
+            return;
+
+        _avatarSourcePath = null;
+        _removeAvatarPhoto = true;
+        row.AvatarPath = null;
+    }
+
     private void ApplyUserFilter()
     {
         var keyword = TxtUserSearch?.Text?.Trim();
@@ -164,21 +205,48 @@ public partial class LocalUserManagementDialog : UserControl
         TxtCurrentSession.Text = currentUser.DisplayName;
     }
 
-    private sealed class LocalUserRow
+    private static string? SelectImageFile(string title)
     {
+        var dialog = new OpenFileDialog
+        {
+            Title = title,
+            Filter = "图片文件|*.jpg;*.jpeg;*.png;*.webp;*.gif;*.bmp"
+        };
+
+        return dialog.ShowDialog() == true ? dialog.FileName : null;
+    }
+
+    private sealed class LocalUserRow : INotifyPropertyChanged
+    {
+        private string? _avatarPath;
+
         public LocalUserRow(LocalUser user, Guid currentUserId)
         {
             User = user;
             IsCurrent = user.Id == currentUserId;
             EditableAccountName = user.AccountName;
             EditableName = user.DisplayName;
+            _avatarPath = user.AvatarPhotoPath;
         }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
 
         public LocalUser User { get; }
         public Guid Id => User.Id;
         public string AccountName => User.AccountName;
         public string DisplayName => User.DisplayName;
-        public string? AvatarPath => User.AvatarPhotoPath;
+        public string? AvatarPath
+        {
+            get => _avatarPath;
+            set
+            {
+                if (string.Equals(_avatarPath, value, StringComparison.Ordinal))
+                    return;
+
+                _avatarPath = value;
+                OnPropertyChanged();
+            }
+        }
         public string EditableAccountName { get; set; }
         public string EditableName { get; set; }
         public bool IsCurrent { get; }
@@ -194,5 +262,10 @@ public partial class LocalUserManagementDialog : UserControl
             : "普通用户拥有独立衣柜、搭配、标签、穿着记录、效果图和个人档案。删除用户会同时删除该用户的全部本地数据。";
 
         private string RoleText => User.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "普通用户";
+
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
     }
 }

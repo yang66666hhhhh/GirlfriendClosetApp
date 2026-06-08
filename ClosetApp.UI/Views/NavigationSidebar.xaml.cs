@@ -141,7 +141,7 @@ public partial class NavigationSidebar : UserControl
         if (_currentUser != null)
         {
             ProfileMenu.Items.Add(BuildCurrentUserMenuHeader(_currentUser));
-            ProfileMenu.Items.Add(new Separator());
+            ProfileMenu.Items.Add(BuildProfileMenuDivider());
         }
 
         ProfileMenu.Items.Add(new MenuItem
@@ -161,7 +161,7 @@ public partial class NavigationSidebar : UserControl
             ((MenuItem)ProfileMenu.Items[^1]).Click += ManageUsers_Click;
         }
 
-        ProfileMenu.Items.Add(new Separator());
+        ProfileMenu.Items.Add(BuildProfileMenuDivider());
         ProfileMenu.Items.Add(new MenuItem
         {
             Header = "退出登录",
@@ -267,6 +267,18 @@ public partial class NavigationSidebar : UserControl
             Header = shell,
             IsEnabled = false,
             Style = (Style)FindResource("ProfileMenuHeaderItemStyle")
+        };
+    }
+
+    private FrameworkElement BuildProfileMenuDivider()
+    {
+        return new Border
+        {
+            Height = 1,
+            Margin = new Thickness(10, 6, 10, 6),
+            Background = (Brush)FindResource("BorderLightBrush"),
+            Opacity = 0.9,
+            IsHitTestVisible = false
         };
     }
 

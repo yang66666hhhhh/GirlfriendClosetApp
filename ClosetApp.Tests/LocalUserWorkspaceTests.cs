@@ -1,4 +1,5 @@
 using System.IO;
+using ClosetApp.Application.DTOs;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Data;
@@ -307,6 +308,63 @@ public class LocalUserWorkspaceTests
     }
 
     [Fact]
+    public async Task PersonalProfileService_SaveAsync_UsesUserScopedAvatarSlot()
+    {
+        var tempDir = CreateTempDir();
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var options = CreateOptions(dbPath);
+        var userId = Guid.NewGuid();
+
+        try
+        {
+            await using var context = new ClosetDbContext(options);
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.EnsureCreatedAsync();
+            context.LocalUsers.Add(new LocalUser
+            {
+                Id = userId,
+                AccountName = "member",
+                DisplayName = "Member",
+                Role = LocalUserRole.Member,
+                IsActive = true
+            });
+            await context.SaveChangesAsync();
+
+            var session = new AuthSessionContext();
+            var currentUser = new CurrentUserContext(Path.Combine(tempDir, "current-user.json"), session);
+            session.MarkAuthenticated(userId);
+            await currentUser.SetCurrentUserIdAsync(userId);
+
+            var assetStorage = new RecordingAiAssetStorageService("profile-avatar.png");
+            var service = new PersonalProfileService(
+                new PersonalProfileRepository(context, currentUser),
+                assetStorage,
+                new LocalUserRepository(context),
+                currentUser);
+
+            await service.SaveAsync(new SavePersonalProfileRequest(
+                "Member",
+                null,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                Path.Combine(tempDir, "avatar-picked.png"),
+                null,
+                false));
+
+            Assert.Equal($"user-{userId:N}-avatar", assetStorage.LastSlotName);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
     public async Task LocalAuthService_SetPasswordAndLogin_AuthenticatesUser()
     {
         var tempDir = CreateTempDir();
@@ -439,6 +497,47 @@ public class LocalUserWorkspaceTests
 
             Assert.Equal("xiaoyu", user.AccountName);
             await Assert.ThrowsAsync<InvalidOperationException>(() => service.CreateMemberAsync(" XiaoYu ", "另一个小鱼", "member123"));
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task LocalUserService_UpdateAsync_StoresAvatarPathForSpecifiedUser()
+    {
+        var tempDir = CreateTempDir();
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var options = CreateOptions(dbPath);
+        var userId = Guid.NewGuid();
+
+        try
+        {
+            await using var context = new ClosetDbContext(options);
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.EnsureCreatedAsync();
+            context.LocalUsers.Add(new LocalUser
+            {
+                Id = userId,
+                AccountName = "member",
+                DisplayName = "Member",
+                Role = LocalUserRole.Member,
+                IsActive = true
+            });
+            await context.SaveChangesAsync();
+
+            var assetStorage = new RecordingAiAssetStorageService("user-avatar.png");
+            var service = new LocalUserService(
+                new LocalUserRepository(context),
+                new CurrentUserContext(Path.Combine(tempDir, "current-user.json")),
+                assetStorage);
+
+            await service.UpdateAsync(userId, "Member", avatarSourcePath: Path.Combine(tempDir, "picked-avatar.png"));
+
+            var refreshed = await context.LocalUsers.AsNoTracking().SingleAsync(item => item.Id == userId);
+            Assert.Equal("user-avatar.png", refreshed.AvatarPhotoPath);
+            Assert.Equal($"user-{userId:N}-avatar", assetStorage.LastSlotName);
         }
         finally
         {
@@ -596,6 +695,33 @@ public class LocalUserWorkspaceTests
     private sealed class FakeAiAssetStorageService : ClosetApp.Application.Interfaces.IAiAssetStorageService
     {
         public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName) => Task.FromResult(sourcePath);
+        public Task<string> SaveGeneratedImageAsync(byte[] bytes, string mimeType) => Task.FromResult("generated.png");
+        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
+        public Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
+        public Task TryDeleteProfileReferenceImageAsync(string? imagePath) => Task.CompletedTask;
+        public Task TryDeleteGeneratedImageAsync(string? imagePath) => Task.CompletedTask;
+        public string GetProfileReferenceFullPath(string relativePath) => relativePath;
+        public string GetGeneratedImageFullPath(string relativePath) => relativePath;
+        public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath) => [relativePath];
+    }
+
+    private sealed class RecordingAiAssetStorageService : ClosetApp.Application.Interfaces.IAiAssetStorageService
+    {
+        private readonly string _storedFileName;
+
+        public RecordingAiAssetStorageService(string storedFileName)
+        {
+            _storedFileName = storedFileName;
+        }
+
+        public string? LastSlotName { get; private set; }
+
+        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName)
+        {
+            LastSlotName = slotName;
+            return Task.FromResult(_storedFileName);
+        }
+
         public Task<string> SaveGeneratedImageAsync(byte[] bytes, string mimeType) => Task.FromResult("generated.png");
         public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
         public Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
