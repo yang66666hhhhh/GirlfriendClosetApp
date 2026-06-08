@@ -62,6 +62,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Key=\"RecentAccountHoverAvatar\"", xaml);
         Assert.Contains("x:Key=\"RecentAccountSelectedButton\"", xaml);
         Assert.Contains("x:Name=\"RecentAccountsDivider\"", xaml);
+        Assert.Contains("x:Name=\"LoginErrorIcon\"", xaml);
+        Assert.Contains("x:Name=\"TxtErrorTitle\"", xaml);
+        Assert.Contains("Background=\"{DynamicResource DangerLightBrush}\"", xaml);
     }
 
     [Fact]
@@ -72,6 +75,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("ApplyRecentAccountSelection", code);
         Assert.Contains("_recentAccountButtons", code);
         Assert.Contains("LoginAccountBox_TextChanged", code);
+        Assert.Contains("AnimateRecentAccountButtons", code);
+        Assert.Contains("DoubleAnimation", code);
+        Assert.Contains("TranslateTransform", code);
     }
 
     [Fact]

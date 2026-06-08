@@ -8,6 +8,7 @@ using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
+using System.Windows.Media.Animation;
 using System.Windows.Media;
 
 namespace ClosetApp.UI.Views;
@@ -173,6 +174,7 @@ public partial class LoginWindow : Window
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
         FocusCredentialInput();
+        AnimateRecentAccountButtons();
     }
 
     private Button BuildRecentAccountButton(LoginRecentAccountItem account)
@@ -318,6 +320,36 @@ public partial class LoginWindow : Window
                              !string.IsNullOrWhiteSpace(accountName) &&
                              string.Equals(item.AccountName, accountName, StringComparison.OrdinalIgnoreCase);
             button.Style = (Style)FindResource(isSelected ? "RecentAccountSelectedButton" : "RecentAccountButton");
+        }
+    }
+
+    private void AnimateRecentAccountButtons()
+    {
+        for (var i = 0; i < _recentAccountButtons.Count; i++)
+        {
+            var button = _recentAccountButtons[i];
+            button.Opacity = 0;
+            var translate = button.RenderTransform as TranslateTransform ?? new TranslateTransform(0, 8);
+            translate.Y = 8;
+            button.RenderTransform = translate;
+
+            var delay = TimeSpan.FromMilliseconds(i * 40);
+            var duration = TimeSpan.FromMilliseconds(240);
+            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+            var fadeIn = new DoubleAnimation(0, 1, duration)
+            {
+                BeginTime = delay,
+                EasingFunction = ease
+            };
+            var slideUp = new DoubleAnimation(8, 0, duration)
+            {
+                BeginTime = delay,
+                EasingFunction = ease
+            };
+
+            button.BeginAnimation(OpacityProperty, fadeIn);
+            translate.BeginAnimation(TranslateTransform.YProperty, slideUp);
         }
     }
 

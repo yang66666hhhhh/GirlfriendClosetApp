@@ -422,17 +422,45 @@
 
                 <Border x:Name="LoginErrorHost"
                         Margin="0,16,0,0"
-                        Padding="12,10"
-                        Background="#FFFFF1F2"
-                        BorderBrush="{DynamicResource DangerBrush}"
+                        Padding="12"
+                        Background="{DynamicResource DangerLightBrush}"
+                        BorderBrush="{DynamicResource BorderLightBrush}"
                         BorderThickness="1"
-                        CornerRadius="12"
+                        CornerRadius="14"
                         Visibility="Collapsed">
-                    <TextBlock x:Name="TxtError"
-                               FontSize="12"
-                               LineHeight="19"
-                               Foreground="{DynamicResource DangerBrush}"
-                               TextWrapping="Wrap"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Border x:Name="LoginErrorIcon"
+                                Width="22"
+                                Height="22"
+                                Margin="0,2,10,0"
+                                Background="{DynamicResource DangerBrush}"
+                                CornerRadius="11"
+                                VerticalAlignment="Top">
+                            <TextBlock Text="!"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="12"
+                                       FontWeight="Bold"
+                                       Foreground="White"/>
+                        </Border>
+                        <StackPanel Grid.Column="1">
+                            <TextBlock x:Name="TxtErrorTitle"
+                                       Text="登录失败"
+                                       FontSize="12"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock x:Name="TxtError"
+                                       Margin="0,4,0,0"
+                                       FontSize="12"
+                                       LineHeight="19"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                       TextWrapping="Wrap"/>
+                        </StackPanel>
+                    </Grid>
                 </Border>
 
                 <Button x:Name="BtnSubmit"
