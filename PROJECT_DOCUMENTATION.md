@@ -156,6 +156,7 @@ View / Component
 7. 各页面在真正读取数据前调用 `WaitUntilReadyAsync()`
 8. `ILocalUserService.EnsureInitializedAsync()` 创建或修复本地超级管理员，并把旧数据归属到该用户
 9. 登录窗口在数据库 ready 后显示；首次升级时若超级管理员无凭证，先设置管理员密码，再进入主窗口
+10. 登录页会展示最近成功登录过的账号，并自动预填最近一次登录账号；密码不保存，已设置 PIN 的账号会给出更快的快捷登录提示
 
 `AppStartupCoordinator` 位于 [`D:\03_Projects\Personal\GirlfriendClosetApp\ClosetApp.UI\Services\AppStartupCoordinator.cs`](D:/03_Projects/Personal/GirlfriendClosetApp/ClosetApp.UI/Services/AppStartupCoordinator.cs)。
 
@@ -340,7 +341,7 @@ View / Component
 - `TagsTab`
 - `SettingsTab`
 
-左侧头像区是当前账号入口：悬停有高亮反馈，点击打开带头像的用户菜单，可编辑当前档案、退出登录；超级管理员额外显示用户管理入口。用户管理以管理台形式呈现，包含用户统计、搜索列表、选中用户详情和新增用户面板，只负责创建、编辑、重置凭证和删除用户，不切换当前会话；更换账号必须先退出登录后重新输入账号密码。
+左侧头像区是当前账号入口：悬停有高亮反馈，点击打开带头像的用户菜单，可编辑当前档案、退出登录；超级管理员额外显示用户管理入口。用户管理以管理台形式呈现，包含用户统计、搜索列表、选中用户详情和新增用户面板，只负责创建、编辑、重置凭证和删除用户，不切换当前会话；更换账号必须先退出登录后重新输入账号密码或 PIN。登录页会保留最近登录账号痕迹，方便下次快速回访。
 
 ### 8.2 ClothesTab
 

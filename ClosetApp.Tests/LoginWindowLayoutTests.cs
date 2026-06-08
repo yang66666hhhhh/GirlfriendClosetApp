@@ -44,6 +44,16 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
+    public void LoginWindow_RendersRecentAccountQuickAccess()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.Contains("x:Name=\"RecentAccountsPanel\"", xaml);
+        Assert.Contains("x:Name=\"RecentAccountsHost\"", xaml);
+        Assert.Contains("Text=\"最近登录\"", xaml);
+    }
+
+    [Fact]
     public void UserManagementDialog_UsesManagementConsoleLayout()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));

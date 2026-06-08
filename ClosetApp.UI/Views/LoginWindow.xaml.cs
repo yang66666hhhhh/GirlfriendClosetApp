@@ -3,8 +3,12 @@ using System.Windows.Input;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
+using ClosetApp.UI.Components.Shared;
+using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
+using System.Windows.Controls;
+using System.Windows.Media;
 
 namespace ClosetApp.UI.Views;
 
@@ -16,6 +20,7 @@ public partial class LoginWindow : Window
     private bool _isSetupMode;
     private bool _openedMainWindow;
     private LocalUser? _superAdmin;
+    private IReadOnlyList<LocalUser> _users = [];
 
     public LoginWindow()
     {
@@ -43,8 +48,8 @@ public partial class LoginWindow : Window
 
     private async Task RefreshUsersAsync()
     {
-        var users = await _localUserService.GetAllAsync();
-        _superAdmin = users.FirstOrDefault(user => user.Role == LocalUserRole.SuperAdmin);
+        _users = await _localUserService.GetAllAsync();
+        _superAdmin = _users.FirstOrDefault(user => user.Role == LocalUserRole.SuperAdmin);
         _isSetupMode = _superAdmin != null && !_superAdmin.HasPasswordCredential;
 
         SetupPanel.Visibility = _isSetupMode ? Visibility.Visible : Visibility.Collapsed;
@@ -62,7 +67,15 @@ public partial class LoginWindow : Window
                 ? "admin"
                 : _superAdmin.AccountName;
         TxtSelectedUser.Text = "账号";
-        (_isSetupMode ? SetupAccountBox : LoginAccountBox).Focus();
+
+        if (_isSetupMode)
+        {
+            SetupAccountBox.Focus();
+        }
+        else
+        {
+            ApplyRecentAccountsState();
+        }
     }
 
     private void LoginWindow_PreviewKeyDown(object sender, KeyEventArgs e)
@@ -126,6 +139,108 @@ public partial class LoginWindow : Window
             throw new InvalidOperationException(result.ErrorMessage ?? "登录失败。");
 
         OpenMainWindow();
+    }
+
+    private void ApplyRecentAccountsState()
+    {
+        var state = LoginRecentAccountsBuilder.Build(_users);
+        RecentAccountsPanel.Visibility = state.HasRecentAccounts ? Visibility.Visible : Visibility.Collapsed;
+        RecentAccountsHost.Children.Clear();
+
+        foreach (var account in state.RecentAccounts)
+            RecentAccountsHost.Children.Add(BuildRecentAccountButton(account));
+
+        if (!string.IsNullOrWhiteSpace(state.PrefillAccountName))
+        {
+            LoginAccountBox.Text = state.PrefillAccountName;
+            TxtSelectedUser.Text = $"账号 · 最近使用 {state.PrefillAccountName}";
+        }
+        else
+        {
+            LoginAccountBox.Clear();
+        }
+
+        LoginPasswordBox.Clear();
+        LoginPinBox.Clear();
+        FocusCredentialInput();
+    }
+
+    private Button BuildRecentAccountButton(LoginRecentAccountItem account)
+    {
+        var avatar = new LocalUserAvatar
+        {
+            Width = 38,
+            Height = 38,
+            Initial = account.Initial,
+            IsCurrent = false
+        };
+
+        var name = new TextBlock
+        {
+            Text = account.DisplayName,
+            FontSize = 13,
+            FontWeight = FontWeights.SemiBold,
+            Foreground = (Brush)FindResource("TextPrimaryBrush"),
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+
+        var secondary = new TextBlock
+        {
+            Text = account.HasPinCredential ? $"@{account.AccountName} · PIN 可用" : $"@{account.AccountName}",
+            Margin = new Thickness(0, 3, 0, 0),
+            FontSize = 11,
+            Foreground = (Brush)FindResource("TextSecondaryBrush"),
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+
+        var text = new StackPanel
+        {
+            Margin = new Thickness(10, 0, 0, 0),
+            Width = 122,
+            VerticalAlignment = VerticalAlignment.Center
+        };
+        text.Children.Add(name);
+        text.Children.Add(secondary);
+
+        var row = new StackPanel
+        {
+            Orientation = Orientation.Horizontal
+        };
+        row.Children.Add(avatar);
+        row.Children.Add(text);
+
+        var button = new Button
+        {
+            Tag = account,
+            Margin = new Thickness(0, 0, 10, 10),
+            MinWidth = 182,
+            Style = (Style)FindResource("RecentAccountButton"),
+            Content = row
+        };
+        button.Click += RecentAccount_Click;
+        return button;
+    }
+
+    private void RecentAccount_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not Button { Tag: LoginRecentAccountItem account })
+            return;
+
+        LoginAccountBox.Text = account.AccountName;
+        TxtSelectedUser.Text = account.HasPinCredential
+            ? $"账号 · {account.AccountName} 可用 PIN 快速登录"
+            : $"账号 · {account.AccountName}";
+        LoginPasswordBox.Clear();
+        LoginPinBox.Clear();
+        FocusCredentialInput(account.HasPinCredential);
+    }
+
+    private void FocusCredentialInput(bool preferPin = false)
+    {
+        if (preferPin)
+            LoginPinBox.Focus();
+        else
+            LoginPasswordBox.Focus();
     }
 
     private void OpenMainWindow()

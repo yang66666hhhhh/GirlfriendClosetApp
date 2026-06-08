@@ -380,6 +380,46 @@ public class LocalUserWorkspaceTests
     }
 
     [Fact]
+    public async Task LocalAuthService_LoginAsync_UpdatesLastLoginTimestamp()
+    {
+        var tempDir = CreateTempDir();
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var options = CreateOptions(dbPath);
+        var userId = Guid.NewGuid();
+
+        try
+        {
+            await using var context = new ClosetDbContext(options);
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.EnsureCreatedAsync();
+            var user = new LocalUser
+            {
+                Id = userId,
+                AccountName = "xiaoyu",
+                DisplayName = "小鱼",
+                Role = LocalUserRole.Member,
+                IsActive = true
+            };
+            LocalAuthService.ApplyPassword(user, "member123");
+            context.LocalUsers.Add(user);
+            await context.SaveChangesAsync();
+
+            var session = new AuthSessionContext();
+            var auth = new LocalAuthService(new LocalUserRepository(context), new CurrentUserContext(Path.Combine(tempDir, "current-user.json"), session), session);
+
+            var result = await auth.LoginAsync("xiaoyu", "member123", LocalCredentialKind.Password);
+
+            Assert.True(result.Success);
+            var refreshed = await context.LocalUsers.AsNoTracking().SingleAsync(item => item.Id == userId);
+            Assert.NotNull(refreshed.LastLoginAt);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
     public async Task LocalUserService_CreateMemberAsync_RequiresUniqueAccountName()
     {
         var tempDir = CreateTempDir();

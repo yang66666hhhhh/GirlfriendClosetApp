@@ -141,6 +141,38 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="RecentAccountButton" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="Shell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Shell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                                <Setter TargetName="Shell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="Shell" Property="Opacity" Value="0.88"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Border Margin="34"
@@ -287,6 +319,16 @@
                 </StackPanel>
 
                 <StackPanel x:Name="LoginPanel">
+                    <StackPanel x:Name="RecentAccountsPanel"
+                                Margin="0,0,0,18"
+                                Visibility="Collapsed">
+                        <TextBlock Text="最近登录"
+                                   Style="{StaticResource LoginInputLabel}"/>
+                        <WrapPanel x:Name="RecentAccountsHost"
+                                   Margin="0,10,0,0"
+                                   ItemHeight="68"
+                                   Orientation="Horizontal"/>
+                    </StackPanel>
                     <TextBlock x:Name="TxtSelectedUser"
                                Text="账号"
                                Margin="0,0,0,14"
