@@ -31,6 +31,19 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
+    public void LoginWindow_DefaultSizeLeavesRoomForLoginForm()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.Contains("Width=\"1040\"", xaml);
+        Assert.Contains("Height=\"720\"", xaml);
+        Assert.Contains("MinWidth=\"900\"", xaml);
+        Assert.Contains("MinHeight=\"660\"", xaml);
+        Assert.DoesNotContain("<Border Margin=\"42\"", xaml);
+        Assert.Contains("<Border Margin=\"34\"", xaml);
+    }
+
+    [Fact]
     public void UserManagementDialog_UsesManagementConsoleLayout()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));

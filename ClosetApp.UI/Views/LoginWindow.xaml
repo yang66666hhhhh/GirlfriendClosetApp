@@ -3,10 +3,10 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="登录我的衣橱"
         Icon="../Assets/Icons/app-avatar.png"
-        Width="980"
-        Height="620"
-        MinWidth="860"
-        MinHeight="560"
+        Width="1040"
+        Height="720"
+        MinWidth="900"
+        MinHeight="660"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SurfacePageBrush}">
     <Window.Resources>
@@ -143,7 +143,7 @@
         </Style>
     </Window.Resources>
 
-    <Border Margin="42"
+    <Border Margin="34"
             Background="{DynamicResource SurfaceCardBrush}"
             BorderBrush="{DynamicResource BorderLightBrush}"
             BorderThickness="1"
