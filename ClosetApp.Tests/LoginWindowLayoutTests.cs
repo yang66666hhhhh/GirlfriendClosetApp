@@ -61,6 +61,7 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"WelcomeSessionCard\"", xaml);
         Assert.Contains("x:Key=\"RecentAccountHoverAvatar\"", xaml);
         Assert.Contains("x:Key=\"RecentAccountSelectedButton\"", xaml);
+        Assert.Contains("x:Name=\"RecentAccountsDivider\"", xaml);
     }
 
     [Fact]
@@ -70,6 +71,7 @@ public class LoginWindowLayoutTests
 
         Assert.Contains("ApplyRecentAccountSelection", code);
         Assert.Contains("_recentAccountButtons", code);
+        Assert.Contains("LoginAccountBox_TextChanged", code);
     }
 
     [Fact]

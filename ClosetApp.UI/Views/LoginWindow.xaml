@@ -386,6 +386,11 @@
                                    ItemHeight="68"
                                    ItemWidth="248"
                                    Orientation="Horizontal"/>
+                        <Border x:Name="RecentAccountsDivider"
+                                Margin="0,14,0,0"
+                                Height="1"
+                                Background="{DynamicResource BorderLightBrush}"
+                                Opacity="0.72"/>
                     </StackPanel>
                     <StackPanel Margin="0,0,0,14">
                         <TextBlock x:Name="TxtSelectedUser"
@@ -399,7 +404,8 @@
                     </StackPanel>
                     <TextBox x:Name="LoginAccountBox"
                              Margin="0,0,0,14"
-                             Style="{StaticResource LoginTextBox}"/>
+                             Style="{StaticResource LoginTextBox}"
+                             TextChanged="LoginAccountBox_TextChanged"/>
                     <TextBlock Text="密码" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="LoginPasswordBox"
                                  Margin="0,8,0,14"

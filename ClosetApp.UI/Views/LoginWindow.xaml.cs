@@ -301,6 +301,15 @@ public partial class LoginWindow : Window
         FocusCredentialInput(account.HasPinCredential);
     }
 
+    private void LoginAccountBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        if (_isSetupMode || _isSubmitting)
+            return;
+
+        var accountName = LoginAccountBox.Text.Trim();
+        ApplyRecentAccountSelection(string.IsNullOrWhiteSpace(accountName) ? null : accountName);
+    }
+
     private void ApplyRecentAccountSelection(string? accountName)
     {
         foreach (var button in _recentAccountButtons)
