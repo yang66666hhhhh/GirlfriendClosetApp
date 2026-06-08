@@ -194,6 +194,15 @@ public partial class LoginWindow : Window
             TextTrimming = TextTrimming.CharacterEllipsis
         };
 
+        var lastLogin = new TextBlock
+        {
+            Text = account.LastLoginText,
+            Margin = new Thickness(0, 7, 0, 0),
+            FontSize = 10,
+            Foreground = (Brush)FindResource("TextPlaceholderBrush"),
+            TextTrimming = TextTrimming.CharacterEllipsis
+        };
+
         var hintChip = new Border
         {
             Style = (Style)FindResource("RecentAccountHintChip"),
@@ -216,6 +225,7 @@ public partial class LoginWindow : Window
         };
         text.Children.Add(name);
         text.Children.Add(secondary);
+        text.Children.Add(lastLogin);
         text.Children.Add(hintChip);
 
         var row = new Grid();

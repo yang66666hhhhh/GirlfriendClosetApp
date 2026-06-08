@@ -7,7 +7,8 @@ public sealed record LoginRecentAccountItem(
     string AccountName,
     string DisplayName,
     string Initial,
-    bool HasPinCredential);
+    bool HasPinCredential,
+    string LastLoginText);
 
 public sealed record LoginRecentAccountsState(
     string? PrefillAccountName,
@@ -20,8 +21,9 @@ public static class LoginRecentAccountsBuilder
 {
     private const int MaxRecentAccounts = 4;
 
-    public static LoginRecentAccountsState Build(IEnumerable<LocalUser> users)
+    public static LoginRecentAccountsState Build(IEnumerable<LocalUser> users, DateTime? now = null)
     {
+        var currentTime = now ?? DateTime.Now;
         var recentAccounts = users
             .Where(user => user.IsActive && user.LastLoginAt.HasValue && !string.IsNullOrWhiteSpace(user.AccountName))
             .OrderByDescending(user => user.LastLoginAt)
@@ -31,7 +33,8 @@ public static class LoginRecentAccountsBuilder
                 user.AccountName.Trim(),
                 string.IsNullOrWhiteSpace(user.DisplayName) ? user.AccountName.Trim() : user.DisplayName.Trim(),
                 BuildInitial(user.DisplayName, user.AccountName),
-                user.HasPinCredential))
+                user.HasPinCredential,
+                FormatLastLoginText(user.LastLoginAt!.Value, currentTime)))
             .ToList();
 
         return new LoginRecentAccountsState(
@@ -45,5 +48,23 @@ public static class LoginRecentAccountsBuilder
         return string.IsNullOrWhiteSpace(source)
             ? "衣"
             : source.Trim()[0].ToString();
+    }
+
+    private static string FormatLastLoginText(DateTime lastLoginAt, DateTime now)
+    {
+        var delta = now - lastLoginAt;
+        if (delta.TotalMinutes < 1)
+            return "刚刚";
+
+        if (delta.TotalHours < 1)
+            return $"{Math.Max(1, (int)Math.Floor(delta.TotalMinutes))} 分钟前";
+
+        if (delta.TotalDays < 1)
+            return $"{Math.Max(1, (int)Math.Floor(delta.TotalHours))} 小时前";
+
+        if (delta.TotalDays < 2)
+            return "昨天";
+
+        return $"{Math.Max(2, (int)Math.Floor(delta.TotalDays))} 天前";
     }
 }
