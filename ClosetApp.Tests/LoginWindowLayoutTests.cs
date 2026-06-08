@@ -57,6 +57,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"TxtSubmitLabel\"", xaml);
         Assert.Contains("x:Name=\"SubmitBusyIndicator\"", xaml);
         Assert.Contains("x:Key=\"RecentAccountPrimaryChip\"", xaml);
+        Assert.Contains("x:Name=\"WelcomeMetricsCard\"", xaml);
+        Assert.Contains("x:Name=\"WelcomeSessionCard\"", xaml);
+        Assert.Contains("x:Key=\"RecentAccountHoverAvatar\"", xaml);
     }
 
     [Fact]

@@ -177,6 +177,12 @@ public partial class LoginWindow : Window
             IsCurrent = false
         };
 
+        var avatarShell = new Border
+        {
+            Style = (Style)FindResource("RecentAccountHoverAvatar"),
+            Child = avatar
+        };
+
         var name = new TextBlock
         {
             Text = account.DisplayName,
@@ -255,7 +261,7 @@ public partial class LoginWindow : Window
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         Grid.SetColumn(text, 1);
-        row.Children.Add(avatar);
+        row.Children.Add(avatarShell);
         row.Children.Add(text);
         text.Children.Remove(hintChip);
         text.Children.Add(metaRow);
