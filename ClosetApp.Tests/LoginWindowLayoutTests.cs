@@ -60,6 +60,16 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"WelcomeMetricsCard\"", xaml);
         Assert.Contains("x:Name=\"WelcomeSessionCard\"", xaml);
         Assert.Contains("x:Key=\"RecentAccountHoverAvatar\"", xaml);
+        Assert.Contains("x:Key=\"RecentAccountSelectedButton\"", xaml);
+    }
+
+    [Fact]
+    public void LoginWindow_CodeBehindSyncsSelectedRecentAccount()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
+
+        Assert.Contains("ApplyRecentAccountSelection", code);
+        Assert.Contains("_recentAccountButtons", code);
     }
 
     [Fact]

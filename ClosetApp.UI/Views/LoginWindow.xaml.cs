@@ -22,6 +22,7 @@ public partial class LoginWindow : Window
     private bool _openedMainWindow;
     private LocalUser? _superAdmin;
     private IReadOnlyList<LocalUser> _users = [];
+    private readonly List<Button> _recentAccountButtons = [];
 
     public LoginWindow()
     {
@@ -147,19 +148,26 @@ public partial class LoginWindow : Window
         var state = LoginRecentAccountsBuilder.Build(_users);
         RecentAccountsPanel.Visibility = state.HasRecentAccounts ? Visibility.Visible : Visibility.Collapsed;
         RecentAccountsHost.Children.Clear();
+        _recentAccountButtons.Clear();
 
         foreach (var account in state.RecentAccounts)
-            RecentAccountsHost.Children.Add(BuildRecentAccountButton(account));
+        {
+            var button = BuildRecentAccountButton(account);
+            _recentAccountButtons.Add(button);
+            RecentAccountsHost.Children.Add(button);
+        }
 
         if (!string.IsNullOrWhiteSpace(state.PrefillAccountName))
         {
             LoginAccountBox.Text = state.PrefillAccountName;
             TxtSelectedUser.Text = $"账号 · 上次使用 {state.PrefillAccountName}";
+            ApplyRecentAccountSelection(state.PrefillAccountName);
         }
         else
         {
             LoginAccountBox.Clear();
             TxtSelectedUser.Text = "账号";
+            ApplyRecentAccountSelection(null);
         }
 
         LoginPasswordBox.Clear();
@@ -287,9 +295,21 @@ public partial class LoginWindow : Window
         TxtSelectedUser.Text = account.HasPinCredential
             ? $"账号 · {account.AccountName} 支持 PIN 快速登录"
             : $"账号 · {account.AccountName}";
+        ApplyRecentAccountSelection(account.AccountName);
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
         FocusCredentialInput(account.HasPinCredential);
+    }
+
+    private void ApplyRecentAccountSelection(string? accountName)
+    {
+        foreach (var button in _recentAccountButtons)
+        {
+            var isSelected = button.Tag is LoginRecentAccountItem item &&
+                             !string.IsNullOrWhiteSpace(accountName) &&
+                             string.Equals(item.AccountName, accountName, StringComparison.OrdinalIgnoreCase);
+            button.Style = (Style)FindResource(isSelected ? "RecentAccountSelectedButton" : "RecentAccountButton");
+        }
     }
 
     private void FocusCredentialInput(bool preferPin = false)
