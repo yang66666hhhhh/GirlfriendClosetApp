@@ -146,7 +146,7 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="10"/>
+            <Setter Property="Padding" Value="12"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -172,6 +172,14 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+        </Style>
+
+        <Style x:Key="RecentAccountHintChip" TargetType="Border">
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="7,2"/>
+            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
         </Style>
     </Window.Resources>
 
@@ -231,11 +239,11 @@
                             CornerRadius="18"
                             Padding="18">
                         <StackPanel>
-                            <TextBlock Text="账号密码登录"
+                            <TextBlock Text="本地登录"
                                        FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="每个本地账号对应一个独立衣柜。登录后如需更换用户，请先退出登录。"
+                            <TextBlock Text="保留最近登录痕迹，回来时更快。"
                                        Margin="0,8,0,0"
                                        Style="{StaticResource LoginInfoText}"/>
                         </StackPanel>
@@ -251,7 +259,7 @@
                                        FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="衣物、搭配、标签、效果图和个人档案都只属于当前登录账号。"
+                            <TextBlock Text="每个账号拥有独立衣柜、搭配、标签和效果图。"
                                        Margin="0,8,0,0"
                                        Style="{StaticResource LoginInfoText}"/>
                         </StackPanel>
@@ -325,16 +333,23 @@
                         <TextBlock Text="最近登录"
                                    Style="{StaticResource LoginInputLabel}"/>
                         <WrapPanel x:Name="RecentAccountsHost"
+                                   MaxWidth="510"
                                    Margin="0,10,0,0"
                                    ItemHeight="68"
+                                   ItemWidth="248"
                                    Orientation="Horizontal"/>
                     </StackPanel>
-                    <TextBlock x:Name="TxtSelectedUser"
-                               Text="账号"
-                               Margin="0,0,0,14"
-                               FontSize="14"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <StackPanel Margin="0,0,0,14">
+                        <TextBlock x:Name="TxtSelectedUser"
+                                   Text="账号"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"/>
+                        <TextBlock Text="上次登录"
+                                   Margin="0,4,0,0"
+                                   FontSize="11"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </StackPanel>
                     <TextBox x:Name="LoginAccountBox"
                              Margin="0,0,0,14"
                              Style="{StaticResource LoginTextBox}"/>

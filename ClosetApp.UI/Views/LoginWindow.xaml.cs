@@ -153,11 +153,12 @@ public partial class LoginWindow : Window
         if (!string.IsNullOrWhiteSpace(state.PrefillAccountName))
         {
             LoginAccountBox.Text = state.PrefillAccountName;
-            TxtSelectedUser.Text = $"账号 · 最近使用 {state.PrefillAccountName}";
+            TxtSelectedUser.Text = $"账号 · 上次使用 {state.PrefillAccountName}";
         }
         else
         {
             LoginAccountBox.Clear();
+            TxtSelectedUser.Text = "账号";
         }
 
         LoginPasswordBox.Clear();
@@ -169,8 +170,8 @@ public partial class LoginWindow : Window
     {
         var avatar = new LocalUserAvatar
         {
-            Width = 38,
-            Height = 38,
+            Width = 40,
+            Height = 40,
             Initial = account.Initial,
             IsCurrent = false
         };
@@ -186,26 +187,41 @@ public partial class LoginWindow : Window
 
         var secondary = new TextBlock
         {
-            Text = account.HasPinCredential ? $"@{account.AccountName} · PIN 可用" : $"@{account.AccountName}",
+            Text = $"@{account.AccountName}",
             Margin = new Thickness(0, 3, 0, 0),
             FontSize = 11,
             Foreground = (Brush)FindResource("TextSecondaryBrush"),
             TextTrimming = TextTrimming.CharacterEllipsis
         };
 
+        var hintChip = new Border
+        {
+            Style = (Style)FindResource("RecentAccountHintChip"),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Margin = new Thickness(0, 8, 0, 0),
+            Child = new TextBlock
+            {
+                Text = account.HasPinCredential ? "PIN 快捷登录" : "密码登录",
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource(account.HasPinCredential ? "PrimaryDarkBrush" : "TextSecondaryBrush")
+            }
+        };
+
         var text = new StackPanel
         {
             Margin = new Thickness(10, 0, 0, 0),
-            Width = 122,
+            Width = 156,
             VerticalAlignment = VerticalAlignment.Center
         };
         text.Children.Add(name);
         text.Children.Add(secondary);
+        text.Children.Add(hintChip);
 
-        var row = new StackPanel
-        {
-            Orientation = Orientation.Horizontal
-        };
+        var row = new Grid();
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
+        Grid.SetColumn(text, 1);
         row.Children.Add(avatar);
         row.Children.Add(text);
 
@@ -213,7 +229,7 @@ public partial class LoginWindow : Window
         {
             Tag = account,
             Margin = new Thickness(0, 0, 10, 10),
-            MinWidth = 182,
+            MinWidth = 0,
             Style = (Style)FindResource("RecentAccountButton"),
             Content = row
         };
@@ -228,7 +244,7 @@ public partial class LoginWindow : Window
 
         LoginAccountBox.Text = account.AccountName;
         TxtSelectedUser.Text = account.HasPinCredential
-            ? $"账号 · {account.AccountName} 可用 PIN 快速登录"
+            ? $"账号 · {account.AccountName} 支持 PIN 快速登录"
             : $"账号 · {account.AccountName}";
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();

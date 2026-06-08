@@ -51,6 +51,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"RecentAccountsPanel\"", xaml);
         Assert.Contains("x:Name=\"RecentAccountsHost\"", xaml);
         Assert.Contains("Text=\"最近登录\"", xaml);
+        Assert.Contains("ItemWidth=\"248\"", xaml);
+        Assert.Contains("MaxWidth=\"510\"", xaml);
+        Assert.Contains("Text=\"上次登录\"", xaml);
     }
 
     [Fact]
