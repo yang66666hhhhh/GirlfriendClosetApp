@@ -53,6 +53,8 @@ public class LoginRecentAccountsBuilderTests
         Assert.Equal("小", state.RecentAccounts[0].Initial);
         Assert.Equal("15 分钟前", state.RecentAccounts[0].LastLoginText);
         Assert.Equal("2 小时前", state.RecentAccounts[1].LastLoginText);
+        Assert.True(state.RecentAccounts[0].IsMostRecent);
+        Assert.False(state.RecentAccounts[1].IsMostRecent);
     }
 
     [Fact]

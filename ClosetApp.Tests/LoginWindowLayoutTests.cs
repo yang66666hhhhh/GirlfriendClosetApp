@@ -54,6 +54,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("ItemWidth=\"248\"", xaml);
         Assert.Contains("MaxWidth=\"510\"", xaml);
         Assert.Contains("Text=\"上次登录\"", xaml);
+        Assert.Contains("x:Name=\"TxtSubmitLabel\"", xaml);
+        Assert.Contains("x:Name=\"SubmitBusyIndicator\"", xaml);
+        Assert.Contains("x:Key=\"RecentAccountPrimaryChip\"", xaml);
     }
 
     [Fact]

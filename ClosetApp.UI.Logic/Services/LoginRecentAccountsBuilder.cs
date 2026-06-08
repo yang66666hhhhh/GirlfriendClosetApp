@@ -8,7 +8,8 @@ public sealed record LoginRecentAccountItem(
     string DisplayName,
     string Initial,
     bool HasPinCredential,
-    string LastLoginText);
+    string LastLoginText,
+    bool IsMostRecent);
 
 public sealed record LoginRecentAccountsState(
     string? PrefillAccountName,
@@ -24,17 +25,22 @@ public static class LoginRecentAccountsBuilder
     public static LoginRecentAccountsState Build(IEnumerable<LocalUser> users, DateTime? now = null)
     {
         var currentTime = now ?? DateTime.Now;
-        var recentAccounts = users
+        var recentUsers = users
             .Where(user => user.IsActive && user.LastLoginAt.HasValue && !string.IsNullOrWhiteSpace(user.AccountName))
             .OrderByDescending(user => user.LastLoginAt)
             .Take(MaxRecentAccounts)
+            .ToList();
+
+        var mostRecentUserId = recentUsers.FirstOrDefault()?.Id;
+        var recentAccounts = recentUsers
             .Select(user => new LoginRecentAccountItem(
                 user.Id,
                 user.AccountName.Trim(),
                 string.IsNullOrWhiteSpace(user.DisplayName) ? user.AccountName.Trim() : user.DisplayName.Trim(),
                 BuildInitial(user.DisplayName, user.AccountName),
                 user.HasPinCredential,
-                FormatLastLoginText(user.LastLoginAt!.Value, currentTime)))
+                FormatLastLoginText(user.LastLoginAt!.Value, currentTime),
+                user.Id == mostRecentUserId))
             .ToList();
 
         return new LoginRecentAccountsState(

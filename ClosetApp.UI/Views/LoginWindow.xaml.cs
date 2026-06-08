@@ -18,6 +18,7 @@ public partial class LoginWindow : Window
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
     private bool _isSetupMode;
+    private bool _isSubmitting;
     private bool _openedMainWindow;
     private LocalUser? _superAdmin;
     private IReadOnlyList<LocalUser> _users = [];
@@ -61,7 +62,7 @@ public partial class LoginWindow : Window
         TxtSubtitle.Text = _isSetupMode
             ? "完成管理员账号密码后，再创建或管理其它本地用户。"
             : "请输入本地账号和密码。登录后如需更换用户，请先退出登录。";
-        BtnSubmit.Content = _isSetupMode ? "完成设置并进入" : "登录";
+        SetSubmittingState(false);
         if (_isSetupMode && _superAdmin != null)
             SetupAccountBox.Text = string.IsNullOrWhiteSpace(_superAdmin.AccountName)
                 ? "admin"
@@ -91,7 +92,7 @@ public partial class LoginWindow : Window
     {
         try
         {
-            BtnSubmit.IsEnabled = false;
+            SetSubmittingState(true);
             ClearError();
 
             if (_isSetupMode)
@@ -105,7 +106,7 @@ public partial class LoginWindow : Window
         }
         finally
         {
-            BtnSubmit.IsEnabled = true;
+            SetSubmittingState(false);
         }
     }
 
@@ -217,6 +218,21 @@ public partial class LoginWindow : Window
             }
         };
 
+        var primaryChip = new Border
+        {
+            Style = (Style)FindResource("RecentAccountPrimaryChip"),
+            HorizontalAlignment = HorizontalAlignment.Left,
+            Margin = new Thickness(8, 0, 0, 0),
+            Visibility = account.IsMostRecent ? Visibility.Visible : Visibility.Collapsed,
+            Child = new TextBlock
+            {
+                Text = "最近使用",
+                FontSize = 10,
+                FontWeight = FontWeights.SemiBold,
+                Foreground = (Brush)FindResource("PrimaryDarkBrush")
+            }
+        };
+
         var text = new StackPanel
         {
             Margin = new Thickness(10, 0, 0, 0),
@@ -228,12 +244,21 @@ public partial class LoginWindow : Window
         text.Children.Add(lastLogin);
         text.Children.Add(hintChip);
 
+        var metaRow = new StackPanel
+        {
+            Orientation = Orientation.Horizontal
+        };
+        metaRow.Children.Add(hintChip);
+        metaRow.Children.Add(primaryChip);
+
         var row = new Grid();
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         Grid.SetColumn(text, 1);
         row.Children.Add(avatar);
         row.Children.Add(text);
+        text.Children.Remove(hintChip);
+        text.Children.Add(metaRow);
 
         var button = new Button
         {
@@ -267,6 +292,18 @@ public partial class LoginWindow : Window
             LoginPinBox.Focus();
         else
             LoginPasswordBox.Focus();
+    }
+
+    private void SetSubmittingState(bool isSubmitting)
+    {
+        _isSubmitting = isSubmitting;
+        BtnSubmit.IsEnabled = !isSubmitting;
+        LoginPanel.IsEnabled = !isSubmitting;
+        SetupPanel.IsEnabled = !isSubmitting;
+        SubmitBusyIndicator.Visibility = isSubmitting ? Visibility.Visible : Visibility.Collapsed;
+        TxtSubmitLabel.Text = isSubmitting
+            ? (_isSetupMode ? "正在进入" : "登录中")
+            : (_isSetupMode ? "完成设置并进入" : "登录");
     }
 
     private void OpenMainWindow()
