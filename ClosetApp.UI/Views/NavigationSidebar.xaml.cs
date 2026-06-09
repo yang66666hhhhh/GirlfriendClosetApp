@@ -270,14 +270,11 @@ public partial class NavigationSidebar : UserControl
         };
     }
 
-    private FrameworkElement BuildProfileMenuDivider()
+    private Separator BuildProfileMenuDivider()
     {
-        return new Border
+        return new Separator
         {
-            Height = 1,
-            Margin = new Thickness(10, 6, 10, 6),
-            Background = (Brush)FindResource("BorderLightBrush"),
-            Opacity = 0.9,
+            Style = (Style)FindResource("ProfileMenuDividerStyle"),
             IsHitTestVisible = false
         };
     }

@@ -104,6 +104,20 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <Style x:Key="ProfileMenuDividerStyle" TargetType="Separator">
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Separator">
+                        <Border Height="1"
+                                Margin="10,6"
+                                Background="{DynamicResource BorderLightBrush}"
+                                Opacity="0.9"
+                                SnapsToDevicePixels="True"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </UserControl.Resources>
 
     <!-- Main Sidebar Container -->
@@ -153,7 +167,8 @@
                     </Button.Template>
                     <Button.ContextMenu>
                         <ContextMenu x:Name="ProfileMenu"
-                                     Style="{StaticResource WardrobeCard.MoreMenu}"/>
+                                     Style="{StaticResource WardrobeCard.MoreMenu}"
+                                     ItemContainerStyle="{x:Null}"/>
                     </Button.ContextMenu>
                     <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
                         <Grid.ColumnDefinitions>

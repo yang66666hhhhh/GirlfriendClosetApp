@@ -103,8 +103,18 @@ public class LoginWindowLayoutTests
         Assert.DoesNotContain("BuildUserSwitchMenuHeader", code);
         Assert.DoesNotContain("SwitchUser_Click", code);
         Assert.DoesNotContain("GetAllAsync()", code);
-        Assert.DoesNotContain("new Separator()", code);
         Assert.Contains("BuildProfileMenuDivider", code);
+    }
+
+    [Fact]
+    public void NavigationSidebar_ProfileMenuUsesTypedDividerStyle()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
+
+        Assert.Contains("ProfileMenuDividerStyle", xaml);
+        Assert.Contains("TargetType=\"Separator\"", xaml);
+        Assert.Contains("new Separator", code);
     }
 
     [Fact]
