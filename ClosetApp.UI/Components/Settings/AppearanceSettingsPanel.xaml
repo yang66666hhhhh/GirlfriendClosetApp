@@ -45,14 +45,23 @@
             <Setter Property="Padding" Value="12,10"/>
         </Style>
 
+        <Style x:Key="SettingsInfoChip" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+
     </UserControl.Resources>
 
     <Border Style="{StaticResource SettingsSectionCard}">
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="1.26*"/>
-                <ColumnDefinition Width="18"/>
-                <ColumnDefinition Width="0.9*"/>
+                <ColumnDefinition Width="1.18*"/>
+                <ColumnDefinition Width="16"/>
+                <ColumnDefinition Width="0.98*"/>
             </Grid.ColumnDefinitions>
 
             <StackPanel Grid.Column="0">
@@ -120,27 +129,30 @@
                             </UniformGrid>
                         </Border>
 
+                        <WrapPanel Margin="0,12,0,0">
+                            <Border Style="{StaticResource SettingsInfoChip}">
+                                <TextBlock Text="列表即时切换"
+                                           Style="{StaticResource PageSummaryHintText}"/>
+                            </Border>
+                            <Border Style="{StaticResource SettingsInfoChip}">
+                                <TextBlock Text="无效果图自动回退"
+                                           Style="{StaticResource PageSummaryHintText}"/>
+                            </Border>
+                        </WrapPanel>
+
                         <Border Style="{StaticResource SettingsMicroCard}"
                                 Margin="0,12,0,0">
-                            <Grid>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="当前默认"
-                                               Style="{StaticResource PageSummaryHintText}"/>
-                                    <TextBlock Text="{Binding OutfitCardDisplaySummary}"
-                                               Style="{StaticResource PageSummaryValueText}"
-                                               Margin="0,4,0,0"
-                                               TextWrapping="Wrap"/>
-                                </StackPanel>
-                                <TextBlock Grid.Column="1"
-                                           Text="自动回退"
-                                           Style="{StaticResource PageSummaryHintText}"
-                                           VerticalAlignment="Center"
-                                           Margin="12,0,0,0"/>
-                            </Grid>
+                            <StackPanel>
+                                <TextBlock Text="当前默认"
+                                           Style="{StaticResource PageSummaryHintText}"/>
+                                <TextBlock Text="{Binding OutfitCardDisplaySummary}"
+                                           Style="{StaticResource PageSummaryValueText}"
+                                           Margin="0,4,0,0"
+                                           TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding OutfitCardDisplayDetail}"
+                                           Style="{StaticResource PageMutedBodyText}"
+                                           Margin="0,6,0,0"/>
+                            </StackPanel>
                         </Border>
                     </StackPanel>
                 </Border>
@@ -148,23 +160,29 @@
                 <Border Style="{StaticResource SettingsSurfacePanel}"
                         Margin="0,12,0,0">
                     <DockPanel LastChildFill="True">
+                        <StackPanel>
+                            <TextBlock Text="应用信息"
+                                       Style="{StaticResource PageFieldLabelText}"/>
+                            <TextBlock Text="{Binding ThemeSummary}"
+                                       Style="{StaticResource PageSummaryValueText}"
+                                       Margin="0,8,0,0"/>
+                            <TextBlock Text="{Binding ThemeDescription}"
+                                       Style="{StaticResource PageMutedBodyText}"
+                                       Margin="0,6,0,0"/>
+                            <TextBlock x:Name="TxtVersion"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       FontWeight="SemiBold"
+                                       Margin="0,8,0,0"/>
+                            <TextBlock Text=".NET WPF / SQLite"
+                                       Style="{StaticResource PageMutedBodyText}"
+                                       Margin="0,4,0,0"/>
+                        </StackPanel>
                         <Button DockPanel.Dock="Right"
                                 Content="打开目录"
                                 Style="{StaticResource PageToolbarCapsuleButton}"
                                 Margin="12,0,0,0"
                                 MinWidth="86"
                                 Click="OpenAppDir_Click"/>
-                        <StackPanel>
-                            <TextBlock Text="应用信息"
-                                       Style="{StaticResource PageFieldLabelText}"/>
-                            <TextBlock x:Name="TxtVersion"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                       FontWeight="SemiBold"
-                                       Margin="0,7,0,0"/>
-                            <TextBlock Text=".NET WPF / SQLite"
-                                       Style="{StaticResource PageMutedBodyText}"
-                                       Margin="0,4,0,0"/>
-                        </StackPanel>
                     </DockPanel>
                 </Border>
             </StackPanel>

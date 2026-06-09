@@ -41,6 +41,15 @@
             <Setter Property="Margin" Value="0,0,8,8"/>
         </Style>
 
+        <Style x:Key="SettingsWorkbenchHeroNoteCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="14"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+
         <Style x:Key="SettingsWorkbenchMetricLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="10"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
@@ -103,9 +112,9 @@
                 <Border Style="{StaticResource SettingsWorkbenchHeroCard}">
                     <Grid>
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="1.05*"/>
-                            <ColumnDefinition Width="22"/>
-                            <ColumnDefinition Width="1.15*"/>
+                            <ColumnDefinition Width="1.14*"/>
+                            <ColumnDefinition Width="18"/>
+                            <ColumnDefinition Width="1.06*"/>
                         </Grid.ColumnDefinitions>
 
                         <StackPanel Grid.Column="0">
@@ -120,25 +129,34 @@
                                        Style="{StaticResource PageSectionBodyText}"
                                        Margin="0,6,0,0"/>
 
-                            <WrapPanel Margin="0,12,0,0">
-                                <Border Style="{StaticResource SettingsQuickSummaryPill}">
-                                    <StackPanel>
-                                        <TextBlock Text="主题"
-                                                   Style="{StaticResource PageSummaryHintText}"/>
-                                        <TextBlock Text="{Binding ThemeSummary}"
-                                                   Style="{StaticResource PageSummaryValueText}"
-                                                   Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                </Border>
-                                <Border Style="{StaticResource SettingsQuickSummaryPill}">
-                                    <StackPanel>
-                                        <TextBlock Text="搭配卡片"
-                                                   Style="{StaticResource PageSummaryHintText}"/>
-                                        <TextBlock Text="{Binding OutfitCardDisplaySummary}"
-                                                   Style="{StaticResource PageSummaryValueText}"
-                                                   Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                </Border>
+                            <Border Style="{StaticResource SettingsWorkbenchHeroNoteCard}"
+                                    Margin="0,12,0,0">
+                                <StackPanel>
+                                    <TextBlock Text="当前主题"
+                                               Style="{StaticResource PageSummaryHintText}"/>
+                                    <TextBlock Text="{Binding ThemeSummary}"
+                                               Style="{StaticResource PageSummaryValueText}"
+                                               Margin="0,4,0,0"/>
+                                    <TextBlock Text="{Binding ThemeDescription}"
+                                               Style="{StaticResource PageMutedBodyText}"
+                                               Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Style="{StaticResource SettingsWorkbenchHeroNoteCard}">
+                                <StackPanel>
+                                    <TextBlock Text="搭配卡片策略"
+                                               Style="{StaticResource PageSummaryHintText}"/>
+                                    <TextBlock Text="{Binding OutfitCardDisplaySummary}"
+                                               Style="{StaticResource PageSummaryValueText}"
+                                               Margin="0,4,0,0"/>
+                                    <TextBlock Text="{Binding OutfitCardDisplayDetail}"
+                                               Style="{StaticResource PageMutedBodyText}"
+                                               Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Border>
+
+                            <WrapPanel Margin="0,2,0,0">
                                 <Border Style="{StaticResource SettingsQuickSummaryPill}">
                                     <StackPanel>
                                         <TextBlock Text="天气城市"
@@ -146,6 +164,16 @@
                                         <TextBlock Text="{Binding WeatherCity}"
                                                    Style="{StaticResource PageSummaryValueText}"
                                                    Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource SettingsQuickSummaryPill}">
+                                    <StackPanel>
+                                        <TextBlock Text="日志"
+                                                   Style="{StaticResource PageSummaryHintText}"/>
+                                        <TextBlock Text="{Binding LogStats}"
+                                                   Style="{StaticResource PageSummaryValueText}"
+                                                   Margin="0,2,0,0"
+                                                   TextWrapping="Wrap"/>
                                     </StackPanel>
                                 </Border>
                             </WrapPanel>
@@ -169,14 +197,14 @@
                             </Border>
                             <Border Style="{StaticResource SettingsWorkbenchMetricCard}">
                                 <StackPanel>
-                                    <TextBlock Text="默认城市" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
-                                    <TextBlock Text="{Binding WeatherCity}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
+                                    <TextBlock Text="图片生成" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
+                                    <TextBlock Text="{Binding AiSettingsSummary}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource SettingsWorkbenchMetricCard}" Margin="0,0,0,10">
                                 <StackPanel>
-                                    <TextBlock Text="日志状态" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
-                                    <TextBlock x:Name="TxtLogStats" Text="{Binding LogStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
+                                    <TextBlock Text="默认城市" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
+                                    <TextBlock Text="{Binding WeatherCity}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
                         </UniformGrid>
