@@ -3,13 +3,10 @@ using System.Windows.Input;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
-using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System.Windows.Controls;
-using System.Windows.Media.Animation;
-using System.Windows.Media;
 
 namespace ClosetApp.UI.Views;
 
@@ -23,7 +20,7 @@ public partial class LoginWindow : Window
     private bool _openedMainWindow;
     private LocalUser? _superAdmin;
     private IReadOnlyList<LocalUser> _users = [];
-    private readonly List<Button> _recentAccountButtons = [];
+    private bool _isSyncingRecentAccountSelection;
     private LoginCredentialMode SelectedCredentialMode { get; set; } = LoginCredentialMode.Password;
 
     public LoginWindow()
@@ -72,10 +69,6 @@ public partial class LoginWindow : Window
             SetupAccountBox.Text = string.IsNullOrWhiteSpace(_superAdmin.AccountName)
                 ? "admin"
                 : _superAdmin.AccountName;
-        TxtSelectedUser.Text = "账号";
-        TxtSelectedUserHint.Text = _isSetupMode
-            ? "先完成管理员凭证设置，再进入主界面。"
-            : "使用最近登录账号或手动输入账号名。";
 
         if (_isSetupMode)
         {
@@ -163,162 +156,40 @@ public partial class LoginWindow : Window
     private void ApplyRecentAccountsState()
     {
         var state = LoginRecentAccountsBuilder.Build(_users);
-        RecentAccountsPanel.Visibility = state.HasRecentAccounts ? Visibility.Visible : Visibility.Collapsed;
-        RecentAccountsHost.Children.Clear();
-        _recentAccountButtons.Clear();
-
-        foreach (var account in state.RecentAccounts)
-        {
-            var button = BuildRecentAccountButton(account);
-            _recentAccountButtons.Add(button);
-            RecentAccountsHost.Children.Add(button);
-        }
+        ApplyRecentAccountDropdownState(state);
 
         if (!string.IsNullOrWhiteSpace(state.PrefillAccountName))
         {
             LoginAccountBox.Text = state.PrefillAccountName;
-            TxtSelectedUser.Text = $"账号 · 上次使用 {state.PrefillAccountName}";
-            TxtSelectedUserHint.Text = "已自动带入最近一次登录账号。";
-            ApplyRecentAccountSelection(state.PrefillAccountName);
+            SelectRecentAccount(state.PrefillAccountName);
         }
         else
         {
             LoginAccountBox.Clear();
-            TxtSelectedUser.Text = "账号";
-            TxtSelectedUserHint.Text = "使用最近登录账号或手动输入账号名。";
-            ApplyRecentAccountSelection(null);
+            SelectRecentAccount(null);
         }
 
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
         SetLoginCredentialMode(LoginCredentialMode.Password);
         FocusCredentialInput();
-        AnimateRecentAccountButtons();
     }
 
-    private Button BuildRecentAccountButton(LoginRecentAccountItem account)
+    private void ApplyRecentAccountDropdownState(LoginRecentAccountsState state)
     {
-        var avatar = new LocalUserAvatar
-        {
-            Width = 42,
-            Height = 42,
-            AvatarPath = account.AvatarPath,
-            Initial = account.Initial,
-            IsCurrent = false
-        };
-
-        var avatarShell = new Border
-        {
-            Style = (Style)FindResource("RecentAccountHoverAvatar"),
-            Child = avatar
-        };
-
-        var name = new TextBlock
-        {
-            Text = account.DisplayName,
-            FontSize = 13,
-            FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)FindResource("TextPrimaryBrush"),
-            TextTrimming = TextTrimming.CharacterEllipsis
-        };
-
-        var secondary = new TextBlock
-        {
-            Text = $"@{account.AccountName}",
-            Margin = new Thickness(0, 3, 0, 0),
-            FontSize = 11,
-            Foreground = (Brush)FindResource("TextSecondaryBrush"),
-            TextTrimming = TextTrimming.CharacterEllipsis
-        };
-
-        var lastLogin = new TextBlock
-        {
-            Text = account.LastLoginText,
-            Margin = new Thickness(0, 7, 0, 0),
-            FontSize = 10,
-            Foreground = (Brush)FindResource("TextPlaceholderBrush"),
-            TextTrimming = TextTrimming.CharacterEllipsis
-        };
-
-        var hintChip = new Border
-        {
-            Style = (Style)FindResource("RecentAccountHintChip"),
-            HorizontalAlignment = HorizontalAlignment.Left,
-            Margin = new Thickness(0, 8, 0, 0),
-            Child = new TextBlock
-            {
-                Text = account.HasPinCredential ? "PIN 快捷登录" : "密码登录",
-                FontSize = 10,
-                FontWeight = FontWeights.SemiBold,
-                Foreground = (Brush)FindResource(account.HasPinCredential ? "PrimaryDarkBrush" : "TextSecondaryBrush")
-            }
-        };
-
-        var primaryChip = new Border
-        {
-            Style = (Style)FindResource("RecentAccountPrimaryChip"),
-            HorizontalAlignment = HorizontalAlignment.Left,
-            Margin = new Thickness(8, 0, 0, 0),
-            Visibility = account.IsMostRecent ? Visibility.Visible : Visibility.Collapsed,
-            Child = new TextBlock
-            {
-                Text = "最近使用",
-                FontSize = 10,
-                FontWeight = FontWeights.SemiBold,
-                Foreground = (Brush)FindResource("PrimaryDarkBrush")
-            }
-        };
-
-        var text = new StackPanel
-        {
-            Margin = new Thickness(12, 0, 0, 0),
-            Width = 152,
-            VerticalAlignment = VerticalAlignment.Center
-        };
-        text.Children.Add(name);
-        text.Children.Add(secondary);
-        text.Children.Add(lastLogin);
-
-        var metaRow = new StackPanel
-        {
-            Orientation = Orientation.Horizontal
-        };
-        metaRow.Children.Add(hintChip);
-        metaRow.Children.Add(primaryChip);
-
-        var row = new Grid();
-        row.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        row.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        Grid.SetColumn(text, 1);
-        row.Children.Add(avatarShell);
-        row.Children.Add(text);
-        text.Children.Add(metaRow);
-
-        var button = new Button
-        {
-            Tag = account,
-            Margin = new Thickness(0, 0, 10, 10),
-            MinWidth = 0,
-            Style = (Style)FindResource("RecentAccountButton"),
-            Content = row
-        };
-        button.Click += RecentAccount_Click;
-        return button;
+        _isSyncingRecentAccountSelection = true;
+        RecentAccountSelector.ItemsSource = state.RecentAccounts;
+        RecentAccountSelector.Visibility = state.HasRecentAccounts ? Visibility.Visible : Visibility.Collapsed;
+        _isSyncingRecentAccountSelection = false;
     }
 
-    private void RecentAccount_Click(object sender, RoutedEventArgs e)
+    private void RecentAccountSelector_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
-        if (sender is not Button { Tag: LoginRecentAccountItem account })
+        if (_isSyncingRecentAccountSelection ||
+            RecentAccountSelector.SelectedItem is not LoginRecentAccountItem account)
             return;
 
         LoginAccountBox.Text = account.AccountName;
-        TxtSelectedUser.Text = account.HasPinCredential
-            ? $"账号 · {account.AccountName} 支持 PIN 快速登录"
-            : $"账号 · {account.AccountName}";
-        TxtSelectedUserHint.Text = account.HasPinCredential
-            ? "已切换为 PIN 登录；也可以改用密码。"
-            : "该账号未设置 PIN，请输入密码登录。";
-        ApplyRecentAccountSelection(account.AccountName);
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
         SetLoginCredentialMode(account.HasPinCredential ? LoginCredentialMode.Pin : LoginCredentialMode.Password);
@@ -333,51 +204,18 @@ public partial class LoginWindow : Window
             return;
 
         var accountName = LoginAccountBox.Text.Trim();
-        TxtSelectedUserHint.Text = string.IsNullOrWhiteSpace(accountName)
-            ? "使用最近登录账号或手动输入账号名。"
-            : "选择登录方式后输入对应凭证。";
-        ApplyRecentAccountSelection(string.IsNullOrWhiteSpace(accountName) ? null : accountName);
+        SelectRecentAccount(string.IsNullOrWhiteSpace(accountName) ? null : accountName);
     }
 
-    private void ApplyRecentAccountSelection(string? accountName)
+    private void SelectRecentAccount(string? accountName)
     {
-        foreach (var button in _recentAccountButtons)
-        {
-            var isSelected = button.Tag is LoginRecentAccountItem item &&
-                             !string.IsNullOrWhiteSpace(accountName) &&
-                             string.Equals(item.AccountName, accountName, StringComparison.OrdinalIgnoreCase);
-            button.Style = (Style)FindResource(isSelected ? "RecentAccountSelectedButton" : "RecentAccountButton");
-        }
-    }
-
-    private void AnimateRecentAccountButtons()
-    {
-        for (var i = 0; i < _recentAccountButtons.Count; i++)
-        {
-            var button = _recentAccountButtons[i];
-            button.Opacity = 0;
-            var translate = button.RenderTransform as TranslateTransform ?? new TranslateTransform(0, 8);
-            translate.Y = 8;
-            button.RenderTransform = translate;
-
-            var delay = TimeSpan.FromMilliseconds(i * 40);
-            var duration = TimeSpan.FromMilliseconds(240);
-            var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-            var fadeIn = new DoubleAnimation(0, 1, duration)
-            {
-                BeginTime = delay,
-                EasingFunction = ease
-            };
-            var slideUp = new DoubleAnimation(8, 0, duration)
-            {
-                BeginTime = delay,
-                EasingFunction = ease
-            };
-
-            button.BeginAnimation(OpacityProperty, fadeIn);
-            translate.BeginAnimation(TranslateTransform.YProperty, slideUp);
-        }
+        _isSyncingRecentAccountSelection = true;
+        RecentAccountSelector.SelectedItem = RecentAccountSelector.Items
+            .OfType<LoginRecentAccountItem>()
+            .FirstOrDefault(item =>
+                !string.IsNullOrWhiteSpace(accountName) &&
+                string.Equals(item.AccountName, accountName, StringComparison.OrdinalIgnoreCase));
+        _isSyncingRecentAccountSelection = false;
     }
 
     private void FocusCredentialInput(bool preferPin = false)

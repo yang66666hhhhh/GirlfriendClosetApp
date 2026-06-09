@@ -44,52 +44,35 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
-    public void LoginWindow_RendersRecentAccountQuickAccess()
+    public void LoginWindow_RendersRecentAccountDropdown()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
 
-        Assert.Contains("x:Name=\"RecentAccountsPanel\"", xaml);
-        Assert.Contains("x:Name=\"RecentAccountsHost\"", xaml);
+        Assert.Contains("x:Name=\"RecentAccountSelector\"", xaml);
         Assert.Contains("Text=\"最近登录\"", xaml);
-        Assert.Contains("ItemWidth=\"248\"", xaml);
-        Assert.Contains("MaxWidth=\"510\"", xaml);
         Assert.Contains("x:Name=\"TxtSubmitLabel\"", xaml);
         Assert.Contains("x:Name=\"SubmitBusyIndicator\"", xaml);
-        Assert.Contains("x:Key=\"RecentAccountPrimaryChip\"", xaml);
         Assert.Contains("x:Name=\"WelcomeMetricsCard\"", xaml);
         Assert.Contains("x:Name=\"WelcomeSessionCard\"", xaml);
-        Assert.Contains("x:Key=\"RecentAccountHoverAvatar\"", xaml);
-        Assert.Contains("x:Key=\"RecentAccountSelectedButton\"", xaml);
-        Assert.Contains("x:Name=\"RecentAccountsDivider\"", xaml);
         Assert.Contains("x:Name=\"LoginErrorIcon\"", xaml);
         Assert.Contains("x:Name=\"TxtErrorTitle\"", xaml);
         Assert.Contains("Background=\"{DynamicResource DangerLightBrush}\"", xaml);
-        Assert.Contains("x:Name=\"SelectedAccountCard\"", xaml);
-        Assert.Contains("Text=\"当前账号\"", xaml);
-        Assert.Contains("x:Name=\"TxtSelectedUserHint\"", xaml);
+        Assert.DoesNotContain("x:Name=\"RecentAccountsPanel\"", xaml);
+        Assert.DoesNotContain("x:Name=\"RecentAccountsHost\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SelectedAccountCard\"", xaml);
     }
 
     [Fact]
-    public void LoginWindow_CodeBehindSyncsSelectedRecentAccount()
+    public void LoginWindow_CodeBehindSyncsRecentAccountDropdown()
     {
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
 
-        Assert.Contains("ApplyRecentAccountSelection", code);
-        Assert.Contains("_recentAccountButtons", code);
+        Assert.Contains("ApplyRecentAccountDropdownState", code);
+        Assert.Contains("RecentAccountSelector_SelectionChanged", code);
         Assert.Contains("LoginAccountBox_TextChanged", code);
-        Assert.Contains("AnimateRecentAccountButtons", code);
-        Assert.Contains("DoubleAnimation", code);
-        Assert.Contains("TranslateTransform", code);
-    }
-
-    [Fact]
-    public void LoginWindow_CodeBehindDoesNotReparentRecentAccountHintChip()
-    {
-        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
-
-        Assert.Contains("metaRow.Children.Add(hintChip);", code);
-        Assert.DoesNotContain("text.Children.Add(hintChip);", code);
-        Assert.DoesNotContain("text.Children.Remove(hintChip);", code);
+        Assert.DoesNotContain("BuildRecentAccountButton", code);
+        Assert.DoesNotContain("RecentAccount_Click", code);
+        Assert.DoesNotContain("AnimateRecentAccountButtons", code);
     }
 
     [Fact]
