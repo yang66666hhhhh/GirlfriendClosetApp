@@ -120,6 +120,11 @@
             <Setter Property="Margin" Value="0,0,8,8"/>
         </Style>
 
+        <Style x:Key="UserManager.InfoCard" TargetType="Border" BasedOn="{StaticResource UserManager.SectionCard}">
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="CornerRadius" Value="14"/>
+        </Style>
+
         <Style x:Key="UserManager.ListItem" TargetType="ListBoxItem">
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Padding" Value="0"/>
@@ -372,16 +377,19 @@
                                                    Foreground="{DynamicResource TextSecondaryBrush}"/>
                                     </StackPanel>
 
-                                    <Grid Grid.Row="2">
+                                    <Grid x:Name="CreateUserFormGrid"
+                                          Grid.Row="2">
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="14"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="14"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="12"/>
+                                            <ColumnDefinition Width="14"/>
                                             <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="12"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="12"/>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
                                         </Grid.ColumnDefinitions>
 
                                         <StackPanel>
@@ -398,25 +406,47 @@
                                                      Style="{StaticResource UserManager.Input}"/>
                                         </StackPanel>
 
-                                        <StackPanel Grid.Column="4">
-                                            <TextBlock Text="初始密码"
-                                                       Style="{StaticResource UserManager.FieldLabel}"/>
-                                            <PasswordBox x:Name="NewUserPasswordBox"
-                                                         Style="{StaticResource UserManager.PasswordInput}"/>
-                                        </StackPanel>
+                                        <Grid x:Name="CreateUserCredentialGrid"
+                                              Grid.Row="2"
+                                              Grid.ColumnSpan="3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="14"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
 
-                                        <StackPanel Grid.Column="6">
-                                            <TextBlock Text="PIN（可选）"
-                                                       Style="{StaticResource UserManager.FieldLabel}"/>
-                                            <PasswordBox x:Name="NewUserPinBox"
-                                                         Style="{StaticResource UserManager.PasswordInput}"/>
-                                        </StackPanel>
+                                            <StackPanel>
+                                                <TextBlock Text="初始密码"
+                                                           Style="{StaticResource UserManager.FieldLabel}"/>
+                                                <PasswordBox x:Name="NewUserPasswordBox"
+                                                             Style="{StaticResource UserManager.PasswordInput}"/>
+                                            </StackPanel>
 
-                                        <Button Grid.Column="7"
-                                                Margin="12,18,0,0"
-                                                Content="创建"
-                                                Style="{StaticResource UserManager.PrimaryButton}"
-                                                Click="CreateUser_Click"/>
+                                            <StackPanel Grid.Column="2">
+                                                <TextBlock Text="PIN（可选）"
+                                                           Style="{StaticResource UserManager.FieldLabel}"/>
+                                                <PasswordBox x:Name="NewUserPinBox"
+                                                             Style="{StaticResource UserManager.PasswordInput}"/>
+                                            </StackPanel>
+                                        </Grid>
+
+                                        <Border Grid.Row="4"
+                                                Grid.ColumnSpan="3"
+                                                Style="{StaticResource UserManager.InfoCard}">
+                                            <DockPanel LastChildFill="False">
+                                                <StackPanel>
+                                                    <TextBlock Text="创建后"
+                                                               Style="{StaticResource UserManager.FieldLabel}"/>
+                                                    <TextBlock Text="新用户会立即拥有独立衣柜工作区，可单独登录。"
+                                                               FontSize="12"
+                                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                </StackPanel>
+                                                <Button Content="创建用户"
+                                                        Style="{StaticResource UserManager.PrimaryButton}"
+                                                        Margin="16,0,0,0"
+                                                        Click="CreateUser_Click"/>
+                                            </DockPanel>
+                                        </Border>
                                     </Grid>
                                 </Grid>
                             </Border>
@@ -461,7 +491,8 @@
                                                                             AvatarPath="{Binding AvatarPath}"
                                                                             Initial="{Binding AvatarInitial}"
                                                                             IsCurrent="{Binding IsCurrent}"/>
-                                                    <WrapPanel Margin="0,14,0,0">
+                                                    <WrapPanel Margin="0,14,0,0"
+                                                               ItemHeight="38">
                                                         <Button Content="更换头像"
                                                                 Style="{StaticResource UserManager.SecondaryButton}"
                                                                 Click="SelectAvatar_Click"/>
@@ -616,12 +647,11 @@
                                                 Style="{StaticResource UserManager.SectionCard}"
                                                 Background="{DynamicResource SurfaceCardBrush}">
                                             <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                    <ColumnDefinition Width="10"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
+                                                <Grid.RowDefinitions>
+                                                    <RowDefinition Height="Auto"/>
+                                                    <RowDefinition Height="14"/>
+                                                    <RowDefinition Height="Auto"/>
+                                                </Grid.RowDefinitions>
 
                                                 <StackPanel>
                                                     <TextBlock Text="危险操作"
@@ -635,17 +665,19 @@
                                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                 </StackPanel>
 
-                                                <Button Grid.Column="1"
-                                                        Content="保存资料"
-                                                        Style="{StaticResource UserManager.SecondaryButton}"
-                                                        IsEnabled="{Binding HasSelection}"
-                                                        Click="SaveUser_Click"/>
+                                                <WrapPanel Grid.Row="2"
+                                                           ItemHeight="38">
+                                                    <Button Content="保存资料"
+                                                            Style="{StaticResource UserManager.SecondaryButton}"
+                                                            IsEnabled="{Binding HasSelection}"
+                                                            Click="SaveUser_Click"/>
 
-                                                <Button Grid.Column="3"
-                                                        Content="删除用户"
-                                                        Style="{StaticResource UserManager.DangerButton}"
-                                                        IsEnabled="{Binding CanDelete}"
-                                                        Click="DeleteUser_Click"/>
+                                                    <Button Content="删除用户"
+                                                            Margin="10,0,0,0"
+                                                            Style="{StaticResource UserManager.DangerButton}"
+                                                            IsEnabled="{Binding CanDelete}"
+                                                            Click="DeleteUser_Click"/>
+                                                </WrapPanel>
                                             </Grid>
                                         </Border>
                                     </Grid>

@@ -49,6 +49,16 @@ public class LocalUserManagementDialogLayoutTests
         Assert.Contains("RemoveAvatar_Click", code);
     }
 
+    [Fact]
+    public void UserManagementDialog_UsesStackedCreateUserWorkbench()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("x:Name=\"CreateUserFormGrid\"", xaml);
+        Assert.Contains("x:Name=\"CreateUserCredentialGrid\"", xaml);
+        Assert.Contains("Content=\"创建用户\"", xaml);
+    }
+
     private static XElement? FindElement(XDocument document, string elementName, string attributeName, string attributeValue)
     {
         var xamlNamespace = XNamespace.Get("http://schemas.microsoft.com/winfx/2006/xaml");

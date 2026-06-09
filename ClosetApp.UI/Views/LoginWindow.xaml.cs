@@ -70,6 +70,9 @@ public partial class LoginWindow : Window
                 ? "admin"
                 : _superAdmin.AccountName;
         TxtSelectedUser.Text = "账号";
+        TxtSelectedUserHint.Text = _isSetupMode
+            ? "先完成管理员凭证设置，再进入主界面。"
+            : "使用最近登录账号或手动输入账号名。";
 
         if (_isSetupMode)
         {
@@ -162,12 +165,14 @@ public partial class LoginWindow : Window
         {
             LoginAccountBox.Text = state.PrefillAccountName;
             TxtSelectedUser.Text = $"账号 · 上次使用 {state.PrefillAccountName}";
+            TxtSelectedUserHint.Text = "已自动带入最近一次登录账号。";
             ApplyRecentAccountSelection(state.PrefillAccountName);
         }
         else
         {
             LoginAccountBox.Clear();
             TxtSelectedUser.Text = "账号";
+            TxtSelectedUserHint.Text = "使用最近登录账号或手动输入账号名。";
             ApplyRecentAccountSelection(null);
         }
 
@@ -298,6 +303,9 @@ public partial class LoginWindow : Window
         TxtSelectedUser.Text = account.HasPinCredential
             ? $"账号 · {account.AccountName} 支持 PIN 快速登录"
             : $"账号 · {account.AccountName}";
+        TxtSelectedUserHint.Text = account.HasPinCredential
+            ? "可直接输入 PIN，留空时改用密码。"
+            : "该账号未设置 PIN，请输入密码登录。";
         ApplyRecentAccountSelection(account.AccountName);
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
@@ -310,6 +318,9 @@ public partial class LoginWindow : Window
             return;
 
         var accountName = LoginAccountBox.Text.Trim();
+        TxtSelectedUserHint.Text = string.IsNullOrWhiteSpace(accountName)
+            ? "使用最近登录账号或手动输入账号名。"
+            : "输入对应密码，已设置 PIN 时也可以直接填 PIN。";
         ApplyRecentAccountSelection(string.IsNullOrWhiteSpace(accountName) ? null : accountName);
     }
 

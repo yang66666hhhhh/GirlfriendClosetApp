@@ -76,6 +76,9 @@ public partial class LocalUserManagementDialog : UserControl
         CreateUserPanel.Visibility = CreateUserPanel.Visibility == Visibility.Visible
             ? Visibility.Collapsed
             : Visibility.Visible;
+
+        if (CreateUserPanel.Visibility == Visibility.Visible)
+            TxtNewAccountName.Focus();
     }
 
     private async void CreateUser_Click(object sender, RoutedEventArgs e)

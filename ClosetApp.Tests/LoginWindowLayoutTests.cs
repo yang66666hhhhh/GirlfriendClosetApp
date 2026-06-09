@@ -53,7 +53,6 @@ public class LoginWindowLayoutTests
         Assert.Contains("Text=\"最近登录\"", xaml);
         Assert.Contains("ItemWidth=\"248\"", xaml);
         Assert.Contains("MaxWidth=\"510\"", xaml);
-        Assert.Contains("Text=\"上次登录\"", xaml);
         Assert.Contains("x:Name=\"TxtSubmitLabel\"", xaml);
         Assert.Contains("x:Name=\"SubmitBusyIndicator\"", xaml);
         Assert.Contains("x:Key=\"RecentAccountPrimaryChip\"", xaml);
@@ -65,6 +64,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"LoginErrorIcon\"", xaml);
         Assert.Contains("x:Name=\"TxtErrorTitle\"", xaml);
         Assert.Contains("Background=\"{DynamicResource DangerLightBrush}\"", xaml);
+        Assert.Contains("x:Name=\"SelectedAccountCard\"", xaml);
+        Assert.Contains("Text=\"当前账号\"", xaml);
+        Assert.Contains("x:Name=\"TxtSelectedUserHint\"", xaml);
     }
 
     [Fact]

@@ -25,7 +25,7 @@
                 BorderThickness="0.8"/>
 
         <Border x:Name="AvatarBody"
-                Margin="5"
+                Margin="4.5"
                 CornerRadius="999"
                 Background="{DynamicResource SurfaceSectionBrush}"
                 BorderBrush="{DynamicResource BorderLightBrush}"
@@ -63,7 +63,7 @@
                 <Ellipse x:Name="AvatarPhoto"
                          Visibility="Collapsed"/>
 
-                <Border Height="14"
+                <Border Height="15"
                         VerticalAlignment="Top"
                         Margin="4,3,4,0"
                         CornerRadius="999,999,10,10"
@@ -80,18 +80,18 @@
         </Border>
 
         <Border x:Name="StatusDot"
-                Width="15"
-                Height="15"
+                Width="16"
+                Height="16"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
-                Margin="0,0,1,1"
+                Margin="0,0,0.5,0.5"
                 Background="{DynamicResource SurfaceCardBrush}"
                 BorderBrush="{DynamicResource SurfaceCardBrush}"
                 BorderThickness="2"
                 CornerRadius="999"
                 Visibility="Collapsed">
-            <Ellipse Width="7"
-                     Height="7"
+            <Ellipse Width="7.5"
+                     Height="7.5"
                      HorizontalAlignment="Center"
                      VerticalAlignment="Center"
                      Fill="{DynamicResource SuccessBrush}"/>
