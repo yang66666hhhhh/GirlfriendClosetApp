@@ -208,8 +208,8 @@ public partial class NavigationSidebar : UserControl
     {
         var avatar = new LocalUserAvatar
         {
-            Width = 46,
-            Height = 46,
+            Width = 48,
+            Height = 48,
             AvatarPath = user.AvatarPhotoPath,
             Initial = BuildAvatarInitial(user.DisplayName),
             IsCurrent = true
@@ -252,8 +252,8 @@ public partial class NavigationSidebar : UserControl
         var shell = new Border
         {
             Margin = new Thickness(2, 2, 2, 6),
-            Padding = new Thickness(10),
-            CornerRadius = new CornerRadius(12),
+            Padding = new Thickness(12),
+            CornerRadius = new CornerRadius(14),
             Child = grid,
             IsHitTestVisible = false,
             Focusable = false

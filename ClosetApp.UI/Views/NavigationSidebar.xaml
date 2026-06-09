@@ -122,8 +122,8 @@
                 <Button x:Name="BtnProfile"
                         Background="Transparent"
                         BorderThickness="0"
-                        Padding="10"
-                        MinHeight="58"
+                        Padding="11"
+                        MinHeight="62"
                         HorizontalAlignment="Stretch"
                         ToolTip="账号菜单：编辑档案、用户管理或退出登录"
                         Click="Profile_Click">
@@ -162,8 +162,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <shared:LocalUserAvatar x:Name="CurrentUserAvatar"
-                                                Width="42"
-                                                Height="42"/>
+                                                Width="44"
+                                                Height="44"/>
                         <StackPanel x:Name="ProfileTextPanel"
                                     Grid.Column="1"
                                     Margin="12,0,0,0"
@@ -181,13 +181,23 @@
                                        Margin="0,2,0,0"
                                        TextTrimming="CharacterEllipsis"/>
                         </StackPanel>
-                        <TextBlock x:Name="ProfileChevron"
-                                   Grid.Column="2"
-                                   Text="›"
-                                   FontSize="16"
-                                   Foreground="{DynamicResource TextPlaceholderBrush}"
-                                   VerticalAlignment="Center"
-                                   Margin="8,0,0,0"/>
+                        <Border x:Name="ProfileChevronShell"
+                                Grid.Column="2"
+                                Width="28"
+                                Height="28"
+                                Margin="10,0,0,0"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                            <TextBlock x:Name="ProfileChevron"
+                                       Text="›"
+                                       FontSize="16"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       Foreground="{DynamicResource TextPlaceholderBrush}"/>
+                        </Border>
                     </Grid>
                 </Button>
                 <TextBlock x:Name="TxtClothingCount"

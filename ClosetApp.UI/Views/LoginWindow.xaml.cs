@@ -181,8 +181,8 @@ public partial class LoginWindow : Window
     {
         var avatar = new LocalUserAvatar
         {
-            Width = 40,
-            Height = 40,
+            Width = 42,
+            Height = 42,
             AvatarPath = account.AvatarPath,
             Initial = account.Initial,
             IsCurrent = false
@@ -252,8 +252,8 @@ public partial class LoginWindow : Window
 
         var text = new StackPanel
         {
-            Margin = new Thickness(10, 0, 0, 0),
-            Width = 156,
+            Margin = new Thickness(12, 0, 0, 0),
+            Width = 152,
             VerticalAlignment = VerticalAlignment.Center
         };
         text.Children.Add(name);

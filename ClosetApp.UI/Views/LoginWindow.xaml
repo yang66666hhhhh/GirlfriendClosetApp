@@ -146,7 +146,7 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="12"/>
+            <Setter Property="Padding" Value="13"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
@@ -199,11 +199,11 @@
         </Style>
 
         <Style x:Key="RecentAccountHoverAvatar" TargetType="Border">
-            <Setter Property="CornerRadius" Value="24"/>
-            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+            <Setter Property="CornerRadius" Value="26"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Padding" Value="3"/>
+            <Setter Property="Padding" Value="4"/>
         </Style>
 
         <Style x:Key="LoginFieldSummaryText" TargetType="TextBlock">
