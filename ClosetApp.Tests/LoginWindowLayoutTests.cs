@@ -83,6 +83,36 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
+    public void LoginWindow_CodeBehindDoesNotReparentRecentAccountHintChip()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
+
+        Assert.Contains("metaRow.Children.Add(hintChip);", code);
+        Assert.DoesNotContain("text.Children.Add(hintChip);", code);
+        Assert.DoesNotContain("text.Children.Remove(hintChip);", code);
+    }
+
+    [Fact]
+    public void LoginWindow_UsesContextualInlineErrorHandling()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.Contains("private void ShowError(string title, string message)", code);
+        Assert.Contains("TxtErrorTitle.Text = title;", code);
+        Assert.Contains("ShowError(\"启动失败\"", code);
+        Assert.Contains("ShowError(_isSetupMode ? \"设置失败\" : \"登录失败\"", code);
+        Assert.Contains("ValidateLoginInputs();", code);
+        Assert.Contains("ValidateSetupInputs();", code);
+        Assert.Contains("请输入账号。", code);
+        Assert.Contains("HookInputErrorClearing();", code);
+        Assert.Contains("ClearErrorIfUserEditing", code);
+        Assert.Contains("BuildInputError(LoginAccountBox", code);
+        Assert.Contains("BuildInputError(LoginPasswordBox", code);
+        Assert.Contains("Text=\"账号\" Style=\"{StaticResource LoginInputLabel}\"", xaml);
+    }
+
+    [Fact]
     public void UserManagementDialog_UsesManagementConsoleLayout()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
