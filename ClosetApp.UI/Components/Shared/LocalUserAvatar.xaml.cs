@@ -76,6 +76,10 @@ public partial class LocalUserAvatar : UserControl
     {
         InitialText.Text = BuildInitial(Initial);
         StatusDot.Visibility = ShowStatus && IsCurrent ? Visibility.Visible : Visibility.Collapsed;
+        CurrentRing.Opacity = IsCurrent ? 0.56 : 0.2;
+        CurrentRing.BorderThickness = IsCurrent ? new Thickness(1.4) : new Thickness(1.2);
+        AvatarBody.BorderBrush = (Brush)FindResource(IsCurrent ? "PrimaryBrush" : "BorderLightBrush");
+        AvatarBody.BorderThickness = IsCurrent ? new Thickness(1) : new Thickness(0.8);
 
         var resolvedPath = ResolveAvatarPath(AvatarPath);
         if (string.IsNullOrWhiteSpace(resolvedPath) || !File.Exists(resolvedPath))

@@ -3,40 +3,98 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="44"
              Height="44"
-             SnapsToDevicePixels="True">
+             SnapsToDevicePixels="True"
+             UseLayoutRounding="True">
     <Grid>
-        <Ellipse Fill="{DynamicResource SurfaceCardBrush}"
-                 Stroke="{DynamicResource BorderLightBrush}"
-                 StrokeThickness="1"/>
-        <Ellipse Margin="2"
-                 Stroke="{DynamicResource PrimaryBrush}"
-                 StrokeThickness="1.4"
-                 Opacity="0.42"/>
+        <Border CornerRadius="999"
+                Background="{DynamicResource SurfaceCardBrush}"
+                BorderBrush="{DynamicResource BorderLightBrush}"
+                BorderThickness="1"/>
 
-        <Grid x:Name="InitialHost" Margin="4">
-            <Ellipse Fill="{DynamicResource PrimaryLightBrush}"/>
-            <TextBlock x:Name="InitialText"
-                       HorizontalAlignment="Center"
-                       VerticalAlignment="Center"
-                       FontSize="16"
-                       FontWeight="SemiBold"
-                       Foreground="{DynamicResource PrimaryDarkBrush}"/>
-        </Grid>
+        <Border x:Name="CurrentRing"
+                Margin="1"
+                CornerRadius="999"
+                BorderBrush="{DynamicResource PrimaryBrush}"
+                BorderThickness="1.2"
+                Opacity="0.2"/>
 
-        <Ellipse x:Name="AvatarPhoto"
-                 Margin="4"
-                 Visibility="Collapsed"/>
+        <Border Margin="3"
+                CornerRadius="999"
+                Background="{DynamicResource SurfaceElevatedBrush}"
+                BorderBrush="{DynamicResource BorderLightBrush}"
+                BorderThickness="0.8"/>
+
+        <Border x:Name="AvatarBody"
+                Margin="5"
+                CornerRadius="999"
+                Background="{DynamicResource SurfaceSectionBrush}"
+                BorderBrush="{DynamicResource BorderLightBrush}"
+                BorderThickness="0.8"
+                ClipToBounds="True">
+            <Grid>
+                <Grid x:Name="InitialHost">
+                    <Ellipse Fill="{DynamicResource PrimaryLightBrush}"/>
+                    <Ellipse Width="30"
+                             Height="30"
+                             Margin="-6,-10,0,0"
+                             HorizontalAlignment="Left"
+                             VerticalAlignment="Top"
+                             Fill="{DynamicResource SurfaceCardBrush}"
+                             Opacity="0.22"/>
+                    <Ellipse Width="18"
+                             Height="18"
+                             Margin="0,0,-3,-1"
+                             HorizontalAlignment="Right"
+                             VerticalAlignment="Bottom"
+                             Fill="{DynamicResource SurfaceCardBrush}"
+                             Opacity="0.2"/>
+                    <Viewbox Width="48"
+                             Height="48"
+                             Stretch="Uniform">
+                        <TextBlock x:Name="InitialText"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"
+                                   FontSize="20"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryDarkBrush}"/>
+                    </Viewbox>
+                </Grid>
+
+                <Ellipse x:Name="AvatarPhoto"
+                         Visibility="Collapsed"/>
+
+                <Border Height="14"
+                        VerticalAlignment="Top"
+                        Margin="4,3,4,0"
+                        CornerRadius="999,999,10,10"
+                        IsHitTestVisible="False">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0"
+                                             EndPoint="0,1">
+                            <GradientStop Color="#36FFFFFF" Offset="0"/>
+                            <GradientStop Color="#00FFFFFF" Offset="1"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                </Border>
+            </Grid>
+        </Border>
 
         <Border x:Name="StatusDot"
-                Width="13"
-                Height="13"
+                Width="15"
+                Height="15"
                 HorizontalAlignment="Right"
                 VerticalAlignment="Bottom"
                 Margin="0,0,1,1"
-                Background="{DynamicResource SuccessBrush}"
+                Background="{DynamicResource SurfaceCardBrush}"
                 BorderBrush="{DynamicResource SurfaceCardBrush}"
                 BorderThickness="2"
-                CornerRadius="7"
-                Visibility="Collapsed"/>
+                CornerRadius="999"
+                Visibility="Collapsed">
+            <Ellipse Width="7"
+                     Height="7"
+                     HorizontalAlignment="Center"
+                     VerticalAlignment="Center"
+                     Fill="{DynamicResource SuccessBrush}"/>
+        </Border>
     </Grid>
 </UserControl>

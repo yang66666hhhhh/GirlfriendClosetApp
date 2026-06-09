@@ -253,19 +253,53 @@ public partial class LocalUserManagementDialog : UserControl
         public bool HasSelection => true;
         public bool CanDelete => User.Role != LocalUserRole.SuperAdmin;
         public bool CanResetCredential => IsCurrent || User.Role != LocalUserRole.SuperAdmin;
+        public string RoleText => User.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "普通用户";
         public string AvatarInitial => string.IsNullOrWhiteSpace(DisplayName) ? "衣" : DisplayName.Trim()[0].ToString();
         public string SummaryText => $"{RoleText}{(IsCurrent ? " · 当前" : string.Empty)}";
         public string AccountHint => $"账号 {AccountName}";
+        public string ListBadgeText => IsCurrent ? "当前" : User.Role == LocalUserRole.SuperAdmin ? "管理员" : string.Empty;
+        public string AccountHandle => $"@{AccountName}";
+        public string SessionText => IsCurrent ? "当前会话" : "可独立登录";
+        public string CredentialSummary
+        {
+            get
+            {
+                if (User.HasPasswordCredential && User.HasPinCredential)
+                    return "密码 + PIN";
+
+                if (User.HasPasswordCredential)
+                    return "仅密码";
+
+                if (User.HasPinCredential)
+                    return "仅 PIN";
+
+                return "未设置凭证";
+            }
+        }
+        public string ActivityText => $"{BuildLastLoginText()} · 创建于 {FormatDate(User.CreatedAt)}";
 
         public string RuleText => User.Role == LocalUserRole.SuperAdmin
             ? "超级管理员用于管理本机所有本地用户，不能删除。可在这里更新当前管理员账号、密码或 PIN。"
             : "普通用户拥有独立衣柜、搭配、标签、穿着记录、效果图和个人档案。删除用户会同时删除该用户的全部本地数据。";
-
-        private string RoleText => User.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "普通用户";
+        public string DangerHintText => User.Role == LocalUserRole.SuperAdmin
+            ? "超级管理员账号不能删除。建议先保存资料或更新凭证。"
+            : "删除后将同时移除该用户的衣柜、搭配、标签、穿着记录、效果图与个人档案，且无法恢复。";
 
         private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
         {
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private string BuildLastLoginText()
+        {
+            return User.LastLoginAt.HasValue
+                ? $"最近登录 {FormatDate(User.LastLoginAt.Value)}"
+                : "还没有登录记录";
+        }
+
+        private static string FormatDate(DateTime value)
+        {
+            return value.ToString("yyyy.MM.dd");
         }
     }
 }
