@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Threading;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -23,6 +24,7 @@ public partial class NavigationSidebar : UserControl
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
     private readonly ICurrentUserContext _currentUserContext;
+    private readonly SemaphoreSlim _refreshUserGate = new(1, 1);
     private LocalUser? _currentUser;
 
     public bool IsCollapsed => _isCollapsed;
@@ -39,13 +41,21 @@ public partial class NavigationSidebar : UserControl
 
     public async Task RefreshCurrentUserAsync()
     {
-        _currentUser = await _localUserService.GetCurrentAsync();
-        TxtCurrentUserName.Text = _currentUser.DisplayName;
-        TxtCurrentUserRole.Text = _currentUser.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "本地用户";
-        CurrentUserAvatar.AvatarPath = _currentUser.AvatarPhotoPath;
-        CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
-        CurrentUserAvatar.IsCurrent = true;
-        RebuildUserMenu();
+        await _refreshUserGate.WaitAsync();
+        try
+        {
+            _currentUser = await _localUserService.GetCurrentAsync();
+            TxtCurrentUserName.Text = _currentUser.DisplayName;
+            TxtCurrentUserRole.Text = _currentUser.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "本地用户";
+            CurrentUserAvatar.AvatarPath = _currentUser.AvatarPhotoPath;
+            CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
+            CurrentUserAvatar.IsCurrent = true;
+            RebuildUserMenu();
+        }
+        finally
+        {
+            _refreshUserGate.Release();
+        }
     }
 
     public void SetClothingCount(int count)

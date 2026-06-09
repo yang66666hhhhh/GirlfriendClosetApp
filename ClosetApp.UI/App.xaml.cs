@@ -102,40 +102,40 @@ public partial class App : System.Windows.Application
         var services = new ServiceCollection();
 
         services.AddDbContextFactory<ClosetDbContext>();
-        services.AddScoped(sp => sp.GetRequiredService<IDbContextFactory<ClosetDbContext>>().CreateDbContext());
+        services.AddTransient(sp => sp.GetRequiredService<IDbContextFactory<ClosetDbContext>>().CreateDbContext());
 
-        services.AddScoped<ILocalUserRepository, LocalUserRepository>();
-        services.AddScoped<IClothingRepository, ClothingRepository>();
-        services.AddScoped<IOutfitRepository, OutfitRepository>();
-        services.AddScoped<ITagRepository, TagRepository>();
-        services.AddScoped<IFavoriteRepository, FavoriteRepository>();
-        services.AddScoped<IOutfitWornRecordRepository, OutfitWornRecordRepository>();
-        services.AddScoped<IPersonalProfileRepository, PersonalProfileRepository>();
-        services.AddScoped<IOutfitGeneratedImageRepository, OutfitGeneratedImageRepository>();
+        services.AddTransient<ILocalUserRepository, LocalUserRepository>();
+        services.AddTransient<IClothingRepository, ClothingRepository>();
+        services.AddTransient<IOutfitRepository, OutfitRepository>();
+        services.AddTransient<ITagRepository, TagRepository>();
+        services.AddTransient<IFavoriteRepository, FavoriteRepository>();
+        services.AddTransient<IOutfitWornRecordRepository, OutfitWornRecordRepository>();
+        services.AddTransient<IPersonalProfileRepository, PersonalProfileRepository>();
+        services.AddTransient<IOutfitGeneratedImageRepository, OutfitGeneratedImageRepository>();
 
-        services.AddScoped<IClothingService, ClothingService>();
-        services.AddScoped<IOutfitService, OutfitService>();
-        services.AddScoped<ITagService, TagService>();
-        services.AddScoped<IOutfitRecommendationService, OutfitRecommendationService>();
-        services.AddScoped<IPersonalProfileService, PersonalProfileService>();
-        services.AddScoped<ILocalUserService, LocalUserService>();
-        services.AddScoped<GetWardrobeOverview>();
-        services.AddScoped<CompleteClothingMetadataBatch>();
-        services.AddScoped<ClearWardrobeByTypes>();
-        services.AddScoped<ImportClothesFromImages>();
-        services.AddScoped<GetOutfitHistorySummary>();
-        services.AddScoped<GetWardrobeInsights>();
-        services.AddScoped<GetAnnualOutfitReport>();
-        services.AddScoped<RecordOutfitWorn>();
-        services.AddScoped<GetRecommendationReadinessSummary>();
-        services.AddScoped<GetTodayRecommendations>();
-        services.AddScoped<GetTagsForSelection>();
-        services.AddScoped<GetAiGenerationReadiness>();
-        services.AddScoped<GetOutfitGeneratedImages>();
-        services.AddScoped<SetPrimaryOutfitGeneratedImage>();
-        services.AddScoped<DeleteOutfitGeneratedImage>();
-        services.AddScoped<GenerateOutfitEffectImage>();
-        services.AddScoped<SaveUploadedOutfitGeneratedImage>();
+        services.AddTransient<IClothingService, ClothingService>();
+        services.AddTransient<IOutfitService, OutfitService>();
+        services.AddTransient<ITagService, TagService>();
+        services.AddTransient<IOutfitRecommendationService, OutfitRecommendationService>();
+        services.AddTransient<IPersonalProfileService, PersonalProfileService>();
+        services.AddTransient<ILocalUserService, LocalUserService>();
+        services.AddTransient<GetWardrobeOverview>();
+        services.AddTransient<CompleteClothingMetadataBatch>();
+        services.AddTransient<ClearWardrobeByTypes>();
+        services.AddTransient<ImportClothesFromImages>();
+        services.AddTransient<GetOutfitHistorySummary>();
+        services.AddTransient<GetWardrobeInsights>();
+        services.AddTransient<GetAnnualOutfitReport>();
+        services.AddTransient<RecordOutfitWorn>();
+        services.AddTransient<GetRecommendationReadinessSummary>();
+        services.AddTransient<GetTodayRecommendations>();
+        services.AddTransient<GetTagsForSelection>();
+        services.AddTransient<GetAiGenerationReadiness>();
+        services.AddTransient<GetOutfitGeneratedImages>();
+        services.AddTransient<SetPrimaryOutfitGeneratedImage>();
+        services.AddTransient<DeleteOutfitGeneratedImage>();
+        services.AddTransient<GenerateOutfitEffectImage>();
+        services.AddTransient<SaveUploadedOutfitGeneratedImage>();
         services.AddMemoryCache();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IImageMaintenanceService, ImageMaintenanceService>();
@@ -145,7 +145,7 @@ public partial class App : System.Windows.Application
         services.AddSingleton<IAuthSessionContext, AuthSessionContext>();
         services.AddSingleton<ICurrentUserContext>(sp =>
             new CurrentUserContext(authSessionContext: sp.GetRequiredService<IAuthSessionContext>()));
-        services.AddScoped<ILocalAuthService, LocalAuthService>();
+        services.AddTransient<ILocalAuthService, LocalAuthService>();
         services.AddSingleton<IAiGenerationPreferencesService>(sp =>
             new AiGenerationPreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<IWeatherPreferencesService>(sp =>

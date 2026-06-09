@@ -91,8 +91,8 @@ public sealed class LocalAuthService : ILocalAuthService
         user.LastLoginAt = DateTime.Now;
         user.UpdatedAt = DateTime.Now;
         await _repository.UpdateAsync(user).ConfigureAwait(false);
-        await _currentUserContext.SetCurrentUserIdAsync(user.Id).ConfigureAwait(false);
         _authSessionContext.MarkAuthenticated(user.Id);
+        await _currentUserContext.SetCurrentUserIdAsync(user.Id).ConfigureAwait(false);
         return LocalLoginResult.Ok(user);
     }
 
