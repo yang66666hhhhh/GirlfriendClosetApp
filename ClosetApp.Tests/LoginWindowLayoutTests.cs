@@ -49,7 +49,9 @@ public class LoginWindowLayoutTests
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
 
         Assert.Contains("x:Name=\"RecentAccountSelector\"", xaml);
-        Assert.Contains("Text=\"最近登录\"", xaml);
+        Assert.Contains("Text=\"账号\" Style=\"{StaticResource LoginInputLabel}\"", xaml);
+        Assert.Contains("IsEditable=\"True\"", xaml);
+        Assert.Contains("TextSearch.TextPath=\"AccountName\"", xaml);
         Assert.Contains("x:Name=\"TxtSubmitLabel\"", xaml);
         Assert.Contains("x:Name=\"SubmitBusyIndicator\"", xaml);
         Assert.Contains("x:Name=\"WelcomeMetricsCard\"", xaml);
@@ -57,6 +59,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"LoginErrorIcon\"", xaml);
         Assert.Contains("x:Name=\"TxtErrorTitle\"", xaml);
         Assert.Contains("Background=\"{DynamicResource DangerLightBrush}\"", xaml);
+        Assert.DoesNotContain("ContentStringFormat=\"{Binding SelectionBoxItemStringFormat", xaml);
+        Assert.DoesNotContain("SelectionBoxItemStringFormat", xaml);
+        Assert.DoesNotContain("x:Name=\"LoginAccountBox\"", xaml);
         Assert.DoesNotContain("x:Name=\"RecentAccountsPanel\"", xaml);
         Assert.DoesNotContain("x:Name=\"RecentAccountsHost\"", xaml);
         Assert.DoesNotContain("x:Name=\"SelectedAccountCard\"", xaml);
@@ -69,7 +74,9 @@ public class LoginWindowLayoutTests
 
         Assert.Contains("ApplyRecentAccountDropdownState", code);
         Assert.Contains("RecentAccountSelector_SelectionChanged", code);
-        Assert.Contains("LoginAccountBox_TextChanged", code);
+        Assert.Contains("RecentAccountSelector_TextChanged", code);
+        Assert.Contains("GetLoginAccountName()", code);
+        Assert.DoesNotContain("LoginAccountBox_TextChanged", code);
         Assert.DoesNotContain("BuildRecentAccountButton", code);
         Assert.DoesNotContain("RecentAccount_Click", code);
         Assert.DoesNotContain("AnimateRecentAccountButtons", code);
@@ -90,14 +97,14 @@ public class LoginWindowLayoutTests
         Assert.Contains("请输入账号。", code);
         Assert.Contains("HookInputErrorClearing();", code);
         Assert.Contains("ClearErrorIfUserEditing", code);
-        Assert.Contains("BuildInputError(LoginAccountBox", code);
+        Assert.Contains("BuildInputError(RecentAccountSelector", code);
         Assert.Contains("BuildInputError(LoginPasswordBox", code);
         Assert.Contains("Text=\"账号\" Style=\"{StaticResource LoginInputLabel}\"", xaml);
         Assert.Contains("x:Key=\"LoginFieldErrorText\"", xaml);
         Assert.Contains("x:Name=\"TxtLoginAccountError\"", xaml);
         Assert.Contains("x:Name=\"TxtLoginPasswordError\"", xaml);
         Assert.Contains("x:Name=\"TxtSetupAccountError\"", xaml);
-        Assert.Contains("BuildInputError(LoginAccountBox, TxtLoginAccountError", code);
+        Assert.Contains("BuildInputError(RecentAccountSelector, TxtLoginAccountError", code);
         Assert.Contains("BuildInputError(LoginPasswordBox, TxtLoginPasswordError", code);
         Assert.Contains("ClearFieldErrors();", code);
         Assert.Contains("InputValidationException", code);

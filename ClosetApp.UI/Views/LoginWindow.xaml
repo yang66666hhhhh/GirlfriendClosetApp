@@ -164,47 +164,50 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
                         <Grid>
-                            <ToggleButton x:Name="ToggleButton"
-                                          Background="Transparent"
-                                          BorderThickness="0"
-                                          ClickMode="Press"
-                                          Focusable="False"
-                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
-                                <ToggleButton.Template>
-                                    <ControlTemplate TargetType="ToggleButton">
-                                        <Border x:Name="InputShell"
-                                                Background="{Binding Background, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                BorderBrush="{Binding BorderBrush, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                BorderThickness="{Binding BorderThickness, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                CornerRadius="14"
-                                                SnapsToDevicePixels="True">
-                                            <Grid>
-                                                <Grid.ColumnDefinitions>
-                                                    <ColumnDefinition Width="*"/>
-                                                    <ColumnDefinition Width="Auto"/>
-                                                </Grid.ColumnDefinitions>
-                                                <ContentPresenter Margin="{Binding Padding, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                                  VerticalAlignment="Center"
-                                                                  HorizontalAlignment="Left"
-                                                                  Content="{Binding SelectionBoxItem, RelativeSource={RelativeSource AncestorType=ComboBox}}"
-                                                                  ContentStringFormat="{Binding SelectionBoxItemStringFormat, RelativeSource={RelativeSource AncestorType=ComboBox}}"/>
-                                                <TextBlock Grid.Column="1"
-                                                           Text="⌄"
-                                                           Margin="0,0,14,2"
-                                                           FontSize="16"
-                                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                                           VerticalAlignment="Center"/>
-                                            </Grid>
-                                        </Border>
-                                        <ControlTemplate.Triggers>
-                                            <Trigger Property="IsMouseOver" Value="True">
-                                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                            </Trigger>
-                                        </ControlTemplate.Triggers>
-                                    </ControlTemplate>
-                                </ToggleButton.Template>
-                            </ToggleButton>
+                            <Border x:Name="InputShell"
+                                    Background="{TemplateBinding Background}"
+                                    BorderBrush="{TemplateBinding BorderBrush}"
+                                    BorderThickness="{TemplateBinding BorderThickness}"
+                                    CornerRadius="14"
+                                    SnapsToDevicePixels="True">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <ContentPresenter x:Name="ContentSite"
+                                                      Margin="{TemplateBinding Padding}"
+                                                      VerticalAlignment="Center"
+                                                      HorizontalAlignment="Left"
+                                                      Content="{TemplateBinding SelectionBoxItem}"
+                                                      ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                      ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
+                                    <TextBox x:Name="PART_EditableTextBox"
+                                             Margin="{TemplateBinding Padding}"
+                                             Padding="0"
+                                             VerticalAlignment="Center"
+                                             HorizontalAlignment="Stretch"
+                                             Background="Transparent"
+                                             BorderThickness="0"
+                                             FontSize="{TemplateBinding FontSize}"
+                                             Foreground="{TemplateBinding Foreground}"
+                                             Visibility="Hidden"/>
+                                    <ToggleButton Grid.Column="1"
+                                                  Width="42"
+                                                  Background="Transparent"
+                                                  BorderThickness="0"
+                                                  ClickMode="Press"
+                                                  Focusable="False"
+                                                  IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                                        <TextBlock Text="⌄"
+                                                   Margin="0,0,0,2"
+                                                   FontSize="16"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center"
+                                                   HorizontalAlignment="Center"/>
+                                    </ToggleButton>
+                                </Grid>
+                            </Border>
                             <Popup x:Name="PART_Popup"
                                    AllowsTransparency="True"
                                    Focusable="False"
@@ -227,9 +230,17 @@
                             </Popup>
                         </Grid>
                         <ControlTemplate.Triggers>
+                            <Trigger Property="IsEditable" Value="True">
+                                <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
+                                <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                            </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -477,18 +488,15 @@
                 </StackPanel>
 
                 <StackPanel x:Name="LoginPanel">
-                    <TextBlock Text="最近登录" Style="{StaticResource LoginInputLabel}"/>
+                    <TextBlock Text="账号" Style="{StaticResource LoginInputLabel}"/>
                     <ComboBox x:Name="RecentAccountSelector"
                               Margin="0,8,0,14"
                               DisplayMemberPath="AccountName"
+                              IsEditable="True"
                               ItemContainerStyle="{StaticResource RecentAccountComboBoxItem}"
                               Style="{StaticResource RecentAccountComboBox}"
+                              TextSearch.TextPath="AccountName"
                               SelectionChanged="RecentAccountSelector_SelectionChanged"/>
-                    <TextBlock Text="账号" Style="{StaticResource LoginInputLabel}"/>
-                    <TextBox x:Name="LoginAccountBox"
-                             Margin="0,8,0,14"
-                             Style="{StaticResource LoginTextBox}"
-                             TextChanged="LoginAccountBox_TextChanged"/>
                     <TextBlock x:Name="TxtLoginAccountError"
                                Style="{StaticResource LoginFieldErrorText}"/>
                     <Grid x:Name="CredentialModePanel"

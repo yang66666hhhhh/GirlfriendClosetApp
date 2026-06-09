@@ -30,6 +30,7 @@ public partial class LoginWindow : Window
         _localAuthService = App.Services.GetRequiredService<ILocalAuthService>();
         InitializeComponent();
         HookInputErrorClearing();
+        RecentAccountSelector.Loaded += RecentAccountSelector_Loaded;
         Loaded += LoginWindow_Loaded;
         Closed += LoginWindow_Closed;
         PreviewKeyDown += LoginWindow_PreviewKeyDown;
@@ -146,7 +147,7 @@ public partial class LoginWindow : Window
         var secret = usePin ? LoginPinBox.Password : LoginPasswordBox.Password;
         var kind = usePin ? LocalCredentialKind.Pin : LocalCredentialKind.Password;
 
-        var result = await _localAuthService.LoginAsync(LoginAccountBox.Text, secret, kind);
+        var result = await _localAuthService.LoginAsync(GetLoginAccountName(), secret, kind);
         if (!result.Success)
             throw new InvalidOperationException(result.ErrorMessage ?? "登录失败。");
 
@@ -160,12 +161,12 @@ public partial class LoginWindow : Window
 
         if (!string.IsNullOrWhiteSpace(state.PrefillAccountName))
         {
-            LoginAccountBox.Text = state.PrefillAccountName;
+            RecentAccountSelector.Text = state.PrefillAccountName;
             SelectRecentAccount(state.PrefillAccountName);
         }
         else
         {
-            LoginAccountBox.Clear();
+            RecentAccountSelector.Text = string.Empty;
             SelectRecentAccount(null);
         }
 
@@ -189,22 +190,28 @@ public partial class LoginWindow : Window
             RecentAccountSelector.SelectedItem is not LoginRecentAccountItem account)
             return;
 
-        LoginAccountBox.Text = account.AccountName;
+        RecentAccountSelector.Text = account.AccountName;
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
         SetLoginCredentialMode(account.HasPinCredential ? LoginCredentialMode.Pin : LoginCredentialMode.Password);
         FocusCredentialInput(account.HasPinCredential);
     }
 
-    private void LoginAccountBox_TextChanged(object sender, TextChangedEventArgs e)
+    private void RecentAccountSelector_TextChanged(object sender, TextChangedEventArgs e)
     {
         ClearErrorIfUserEditing();
 
         if (_isSetupMode || _isSubmitting)
             return;
 
-        var accountName = LoginAccountBox.Text.Trim();
+        var accountName = GetLoginAccountName();
         SelectRecentAccount(string.IsNullOrWhiteSpace(accountName) ? null : accountName);
+    }
+
+    private void RecentAccountSelector_Loaded(object sender, RoutedEventArgs e)
+    {
+        if (RecentAccountSelector.Template.FindName("PART_EditableTextBox", RecentAccountSelector) is TextBox textBox)
+            textBox.TextChanged += RecentAccountSelector_TextChanged;
     }
 
     private void SelectRecentAccount(string? accountName)
@@ -217,6 +224,8 @@ public partial class LoginWindow : Window
                 string.Equals(item.AccountName, accountName, StringComparison.OrdinalIgnoreCase));
         _isSyncingRecentAccountSelection = false;
     }
+
+    private string GetLoginAccountName() => RecentAccountSelector.Text.Trim();
 
     private void FocusCredentialInput(bool preferPin = false)
     {
@@ -289,8 +298,8 @@ public partial class LoginWindow : Window
 
     private void ValidateLoginInputs()
     {
-        if (string.IsNullOrWhiteSpace(LoginAccountBox.Text))
-            throw BuildInputError(LoginAccountBox, TxtLoginAccountError, "请输入账号。");
+        if (string.IsNullOrWhiteSpace(GetLoginAccountName()))
+            throw BuildInputError(RecentAccountSelector, TxtLoginAccountError, "请输入账号。");
 
         var hasPassword = !string.IsNullOrWhiteSpace(LoginPasswordBox.Password);
         var hasPin = !string.IsNullOrWhiteSpace(LoginPinBox.Password);
