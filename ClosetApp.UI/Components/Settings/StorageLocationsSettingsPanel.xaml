@@ -37,6 +37,8 @@
             <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="MinWidth" Value="92"/>
         </Style>
     </UserControl.Resources>
 
@@ -62,7 +64,7 @@
                                Style="{StaticResource PageSectionBodyText}"/>
                 </StackPanel>
                 <Button Grid.Column="1"
-                        Content="打开应用目录"
+                        Content="应用目录"
                         Style="{StaticResource SettingsButton}"
                         Click="OpenAppDir_Click"
                         VerticalAlignment="Top"/>

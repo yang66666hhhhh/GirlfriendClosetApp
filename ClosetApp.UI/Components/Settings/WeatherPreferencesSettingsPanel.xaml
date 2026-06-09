@@ -36,6 +36,8 @@
             <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="MinWidth" Value="92"/>
         </Style>
     </UserControl.Resources>
 
@@ -54,27 +56,40 @@
             <TextBlock Text="默认城市会用于获取实时天气，后续天气穿搭推荐也会直接复用这里。"
                        Style="{StaticResource PageSectionBodyText}"/>
 
-            <StackPanel Margin="0,0,0,14">
-                <TextBox x:Name="TxtWeatherCity"
-                         MinHeight="40"
-                         Padding="12,9"
-                         IsEnabled="{Binding CanEditWeather}"
-                         Text="{Binding WeatherCity, UpdateSourceTrigger=PropertyChanged}"/>
-                <WrapPanel Margin="0,10,0,0">
-                    <Button x:Name="BtnSaveWeatherCity"
-                            Content="{Binding WeatherSaveButtonText}"
-                            Style="{StaticResource SettingsButton}"
-                            Click="SaveWeatherCity_Click"
-                            Margin="0,0,8,8"
-                            IsEnabled="{Binding CanEditWeather}"/>
-                    <Button x:Name="BtnRefreshWeather"
-                            Content="{Binding WeatherRefreshButtonText}"
-                            Style="{StaticResource SettingsButton}"
-                            Click="RefreshWeather_Click"
-                            Margin="0,0,8,8"
-                            IsEnabled="{Binding CanEditWeather}"/>
-                </WrapPanel>
-            </StackPanel>
+            <Border Style="{StaticResource SettingsInsetCard}"
+                    Margin="0,0,0,14">
+                <StackPanel>
+                    <TextBlock Text="默认城市"
+                               Style="{StaticResource PageFieldLabelText}"/>
+                    <Grid Margin="0,10,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="10"/>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="8"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="TxtWeatherCity"
+                                 Grid.Column="0"
+                                 MinHeight="40"
+                                 Padding="12,9"
+                                 IsEnabled="{Binding CanEditWeather}"
+                                 Text="{Binding WeatherCity, UpdateSourceTrigger=PropertyChanged}"/>
+                        <Button x:Name="BtnSaveWeatherCity"
+                                Grid.Column="2"
+                                Content="{Binding WeatherSaveButtonText}"
+                                Style="{StaticResource SettingsButton}"
+                                Click="SaveWeatherCity_Click"
+                                IsEnabled="{Binding CanEditWeather}"/>
+                        <Button x:Name="BtnRefreshWeather"
+                                Grid.Column="4"
+                                Content="{Binding WeatherRefreshButtonText}"
+                                Style="{StaticResource SettingsButton}"
+                                Click="RefreshWeather_Click"
+                                IsEnabled="{Binding CanEditWeather}"/>
+                    </Grid>
+                </StackPanel>
+            </Border>
 
             <Border Style="{StaticResource SettingsInsetCard}">
                 <StackPanel>

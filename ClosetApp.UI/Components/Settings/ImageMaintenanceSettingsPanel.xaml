@@ -59,6 +59,8 @@
             <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Padding" Value="12,6"/>
+            <Setter Property="MinWidth" Value="92"/>
         </Style>
     </UserControl.Resources>
 
@@ -143,27 +145,27 @@
 
             <WrapPanel Style="{StaticResource SettingsActionWrap}">
                 <Button x:Name="BtnRebuildThumbnails"
-                        Content="重建缺失缓存"
+                        Content="重建缓存"
                         Style="{StaticResource SettingsButton}"
                         Click="RebuildThumbnails_Click"
                         Margin="0,0,8,8"/>
                 <Button x:Name="BtnRepairMissingImages"
-                        Content="修复缺失图片"
+                        Content="修复缺图"
                         Style="{StaticResource SettingsButton}"
                         Click="RepairMissingImages_Click"
                         Margin="0,0,8,8"/>
                 <Button x:Name="BtnCheckWornRecordImages"
-                        Content="检查历史图片"
+                        Content="检查历史图"
                         Style="{StaticResource SettingsButton}"
                         Click="CheckWornRecordImages_Click"
                         Margin="0,0,8,8"/>
                 <Button x:Name="BtnClearThumbnails"
-                        Content="清理图片缓存"
+                        Content="清理缓存"
                         Style="{StaticResource PageToolbarDangerButton}"
                         Click="ClearThumbnails_Click"
                         Margin="0,0,8,8"/>
                 <Button x:Name="BtnCleanupOrphanOriginals"
-                        Content="清理孤儿原图"
+                        Content="清理原图"
                         Style="{StaticResource PageToolbarDangerButton}"
                         Click="CleanupOrphanOriginals_Click"/>
             </WrapPanel>
