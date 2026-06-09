@@ -208,8 +208,8 @@ public partial class NavigationSidebar : UserControl
     {
         var avatar = new LocalUserAvatar
         {
-            Width = 48,
-            Height = 48,
+            Width = 52,
+            Height = 52,
             AvatarPath = user.AvatarPhotoPath,
             Initial = BuildAvatarInitial(user.DisplayName),
             IsCurrent = true

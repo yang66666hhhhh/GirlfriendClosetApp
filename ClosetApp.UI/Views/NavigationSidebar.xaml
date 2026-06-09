@@ -137,7 +137,7 @@
                         Background="Transparent"
                         BorderThickness="0"
                         Padding="11"
-                        MinHeight="62"
+                        MinHeight="74"
                         HorizontalAlignment="Stretch"
                         ToolTip="账号菜单：编辑档案、用户管理或退出登录"
                         Click="Profile_Click">
@@ -177,8 +177,8 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <shared:LocalUserAvatar x:Name="CurrentUserAvatar"
-                                                Width="44"
-                                                Height="44"/>
+                                                Width="52"
+                                                Height="52"/>
                         <StackPanel x:Name="ProfileTextPanel"
                                     Grid.Column="1"
                                     Margin="12,0,0,0"
@@ -219,7 +219,7 @@
                            Text="0 件衣服"
                            FontSize="12"
                            Foreground="{DynamicResource TextPlaceholderBrush}"
-                           Margin="46,8,0,0"/>
+                           Margin="54,8,0,0"/>
             </StackPanel>
 
             <!-- Navigation Items -->

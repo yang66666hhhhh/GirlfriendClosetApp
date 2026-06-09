@@ -48,6 +48,19 @@ public class LocalUserManagementDialogLayoutTests
     }
 
     [Fact]
+    public void NavigationSidebar_ProfileAvatarHasEnoughRoom()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
+
+        Assert.Contains("x:Name=\"CurrentUserAvatar\"", xaml);
+        Assert.Contains("Width=\"52\"", xaml);
+        Assert.Contains("Height=\"52\"", xaml);
+        Assert.Contains("MinHeight=\"74\"", xaml);
+        Assert.Contains("Margin=\"54,8,0,0\"", xaml);
+        Assert.DoesNotContain("Width=\"44\"\r\n                                                Height=\"44\"", xaml);
+    }
+
+    [Fact]
     public void UserManagementDialog_ExposesAvatarUploadActions()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
