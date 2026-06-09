@@ -122,6 +122,24 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
+    public void LoginWindow_UsesExplicitCredentialModeSelector()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.Contains("x:Name=\"CredentialModePanel\"", xaml);
+        Assert.Contains("x:Name=\"BtnPasswordMode\"", xaml);
+        Assert.Contains("x:Name=\"BtnPinMode\"", xaml);
+        Assert.Contains("x:Name=\"PasswordCredentialPanel\"", xaml);
+        Assert.Contains("x:Name=\"PinCredentialPanel\"", xaml);
+        Assert.Contains("LoginCredentialMode", code);
+        Assert.Contains("SetLoginCredentialMode", code);
+        Assert.Contains("PasswordMode_Click", code);
+        Assert.Contains("PinMode_Click", code);
+        Assert.Contains("SelectedCredentialMode == LoginCredentialMode.Pin", code);
+    }
+
+    [Fact]
     public void UserManagementDialog_UsesManagementConsoleLayout()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));

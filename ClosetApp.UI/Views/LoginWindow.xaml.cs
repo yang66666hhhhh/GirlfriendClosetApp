@@ -24,6 +24,7 @@ public partial class LoginWindow : Window
     private LocalUser? _superAdmin;
     private IReadOnlyList<LocalUser> _users = [];
     private readonly List<Button> _recentAccountButtons = [];
+    private LoginCredentialMode SelectedCredentialMode { get; set; } = LoginCredentialMode.Password;
 
     public LoginWindow()
     {
@@ -148,7 +149,7 @@ public partial class LoginWindow : Window
 
     private async Task LoginAsync()
     {
-        var usePin = !string.IsNullOrWhiteSpace(LoginPinBox.Password);
+        var usePin = SelectedCredentialMode == LoginCredentialMode.Pin;
         var secret = usePin ? LoginPinBox.Password : LoginPasswordBox.Password;
         var kind = usePin ? LocalCredentialKind.Pin : LocalCredentialKind.Password;
 
@@ -190,6 +191,7 @@ public partial class LoginWindow : Window
 
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
+        SetLoginCredentialMode(LoginCredentialMode.Password);
         FocusCredentialInput();
         AnimateRecentAccountButtons();
     }
@@ -314,11 +316,12 @@ public partial class LoginWindow : Window
             ? $"账号 · {account.AccountName} 支持 PIN 快速登录"
             : $"账号 · {account.AccountName}";
         TxtSelectedUserHint.Text = account.HasPinCredential
-            ? "可直接输入 PIN，留空时改用密码。"
+            ? "已切换为 PIN 登录；也可以改用密码。"
             : "该账号未设置 PIN，请输入密码登录。";
         ApplyRecentAccountSelection(account.AccountName);
         LoginPasswordBox.Clear();
         LoginPinBox.Clear();
+        SetLoginCredentialMode(account.HasPinCredential ? LoginCredentialMode.Pin : LoginCredentialMode.Password);
         FocusCredentialInput(account.HasPinCredential);
     }
 
@@ -332,7 +335,7 @@ public partial class LoginWindow : Window
         var accountName = LoginAccountBox.Text.Trim();
         TxtSelectedUserHint.Text = string.IsNullOrWhiteSpace(accountName)
             ? "使用最近登录账号或手动输入账号名。"
-            : "输入对应密码，已设置 PIN 时也可以直接填 PIN。";
+            : "选择登录方式后输入对应凭证。";
         ApplyRecentAccountSelection(string.IsNullOrWhiteSpace(accountName) ? null : accountName);
     }
 
@@ -379,10 +382,37 @@ public partial class LoginWindow : Window
 
     private void FocusCredentialInput(bool preferPin = false)
     {
-        if (preferPin)
+        if (preferPin || SelectedCredentialMode == LoginCredentialMode.Pin)
             LoginPinBox.Focus();
         else
             LoginPasswordBox.Focus();
+    }
+
+    private void PasswordMode_Click(object sender, RoutedEventArgs e)
+    {
+        SetLoginCredentialMode(LoginCredentialMode.Password);
+        FocusCredentialInput();
+    }
+
+    private void PinMode_Click(object sender, RoutedEventArgs e)
+    {
+        SetLoginCredentialMode(LoginCredentialMode.Pin);
+        FocusCredentialInput(preferPin: true);
+    }
+
+    private void SetLoginCredentialMode(LoginCredentialMode mode)
+    {
+        SelectedCredentialMode = mode;
+        var usePin = SelectedCredentialMode == LoginCredentialMode.Pin;
+        PasswordCredentialPanel.Visibility = usePin ? Visibility.Collapsed : Visibility.Visible;
+        PinCredentialPanel.Visibility = usePin ? Visibility.Visible : Visibility.Collapsed;
+        BtnPasswordMode.Style = (Style)FindResource(usePin
+            ? "LoginCredentialModeButton"
+            : "LoginCredentialModeSelectedButton");
+        BtnPinMode.Style = (Style)FindResource(usePin
+            ? "LoginCredentialModeSelectedButton"
+            : "LoginCredentialModeButton");
+        ClearFieldError(TxtLoginPasswordError);
     }
 
     private void HookInputErrorClearing()
@@ -426,8 +456,16 @@ public partial class LoginWindow : Window
 
         var hasPassword = !string.IsNullOrWhiteSpace(LoginPasswordBox.Password);
         var hasPin = !string.IsNullOrWhiteSpace(LoginPinBox.Password);
-        if (!hasPassword && !hasPin)
-            throw BuildInputError(LoginPasswordBox, TxtLoginPasswordError, "请输入密码，或填写已设置的 PIN。");
+        if (SelectedCredentialMode == LoginCredentialMode.Pin)
+        {
+            if (!hasPin)
+                throw BuildInputError(LoginPinBox, TxtLoginPasswordError, "请输入该账号的 PIN。");
+
+            return;
+        }
+
+        if (!hasPassword)
+            throw BuildInputError(LoginPasswordBox, TxtLoginPasswordError, "请输入该账号的密码。");
     }
 
     private static InputValidationException BuildInputError(Control target, TextBlock errorText, string message)
@@ -502,5 +540,11 @@ public partial class LoginWindow : Window
             : base(message)
         {
         }
+    }
+
+    private enum LoginCredentialMode
+    {
+        Password,
+        Pin
     }
 }

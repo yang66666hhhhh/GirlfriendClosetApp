@@ -227,6 +227,49 @@
             <Setter Property="CornerRadius" Value="14"/>
             <Setter Property="Padding" Value="14,12"/>
         </Style>
+
+        <Style x:Key="LoginCredentialModeButton" TargetType="Button">
+            <Setter Property="Height" Value="36"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderBrush" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ModeShell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ModeShell" Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ModeShell" Property="Opacity" Value="0.86"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LoginCredentialModeSelectedButton"
+               BasedOn="{StaticResource LoginCredentialModeButton}"
+               TargetType="Button">
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+        </Style>
     </Window.Resources>
 
     <Border Margin="34"
@@ -441,20 +484,51 @@
                              TextChanged="LoginAccountBox_TextChanged"/>
                     <TextBlock x:Name="TxtLoginAccountError"
                                Style="{StaticResource LoginFieldErrorText}"/>
-                    <TextBlock Text="密码" Style="{StaticResource LoginInputLabel}"/>
-                    <PasswordBox x:Name="LoginPasswordBox"
-                                 Margin="0,8,0,14"
-                                 Style="{StaticResource LoginPasswordBox}"/>
+                    <Grid x:Name="CredentialModePanel"
+                          Margin="0,0,0,14">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="登录方式"
+                                   Style="{StaticResource LoginInputLabel}"
+                                   VerticalAlignment="Center"/>
+                        <Border Grid.Column="1"
+                                Margin="14,0,0,0"
+                                Padding="3"
+                                HorizontalAlignment="Right"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="13">
+                            <StackPanel Orientation="Horizontal">
+                                <Button x:Name="BtnPasswordMode"
+                                        Content="密码"
+                                        Style="{StaticResource LoginCredentialModeSelectedButton}"
+                                        Click="PasswordMode_Click"/>
+                                <Button x:Name="BtnPinMode"
+                                        Content="PIN"
+                                        Margin="4,0,0,0"
+                                        Style="{StaticResource LoginCredentialModeButton}"
+                                        Click="PinMode_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                    <StackPanel x:Name="PasswordCredentialPanel">
+                        <TextBlock Text="密码" Style="{StaticResource LoginInputLabel}"/>
+                        <PasswordBox x:Name="LoginPasswordBox"
+                                     Margin="0,8,0,14"
+                                     Style="{StaticResource LoginPasswordBox}"/>
+                    </StackPanel>
+                    <StackPanel x:Name="PinCredentialPanel"
+                                Visibility="Collapsed">
+                        <TextBlock Text="PIN" Style="{StaticResource LoginInputLabel}"/>
+                        <PasswordBox x:Name="LoginPinBox"
+                                     Margin="0,8,0,14"
+                                     Style="{StaticResource LoginPasswordBox}"/>
+                    </StackPanel>
                     <TextBlock x:Name="TxtLoginPasswordError"
                                Style="{StaticResource LoginFieldErrorText}"/>
-                    <TextBlock Text="PIN（可选）" Style="{StaticResource LoginInputLabel}"/>
-                    <PasswordBox x:Name="LoginPinBox"
-                                 Margin="0,8,0,0"
-                                 Style="{StaticResource LoginPasswordBox}"/>
-                    <TextBlock Text="如果填写 PIN，会优先使用 PIN 登录；留空则使用密码。"
-                               Margin="2,8,0,0"
-                               FontSize="11"
-                               Foreground="{DynamicResource TextPlaceholderBrush}"/>
                 </StackPanel>
 
                 <Border x:Name="LoginErrorHost"
