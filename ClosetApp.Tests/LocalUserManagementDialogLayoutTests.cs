@@ -35,6 +35,19 @@ public class LocalUserManagementDialogLayoutTests
     }
 
     [Fact]
+    public void LocalUserAvatar_KeepsInitialInsideSafeContentBounds()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/LocalUserAvatar.xaml"));
+
+        Assert.Contains("x:Name=\"AvatarContentHost\"", xaml);
+        Assert.Contains("Margin=\"7\"", xaml);
+        Assert.Contains("Viewbox x:Name=\"InitialViewbox\"", xaml);
+        Assert.Contains("Margin=\"3\"", xaml);
+        Assert.DoesNotContain("Viewbox Width=\"48\"", xaml);
+        Assert.DoesNotContain("Height=\"48\"", xaml);
+    }
+
+    [Fact]
     public void UserManagementDialog_ExposesAvatarUploadActions()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));

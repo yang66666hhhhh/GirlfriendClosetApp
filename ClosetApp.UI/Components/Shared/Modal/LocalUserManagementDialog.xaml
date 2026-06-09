@@ -484,10 +484,12 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <StackPanel>
+                                                <StackPanel MinWidth="132"
+                                                            HorizontalAlignment="Center">
                                                     <shared:LocalUserAvatar x:Name="SelectedUserAvatar"
                                                                             Width="92"
                                                                             Height="92"
+                                                                            HorizontalAlignment="Center"
                                                                             AvatarPath="{Binding AvatarPath}"
                                                                             Initial="{Binding AvatarInitial}"
                                                                             IsCurrent="{Binding IsCurrent}"/>
