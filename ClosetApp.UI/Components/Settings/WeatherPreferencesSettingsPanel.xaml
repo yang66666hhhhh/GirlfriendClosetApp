@@ -4,52 +4,13 @@
              xmlns:conv="clr-namespace:ClosetApp.UI.Converters">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-
-        <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
-            <Setter Property="Margin" Value="0,0,0,18"/>
-            <Setter Property="Padding" Value="22,20"/>
-            <Setter Property="CornerRadius" Value="22"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <Style x:Key="SettingsEyebrowBadge" TargetType="Border">
-            <Setter Property="CornerRadius" Value="10"/>
-            <Setter Property="Padding" Value="8,3"/>
-            <Setter Property="HorizontalAlignment" Value="Left"/>
-            <Setter Property="Margin" Value="0,0,0,8"/>
-        </Style>
-
-        <Style x:Key="SettingsEyebrowBadgeText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-        </Style>
-
-        <Style x:Key="SettingsInsetCard" TargetType="Border" BasedOn="{StaticResource PageInsetCard}">
-            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-        </Style>
-
-        <Style x:Key="SettingsButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="Padding" Value="12,6"/>
-            <Setter Property="MinWidth" Value="92"/>
-        </Style>
     </UserControl.Resources>
 
     <Border Style="{StaticResource SettingsSectionCard}">
         <StackPanel>
-            <Border Style="{StaticResource SettingsEyebrowBadge}"
-                    Background="{DynamicResource PrimaryLightBrush}"
-                    BorderBrush="{DynamicResource PrimaryBrush}"
-                    BorderThickness="1">
+            <Border Style="{StaticResource SettingsEyebrowBadge}">
                 <TextBlock Text="偏好"
-                           Style="{StaticResource SettingsEyebrowBadgeText}"
-                           Foreground="{DynamicResource PrimaryBrush}"/>
+                           Style="{StaticResource SettingsEyebrowBadgeText}"/>
             </Border>
             <TextBlock Text="天气与城市"
                        Style="{StaticResource PageSectionTitleText}"/>

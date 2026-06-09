@@ -22,6 +22,7 @@
                 <ResourceDictionary Source="Themes/Controls/Chips.xaml"/>
                 <ResourceDictionary Source="Themes/Controls/Cards.xaml"/>
                 <ResourceDictionary Source="Themes/Controls/Pages.xaml"/>
+                <ResourceDictionary Source="Themes/Controls/Settings.xaml"/>
                 <ResourceDictionary Source="Components/Shared/Modal/ModalCardStyles.xaml"/>
                 <ResourceDictionary Source="Components/Shared/Modal/ModalFooterStyles.xaml"/>
                 <ResourceDictionary Source="Components/Shared/Form/FormStyles.xaml"/>
