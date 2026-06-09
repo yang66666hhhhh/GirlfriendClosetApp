@@ -101,6 +101,7 @@ public partial class LoginWindow : Window
         {
             SetSubmittingState(true);
             ClearError();
+            ClearFieldErrors();
 
             if (_isSetupMode)
                 ValidateSetupInputs();
@@ -111,6 +112,10 @@ public partial class LoginWindow : Window
                 await CompleteSetupAsync();
             else
                 await LoginAsync();
+        }
+        catch (InputValidationException)
+        {
+            ClearError();
         }
         catch (Exception ex)
         {
@@ -405,30 +410,37 @@ public partial class LoginWindow : Window
     private void ValidateSetupInputs()
     {
         if (string.IsNullOrWhiteSpace(SetupAccountBox.Text))
-            throw BuildInputError(SetupAccountBox, "请输入管理员账号。");
+            throw BuildInputError(SetupAccountBox, TxtSetupAccountError, "请输入管理员账号。");
 
         if (string.IsNullOrWhiteSpace(SetupPasswordBox.Password))
-            throw BuildInputError(SetupPasswordBox, "请输入管理员密码。");
+            throw BuildInputError(SetupPasswordBox, TxtSetupPasswordError, "请输入管理员密码。");
 
         if (string.IsNullOrWhiteSpace(SetupConfirmPasswordBox.Password))
-            throw BuildInputError(SetupConfirmPasswordBox, "请再次确认管理员密码。");
+            throw BuildInputError(SetupConfirmPasswordBox, TxtSetupConfirmPasswordError, "请再次确认管理员密码。");
     }
 
     private void ValidateLoginInputs()
     {
         if (string.IsNullOrWhiteSpace(LoginAccountBox.Text))
-            throw BuildInputError(LoginAccountBox, "请输入账号。");
+            throw BuildInputError(LoginAccountBox, TxtLoginAccountError, "请输入账号。");
 
         var hasPassword = !string.IsNullOrWhiteSpace(LoginPasswordBox.Password);
         var hasPin = !string.IsNullOrWhiteSpace(LoginPinBox.Password);
         if (!hasPassword && !hasPin)
-            throw BuildInputError(LoginPasswordBox, "请输入密码，或填写已设置的 PIN。");
+            throw BuildInputError(LoginPasswordBox, TxtLoginPasswordError, "请输入密码，或填写已设置的 PIN。");
     }
 
-    private static InvalidOperationException BuildInputError(Control target, string message)
+    private static InputValidationException BuildInputError(Control target, TextBlock errorText, string message)
     {
+        SetFieldError(errorText, message);
         target.Focus();
-        return new InvalidOperationException(message);
+        return new InputValidationException(message);
+    }
+
+    private static void SetFieldError(TextBlock errorText, string message)
+    {
+        errorText.Text = message;
+        errorText.Visibility = Visibility.Visible;
     }
 
     private void OpenMainWindow()
@@ -462,9 +474,33 @@ public partial class LoginWindow : Window
 
     private void ClearErrorIfUserEditing(object? sender = null, RoutedEventArgs? e = null)
     {
-        if (_isSubmitting || LoginErrorHost.Visibility != Visibility.Visible)
+        if (_isSubmitting)
             return;
 
         ClearError();
+        ClearFieldErrors();
+    }
+
+    private void ClearFieldErrors()
+    {
+        ClearFieldError(TxtSetupAccountError);
+        ClearFieldError(TxtSetupPasswordError);
+        ClearFieldError(TxtSetupConfirmPasswordError);
+        ClearFieldError(TxtLoginAccountError);
+        ClearFieldError(TxtLoginPasswordError);
+    }
+
+    private static void ClearFieldError(TextBlock errorText)
+    {
+        errorText.Text = string.Empty;
+        errorText.Visibility = Visibility.Collapsed;
+    }
+
+    private sealed class InputValidationException : InvalidOperationException
+    {
+        public InputValidationException(string message)
+            : base(message)
+        {
+        }
     }
 }

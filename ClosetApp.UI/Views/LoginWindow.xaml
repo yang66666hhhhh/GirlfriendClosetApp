@@ -16,6 +16,15 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
 
+        <Style x:Key="LoginFieldErrorText" TargetType="TextBlock">
+            <Setter Property="Margin" Value="2,-6,0,12"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="LineHeight" Value="17"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+            <Setter Property="Visibility" Value="Collapsed"/>
+        </Style>
+
         <Style x:Key="LoginTextBox" TargetType="TextBox">
             <Setter Property="Height" Value="46"/>
             <Setter Property="Padding" Value="14,0"/>
@@ -364,14 +373,20 @@
                     <TextBox x:Name="SetupAccountBox"
                              Margin="0,8,0,14"
                              Style="{StaticResource LoginTextBox}"/>
+                    <TextBlock x:Name="TxtSetupAccountError"
+                               Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="管理员密码" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="SetupPasswordBox"
                                  Margin="0,8,0,14"
                                  Style="{StaticResource LoginPasswordBox}"/>
+                    <TextBlock x:Name="TxtSetupPasswordError"
+                               Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="确认密码" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="SetupConfirmPasswordBox"
                                  Margin="0,8,0,14"
                                  Style="{StaticResource LoginPasswordBox}"/>
+                    <TextBlock x:Name="TxtSetupConfirmPasswordError"
+                               Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="快捷 PIN（可选）" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="SetupPinBox"
                                  Margin="0,8,0,0"
@@ -424,10 +439,14 @@
                              Margin="0,8,0,14"
                              Style="{StaticResource LoginTextBox}"
                              TextChanged="LoginAccountBox_TextChanged"/>
+                    <TextBlock x:Name="TxtLoginAccountError"
+                               Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="密码" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="LoginPasswordBox"
                                  Margin="0,8,0,14"
                                  Style="{StaticResource LoginPasswordBox}"/>
+                    <TextBlock x:Name="TxtLoginPasswordError"
+                               Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="PIN（可选）" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="LoginPinBox"
                                  Margin="0,8,0,0"

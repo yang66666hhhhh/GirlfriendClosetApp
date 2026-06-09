@@ -110,6 +110,15 @@ public class LoginWindowLayoutTests
         Assert.Contains("BuildInputError(LoginAccountBox", code);
         Assert.Contains("BuildInputError(LoginPasswordBox", code);
         Assert.Contains("Text=\"账号\" Style=\"{StaticResource LoginInputLabel}\"", xaml);
+        Assert.Contains("x:Key=\"LoginFieldErrorText\"", xaml);
+        Assert.Contains("x:Name=\"TxtLoginAccountError\"", xaml);
+        Assert.Contains("x:Name=\"TxtLoginPasswordError\"", xaml);
+        Assert.Contains("x:Name=\"TxtSetupAccountError\"", xaml);
+        Assert.Contains("BuildInputError(LoginAccountBox, TxtLoginAccountError", code);
+        Assert.Contains("BuildInputError(LoginPasswordBox, TxtLoginPasswordError", code);
+        Assert.Contains("ClearFieldErrors();", code);
+        Assert.Contains("InputValidationException", code);
+        Assert.Contains("catch (InputValidationException)", code);
     }
 
     [Fact]
