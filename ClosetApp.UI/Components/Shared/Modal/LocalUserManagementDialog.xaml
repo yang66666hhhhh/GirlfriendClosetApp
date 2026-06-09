@@ -313,7 +313,7 @@
                                             <StackPanel Grid.Column="1"
                                                         Margin="12,0,0,0"
                                                         VerticalAlignment="Center">
-                                                <TextBlock Text="{Binding DisplayName}"
+                                                <TextBlock Text="{Binding EditableName}"
                                                            FontSize="14"
                                                            FontWeight="SemiBold"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"
@@ -468,13 +468,14 @@
                                                         <Button Content="移除头像"
                                                                 Margin="10,0,0,0"
                                                                 Style="{StaticResource UserManager.SecondaryButton}"
+                                                                IsEnabled="{Binding HasAvatar}"
                                                                 Click="RemoveAvatar_Click"/>
                                                     </WrapPanel>
                                                 </StackPanel>
 
                                                 <StackPanel Grid.Column="2"
                                                             VerticalAlignment="Center">
-                                                    <TextBlock Text="{Binding DisplayName}"
+                                                    <TextBlock Text="{Binding EditableName}"
                                                                FontSize="22"
                                                                FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TextPrimaryBrush}"

@@ -219,13 +219,15 @@ public partial class LocalUserManagementDialog : UserControl
     private sealed class LocalUserRow : INotifyPropertyChanged
     {
         private string? _avatarPath;
+        private string _editableAccountName;
+        private string _editableName;
 
         public LocalUserRow(LocalUser user, Guid currentUserId)
         {
             User = user;
             IsCurrent = user.Id == currentUserId;
-            EditableAccountName = user.AccountName;
-            EditableName = user.DisplayName;
+            _editableAccountName = user.AccountName;
+            _editableName = user.DisplayName;
             _avatarPath = user.AvatarPhotoPath;
         }
 
@@ -245,20 +247,48 @@ public partial class LocalUserManagementDialog : UserControl
 
                 _avatarPath = value;
                 OnPropertyChanged();
+                OnPropertyChanged(nameof(HasAvatar));
             }
         }
-        public string EditableAccountName { get; set; }
-        public string EditableName { get; set; }
+        public bool HasAvatar => !string.IsNullOrWhiteSpace(AvatarPath);
+        public string EditableAccountName
+        {
+            get => _editableAccountName;
+            set
+            {
+                if (string.Equals(_editableAccountName, value, StringComparison.Ordinal))
+                    return;
+
+                _editableAccountName = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(AccountHandle));
+            }
+        }
+
+        public string EditableName
+        {
+            get => _editableName;
+            set
+            {
+                if (string.Equals(_editableName, value, StringComparison.Ordinal))
+                    return;
+
+                _editableName = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(AvatarInitial));
+                OnPropertyChanged(nameof(SummaryText));
+            }
+        }
         public bool IsCurrent { get; }
         public bool HasSelection => true;
         public bool CanDelete => User.Role != LocalUserRole.SuperAdmin;
         public bool CanResetCredential => IsCurrent || User.Role != LocalUserRole.SuperAdmin;
         public string RoleText => User.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "普通用户";
-        public string AvatarInitial => string.IsNullOrWhiteSpace(DisplayName) ? "衣" : DisplayName.Trim()[0].ToString();
+        public string AvatarInitial => string.IsNullOrWhiteSpace(EditableName) ? "衣" : EditableName.Trim()[0].ToString();
         public string SummaryText => $"{RoleText}{(IsCurrent ? " · 当前" : string.Empty)}";
         public string AccountHint => $"账号 {AccountName}";
         public string ListBadgeText => IsCurrent ? "当前" : User.Role == LocalUserRole.SuperAdmin ? "管理员" : string.Empty;
-        public string AccountHandle => $"@{AccountName}";
+        public string AccountHandle => $"@{EditableAccountName}";
         public string SessionText => IsCurrent ? "当前会话" : "可独立登录";
         public string CredentialSummary
         {
