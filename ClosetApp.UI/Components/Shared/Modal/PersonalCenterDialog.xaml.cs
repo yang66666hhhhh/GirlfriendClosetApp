@@ -137,11 +137,11 @@ public partial class PersonalCenterDialog : UserControl
             : Path.Combine(ClosetApp.Infrastructure.AppPaths.AiProfileDir, relativePath);
     }
 
-    private void AccountTab_Click(object sender, RoutedEventArgs e) => ShowSection(AccountPanel);
+    private void AccountTab_Checked(object sender, RoutedEventArgs e) => ShowSection(AccountPanel);
 
-    private void ProfileTab_Click(object sender, RoutedEventArgs e) => ShowSection(ProfilePanel);
+    private void ProfileTab_Checked(object sender, RoutedEventArgs e) => ShowSection(ProfilePanel);
 
-    private void SecurityTab_Click(object sender, RoutedEventArgs e) => ShowSection(SecurityPanel);
+    private void SecurityTab_Checked(object sender, RoutedEventArgs e) => ShowSection(SecurityPanel);
 
     private void ShowSection(UIElement section)
     {
@@ -149,22 +149,9 @@ public partial class PersonalCenterDialog : UserControl
         ProfilePanel.Visibility = section == ProfilePanel ? Visibility.Visible : Visibility.Collapsed;
         SecurityPanel.Visibility = section == SecurityPanel ? Visibility.Visible : Visibility.Collapsed;
 
-        ApplyTabStyle(BtnAccountTab, section == AccountPanel);
-        ApplyTabStyle(BtnProfileTab, section == ProfilePanel);
-        ApplyTabStyle(BtnSecurityTab, section == SecurityPanel);
-    }
-
-    private void ApplyTabStyle(Button button, bool selected)
-    {
-        button.Background = selected
-            ? (Brush)FindResource("PrimaryLightBrush")
-            : (Brush)FindResource("SurfaceCardBrush");
-        button.BorderBrush = selected
-            ? (Brush)FindResource("PrimaryBrush")
-            : (Brush)FindResource("BorderLightBrush");
-        button.Foreground = selected
-            ? (Brush)FindResource("PrimaryBrush")
-            : (Brush)FindResource("TextPrimaryBrush");
+        BtnAccountTab.IsChecked = section == AccountPanel;
+        BtnProfileTab.IsChecked = section == ProfilePanel;
+        BtnSecurityTab.IsChecked = section == SecurityPanel;
     }
 
     private void SelectAccountAvatar_Click(object sender, RoutedEventArgs e)

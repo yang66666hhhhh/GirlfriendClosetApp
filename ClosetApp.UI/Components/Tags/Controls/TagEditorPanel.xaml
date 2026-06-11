@@ -83,24 +83,10 @@
                                FontSize="17" FontWeight="SemiBold"
                                Foreground="{DynamicResource TextPrimaryBrush}"
                                VerticalAlignment="Center"/>
-                    <Button HorizontalAlignment="Right" VerticalAlignment="Center"
-                            Width="32" Height="32" Background="Transparent" Cursor="Hand"
-                            Click="Close_Click">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="Bg" Background="Transparent" CornerRadius="16">
-                                    <TextBlock Text="✕" FontSize="13"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                               HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                    <Button HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource ModalCloseButton}"
+                            Click="Close_Click"/>
                 </Grid>
             </Border>
 
@@ -306,58 +292,15 @@
                         <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <Button Grid.Column="1" Content="取消"
-                            Background="Transparent"
-                            Foreground="{DynamicResource TextSecondaryBrush}"
-                            FontFamily="{StaticResource Font.Primary}"
-                            FontSize="14" FontWeight="Medium"
-                            Cursor="Hand"
-                            MinWidth="80" MinHeight="38"
-                            Padding="20,9"
+                    <Button Grid.Column="1"
+                            Content="取消"
+                            Style="{StaticResource ModalCancelButton}"
                             Margin="0,0,10,0"
-                            Click="Cancel_Click">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="Bg" Background="{TemplateBinding Background}"
-                                        CornerRadius="10" Padding="{TemplateBinding Padding}">
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bg" Property="Background" Value="{DynamicResource SecondaryBackgroundBrush}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
-                    <Button Grid.Column="2" Content="保存"
-                            Background="{DynamicResource PrimaryBrush}"
-                            Foreground="White"
-                            FontFamily="{StaticResource Font.Primary}"
-                            FontSize="14" FontWeight="Medium"
-                            Cursor="Hand"
-                            MinWidth="100" MinHeight="38"
-                            Padding="24,9"
-                            Click="Save_Click">
-                        <Button.Template>
-                            <ControlTemplate TargetType="Button">
-                                <Border x:Name="Bg" Background="{TemplateBinding Background}"
-                                        CornerRadius="10" Padding="{TemplateBinding Padding}"
-                                        MinWidth="{TemplateBinding MinWidth}"
-                                        MinHeight="{TemplateBinding MinHeight}">
-                                    <Border.Effect>
-                                        <DropShadowEffect BlurRadius="16" ShadowDepth="2" Opacity="0.12" Color="#40D9A299" Direction="270"/>
-                                    </Border.Effect>
-                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                                </Border>
-                                <ControlTemplate.Triggers>
-                                    <Trigger Property="IsMouseOver" Value="True">
-                                        <Setter TargetName="Bg" Property="Background" Value="{DynamicResource PrimaryDarkBrush}"/>
-                                    </Trigger>
-                                </ControlTemplate.Triggers>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                            Click="Cancel_Click"/>
+                    <Button Grid.Column="2"
+                            Content="保存"
+                            Style="{StaticResource ModalSaveButton}"
+                            Click="Save_Click"/>
                 </Grid>
             </Border>
         </Grid>

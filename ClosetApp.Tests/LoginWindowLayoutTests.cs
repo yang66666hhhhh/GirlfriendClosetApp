@@ -127,12 +127,17 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"CredentialModePanel\"", xaml);
         Assert.Contains("x:Name=\"BtnPasswordMode\"", xaml);
         Assert.Contains("x:Name=\"BtnPinMode\"", xaml);
+        Assert.Contains("Style=\"{StaticResource AppSegmentedTabShell}\"", xaml);
+        Assert.Contains("Style=\"{StaticResource AppSegmentedTabButton}\"", xaml);
+        Assert.Contains("UniformGrid Columns=\"2\"", xaml);
+        Assert.Contains("Checked=\"PasswordMode_Checked\"", xaml);
+        Assert.Contains("Checked=\"PinMode_Checked\"", xaml);
         Assert.Contains("x:Name=\"PasswordCredentialPanel\"", xaml);
         Assert.Contains("x:Name=\"PinCredentialPanel\"", xaml);
         Assert.Contains("LoginCredentialMode", code);
         Assert.Contains("SetLoginCredentialMode", code);
-        Assert.Contains("PasswordMode_Click", code);
-        Assert.Contains("PinMode_Click", code);
+        Assert.Contains("PasswordMode_Checked", code);
+        Assert.Contains("PinMode_Checked", code);
         Assert.Contains("SelectedCredentialMode == LoginCredentialMode.Pin", code);
     }
 
@@ -262,6 +267,9 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"ProfileBasicsGrid\"", xaml);
         Assert.Contains("x:Key=\"PersonalCenter.TabRail\"", xaml);
         Assert.Contains("x:Key=\"PersonalCenter.ToolButton\"", xaml);
+        Assert.Contains("x:Key=\"PersonalCenter.TabButton\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource AppSegmentedTabButton}\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource SecondaryButton}\"", xaml);
         Assert.Contains("<Setter Property=\"CornerRadius\" Value=\"16\"/>", xaml);
         Assert.Contains("<Setter Property=\"MinHeight\" Value=\"34\"/>", xaml);
         Assert.Contains("x:Name=\"AccountSummaryHero\"", xaml);
@@ -288,6 +296,17 @@ public class LoginWindowLayoutTests
         Assert.DoesNotContain("SwitchUser_Click", xaml);
         Assert.DoesNotContain("SwitchUser_Click", code);
         Assert.DoesNotContain("CanSwitch", code);
+    }
+
+    [Fact]
+    public void OutfitWorkspaceDialog_UsesSharedActionButtons()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/OutfitWorkspaceDialog.xaml"));
+
+        Assert.Contains("x:Key=\"Workspace.ActionButton\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource SecondaryButton}\"", xaml);
+        Assert.Contains("x:Key=\"Workspace.PrimaryButton\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource ModalSaveButton}\"", xaml);
     }
 
     private static string FindProjectFile(string relativePath)

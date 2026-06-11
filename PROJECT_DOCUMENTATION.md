@@ -174,6 +174,7 @@ View / Component
 - `Inputs.xaml`：统一输入框与下拉框的 hover / focus glow / popup lift
 - `Cards.xaml`：统一卡片 hover 浮起、预览区圆角和浮层按钮响应
 - `ModalContainer.xaml(.cs)`：统一弹窗显示与关闭的淡入、位移和轻回弹
+- `ModalCardStyles.xaml` 与共享按钮资源：统一弹窗关闭按钮、取消 / 保存按钮、次级工具按钮和分段切换的视觉语言
 
 设计目标不是夸张动画，而是“明显可感知，但整体仍安静”。登录页、侧边栏头像卡、主题卡、设置页和工作台弹窗都优先复用这套交互语言，避免局部页面继续保留单独一套手感。
 
@@ -460,6 +461,7 @@ View / Component
 - 中部按“日常偏好 / 维护治理”分两列组织稳定分区
 - 各分区统一使用 `SettingsFieldInput / SettingsFieldComboBox / SettingsGhostButton / SettingsDangerGhostButton` 共享样式
 - 主题卡、头像预览和 AI 设置卡片都收紧了高度与留白，减少设置页空洞感和按钮文字被挤压的问题
+- 同一批次里，登录页、个人中心、标签编辑器、衣物编辑器和效果图工作台也继续并到共享输入框、主次按钮、弹窗页脚按钮和 segmented tab 样式，避免局部文件继续手写一套新的按钮模板
 
 ---
 

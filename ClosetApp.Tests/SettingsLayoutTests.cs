@@ -80,6 +80,8 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"AiCustomModelPanel\"", aiXaml);
         Assert.Contains("x:Name=\"AiConnectionMetaGrid\"", aiXaml);
         Assert.Contains("x:Name=\"AiCredentialActionRow\"", aiXaml);
+        Assert.Contains("BasedOn=\"{StaticResource SecondaryButton}\"", aiXaml);
+        Assert.DoesNotContain("<ControlTemplate TargetType=\"Button\">", aiXaml);
         Assert.Contains("VerticalAlignment=\"Stretch\"", aiXaml);
         Assert.Contains("x:Name=\"AiConnectionContent\"", aiXaml);
         Assert.Contains("<Setter Property=\"MinHeight\" Value=\"74\"/>", aiXaml);

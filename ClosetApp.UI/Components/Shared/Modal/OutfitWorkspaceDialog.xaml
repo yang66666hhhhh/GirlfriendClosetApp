@@ -36,7 +36,7 @@
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
 
-        <Style x:Key="Workspace.ActionButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+        <Style x:Key="Workspace.ActionButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="MinHeight" Value="36"/>
         </Style>

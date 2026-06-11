@@ -10,7 +10,7 @@
             <Setter Property="FontSize" Value="15"/>
         </Style>
 
-        <Style x:Key="PresetButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
+        <Style x:Key="PresetButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="MinHeight" Value="74"/>
             <Setter Property="Padding" Value="12,10"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
@@ -18,34 +18,13 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="FontSize" Value="11.5"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="PresetShell"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="14"
-                                MinHeight="{TemplateBinding MinHeight}"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="PresetShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                                <Setter TargetName="PresetShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                            </Trigger>
-                            <Trigger Property="Tag" Value="active">
-                                <Setter TargetName="PresetShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                                <Setter TargetName="PresetShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="PresetShell" Property="Opacity" Value="0.5"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Style.Triggers>
+                <Trigger Property="Tag" Value="active">
+                    <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                    <Setter Property="Foreground" Value="{DynamicResource PrimaryDarkBrush}"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
     </UserControl.Resources>
 

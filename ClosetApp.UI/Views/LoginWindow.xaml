@@ -190,63 +190,6 @@
             </Setter>
         </Style>
 
-        <Style x:Key="LoginCredentialModeButton" TargetType="Button">
-            <Setter Property="Height" Value="36"/>
-            <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="BorderBrush" Value="Transparent"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ModeShell"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="10"
-                                Padding="{TemplateBinding Padding}"
-                                RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                    <TranslateTransform Y="0"/>
-                                </TransformGroup>
-                            </Border.RenderTransform>
-                            <ContentPresenter HorizontalAlignment="Center"
-                                              VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ModeShell" Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-                                <Setter TargetName="ModeShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ModeShell" Property="RenderTransform">
-                                    <Setter.Value>
-                                        <TransformGroup>
-                                            <ScaleTransform ScaleX="0.986" ScaleY="0.986"/>
-                                            <TranslateTransform Y="1"/>
-                                        </TransformGroup>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="LoginCredentialModeSelectedButton"
-               BasedOn="{StaticResource LoginCredentialModeButton}"
-               TargetType="Button">
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-        </Style>
     </Window.Resources>
 
     <Border Margin="34"
@@ -447,23 +390,21 @@
                                    VerticalAlignment="Center"/>
                         <Border Grid.Column="1"
                                 Margin="14,0,0,0"
-                                Padding="3"
                                 HorizontalAlignment="Right"
-                                Background="{DynamicResource SurfaceSectionBrush}"
-                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                BorderThickness="1"
-                                CornerRadius="13">
-                            <StackPanel Orientation="Horizontal">
-                                <Button x:Name="BtnPasswordMode"
-                                        Content="密码"
-                                        Style="{StaticResource LoginCredentialModeSelectedButton}"
-                                        Click="PasswordMode_Click"/>
-                                <Button x:Name="BtnPinMode"
-                                        Content="PIN"
-                                        Margin="4,0,0,0"
-                                        Style="{StaticResource LoginCredentialModeButton}"
-                                        Click="PinMode_Click"/>
-                            </StackPanel>
+                                Style="{StaticResource AppSegmentedTabShell}">
+                            <UniformGrid Columns="2">
+                                <RadioButton x:Name="BtnPasswordMode"
+                                             Content="密码"
+                                             GroupName="LoginCredentialMode"
+                                             IsChecked="True"
+                                             Style="{StaticResource AppSegmentedTabButton}"
+                                             Checked="PasswordMode_Checked"/>
+                                <RadioButton x:Name="BtnPinMode"
+                                             Content="PIN"
+                                             GroupName="LoginCredentialMode"
+                                             Style="{StaticResource AppSegmentedTabButton}"
+                                             Checked="PinMode_Checked"/>
+                            </UniformGrid>
                         </Border>
                     </Grid>
                     <StackPanel x:Name="PasswordCredentialPanel">

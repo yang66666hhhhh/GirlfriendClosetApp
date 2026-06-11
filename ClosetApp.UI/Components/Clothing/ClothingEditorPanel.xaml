@@ -8,27 +8,6 @@
         <SolidColorBrush x:Key="InputFocusBrush" Color="{DynamicResource Primary}"/>
         <SolidColorBrush x:Key="InputUnderlineBrush" Color="{DynamicResource Border.Light}"/>
 
-        <!-- Ghost Icon Button -->
-        <Style x:Key="GhostIconBtn" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="BtnBg" Background="Transparent" CornerRadius="8" Padding="10,6">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BtnBg" Property="Background" Value="#22FFFFFF"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
     </UserControl.Resources>
 
     <!-- MODAL -->
@@ -174,11 +153,11 @@
                                     Padding="16,12">
                                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
                                     <Button Content="移除"
-                                            Style="{StaticResource GhostIconBtn}"
+                                            Style="{StaticResource GhostButton}"
                                             Click="DeleteImage_Click"
                                             Margin="0,0,8,0"/>
                                     <Button Content="更换"
-                                            Style="{StaticResource GhostIconBtn}"
+                                            Style="{StaticResource GhostButton}"
                                             Click="Upload_Click"/>
                                 </StackPanel>
                             </Border>

@@ -11,12 +11,11 @@
             <Setter Property="Padding" Value="16,14"/>
         </Style>
 
-        <Style x:Key="PersonalCenter.TabButton" TargetType="Button" BasedOn="{StaticResource SettingsGhostButton}">
+        <Style x:Key="PersonalCenter.TabButton" TargetType="RadioButton" BasedOn="{StaticResource AppSegmentedTabButton}">
             <Setter Property="MinWidth" Value="88"/>
             <Setter Property="MinHeight" Value="34"/>
             <Setter Property="Padding" Value="14,6"/>
             <Setter Property="FontSize" Value="12.5"/>
-            <Setter Property="BorderThickness" Value="0"/>
         </Style>
 
         <Style x:Key="PersonalCenter.TabRail" TargetType="Border">
@@ -45,7 +44,7 @@
             <Setter Property="Padding" Value="14"/>
         </Style>
 
-        <Style x:Key="PersonalCenter.ToolButton" TargetType="Button" BasedOn="{StaticResource SettingsGhostButton}">
+        <Style x:Key="PersonalCenter.ToolButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="MinWidth" Value="88"/>
             <Setter Property="Padding" Value="14,6"/>
@@ -124,25 +123,30 @@
                               Padding="28,20,28,20">
                     <StackPanel>
                         <Border x:Name="PersonalCenterTabRail"
-                                Style="{StaticResource PersonalCenter.TabRail}"
+                                Style="{StaticResource AppSegmentedTabShell}"
                                 HorizontalAlignment="Left"
                                 Margin="0,0,0,18">
                             <StackPanel x:Name="PersonalCenterTabBar"
-                                        Orientation="Horizontal">
-                                <Button x:Name="BtnAccountTab"
-                                        Content="账号资料"
-                                        Style="{StaticResource PersonalCenter.TabButton}"
-                                        Click="AccountTab_Click"/>
-                                <Button x:Name="BtnProfileTab"
-                                        Content="个人档案"
-                                        Margin="8,0,0,0"
-                                        Style="{StaticResource PersonalCenter.TabButton}"
-                                        Click="ProfileTab_Click"/>
-                                <Button x:Name="BtnSecurityTab"
-                                        Content="安全"
-                                        Margin="8,0,0,0"
-                                        Style="{StaticResource PersonalCenter.TabButton}"
-                                        Click="SecurityTab_Click"/>
+                                        Orientation="Horizontal"
+                                        HorizontalAlignment="Left">
+                                <RadioButton x:Name="BtnAccountTab"
+                                             Content="账号资料"
+                                             GroupName="PersonalCenterTab"
+                                             IsChecked="True"
+                                             Style="{StaticResource PersonalCenter.TabButton}"
+                                             Checked="AccountTab_Checked"/>
+                                <RadioButton x:Name="BtnProfileTab"
+                                             Content="个人档案"
+                                             GroupName="PersonalCenterTab"
+                                             Margin="2,0,0,0"
+                                             Style="{StaticResource PersonalCenter.TabButton}"
+                                             Checked="ProfileTab_Checked"/>
+                                <RadioButton x:Name="BtnSecurityTab"
+                                             Content="安全"
+                                             GroupName="PersonalCenterTab"
+                                             Margin="2,0,0,0"
+                                             Style="{StaticResource PersonalCenter.TabButton}"
+                                             Checked="SecurityTab_Checked"/>
                             </StackPanel>
                         </Border>
 

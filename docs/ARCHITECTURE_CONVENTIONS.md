@@ -190,6 +190,11 @@
 - 新 UI 优先复用 token，不要硬编码颜色、阴影、圆角和间距
 - 共享控件优先放 `Components/Shared`
 - 自定义控件优先用 DependencyProperty，不要用大量命令式视觉同步
+- 弹窗内高频操作优先复用共享样式：
+  - 关闭按钮：`ModalCloseButton`
+  - 页脚取消 / 保存：`ModalCancelButton` / `ModalSaveButton`
+  - 次级工具按钮：`SecondaryButton` / `GhostButton`
+  - 模式切换：`AppSegmentedTabShell` + `AppSegmentedTabButton`
 - 本地用户头像统一使用 `Components/Shared/LocalUserAvatar`；侧边栏、登录页、用户管理弹窗不要各自手写头像壳。
 - 本地用户头像和个人档案参考图都必须按用户 ID 生成独立文件槽名，禁止继续使用全局固定 `avatar` / `full-body` 文件名覆盖不同用户资源。
 - 对象型 `ComboBox` 必须显式声明显示映射：

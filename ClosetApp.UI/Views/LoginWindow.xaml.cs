@@ -235,13 +235,13 @@ public partial class LoginWindow : Window
             LoginPasswordBox.Focus();
     }
 
-    private void PasswordMode_Click(object sender, RoutedEventArgs e)
+    private void PasswordMode_Checked(object sender, RoutedEventArgs e)
     {
         SetLoginCredentialMode(LoginCredentialMode.Password);
         FocusCredentialInput();
     }
 
-    private void PinMode_Click(object sender, RoutedEventArgs e)
+    private void PinMode_Checked(object sender, RoutedEventArgs e)
     {
         SetLoginCredentialMode(LoginCredentialMode.Pin);
         FocusCredentialInput(preferPin: true);
@@ -253,12 +253,8 @@ public partial class LoginWindow : Window
         var usePin = SelectedCredentialMode == LoginCredentialMode.Pin;
         PasswordCredentialPanel.Visibility = usePin ? Visibility.Collapsed : Visibility.Visible;
         PinCredentialPanel.Visibility = usePin ? Visibility.Visible : Visibility.Collapsed;
-        BtnPasswordMode.Style = (Style)FindResource(usePin
-            ? "LoginCredentialModeButton"
-            : "LoginCredentialModeSelectedButton");
-        BtnPinMode.Style = (Style)FindResource(usePin
-            ? "LoginCredentialModeSelectedButton"
-            : "LoginCredentialModeButton");
+        BtnPasswordMode.IsChecked = !usePin;
+        BtnPinMode.IsChecked = usePin;
         ClearFieldError(TxtLoginPasswordError);
     }
 
