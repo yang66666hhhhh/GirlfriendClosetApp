@@ -6,7 +6,14 @@
             BorderThickness="0"
             Padding="0"
             MinHeight="172"
+            RenderTransformOrigin="0.5,0.5"
             Click="BtnSelect_Click">
+        <Button.RenderTransform>
+            <TransformGroup>
+                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                <TranslateTransform Y="0"/>
+            </TransformGroup>
+        </Button.RenderTransform>
         <Border x:Name="CardBorder"
                 CornerRadius="16"
                 Padding="14">
@@ -57,11 +64,29 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-                        <WrapPanel x:Name="TonePreviewPanel">
-                            <Border x:Name="SwatchPrimary" Width="18" Height="18" CornerRadius="9" Margin="0,0,6,0"/>
-                            <Border x:Name="SwatchSoft" Width="18" Height="18" CornerRadius="9" Margin="0,0,6,0"/>
-                            <Border x:Name="SwatchSurface" Width="18" Height="18" CornerRadius="9"/>
-                        </WrapPanel>
+                        <Grid x:Name="PreviewToneRail">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <WrapPanel x:Name="TonePreviewPanel"
+                                       VerticalAlignment="Center">
+                                <Border x:Name="SwatchPrimary" Width="18" Height="18" CornerRadius="9" Margin="0,0,6,0"/>
+                                <Border x:Name="SwatchSoft" Width="18" Height="18" CornerRadius="9" Margin="0,0,6,0"/>
+                                <Border x:Name="SwatchSurface" Width="18" Height="18" CornerRadius="9"/>
+                            </WrapPanel>
+                            <Border x:Name="ActionPill"
+                                    Grid.Column="1"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    CornerRadius="9"
+                                    Padding="8,3"
+                                    BorderThickness="1">
+                                <TextBlock x:Name="ActionPillText"
+                                           FontSize="10"
+                                           FontWeight="SemiBold"/>
+                            </Border>
+                        </Grid>
 
                         <TextBlock x:Name="TxtDescription"
                                    Grid.Row="1"

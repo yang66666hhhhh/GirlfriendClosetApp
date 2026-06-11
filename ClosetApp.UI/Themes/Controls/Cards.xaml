@@ -8,7 +8,7 @@
          卡片设计令牌 — 所有卡片共享的基础数值
          ═══════════════════════════════════════════════ -->
 
-    <CornerRadius x:Key="Card.Radius">20</CornerRadius>
+    <CornerRadius x:Key="Card.Radius">22</CornerRadius>
     <Thickness x:Key="Card.InfoPadding">16,12,16,14</Thickness>
     <sys:Double x:Key="Card.TitleFontSize">15</sys:Double>
     <sys:Double x:Key="Card.SubtitleFontSize">11</sys:Double>
@@ -16,12 +16,12 @@
     <sys:Double x:Key="Card.FavoriteFontSize">18</sys:Double>
 
     <!-- Card Motion Tokens — Soft Elevation -->
-    <sys:Double x:Key="Card.HoverTranslateY">-4</sys:Double>
-    <sys:Double x:Key="Card.HoverScale">1.01</sys:Double>
-    <sys:Double x:Key="Card.HoverShadowBlur">28</sys:Double>
-    <sys:Double x:Key="Card.HoverShadowOpacity">0.12</sys:Double>
-    <sys:Double x:Key="Card.HoverImageScale">1.02</sys:Double>
-    <sys:Double x:Key="Card.HoverDurationMs">220</sys:Double>
+    <sys:Double x:Key="Card.HoverTranslateY">-5</sys:Double>
+    <sys:Double x:Key="Card.HoverScale">1.012</sys:Double>
+    <sys:Double x:Key="Card.HoverShadowBlur">30</sys:Double>
+    <sys:Double x:Key="Card.HoverShadowOpacity">0.13</sys:Double>
+    <sys:Double x:Key="Card.HoverImageScale">1.024</sys:Double>
+    <sys:Double x:Key="Card.HoverDurationMs">200</sys:Double>
     <sys:Double x:Key="Card.IdleShadowBlur">16</sys:Double>
     <sys:Double x:Key="Card.IdleShadowOpacity">0.06</sys:Double>
 
@@ -43,7 +43,7 @@
 
     <Style x:Key="Card.PreviewArea" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource SurfaceHeroBrush}"/>
-        <Setter Property="CornerRadius" Value="20,20,0,0"/>
+        <Setter Property="CornerRadius" Value="22,22,0,0"/>
         <Setter Property="ClipToBounds" Value="True"/>
     </Style>
 
@@ -93,7 +93,7 @@
     <Style x:Key="Card.FavoriteButtonBase" TargetType="Button">
         <Setter Property="Width" Value="34"/>
         <Setter Property="Height" Value="34"/>
-        <Setter Property="Background" Value="#F7FBFF"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
@@ -107,20 +107,42 @@
                     <Border x:Name="FavoriteBorder"
                             Width="{TemplateBinding Width}"
                             Height="{TemplateBinding Height}"
-                            CornerRadius="17"
+                            CornerRadius="18"
                             Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}">
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            RenderTransformOrigin="0.5,0.5">
+                        <Border.RenderTransform>
+                            <TransformGroup>
+                                <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                <TranslateTransform Y="0"/>
+                            </TransformGroup>
+                        </Border.RenderTransform>
                         <ContentPresenter HorizontalAlignment="Center"
                                           VerticalAlignment="Center"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="FavoriteBorder" Property="Background" Value="#FFF7FA"/>
+                            <Setter TargetName="FavoriteBorder" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                             <Setter TargetName="FavoriteBorder" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="FavoriteBorder" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="1.03" ScaleY="1.03"/>
+                                        <TranslateTransform Y="-1"/>
+                                    </TransformGroup>
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
-                            <Setter TargetName="FavoriteBorder" Property="Background" Value="#FFF0F5"/>
+                            <Setter TargetName="FavoriteBorder" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="0.985" ScaleY="0.985"/>
+                                        <TranslateTransform Y="1"/>
+                                    </TransformGroup>
+                                </Setter.Value>
+                            </Setter>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -135,7 +157,7 @@
 
     <Style x:Key="Card.ActionOverlay" TargetType="Border">
         <Setter Property="Background" Value="#18000000"/>
-        <Setter Property="CornerRadius" Value="18,18,0,0"/>
+        <Setter Property="CornerRadius" Value="20,20,0,0"/>
         <Setter Property="Visibility" Value="Collapsed"/>
     </Style>
 
@@ -147,7 +169,7 @@
     <Style x:Key="WardrobeCard.MoreButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
         <Setter Property="Width" Value="28"/>
         <Setter Property="MinHeight" Value="28"/>
-        <Setter Property="Background" Value="#F6FFFFFF"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="#D7E0EC"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>

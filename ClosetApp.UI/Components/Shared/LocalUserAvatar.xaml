@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              Width="44"
              Height="44"
+             RenderTransformOrigin="0.5,0.5"
              SnapsToDevicePixels="True"
              UseLayoutRounding="True">
     <Grid>
@@ -18,14 +19,21 @@
                 BorderThickness="1.2"
                 Opacity="0.2"/>
 
-        <Border Margin="2.5"
+        <Border Margin="2"
                 CornerRadius="999"
                 Background="{DynamicResource SurfaceElevatedBrush}"
                 BorderBrush="{DynamicResource BorderLightBrush}"
                 BorderThickness="0.8"/>
 
+        <Border x:Name="AvatarSurface"
+                Margin="2"
+                CornerRadius="999"
+                Background="{DynamicResource SurfaceCardBrush}"
+                BorderBrush="{DynamicResource BorderLightBrush}"
+                BorderThickness="0.6"/>
+
         <Border x:Name="AvatarBody"
-                Margin="3"
+                Margin="2.5"
                 CornerRadius="999"
                 Background="{DynamicResource SurfaceSectionBrush}"
                 BorderBrush="{DynamicResource BorderLightBrush}"
@@ -33,7 +41,7 @@
                 ClipToBounds="True">
             <Grid x:Name="AvatarContentHost">
                 <Grid x:Name="InitialHost"
-                      Margin="5">
+                      Margin="4">
                     <Ellipse Fill="{DynamicResource PrimaryLightBrush}"/>
                     <Ellipse Width="24"
                              Height="24"
@@ -50,7 +58,7 @@
                              Fill="{DynamicResource SurfaceCardBrush}"
                              Opacity="0.2"/>
                     <Viewbox x:Name="InitialViewbox"
-                             Margin="2"
+                             Margin="1"
                              Stretch="Uniform">
                         <TextBlock x:Name="InitialText"
                                    HorizontalAlignment="Center"
@@ -62,12 +70,12 @@
                 </Grid>
 
                 <Ellipse x:Name="AvatarPhoto"
-                         Margin="4.5"
+                         Margin="1.5"
                          Visibility="Collapsed"/>
 
                 <Border Height="13"
                         VerticalAlignment="Top"
-                        Margin="4,3,4,0"
+                        Margin="3,2,3,0"
                         CornerRadius="999,999,10,10"
                         IsHitTestVisible="False">
                     <Border.Background>

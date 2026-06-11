@@ -41,12 +41,13 @@ public class LocalUserManagementDialogLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/LocalUserAvatar.xaml.cs"));
 
         Assert.Contains("x:Name=\"AvatarContentHost\"", xaml);
-        Assert.Contains("Margin=\"5\"", xaml);
-        Assert.Contains("Viewbox x:Name=\"InitialViewbox\"", xaml);
+        Assert.Contains("x:Name=\"AvatarSurface\"", xaml);
         Assert.Contains("Margin=\"2\"", xaml);
+        Assert.Contains("Viewbox x:Name=\"InitialViewbox\"", xaml);
+        Assert.Contains("Margin=\"1\"", xaml);
         Assert.Contains("x:Name=\"AvatarPhoto\"", xaml);
-        Assert.Contains("Margin=\"4.5\"", xaml);
-        Assert.Contains("Stretch = Stretch.Uniform", code);
+        Assert.Contains("Margin=\"1.5\"", xaml);
+        Assert.Contains("Stretch = Stretch.UniformToFill", code);
         Assert.DoesNotContain("Viewbox Width=\"48\"", xaml);
         Assert.DoesNotContain("Height=\"48\"", xaml);
     }
@@ -62,6 +63,7 @@ public class LocalUserManagementDialogLayoutTests
         Assert.Contains("ShowStatus=\"False\"", xaml);
         Assert.Contains("MinHeight=\"82\"", xaml);
         Assert.Contains("Margin=\"54,8,0,0\"", xaml);
+        Assert.Contains("x:Name=\"ProfileHoverHint\"", xaml);
         Assert.DoesNotContain("Width=\"44\"\r\n                                                Height=\"44\"", xaml);
     }
 

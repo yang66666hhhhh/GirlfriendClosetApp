@@ -8,7 +8,7 @@
 
     <Style x:Key="ModalCardClip" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource SurfaceModalBrush}"/>
-        <Setter Property="CornerRadius" Value="24"/>
+        <Setter Property="CornerRadius" Value="{DynamicResource Radius.XLarge}"/>
         <Setter Property="ClipToBounds" Value="True"/>
     </Style>
 
@@ -16,7 +16,7 @@
         <Setter Property="Background" Value="{StaticResource SurfaceModalBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderDividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        <Setter Property="CornerRadius" Value="24,24,0,0"/>
+        <Setter Property="CornerRadius" Value="26,26,0,0"/>
     </Style>
 
     <Style x:Key="ModalHeaderTitle" TargetType="TextBlock">
@@ -34,35 +34,22 @@
     </Style>
 
     <Style x:Key="ModalCloseButton" TargetType="Button">
-        <Setter Property="Width" Value="36"/>
-        <Setter Property="Height" Value="36"/>
-        <Setter Property="Background" Value="Transparent"/>
-        <Setter Property="BorderThickness" Value="0"/>
-        <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="Button">
-                    <Border x:Name="Bg" Background="Transparent" CornerRadius="18">
-                        <TextBlock Text="✕" FontSize="15"
-                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Bg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
+        <Setter Property="Width" Value="38"/>
+        <Setter Property="MinHeight" Value="38"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Content" Value="✕"/>
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="Style" Value="{StaticResource IconButton}"/>
     </Style>
 
     <Style x:Key="ModalFooterHost" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderDividerBrush}"/>
         <Setter Property="BorderThickness" Value="0,1,0,0"/>
-        <Setter Property="CornerRadius" Value="0,0,24,24"/>
+        <Setter Property="CornerRadius" Value="0,0,26,26"/>
     </Style>
 
     <Style x:Key="WorkbenchTextInput" TargetType="TextBox">
@@ -89,9 +76,14 @@
                                       HorizontalScrollBarVisibility="Hidden"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                            <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                        </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                             <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                            <Setter TargetName="InputShell" Property="Effect" Value="{StaticResource InputFocusGlow}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -122,9 +114,14 @@
                                       HorizontalScrollBarVisibility="Hidden"/>
                     </Border>
                     <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                            <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                        </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
                             <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                            <Setter TargetName="InputShell" Property="Effect" Value="{StaticResource InputFocusGlow}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

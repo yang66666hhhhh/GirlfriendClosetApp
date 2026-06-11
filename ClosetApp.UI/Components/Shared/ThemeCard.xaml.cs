@@ -134,6 +134,10 @@ public partial class ThemeCard : UserControl
         SelectedBadge.BorderBrush = new SolidColorBrush(primary);
         if (SelectedBadge.Child is TextBlock badgeText)
             badgeText.Foreground = new SolidColorBrush(primary);
+        ActionPill.BorderBrush = new SolidColorBrush(IsSelected ? primary : borderLight);
+        ActionPill.Background = new SolidColorBrush(IsSelected ? primaryLight : Colors.White);
+        ActionPillText.Text = IsSelected ? "已启用" : "点按切换";
+        ActionPillText.Foreground = new SolidColorBrush(IsSelected ? primary : textSecondary);
 
         TxtName.Text = DisplayName;
         TxtName.Foreground = new SolidColorBrush(textPrimary);

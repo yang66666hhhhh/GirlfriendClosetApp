@@ -320,6 +320,7 @@ public partial class NavigationSidebar : UserControl
             : HorizontalAlignment.Stretch;
         ProfileTextPanel.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         ProfileChevron.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        ProfileHoverHint.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         TxtClothingCount.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
     }
 }

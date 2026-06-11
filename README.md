@@ -73,6 +73,7 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 - 点击搭配卡片会打开 `OutfitWorkspaceDialog`
 - `OutfitWorkspaceDialog` 直接作为效果图工作台，主视觉优先展示当前效果图
 - 设置页已经重排为总览工作台 + 稳定分区的结构，主题、卡片展示、AI 配置、天气推荐、图片维护和备份都按统一的卡片节奏组织
+- 全局基础交互已经统一到共享主题资源：按钮、输入框、下拉框、卡片和弹窗都有克制但更明确的悬停、按压和回弹反馈；登录页、侧边栏头像、主题卡会优先吃到这套交互语言
 
 ## 技术栈
 
@@ -146,7 +147,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `rtk dotnet build ClosetApp.slnx /m:1`
 - `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1`
 
-当前测试规模为 **203 个测试**。
+当前测试规模为 **291 个测试**。
 
 ## 文档入口
 

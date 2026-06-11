@@ -49,6 +49,9 @@ public class LoginWindowLayoutTests
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
 
         Assert.Contains("x:Key=\"LoginHeroInfoCard\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource WorkbenchTextInput}\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource WorkbenchPasswordInput}\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource PrimaryButton}\"", xaml);
         Assert.Contains("x:Name=\"RecentAccountSelector\"", xaml);
         Assert.Contains("Text=\"账号\" Style=\"{StaticResource LoginInputLabel}\"", xaml);
         Assert.Contains("IsEditable=\"True\"", xaml);
@@ -182,6 +185,9 @@ public class LoginWindowLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
 
         Assert.Contains("个人中心", xaml);
+        Assert.Contains("x:Name=\"ProfileHoverHint\"", xaml);
+        Assert.Contains("RenderTransformOrigin=\"0.5,0.5\"", xaml);
+        Assert.Contains("TransformGroup", xaml);
         Assert.Contains("Header = \"个人中心\"", code);
         Assert.Contains("new PersonalCenterDialog()", code);
         Assert.DoesNotContain("Header = \"编辑当前档案\"", code);

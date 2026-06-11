@@ -42,6 +42,9 @@ public class SettingsLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/ThemeCard.xaml.cs"));
 
         Assert.Contains("x:Name=\"CardRootButton\"", xaml);
+        Assert.Contains("RenderTransformOrigin=\"0.5,0.5\"", xaml);
+        Assert.Contains("x:Name=\"PreviewToneRail\"", xaml);
+        Assert.Contains("x:Name=\"ActionPill\"", xaml);
         Assert.Contains("MinHeight=\"172\"", xaml);
         Assert.Contains("x:Name=\"TonePreviewPanel\"", xaml);
         Assert.Contains("x:Name=\"PreviewHost\"", xaml);
@@ -49,6 +52,8 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"SelectedBadge\"", xaml);
         Assert.Contains("x:Name=\"StateHint\"", xaml);
         Assert.DoesNotContain("x:Name=\"BtnSelect\"", xaml);
+        Assert.Contains("CardRootButton.IsEnabled = !IsSelected;", code);
+        Assert.Contains("ActionPill.BorderBrush", code);
         Assert.Contains("PreviewBorder", code);
         Assert.Contains("StateHint.Text", code);
     }
@@ -103,11 +108,23 @@ public class SettingsLayoutTests
     public void SettingsStyles_UseUnifiedButtonsAndInputs()
     {
         var settingsXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Controls/Settings.xaml"));
+        var radiusXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Tokens/Radius.xaml"));
+        var motionXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Tokens/Motion.xaml"));
+        var buttonsXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Controls/Buttons.xaml"));
+        var inputsXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Controls/Inputs.xaml"));
         var weatherXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/WeatherPreferencesSettingsPanel.xaml"));
         var aiXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AiImageGenerationSettingsPanel.xaml"));
         var imageXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/ImageMaintenanceSettingsPanel.xaml"));
         var logXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/LogMaintenanceSettingsPanel.xaml"));
 
+        Assert.Contains("x:Key=\"Radius.XLarge\"", radiusXaml);
+        Assert.Contains("x:Key=\"Radius.Control\"", radiusXaml);
+        Assert.Contains("x:Key=\"Motion.PressMs\"", motionXaml);
+        Assert.Contains("x:Key=\"Motion.ModalMs\"", motionXaml);
+        Assert.Contains("x:Key=\"HoverLiftUp\"", buttonsXaml);
+        Assert.Contains("TranslateTransform", buttonsXaml);
+        Assert.Contains("x:Key=\"InputFocusGlow\"", inputsXaml);
+        Assert.Contains("x:Key=\"ComboBoxPopupLift\"", inputsXaml);
         Assert.Contains("x:Key=\"SettingsDangerButton\"", settingsXaml);
         Assert.Contains("x:Key=\"SettingsFieldInput\"", settingsXaml);
         Assert.Contains("x:Key=\"SettingsFieldComboBox\"", settingsXaml);

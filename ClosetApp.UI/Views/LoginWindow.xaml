@@ -25,80 +25,20 @@
             <Setter Property="Visibility" Value="Collapsed"/>
         </Style>
 
-        <Style x:Key="LoginTextBox" TargetType="TextBox">
-            <Setter Property="Height" Value="46"/>
-            <Setter Property="Padding" Value="14,0"/>
+        <Style x:Key="LoginTextBox"
+               TargetType="TextBox"
+               BasedOn="{StaticResource WorkbenchTextInput}">
+            <Setter Property="MinHeight" Value="46"/>
+            <Setter Property="Padding" Value="14,10"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="InputShell"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="14"
-                                SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="Center"
-                                          VerticalScrollBarVisibility="Hidden"
-                                          HorizontalScrollBarVisibility="Hidden"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="InputShell" Property="Opacity" Value="0.55"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
-        <Style x:Key="LoginPasswordBox" TargetType="PasswordBox">
+        <Style x:Key="LoginPasswordBox"
+               TargetType="PasswordBox"
+               BasedOn="{StaticResource WorkbenchPasswordInput}">
             <Setter Property="Height" Value="46"/>
             <Setter Property="Padding" Value="14,0"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="PasswordBox">
-                        <Border x:Name="InputShell"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="14"
-                                SnapsToDevicePixels="True">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="Center"
-                                          VerticalScrollBarVisibility="Hidden"
-                                          HorizontalScrollBarVisibility="Hidden"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="InputShell" Property="Opacity" Value="0.55"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
         </Style>
 
         <Style x:Key="LoginInfoText" TargetType="TextBlock">
@@ -116,57 +56,21 @@
             <Setter Property="Padding" Value="16"/>
         </Style>
 
-        <Style x:Key="LoginSubmitButton" TargetType="Button">
+        <Style x:Key="LoginSubmitButton"
+               TargetType="Button"
+               BasedOn="{StaticResource PrimaryButton}">
             <Setter Property="MinHeight" Value="52"/>
             <Setter Property="Padding" Value="18,0"/>
             <Setter Property="FontSize" Value="15"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Foreground" Value="White"/>
-            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="HorizontalContentAlignment" Value="Center"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="ButtonShell"
-                                MinHeight="{TemplateBinding MinHeight}"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="14"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                                              RecognizesAccessKey="True"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ButtonShell" Property="Background" Value="{DynamicResource PrimaryDarkBrush}"/>
-                                <Setter TargetName="ButtonShell" Property="BorderBrush" Value="{DynamicResource PrimaryDarkBrush}"/>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ButtonShell" Property="Opacity" Value="0.86"/>
-                            </Trigger>
-                            <Trigger Property="IsEnabled" Value="False">
-                                <Setter TargetName="ButtonShell" Property="Opacity" Value="0.55"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
+            <Setter Property="MinWidth" Value="0"/>
         </Style>
 
-        <Style x:Key="RecentAccountComboBox" TargetType="ComboBox">
+        <Style x:Key="RecentAccountComboBox"
+               TargetType="ComboBox"
+               BasedOn="{StaticResource AppComboBoxBase}">
             <Setter Property="Height" Value="46"/>
             <Setter Property="Padding" Value="14,0"/>
             <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Template">
                 <Setter.Value>
@@ -202,6 +106,7 @@
                                              Visibility="Hidden"/>
                                     <ToggleButton Grid.Column="1"
                                                   Width="42"
+                                                  Style="{StaticResource AppComboBoxToggleButton}"
                                                   Background="Transparent"
                                                   BorderThickness="0"
                                                   ClickMode="Press"
@@ -225,10 +130,11 @@
                                 <Border MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                         Margin="0,6,0,0"
                                         Padding="6"
-                                        Background="{DynamicResource SurfaceCardBrush}"
+                                        Background="{DynamicResource SurfaceElevatedBrush}"
                                         BorderBrush="{DynamicResource BorderLightBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="14">
+                                        CornerRadius="14"
+                                        Effect="{StaticResource ComboBoxPopupLift}">
                                     <ScrollViewer MaxHeight="220"
                                                   VerticalScrollBarVisibility="Auto"
                                                   HorizontalScrollBarVisibility="Disabled">
@@ -256,10 +162,11 @@
             </Setter>
         </Style>
 
-        <Style x:Key="RecentAccountComboBoxItem" TargetType="ComboBoxItem">
+        <Style x:Key="RecentAccountComboBoxItem"
+               TargetType="ComboBoxItem"
+               BasedOn="{StaticResource AppComboBoxItemBase}">
             <Setter Property="Padding" Value="12,8"/>
             <Setter Property="FontSize" Value="13"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBoxItem">
@@ -301,16 +208,31 @@
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="10"
-                                Padding="{TemplateBinding Padding}">
+                                Padding="{TemplateBinding Padding}"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    <TranslateTransform Y="0"/>
+                                </TransformGroup>
+                            </Border.RenderTransform>
                             <ContentPresenter HorizontalAlignment="Center"
                                               VerticalAlignment="Center"/>
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="ModeShell" Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+                                <Setter TargetName="ModeShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ModeShell" Property="Opacity" Value="0.86"/>
+                                <Setter TargetName="ModeShell" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="0.986" ScaleY="0.986"/>
+                                            <TranslateTransform Y="1"/>
+                                        </TransformGroup>
+                                    </Setter.Value>
+                                </Setter>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

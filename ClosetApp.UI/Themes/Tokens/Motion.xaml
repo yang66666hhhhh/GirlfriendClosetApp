@@ -5,5 +5,7 @@
     <sys:Double x:Key="Motion.FastMs">120</sys:Double>
     <sys:Double x:Key="Motion.NormalMs">180</sys:Double>
     <sys:Double x:Key="Motion.SlowMs">300</sys:Double>
+    <sys:Double x:Key="Motion.PressMs">90</sys:Double>
+    <sys:Double x:Key="Motion.ModalMs">220</sys:Double>
 
 </ResourceDictionary>

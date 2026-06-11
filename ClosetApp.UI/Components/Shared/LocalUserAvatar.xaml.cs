@@ -78,6 +78,8 @@ public partial class LocalUserAvatar : UserControl
         StatusDot.Visibility = ShowStatus && IsCurrent ? Visibility.Visible : Visibility.Collapsed;
         CurrentRing.Opacity = IsCurrent ? 0.56 : 0.2;
         CurrentRing.BorderThickness = IsCurrent ? new Thickness(1.4) : new Thickness(1.2);
+        AvatarSurface.BorderBrush = (Brush)FindResource(IsCurrent ? "PrimaryLightBrush" : "BorderLightBrush");
+        AvatarSurface.BorderThickness = IsCurrent ? new Thickness(0.9) : new Thickness(0.6);
         AvatarBody.BorderBrush = (Brush)FindResource(IsCurrent ? "PrimaryBrush" : "BorderLightBrush");
         AvatarBody.BorderThickness = IsCurrent ? new Thickness(1) : new Thickness(0.8);
         AvatarPhoto.Width = double.NaN;
@@ -96,7 +98,7 @@ public partial class LocalUserAvatar : UserControl
 
         AvatarPhoto.Fill = new ImageBrush(LoadBitmap(resolvedPath))
         {
-            Stretch = Stretch.Uniform,
+            Stretch = Stretch.UniformToFill,
             AlignmentX = AlignmentX.Center,
             AlignmentY = AlignmentY.Center
         };

@@ -2,10 +2,12 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
 
-    <sys:Double x:Key="Radius.Small">10</sys:Double>
-    <sys:Double x:Key="Radius.Medium">14</sys:Double>
-    <sys:Double x:Key="Radius.Large">20</sys:Double>
+    <sys:Double x:Key="Radius.Small">11</sys:Double>
+    <sys:Double x:Key="Radius.Medium">15</sys:Double>
+    <sys:Double x:Key="Radius.Large">22</sys:Double>
+    <sys:Double x:Key="Radius.XLarge">26</sys:Double>
+    <sys:Double x:Key="Radius.Control">16</sys:Double>
     <sys:Double x:Key="Radius.Pill">999</sys:Double>
-    <CornerRadius x:Key="Radius.Chip">16</CornerRadius>
+    <CornerRadius x:Key="Radius.Chip">18</CornerRadius>
 
 </ResourceDictionary>

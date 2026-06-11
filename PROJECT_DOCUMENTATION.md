@@ -166,6 +166,17 @@ View / Component
 - 避免首屏被数据库迁移和多个 Tab 首刷拖慢
 - 用延迟 readiness 保证数据读取仍然安全
 
+### 5.3 交互动效基线
+
+当前 UI 已经把高频交互手感收口到共享主题资源：
+
+- `Buttons.xaml`：统一按钮 hover lift、press scale、轻回弹
+- `Inputs.xaml`：统一输入框与下拉框的 hover / focus glow / popup lift
+- `Cards.xaml`：统一卡片 hover 浮起、预览区圆角和浮层按钮响应
+- `ModalContainer.xaml(.cs)`：统一弹窗显示与关闭的淡入、位移和轻回弹
+
+设计目标不是夸张动画，而是“明显可感知，但整体仍安静”。登录页、侧边栏头像卡、主题卡、设置页和工作台弹窗都优先复用这套交互语言，避免局部页面继续保留单独一套手感。
+
 ---
 
 ## 6. 领域模型
