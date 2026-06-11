@@ -18,14 +18,14 @@
                 BorderThickness="1.2"
                 Opacity="0.2"/>
 
-        <Border Margin="3"
+        <Border Margin="2.5"
                 CornerRadius="999"
                 Background="{DynamicResource SurfaceElevatedBrush}"
                 BorderBrush="{DynamicResource BorderLightBrush}"
                 BorderThickness="0.8"/>
 
         <Border x:Name="AvatarBody"
-                Margin="4"
+                Margin="3"
                 CornerRadius="999"
                 Background="{DynamicResource SurfaceSectionBrush}"
                 BorderBrush="{DynamicResource BorderLightBrush}"
@@ -33,24 +33,24 @@
                 ClipToBounds="True">
             <Grid x:Name="AvatarContentHost">
                 <Grid x:Name="InitialHost"
-                      Margin="7">
+                      Margin="5">
                     <Ellipse Fill="{DynamicResource PrimaryLightBrush}"/>
                     <Ellipse Width="24"
                              Height="24"
-                             Margin="-4,-6,0,0"
+                             Margin="-2,-4,0,0"
                              HorizontalAlignment="Left"
                              VerticalAlignment="Top"
                              Fill="{DynamicResource SurfaceCardBrush}"
                              Opacity="0.22"/>
                     <Ellipse Width="15"
                              Height="15"
-                             Margin="0,0,-2,-1"
+                             Margin="0,0,-1,-1"
                              HorizontalAlignment="Right"
                              VerticalAlignment="Bottom"
                              Fill="{DynamicResource SurfaceCardBrush}"
                              Opacity="0.2"/>
                     <Viewbox x:Name="InitialViewbox"
-                             Margin="3"
+                             Margin="2"
                              Stretch="Uniform">
                         <TextBlock x:Name="InitialText"
                                    HorizontalAlignment="Center"
@@ -62,9 +62,10 @@
                 </Grid>
 
                 <Ellipse x:Name="AvatarPhoto"
+                         Margin="4.5"
                          Visibility="Collapsed"/>
 
-                <Border Height="15"
+                <Border Height="13"
                         VerticalAlignment="Top"
                         Margin="4,3,4,0"
                         CornerRadius="999,999,10,10"

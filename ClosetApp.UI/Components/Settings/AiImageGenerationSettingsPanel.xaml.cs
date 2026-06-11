@@ -83,7 +83,7 @@ public partial class AiImageGenerationSettingsPanel : UserControl
 
     private void OpenProfile_Click(object sender, RoutedEventArgs e)
     {
-        ModalService.Instance.Show(new PersonalProfileEditorPanel());
+        ModalService.Instance.Show(new PersonalCenterDialog());
     }
 
     public async Task RefreshAsync()
@@ -263,7 +263,10 @@ public partial class AiImageGenerationSettingsPanel : UserControl
         if (CmbModelPreset.SelectedItem is not ComboBoxItem item)
             return;
 
-        if (!string.Equals(item.Tag?.ToString(), "__custom__", StringComparison.Ordinal))
+        var isCustom = string.Equals(item.Tag?.ToString(), "__custom__", StringComparison.Ordinal);
+        AiCustomModelPanel.Visibility = isCustom ? Visibility.Visible : Visibility.Collapsed;
+
+        if (!isCustom)
             TxtModel.Text = item.Tag?.ToString() ?? TxtModel.Text;
     }
 
@@ -276,12 +279,14 @@ public partial class AiImageGenerationSettingsPanel : UserControl
         if (matchedItem != null)
         {
             CmbModelPreset.SelectedItem = matchedItem;
+            AiCustomModelPanel.Visibility = Visibility.Collapsed;
             return;
         }
 
         CmbModelPreset.SelectedItem = CmbModelPreset.Items
             .OfType<ComboBoxItem>()
             .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "__custom__", StringComparison.Ordinal));
+        AiCustomModelPanel.Visibility = Visibility.Visible;
     }
 
     private void ApplyPresetHighlight(AiGenerationPreferences preferences)

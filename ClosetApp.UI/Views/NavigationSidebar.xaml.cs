@@ -18,7 +18,7 @@ public partial class NavigationSidebar : UserControl
 {
     public event EventHandler<int>? NavigationChanged;
     public event EventHandler<bool>? CollapseStateChanged;
-    public event EventHandler? PersonalProfileRequested;
+    public event EventHandler? PersonalCenterRequested;
 
     private bool _isCollapsed;
     private readonly ILocalUserService _localUserService;
@@ -156,10 +156,10 @@ public partial class NavigationSidebar : UserControl
 
         ProfileMenu.Items.Add(new MenuItem
         {
-            Header = "编辑当前档案",
+            Header = "个人中心",
             Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
         });
-        ((MenuItem)ProfileMenu.Items[^1]).Click += EditCurrentProfile_Click;
+        ((MenuItem)ProfileMenu.Items[^1]).Click += OpenPersonalCenter_Click;
 
         if (_currentUser?.Role == LocalUserRole.SuperAdmin)
         {
@@ -189,10 +189,10 @@ public partial class NavigationSidebar : UserControl
         BtnProfile.ContextMenu.IsOpen = true;
     }
 
-    private void EditCurrentProfile_Click(object sender, RoutedEventArgs e)
+    private void OpenPersonalCenter_Click(object sender, RoutedEventArgs e)
     {
-        PersonalProfileRequested?.Invoke(this, EventArgs.Empty);
-        ModalService.Instance.Show(new PersonalProfileEditorPanel());
+        PersonalCenterRequested?.Invoke(this, EventArgs.Empty);
+        ModalService.Instance.Show(new PersonalCenterDialog());
     }
 
     private void ManageUsers_Click(object sender, RoutedEventArgs e)
@@ -280,12 +280,23 @@ public partial class NavigationSidebar : UserControl
         };
     }
 
-    private Separator BuildProfileMenuDivider()
+    private MenuItem BuildProfileMenuDivider()
     {
-        return new Separator
+        var divider = new Border
         {
-            Style = (Style)FindResource("ProfileMenuDividerStyle"),
-            IsHitTestVisible = false
+            Height = 1,
+            Margin = new Thickness(10, 6, 10, 6),
+            Opacity = 0.9,
+            SnapsToDevicePixels = true
+        };
+
+        divider.SetResourceReference(Border.BackgroundProperty, "BorderLightBrush");
+
+        return new MenuItem
+        {
+            Header = divider,
+            IsEnabled = false,
+            Style = (Style)FindResource("ProfileMenuDividerStyle")
         };
     }
 

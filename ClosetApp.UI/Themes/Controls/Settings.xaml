@@ -3,38 +3,40 @@
 
     <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
         <Setter Property="Margin" Value="0,0,0,16"/>
-        <Setter Property="Padding" Value="22,20"/>
-        <Setter Property="CornerRadius" Value="22"/>
-        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+        <Setter Property="Padding" Value="20,18"/>
+        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Effect" Value="{x:Null}"/>
     </Style>
 
     <Style x:Key="SettingsEyebrowBadge" TargetType="Border">
-        <Setter Property="CornerRadius" Value="10"/>
+        <Setter Property="CornerRadius" Value="9"/>
         <Setter Property="Padding" Value="8,3"/>
         <Setter Property="HorizontalAlignment" Value="Left"/>
         <Setter Property="Margin" Value="0,0,0,8"/>
-        <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-        <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
     </Style>
 
     <Style x:Key="SettingsEyebrowBadgeText" TargetType="TextBlock">
         <Setter Property="FontSize" Value="10"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
-        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
     </Style>
 
     <Style x:Key="SettingsInsetCard" TargetType="Border" BasedOn="{StaticResource PageInsetCard}">
-        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="14"/>
+        <Setter Property="Padding" Value="14,12"/>
     </Style>
 
     <Style x:Key="SettingsSurfacePanel" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="14"/>
@@ -42,7 +44,7 @@
     </Style>
 
     <Style x:Key="SettingsMicroCard" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="12"/>
@@ -50,7 +52,7 @@
     </Style>
 
     <Style x:Key="SettingsInfoChip" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="10"/>
@@ -59,7 +61,7 @@
     </Style>
 
     <Style x:Key="SettingsStatCard" TargetType="Border">
-        <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="16"/>
@@ -88,16 +90,41 @@
         <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
-        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Padding" Value="13,6"/>
         <Setter Property="MinWidth" Value="92"/>
+        <Setter Property="MinHeight" Value="38"/>
+        <Setter Property="FontSize" Value="12.5"/>
     </Style>
 
     <Style x:Key="SettingsGhostButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Padding" Value="13,6"/>
         <Setter Property="MinWidth" Value="96"/>
+        <Setter Property="MinHeight" Value="38"/>
+        <Setter Property="FontSize" Value="12.5"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+    </Style>
+
+    <Style x:Key="SettingsDangerButton" TargetType="Button" BasedOn="{StaticResource PageToolbarDangerButton}">
+        <Setter Property="Padding" Value="13,6"/>
+        <Setter Property="MinWidth" Value="96"/>
+        <Setter Property="MinHeight" Value="38"/>
+        <Setter Property="FontSize" Value="12.5"/>
+    </Style>
+
+    <Style x:Key="SettingsDangerGhostButton" TargetType="Button" BasedOn="{StaticResource SettingsGhostButton}">
+        <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
     </Style>
 
     <Style x:Key="SettingsFieldInput" TargetType="TextBox" BasedOn="{StaticResource SoftInput}">
+        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="12,8"/>
+    </Style>
+
+    <Style x:Key="SettingsFieldComboBox" TargetType="ComboBox" BasedOn="{StaticResource AppComboBoxBase}">
         <Setter Property="MinHeight" Value="40"/>
         <Setter Property="FontSize" Value="13"/>
     </Style>

@@ -27,7 +27,18 @@ public sealed class PersonalProfileService : IPersonalProfileService
     public async Task<PersonalProfileDto?> GetCurrentAsync()
     {
         var profile = await _repository.GetCurrentAsync();
-        return profile?.ToDto();
+        if (profile == null)
+            return null;
+
+        var dto = profile.ToDto();
+        if (!string.IsNullOrWhiteSpace(dto.AvatarPhotoPath) || _localUserRepository == null || _currentUserContext == null)
+            return dto;
+
+        var userId = await _currentUserContext.GetRequiredCurrentUserIdAsync();
+        var user = await _localUserRepository.GetActiveByIdAsync(userId);
+        return string.IsNullOrWhiteSpace(user?.AvatarPhotoPath)
+            ? dto
+            : dto with { AvatarPhotoPath = user.AvatarPhotoPath };
     }
 
     public async Task<PersonalProfileDto> SaveAsync(SavePersonalProfileRequest request)
@@ -83,23 +94,7 @@ public sealed class PersonalProfileService : IPersonalProfileService
         else
             await _repository.UpdateAsync(profile);
 
-        await SyncCurrentUserAvatarAsync(profile.AvatarPhotoPath);
         return profile.ToDto();
-    }
-
-    private async Task SyncCurrentUserAvatarAsync(string? avatarPhotoPath)
-    {
-        if (_localUserRepository == null || _currentUserContext == null)
-            return;
-
-        var userId = await _currentUserContext.GetRequiredCurrentUserIdAsync();
-        var user = await _localUserRepository.GetActiveByIdAsync(userId);
-        if (user == null)
-            return;
-
-        user.AvatarPhotoPath = avatarPhotoPath;
-        user.UpdatedAt = DateTime.Now;
-        await _localUserRepository.UpdateAsync(user);
     }
 
     private async Task<string> BuildProfileSlotNameAsync(string slotSuffix)

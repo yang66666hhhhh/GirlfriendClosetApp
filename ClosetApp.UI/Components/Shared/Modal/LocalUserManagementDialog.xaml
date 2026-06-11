@@ -3,73 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared">
     <UserControl.Resources>
-        <Style x:Key="UserManager.Input" TargetType="TextBox">
-            <Setter Property="MinHeight" Value="40"/>
-            <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="VerticalContentAlignment" Value="Center"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="TextBox">
-                        <Border x:Name="InputShell"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="12">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="Center"
-                                          VerticalScrollBarVisibility="Hidden"
-                                          HorizontalScrollBarVisibility="Hidden"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="UserManager.PasswordInput" TargetType="PasswordBox">
-            <Setter Property="Height" Value="40"/>
-            <Setter Property="Padding" Value="12,0"/>
-            <Setter Property="FontSize" Value="14"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="PasswordBox">
-                        <Border x:Name="InputShell"
-                                Background="{TemplateBinding Background}"
-                                BorderBrush="{TemplateBinding BorderBrush}"
-                                BorderThickness="{TemplateBinding BorderThickness}"
-                                CornerRadius="12">
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="Center"
-                                          VerticalScrollBarVisibility="Hidden"
-                                          HorizontalScrollBarVisibility="Hidden"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsKeyboardFocused" Value="True">
-                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
         <Style x:Key="UserManager.SecondaryButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
             <Setter Property="MinWidth" Value="92"/>
             <Setter Property="MinHeight" Value="38"/>
@@ -111,6 +44,14 @@
             <Setter Property="Padding" Value="14,12"/>
         </Style>
 
+        <Style x:Key="UserManager.Toolbar" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="16"/>
+            <Setter Property="Padding" Value="14"/>
+        </Style>
+
         <Style x:Key="UserManager.MetaChip" TargetType="Border">
             <Setter Property="CornerRadius" Value="9"/>
             <Setter Property="Padding" Value="8,3"/>
@@ -118,6 +59,12 @@
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="Margin" Value="0,0,8,8"/>
+        </Style>
+
+        <Style x:Key="UserManager.HeroMetaChip" TargetType="Border" BasedOn="{StaticResource UserManager.MetaChip}">
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Background" Value="#F9FBFF"/>
         </Style>
 
         <Style x:Key="UserManager.InfoCard" TargetType="Border" BasedOn="{StaticResource UserManager.SectionCard}">
@@ -196,10 +143,28 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="16"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="16"/>
                         <RowDefinition Height="*"/>
                     </Grid.RowDefinitions>
 
+                    <Border x:Name="UserManagerWorkspaceCard"
+                            Style="{StaticResource UserManager.SectionCard}"
+                            Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="本地用户工作台"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="统一管理本机账号资料、头像、凭证和独立衣柜工作区。"
+                                       Margin="0,6,0,0"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                    </Border>
+
                     <Border x:Name="UserManagerStatsBar"
+                            Grid.Row="1"
                             Style="{StaticResource UserManager.SectionCard}">
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -262,7 +227,37 @@
                         </Grid>
                     </Border>
 
-                    <Grid Grid.Row="2">
+                    <Border x:Name="UserManagerToolbar"
+                            Grid.Row="2"
+                            Style="{StaticResource UserManager.Toolbar}"
+                            Margin="0">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Orientation="Horizontal"
+                                        VerticalAlignment="Center">
+                                <TextBlock Text="用户目录"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                                <TextBlock Text=" 选择后可在右侧维护资料和凭证"
+                                           FontSize="12"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                            </StackPanel>
+
+                            <Button x:Name="BtnShowCreateUserToolbar"
+                                    Grid.Column="1"
+                                    Content="新增用户"
+                                    Style="{StaticResource UserManager.PrimaryButton}"
+                                    Click="ShowCreateUser_Click"/>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="4"
+                          Margin="0,0,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="332"/>
                             <ColumnDefinition Width="24"/>
@@ -276,20 +271,11 @@
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
 
-                            <Border Style="{StaticResource UserManager.SectionCard}">
+                            <Border x:Name="UserDirectorySearchCard"
+                                    Style="{StaticResource UserManager.SectionCard}">
                                 <StackPanel>
-                                    <TextBlock Text="用户目录"
-                                               FontSize="14"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                    <TextBlock Text="搜索本机账号，选择后在右侧维护资料和凭证。"
-                                               Margin="0,4,0,0"
-                                               FontSize="12"
-                                               TextWrapping="Wrap"
-                                               Foreground="{DynamicResource TextSecondaryBrush}"/>
                                     <TextBox x:Name="TxtUserSearch"
-                                             Margin="0,12,0,0"
-                                             Style="{StaticResource UserManager.Input}"
+                                             Style="{StaticResource WorkbenchTextInput}"
                                              TextChanged="UserSearch_TextChanged"/>
                                 </StackPanel>
                             </Border>
@@ -396,14 +382,14 @@
                                             <TextBlock Text="账号"
                                                        Style="{StaticResource UserManager.FieldLabel}"/>
                                             <TextBox x:Name="TxtNewAccountName"
-                                                     Style="{StaticResource UserManager.Input}"/>
+                                                     Style="{StaticResource WorkbenchTextInput}"/>
                                         </StackPanel>
 
                                         <StackPanel Grid.Column="2">
                                             <TextBlock Text="显示名称"
                                                        Style="{StaticResource UserManager.FieldLabel}"/>
                                             <TextBox x:Name="TxtNewUserName"
-                                                     Style="{StaticResource UserManager.Input}"/>
+                                                     Style="{StaticResource WorkbenchTextInput}"/>
                                         </StackPanel>
 
                                         <Grid x:Name="CreateUserCredentialGrid"
@@ -419,14 +405,14 @@
                                                 <TextBlock Text="初始密码"
                                                            Style="{StaticResource UserManager.FieldLabel}"/>
                                                 <PasswordBox x:Name="NewUserPasswordBox"
-                                                             Style="{StaticResource UserManager.PasswordInput}"/>
+                                                             Style="{StaticResource WorkbenchPasswordInput}"/>
                                             </StackPanel>
 
                                             <StackPanel Grid.Column="2">
                                                 <TextBlock Text="PIN（可选）"
                                                            Style="{StaticResource UserManager.FieldLabel}"/>
                                                 <PasswordBox x:Name="NewUserPinBox"
-                                                             Style="{StaticResource UserManager.PasswordInput}"/>
+                                                             Style="{StaticResource WorkbenchPasswordInput}"/>
                                             </StackPanel>
                                         </Grid>
 
@@ -484,11 +470,11 @@
                                                     <ColumnDefinition Width="*"/>
                                                 </Grid.ColumnDefinitions>
 
-                                                <StackPanel MinWidth="132"
+                                                <StackPanel MinWidth="148"
                                                             HorizontalAlignment="Center">
                                                     <shared:LocalUserAvatar x:Name="SelectedUserAvatar"
-                                                                            Width="92"
-                                                                            Height="92"
+                                                                            Width="104"
+                                                                            Height="104"
                                                                             HorizontalAlignment="Center"
                                                                             AvatarPath="{Binding AvatarPath}"
                                                                             Initial="{Binding AvatarInitial}"
@@ -519,19 +505,19 @@
                                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
 
                                                     <WrapPanel Margin="0,14,0,0">
-                                                        <Border Style="{StaticResource UserManager.MetaChip}">
+                                                        <Border Style="{StaticResource UserManager.HeroMetaChip}">
                                                             <TextBlock Text="{Binding RoleText}"
                                                                        FontSize="11"
                                                                        FontWeight="SemiBold"
                                                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                         </Border>
-                                                        <Border Style="{StaticResource UserManager.MetaChip}">
+                                                        <Border Style="{StaticResource UserManager.HeroMetaChip}">
                                                             <TextBlock Text="{Binding SessionText}"
                                                                        FontSize="11"
                                                                        FontWeight="SemiBold"
                                                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
                                                         </Border>
-                                                        <Border Style="{StaticResource UserManager.MetaChip}">
+                                                        <Border Style="{StaticResource UserManager.HeroMetaChip}">
                                                             <TextBlock Text="{Binding CredentialSummary}"
                                                                        FontSize="11"
                                                                        FontWeight="SemiBold"
@@ -571,20 +557,21 @@
                                                         <TextBlock Text="账号"
                                                                    Style="{StaticResource UserManager.FieldLabel}"/>
                                                         <TextBox Text="{Binding EditableAccountName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                 Style="{StaticResource UserManager.Input}"/>
+                                                                 Style="{StaticResource WorkbenchTextInput}"/>
                                                     </StackPanel>
 
                                                     <StackPanel Grid.Column="2">
                                                         <TextBlock Text="显示名称"
                                                                    Style="{StaticResource UserManager.FieldLabel}"/>
                                                         <TextBox Text="{Binding EditableName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                                                 Style="{StaticResource UserManager.Input}"/>
+                                                                 Style="{StaticResource WorkbenchTextInput}"/>
                                                     </StackPanel>
                                                 </Grid>
                                             </StackPanel>
                                         </Border>
 
-                                        <Border Grid.Row="4"
+                                        <Border x:Name="CredentialActionCard"
+                                                Grid.Row="4"
                                                 Style="{StaticResource UserManager.SectionCard}">
                                             <StackPanel>
                                                 <TextBlock Text="凭证管理"
@@ -596,36 +583,47 @@
                                                            FontSize="12"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-                                                <Grid Margin="0,16,0,0">
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="14"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                        <ColumnDefinition Width="12"/>
-                                                        <ColumnDefinition Width="Auto"/>
-                                                    </Grid.ColumnDefinitions>
+                                                <StackPanel Margin="0,16,0,0">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="*"/>
+                                                            <ColumnDefinition Width="14"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
 
-                                                    <StackPanel>
-                                                        <TextBlock Text="新密码"
-                                                                   Style="{StaticResource UserManager.FieldLabel}"/>
-                                                        <PasswordBox x:Name="ResetPasswordBox"
-                                                                     Style="{StaticResource UserManager.PasswordInput}"/>
-                                                    </StackPanel>
+                                                        <StackPanel>
+                                                            <TextBlock Text="新密码"
+                                                                       Style="{StaticResource UserManager.FieldLabel}"/>
+                                                            <PasswordBox x:Name="ResetPasswordBox"
+                                                                         Style="{StaticResource WorkbenchPasswordInput}"/>
+                                                        </StackPanel>
 
-                                                    <StackPanel Grid.Column="2">
-                                                        <TextBlock Text="新 PIN（可选）"
-                                                                   Style="{StaticResource UserManager.FieldLabel}"/>
-                                                        <PasswordBox x:Name="ResetPinBox"
-                                                                     Style="{StaticResource UserManager.PasswordInput}"/>
-                                                    </StackPanel>
+                                                        <StackPanel Grid.Column="2">
+                                                            <TextBlock Text="新 PIN（可选）"
+                                                                       Style="{StaticResource UserManager.FieldLabel}"/>
+                                                            <PasswordBox x:Name="ResetPinBox"
+                                                                         Style="{StaticResource WorkbenchPasswordInput}"/>
+                                                        </StackPanel>
+                                                    </Grid>
 
-                                                    <Button Grid.Column="4"
-                                                            Margin="12,18,0,0"
-                                                            Content="重置凭证"
-                                                            Style="{StaticResource UserManager.SecondaryButton}"
-                                                            IsEnabled="{Binding CanResetCredential}"
-                                                            Click="ResetCredential_Click"/>
-                                                </Grid>
+                                                    <Border Style="{StaticResource UserManager.InfoCard}"
+                                                            Margin="0,14,0,0">
+                                                        <DockPanel LastChildFill="False">
+                                                            <StackPanel>
+                                                                <TextBlock Text="凭证摘要"
+                                                                           Style="{StaticResource UserManager.FieldLabel}"/>
+                                                                <TextBlock Text="{Binding CredentialSummary}"
+                                                                           FontSize="12"
+                                                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+                                                            </StackPanel>
+                                                            <Button Content="重置凭证"
+                                                                    Style="{StaticResource UserManager.SecondaryButton}"
+                                                                    Margin="16,0,0,0"
+                                                                    IsEnabled="{Binding CanResetCredential}"
+                                                                    Click="ResetCredential_Click"/>
+                                                        </DockPanel>
+                                                    </Border>
+                                                </StackPanel>
                                             </StackPanel>
                                         </Border>
 
@@ -645,7 +643,8 @@
                                             </StackPanel>
                                         </Border>
 
-                                        <Border Grid.Row="8"
+                                        <Border x:Name="DangerActionCard"
+                                                Grid.Row="8"
                                                 Style="{StaticResource UserManager.SectionCard}"
                                                 Background="{DynamicResource SurfaceCardBrush}">
                                             <Grid>

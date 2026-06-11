@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Threading;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
@@ -32,11 +33,13 @@ public sealed class OutfitDisplayPreferencesService
     private static readonly SemaphoreSlim Gate = new(1, 1);
     private readonly string _filePath;
     private readonly UserScopedSettingsPath _settingsPath;
+    private readonly SynchronizationContext? _synchronizationContext;
 
     public OutfitDisplayPreferencesService(string? filePath = null, ICurrentUserContext? currentUserContext = null)
     {
         _filePath = filePath ?? Path.Combine(AppPaths.BaseDir, "outfit-display-settings.json");
         _settingsPath = new UserScopedSettingsPath(currentUserContext, _filePath);
+        _synchronizationContext = SynchronizationContext.Current;
     }
 
     public event EventHandler<OutfitDisplayPreferencesChangedEventArgs>? PreferenceChanged;
@@ -85,7 +88,7 @@ public sealed class OutfitDisplayPreferencesService
             Gate.Release();
         }
 
-        PreferenceChanged?.Invoke(this, new OutfitDisplayPreferencesChangedEventArgs(Clone(normalized)));
+        await RaisePreferenceChangedAsync(Clone(normalized)).ConfigureAwait(false);
     }
 
     private static OutfitDisplayPreferences Normalize(OutfitDisplayPreferences? preferences)
@@ -107,5 +110,34 @@ public sealed class OutfitDisplayPreferencesService
         {
             DefaultCardDisplayMode = preferences.DefaultCardDisplayMode
         };
+    }
+
+    private Task RaisePreferenceChangedAsync(OutfitDisplayPreferences preferences)
+    {
+        var handler = PreferenceChanged;
+        if (handler == null)
+            return Task.CompletedTask;
+
+        if (_synchronizationContext == null || ReferenceEquals(SynchronizationContext.Current, _synchronizationContext))
+        {
+            handler(this, new OutfitDisplayPreferencesChangedEventArgs(preferences));
+            return Task.CompletedTask;
+        }
+
+        var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _synchronizationContext.Post(_ =>
+        {
+            try
+            {
+                handler(this, new OutfitDisplayPreferencesChangedEventArgs(preferences));
+                completion.SetResult();
+            }
+            catch (Exception ex)
+            {
+                completion.SetException(ex);
+            }
+        }, null);
+
+        return completion.Task;
     }
 }

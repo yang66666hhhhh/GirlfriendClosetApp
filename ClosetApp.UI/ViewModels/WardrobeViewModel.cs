@@ -142,9 +142,7 @@ public partial class WardrobeViewModel : ViewModelBase
     public string FilterResultText => $"{FilterSummary} · {FilteredCount} 件结果";
     public bool HasActiveFilters => _state.HasActiveFilters;
     public string CollectionSectionTitle => HasActiveFilters ? "当前结果" : "全部衣服";
-    public string CollectionSectionBody => HasActiveFilters
-        ? $"{FilterSummary}，现在一共筛出 {FilteredCount} 件。"
-        : "悬停卡片可编辑、删除，或继续补齐待整理资料。";
+    public string CollectionSectionBody => string.Empty;
     public Season? SelectedSeason => _state.SelectedSeason;
     public IReadOnlyCollection<Guid> SelectedTagIds => _state.SelectedTagIds;
     public bool FavoriteOnly
@@ -197,9 +195,7 @@ public partial class WardrobeViewModel : ViewModelBase
         }
     }
     public string FilterToggleText => IsFilterExpanded ? "收起筛选" : "展开筛选";
-    public string FilterHint => HasActiveFilters
-        ? "当前已应用组合筛选；点「清除」可以回到完整衣柜。"
-        : "分类、季节、标签和收藏都可以叠加筛选。";
+    public string FilterHint => string.Empty;
 
     // ── EnumRadioGroup：集中管理 RadioButton 选择状态 ──
 

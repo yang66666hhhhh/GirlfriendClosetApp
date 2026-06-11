@@ -118,41 +118,38 @@ public partial class ThemeCard : UserControl
         var borderLight = GetThemeColor("BorderLightBrush", Color.FromRgb(236, 226, 223));
         var textPrimary = GetThemeColor("TextPrimaryBrush", Color.FromRgb(60, 60, 60));
         var textSecondary = GetThemeColor("TextSecondaryBrush", Color.FromRgb(120, 120, 120));
+        var surfacePage = GetThemeColor("SurfacePageBrush", Color.FromRgb(249, 245, 241));
 
-        // Card border
-        CardBorder.BorderThickness = new Thickness(IsSelected ? 2.5 : 1.25);
+        CardBorder.BorderThickness = new Thickness(IsSelected ? 2 : 1);
         CardBorder.BorderBrush = new SolidColorBrush(IsSelected ? primary : borderLight);
         CardBorder.Background = new SolidColorBrush(SurfaceColor);
         CardBorder.Effect = IsSelected
-            ? new DropShadowEffect { Color = primary, BlurRadius = 20, ShadowDepth = 0, Opacity = 0.18 }
+            ? new DropShadowEffect { Color = primary, BlurRadius = 18, ShadowDepth = 0, Opacity = 0.14 }
             : null;
+        CardRootButton.IsEnabled = !IsSelected;
+        CardRootButton.Cursor = IsSelected ? Cursors.Arrow : Cursors.Hand;
 
-        // Badge
-        Badge.Visibility = IsSelected ? Visibility.Visible : Visibility.Collapsed;
-        Badge.Background = new SolidColorBrush(primaryLight);
-        Badge.BorderBrush = new SolidColorBrush(primary);
-        if (Badge.Child is TextBlock badgeText)
+        SelectedBadge.Visibility = IsSelected ? Visibility.Visible : Visibility.Collapsed;
+        SelectedBadge.Background = new SolidColorBrush(primaryLight);
+        SelectedBadge.BorderBrush = new SolidColorBrush(primary);
+        if (SelectedBadge.Child is TextBlock badgeText)
             badgeText.Foreground = new SolidColorBrush(primary);
 
-        // Texts
         TxtName.Text = DisplayName;
         TxtName.Foreground = new SolidColorBrush(textPrimary);
         TxtDescription.Text = Description;
         TxtDescription.Foreground = new SolidColorBrush(textSecondary);
+        StateHint.Text = IsSelected ? "当前正在使用" : "点击切换到这套主题";
+        StateHint.Foreground = new SolidColorBrush(IsSelected ? primary : textSecondary);
+        ActionHint.Text = IsSelected ? "已启用" : $"使用{DisplayName}";
+        ActionHint.Foreground = new SolidColorBrush(IsSelected ? textSecondary : primary);
 
-        // Swatches
         SwatchPrimary.Background = new SolidColorBrush(PrimaryColor);
         SwatchSoft.Background = new SolidColorBrush(SoftColor);
         SwatchSurface.Background = new SolidColorBrush(SurfaceColor);
-
-        // Button
-        var idleText = $"使用{DisplayName}";
-        BtnSelect.Content = IsSelected ? "已启用" : idleText;
-        BtnSelect.IsEnabled = !IsSelected;
-        BtnSelect.Background = new SolidColorBrush(IsSelected ? SurfaceColor : primaryLight);
-        BtnSelect.BorderBrush = new SolidColorBrush(IsSelected ? borderLight : primary);
-        BtnSelect.Foreground = new SolidColorBrush(IsSelected ? textSecondary : primary);
-        BtnSelect.BorderThickness = new Thickness(1);
+        PreviewBorder.Background = new SolidColorBrush(surfacePage);
+        PreviewBorder.BorderBrush = new SolidColorBrush(IsSelected ? primaryLight : borderLight);
+        PreviewBorder.BorderThickness = new Thickness(1);
     }
 
     private void BtnSelect_Click(object sender, RoutedEventArgs e)

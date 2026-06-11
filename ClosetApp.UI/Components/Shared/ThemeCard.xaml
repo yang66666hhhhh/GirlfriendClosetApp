@@ -1,58 +1,82 @@
 <UserControl x:Class="ClosetApp.UI.Components.Shared.ThemeCard"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
-    <Border x:Name="CardBorder"
-            CornerRadius="16"
-            Padding="14">
-        <Grid>
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-            </Grid.RowDefinitions>
-
-            <!-- Header: Name + Badge -->
+    <Button x:Name="CardRootButton"
+            Background="Transparent"
+            BorderThickness="0"
+            Padding="0"
+            MinHeight="172"
+            Click="BtnSelect_Click">
+        <Border x:Name="CardBorder"
+                CornerRadius="16"
+                Padding="14">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <TextBlock x:Name="TxtName"
-                           FontSize="13"
-                           FontWeight="SemiBold"
-                           VerticalAlignment="Center"/>
-                <Border x:Name="Badge"
-                        Grid.Column="1"
-                        CornerRadius="8"
-                        Padding="8,3"
-                        Visibility="Collapsed">
-                    <TextBlock Text="当前使用"
-                               FontSize="10"
-                               FontWeight="SemiBold"/>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel>
+                        <TextBlock x:Name="TxtName"
+                                   FontSize="14"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="StateHint"
+                                   Margin="0,4,0,0"
+                                   FontSize="11"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+
+                    <Border x:Name="SelectedBadge"
+                            Grid.Column="1"
+                            CornerRadius="8"
+                            Padding="8,3"
+                            Visibility="Collapsed">
+                        <TextBlock Text="当前使用"
+                                   FontSize="10"
+                                   FontWeight="SemiBold"/>
+                    </Border>
+                </Grid>
+
+                <Border x:Name="PreviewBorder"
+                        Grid.Row="1"
+                        Margin="0,12,0,0"
+                        CornerRadius="14"
+                        Padding="12">
+                    <Grid x:Name="PreviewHost"
+                          MinHeight="76">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <WrapPanel x:Name="TonePreviewPanel">
+                            <Border x:Name="SwatchPrimary" Width="18" Height="18" CornerRadius="9" Margin="0,0,6,0"/>
+                            <Border x:Name="SwatchSoft" Width="18" Height="18" CornerRadius="9" Margin="0,0,6,0"/>
+                            <Border x:Name="SwatchSurface" Width="18" Height="18" CornerRadius="9"/>
+                        </WrapPanel>
+
+                        <TextBlock x:Name="TxtDescription"
+                                   Grid.Row="1"
+                                   FontSize="11"
+                                   Margin="0,12,0,0"
+                                   TextWrapping="Wrap"/>
+                    </Grid>
                 </Border>
+
+                <TextBlock x:Name="ActionHint"
+                           Grid.Row="2"
+                           Margin="0,12,0,0"
+                           FontSize="11"
+                           FontWeight="SemiBold"/>
             </Grid>
-
-            <!-- Swatches -->
-            <WrapPanel Grid.Row="1" Margin="0,10,0,0">
-                <Border x:Name="SwatchPrimary" Width="20" Height="20" CornerRadius="10" Margin="0,0,6,0"/>
-                <Border x:Name="SwatchSoft" Width="20" Height="20" CornerRadius="10" Margin="0,0,6,0"/>
-                <Border x:Name="SwatchSurface" Width="20" Height="20" CornerRadius="10"/>
-            </WrapPanel>
-
-            <!-- Description -->
-            <TextBlock x:Name="TxtDescription"
-                       Grid.Row="2"
-                       FontSize="11"
-                       Margin="0,10,0,0"
-                       TextWrapping="Wrap"/>
-
-            <!-- Button -->
-            <Button x:Name="BtnSelect" Click="BtnSelect_Click"
-                    Grid.Row="3"
-                    MinHeight="34"
-                    Padding="10,6"
-                    Margin="0,14,0,0"/>
-        </Grid>
-    </Border>
+        </Border>
+    </Button>
 </UserControl>

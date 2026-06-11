@@ -105,15 +105,17 @@
             </Setter>
         </Style>
 
-        <Style x:Key="ProfileMenuDividerStyle" TargetType="Separator">
+        <Style x:Key="ProfileMenuDividerStyle" TargetType="MenuItem">
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+            <Setter Property="Focusable" Value="False"/>
+            <Setter Property="IsHitTestVisible" Value="False"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Separator">
-                        <Border Height="1"
-                                Margin="10,6"
-                                Background="{DynamicResource BorderLightBrush}"
-                                Opacity="0.9"
-                                SnapsToDevicePixels="True"/>
+                    <ControlTemplate TargetType="MenuItem">
+                        <ContentPresenter ContentSource="Header"
+                                          HorizontalAlignment="Stretch"
+                                          VerticalAlignment="Center"/>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
@@ -137,9 +139,9 @@
                         Background="Transparent"
                         BorderThickness="0"
                         Padding="11"
-                        MinHeight="74"
+                        MinHeight="82"
                         HorizontalAlignment="Stretch"
-                        ToolTip="账号菜单：编辑档案、用户管理或退出登录"
+                        ToolTip="个人中心 / 账号菜单"
                         Click="Profile_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
@@ -177,8 +179,9 @@
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
                         <shared:LocalUserAvatar x:Name="CurrentUserAvatar"
-                                                Width="52"
-                                                Height="52"/>
+                                                Width="56"
+                                                Height="56"
+                                                ShowStatus="False"/>
                         <StackPanel x:Name="ProfileTextPanel"
                                     Grid.Column="1"
                                     Margin="12,0,0,0"

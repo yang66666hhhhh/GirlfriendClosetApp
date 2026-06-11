@@ -2,7 +2,7 @@
 
 Windows 桌面端私人数字衣橱应用，面向个人衣物整理、搭配管理、穿着记录，以及 AI 搭配效果图生成与管理。
 
-> 最后更新：2026-06-07
+> 最后更新：2026-06-11
 > 当前运行时：`ClosetApp.UI` / `ClosetApp.Tests` 为 `net10.0-windows`，Domain / Application / Infrastructure 为 `net8.0`
 
 ## 项目定位
@@ -65,11 +65,14 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 几个和最近迭代强相关的入口：
 
 - 左侧栏头像是当前账号入口，悬停有高亮反馈，点击打开带头像的用户菜单；可退出登录、编辑当前档案，超级管理员可进入带搜索和详情区的用户管理台，维护用户的新增、编辑、头像上传/移除、重置凭证和删除；用户头像与个人档案头像都按用户独立存储，用户管理不切换当前会话，更换账号必须先退出登录后重新输入账号密码
+- 侧边栏“编辑当前档案”入口已经整合为 `个人中心`，在同一个弹窗里分成“账号资料 / 个人档案 / 安全”三段；账号头像、账号名、显示名、密码/PIN 和 AI 参考档案都从这里维护
+- 登录页使用最近登录账号下拉作为快捷入口：会保留最近成功登录的账号痕迹并自动预填最近一次登录账号，但不会保存密码；已设置 PIN 的账号会自动切到更快的 PIN 登录模式
 - `SettingsTab` 中使用 `AiImageGenerationSettingsPanel` 管理 AI 配置
 - `OutfitCard` 只保留浏览职责
 - 搭配页支持“搭配优先 / 效果图优先”卡片展示切换，并保存为当前用户默认偏好
 - 点击搭配卡片会打开 `OutfitWorkspaceDialog`
 - `OutfitWorkspaceDialog` 直接作为效果图工作台，主视觉优先展示当前效果图
+- 设置页已经重排为总览工作台 + 稳定分区的结构，主题、卡片展示、AI 配置、天气推荐、图片维护和备份都按统一的卡片节奏组织
 
 ## 技术栈
 
@@ -120,6 +123,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
   3. 再由 `AppStartupCoordinator` 在后台完成数据库初始化
   4. 各个 Tab 在真正加载数据前统一等待 readiness
 - 本地路径由 [`D:\03_Projects\Personal\GirlfriendClosetApp\ClosetApp.Infrastructure\AppPaths.cs`](D:/03_Projects/Personal/GirlfriendClosetApp/ClosetApp.Infrastructure/AppPaths.cs) 统一定义
+- 关键对象型下拉框现在统一要求显式声明显示映射：要么使用 `DisplayMemberPath`，要么使用 `ItemTemplate`，不能混用；项目里已有对应回归测试，避免选中态退回对象 `ToString()`
 
 ## AI 图片生成说明
 

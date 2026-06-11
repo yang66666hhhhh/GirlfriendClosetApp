@@ -151,10 +151,19 @@ public partial class OutfitsTab : UserControl
     private void ViewModel_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
     {
         if (e.PropertyName == nameof(OutfitsViewModel.CardDisplayMode))
+            HandleCardDisplayModeChanged();
+    }
+
+    private void HandleCardDisplayModeChanged()
+    {
+        if (!Dispatcher.CheckAccess())
         {
-            ApplyDisplayModeSelection();
-            RefreshOutfitsMasonryLayout();
+            _ = Dispatcher.InvokeAsync(HandleCardDisplayModeChanged, DispatcherPriority.Background);
+            return;
         }
+
+        ApplyDisplayModeSelection();
+        RefreshOutfitsMasonryLayout();
     }
 
     private void ApplyDisplayModeSelection()

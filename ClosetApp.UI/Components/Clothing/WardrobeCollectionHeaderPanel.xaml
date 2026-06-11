@@ -23,18 +23,13 @@
         <StackPanel Grid.Column="0">
             <TextBlock Text="{Binding CollectionSectionTitle}"
                        Style="{StaticResource PageSectionTitleText}"/>
-            <TextBlock Text="{Binding CollectionSectionBody}"
-                       Style="{StaticResource PageCollectionBodyText}"/>
         </StackPanel>
 
         <StackPanel Grid.Column="1"
                     Width="122"
                     VerticalAlignment="Top">
-            <TextBlock Text="排序"
-                       Style="{StaticResource PageFieldLabelText}"
-                       HorizontalAlignment="Left"/>
             <ComboBox MinWidth="116"
-                      Margin="0,6,0,0"
+                      Margin="0"
                       ItemsSource="{Binding SortOptions}"
                       SelectedItem="{Binding SortBy, Mode=TwoWay}">
                 <ComboBox.ItemTemplate>

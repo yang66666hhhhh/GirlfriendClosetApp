@@ -80,6 +80,10 @@ public partial class LocalUserAvatar : UserControl
         CurrentRing.BorderThickness = IsCurrent ? new Thickness(1.4) : new Thickness(1.2);
         AvatarBody.BorderBrush = (Brush)FindResource(IsCurrent ? "PrimaryBrush" : "BorderLightBrush");
         AvatarBody.BorderThickness = IsCurrent ? new Thickness(1) : new Thickness(0.8);
+        AvatarPhoto.Width = double.NaN;
+        AvatarPhoto.Height = double.NaN;
+        AvatarPhoto.HorizontalAlignment = HorizontalAlignment.Stretch;
+        AvatarPhoto.VerticalAlignment = VerticalAlignment.Stretch;
 
         var resolvedPath = ResolveAvatarPath(AvatarPath);
         if (string.IsNullOrWhiteSpace(resolvedPath) || !File.Exists(resolvedPath))
@@ -92,7 +96,7 @@ public partial class LocalUserAvatar : UserControl
 
         AvatarPhoto.Fill = new ImageBrush(LoadBitmap(resolvedPath))
         {
-            Stretch = Stretch.UniformToFill,
+            Stretch = Stretch.Uniform,
             AlignmentX = AlignmentX.Center,
             AlignmentY = AlignmentY.Center
         };

@@ -108,6 +108,14 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
 
+        <Style x:Key="LoginHeroInfoCard" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="18"/>
+            <Setter Property="Padding" Value="16"/>
+        </Style>
+
         <Style x:Key="LoginSubmitButton" TargetType="Button">
             <Setter Property="MinHeight" Value="52"/>
             <Setter Property="Padding" Value="18,0"/>
@@ -366,15 +374,12 @@
                                Foreground="{DynamicResource TextSecondaryBrush}"/>
                 </StackPanel>
 
-                <StackPanel Grid.Row="1"
+                <StackPanel x:Name="WelcomeInsightStack"
+                            Grid.Row="1"
                             Margin="0,42,0,0"
                             VerticalAlignment="Bottom">
                     <Border x:Name="WelcomeMetricsCard"
-                            Background="{DynamicResource SurfaceCardBrush}"
-                            BorderBrush="{DynamicResource BorderLightBrush}"
-                            BorderThickness="1"
-                            CornerRadius="18"
-                            Padding="18">
+                            Style="{StaticResource LoginHeroInfoCard}">
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
@@ -386,7 +391,7 @@
                                            Foreground="{DynamicResource TextSecondaryBrush}"/>
                                 <TextBlock Text="独立衣柜"
                                            Margin="0,8,0,0"
-                                           FontSize="19"
+                                           FontSize="18"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
                             </StackPanel>
@@ -396,25 +401,35 @@
                                            Foreground="{DynamicResource TextSecondaryBrush}"/>
                                 <TextBlock Text="最近登录"
                                            Margin="0,8,0,0"
-                                           FontSize="19"
+                                           FontSize="18"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
                             </StackPanel>
                         </Grid>
                     </Border>
+                    <Border x:Name="WelcomeAccountIdentityCard"
+                            Margin="0,14,0,0"
+                            Style="{StaticResource LoginHeroInfoCard}">
+                        <StackPanel>
+                            <TextBlock Text="账号工作区"
+                                       FontSize="16"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock Text="每个账号拥有独立衣柜、搭配、标签、效果图和个人资料。"
+                                       Margin="0,8,0,0"
+                                       Style="{StaticResource LoginInfoText}"/>
+                        </StackPanel>
+                    </Border>
                     <Border x:Name="WelcomeSessionCard"
                             Margin="0,14,0,0"
-                            Background="{DynamicResource PrimaryLightBrush}"
-                            BorderBrush="{DynamicResource BorderLightBrush}"
-                            BorderThickness="1"
-                            CornerRadius="18"
-                            Padding="18">
+                            Style="{StaticResource LoginHeroInfoCard}"
+                            Background="{DynamicResource PrimaryLightBrush}">
                         <StackPanel>
                             <TextBlock Text="欢迎回来"
                                        FontSize="16"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="每个账号拥有独立衣柜、搭配、标签和效果图，重新进入时会优先帮你回到最近使用的账号。"
+                            <TextBlock Text="重新进入时会优先帮你回到最近使用的账号。"
                                        Margin="0,8,0,0"
                                        Style="{StaticResource LoginInfoText}"/>
                         </StackPanel>

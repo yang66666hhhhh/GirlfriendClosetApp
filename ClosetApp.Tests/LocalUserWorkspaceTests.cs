@@ -365,6 +365,114 @@ public class LocalUserWorkspaceTests
     }
 
     [Fact]
+    public async Task PersonalProfileService_GetCurrentAsync_UsesAccountAvatarWhenProfileAvatarIsEmpty()
+    {
+        var tempDir = CreateTempDir();
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var options = CreateOptions(dbPath);
+        var userId = Guid.NewGuid();
+
+        try
+        {
+            await using var context = new ClosetDbContext(options);
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.EnsureCreatedAsync();
+            context.LocalUsers.Add(new LocalUser
+            {
+                Id = userId,
+                AccountName = "member",
+                DisplayName = "Member",
+                AvatarPhotoPath = "account-avatar.png",
+                Role = LocalUserRole.Member,
+                IsActive = true
+            });
+            context.PersonalProfiles.Add(new PersonalProfile
+            {
+                LocalUserId = userId,
+                DisplayName = "Member Profile",
+                AvatarPhotoPath = null
+            });
+            await context.SaveChangesAsync();
+
+            var session = new AuthSessionContext();
+            var currentUser = new CurrentUserContext(Path.Combine(tempDir, "current-user.json"), session);
+            session.MarkAuthenticated(userId);
+            await currentUser.SetCurrentUserIdAsync(userId);
+            var service = new PersonalProfileService(
+                new PersonalProfileRepository(context, currentUser),
+                new FakeAiAssetStorageService(),
+                new LocalUserRepository(context),
+                currentUser);
+
+            var profile = await service.GetCurrentAsync();
+
+            Assert.NotNull(profile);
+            Assert.Equal("account-avatar.png", profile.AvatarPhotoPath);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
+    public async Task PersonalProfileService_SaveAsync_DoesNotOverwriteAccountAvatar()
+    {
+        var tempDir = CreateTempDir();
+        var dbPath = Path.Combine(tempDir, "closet.db");
+        var options = CreateOptions(dbPath);
+        var userId = Guid.NewGuid();
+
+        try
+        {
+            await using var context = new ClosetDbContext(options);
+            await context.Database.EnsureDeletedAsync();
+            await context.Database.EnsureCreatedAsync();
+            context.LocalUsers.Add(new LocalUser
+            {
+                Id = userId,
+                AccountName = "member",
+                DisplayName = "Member",
+                AvatarPhotoPath = "account-avatar.png",
+                Role = LocalUserRole.Member,
+                IsActive = true
+            });
+            await context.SaveChangesAsync();
+
+            var session = new AuthSessionContext();
+            var currentUser = new CurrentUserContext(Path.Combine(tempDir, "current-user.json"), session);
+            session.MarkAuthenticated(userId);
+            await currentUser.SetCurrentUserIdAsync(userId);
+            var service = new PersonalProfileService(
+                new PersonalProfileRepository(context, currentUser),
+                new RecordingAiAssetStorageService("profile-avatar.png"),
+                new LocalUserRepository(context),
+                currentUser);
+
+            await service.SaveAsync(new SavePersonalProfileRequest(
+                "Member",
+                null,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                string.Empty,
+                Path.Combine(tempDir, "profile-avatar-source.png"),
+                null,
+                false));
+
+            var user = await context.LocalUsers.AsNoTracking().SingleAsync(item => item.Id == userId);
+            Assert.Equal("account-avatar.png", user.AvatarPhotoPath);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
+    [Fact]
     public async Task LocalAuthService_SetPasswordAndLogin_AuthenticatesUser()
     {
         var tempDir = CreateTempDir();

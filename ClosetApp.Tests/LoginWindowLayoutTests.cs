@@ -48,6 +48,7 @@ public class LoginWindowLayoutTests
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
 
+        Assert.Contains("x:Key=\"LoginHeroInfoCard\"", xaml);
         Assert.Contains("x:Name=\"RecentAccountSelector\"", xaml);
         Assert.Contains("Text=\"账号\" Style=\"{StaticResource LoginInputLabel}\"", xaml);
         Assert.Contains("IsEditable=\"True\"", xaml);
@@ -65,6 +66,9 @@ public class LoginWindowLayoutTests
         Assert.DoesNotContain("x:Name=\"RecentAccountsPanel\"", xaml);
         Assert.DoesNotContain("x:Name=\"RecentAccountsHost\"", xaml);
         Assert.DoesNotContain("x:Name=\"SelectedAccountCard\"", xaml);
+        Assert.Contains("x:Name=\"WelcomeInsightStack\"", xaml);
+        Assert.Contains("x:Name=\"WelcomeAccountIdentityCard\"", xaml);
+        Assert.Contains("Text=\"账号工作区\"", xaml);
     }
 
     [Fact]
@@ -135,6 +139,8 @@ public class LoginWindowLayoutTests
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
 
         Assert.Contains("x:Name=\"UserManagerStatsBar\"", xaml);
+        Assert.Contains("x:Name=\"UserManagerToolbar\"", xaml);
+        Assert.Contains("x:Name=\"UserManagerWorkspaceCard\"", xaml);
         Assert.Contains("x:Name=\"TxtUserSearch\"", xaml);
         Assert.Contains("x:Name=\"BtnShowCreateUser\"", xaml);
         Assert.Contains("x:Name=\"CreateUserPanel\"", xaml);
@@ -162,8 +168,108 @@ public class LoginWindowLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
 
         Assert.Contains("ProfileMenuDividerStyle", xaml);
-        Assert.Contains("TargetType=\"Separator\"", xaml);
-        Assert.Contains("new Separator", code);
+        Assert.Contains("TargetType=\"MenuItem\"", xaml);
+        Assert.Contains("return new MenuItem", code);
+        Assert.Contains("Header = divider", code);
+        Assert.DoesNotContain("Separator", code);
+        Assert.DoesNotContain("ItemContainerStyle=\"{StaticResource WardrobeCard.MoreMenuItem}\"", xaml);
+    }
+
+    [Fact]
+    public void NavigationSidebar_ProfileMenuOpensPersonalCenter()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
+
+        Assert.Contains("个人中心", xaml);
+        Assert.Contains("Header = \"个人中心\"", code);
+        Assert.Contains("new PersonalCenterDialog()", code);
+        Assert.DoesNotContain("Header = \"编辑当前档案\"", code);
+    }
+
+    [Fact]
+    public void PersonalCenterDialog_ExposesAccountProfileAndSecuritySections()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/PersonalCenterDialog.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/PersonalCenterDialog.xaml.cs"));
+
+        Assert.Contains("Text=\"个人中心\"", xaml);
+        Assert.Contains("Content=\"账号资料\"", xaml);
+        Assert.Contains("Content=\"个人档案\"", xaml);
+        Assert.Contains("Content=\"安全\"", xaml);
+        Assert.Contains("x:Name=\"AccountAvatar\"", xaml);
+        Assert.Contains("Content=\"更换头像\"", xaml);
+        Assert.Contains("Content=\"保存账号资料\"", xaml);
+        Assert.Contains("Content=\"保存个人档案\"", xaml);
+        Assert.Contains("Content=\"更新密码/PIN\"", xaml);
+        Assert.Contains("UpdateOwnCredentialAsync", code);
+        Assert.Contains("SaveAccount_Click", code);
+        Assert.Contains("SaveProfile_Click", code);
+        Assert.Contains("SaveSecurity_Click", code);
+    }
+
+    [Fact]
+    public void AiImageSettings_OpenProfileEntryUsesPersonalCenter()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AiImageGenerationSettingsPanel.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AiImageGenerationSettingsPanel.xaml.cs"));
+
+        Assert.Contains("Content=\"个人中心\"", xaml);
+        Assert.Contains("new PersonalCenterDialog()", code);
+        Assert.DoesNotContain("new PersonalProfileEditorPanel()", code);
+        Assert.DoesNotContain("Content=\"编辑个人档案\"", xaml);
+    }
+
+    [Fact]
+    public void PersonalCenterDialog_UpdatesAvatarAndNameFeedbackLive()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/PersonalCenterDialog.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/PersonalCenterDialog.xaml.cs"));
+
+        Assert.Contains("x:Name=\"TxtDisplayName\"", xaml);
+        Assert.Contains("TextChanged=\"AccountIdentityChanged\"", xaml);
+        Assert.Contains("RefreshAccountIdentityPreview()", code);
+        Assert.Contains("ApplyAccountAvatarPreview()", code);
+        Assert.Contains("BtnRemoveAccountAvatar", xaml);
+        Assert.Contains("BtnRemoveProfileAvatar", xaml);
+        Assert.Contains("BtnRemoveFullBody", xaml);
+    }
+
+    [Fact]
+    public void PersonalCenterDialog_UsesWorkspaceStyleSections()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/PersonalCenterDialog.xaml"));
+
+        Assert.Contains("x:Name=\"PersonalCenterTabBar\"", xaml);
+        Assert.Contains("Orientation=\"Horizontal\"", xaml);
+        Assert.Contains("x:Name=\"PersonalCenterTabRail\"", xaml);
+        Assert.Contains("x:Name=\"AccountIdentityCard\"", xaml);
+        Assert.Contains("x:Name=\"ProfileReferenceCard\"", xaml);
+        Assert.Contains("x:Name=\"SecurityOverviewCard\"", xaml);
+        Assert.Contains("Style=\"{StaticResource WorkbenchTextInput}\"", xaml);
+        Assert.Contains("Style=\"{StaticResource WorkbenchPasswordInput}\"", xaml);
+        Assert.Contains("x:Name=\"PromptPreviewCard\"", xaml);
+        Assert.Contains("x:Name=\"ProfileReferenceHero\"", xaml);
+        Assert.Contains("x:Name=\"ProfileAssistColumn\"", xaml);
+        Assert.Contains("x:Name=\"ProfileReferenceActions\"", xaml);
+        Assert.Contains("x:Name=\"ProfileFullBodyActions\"", xaml);
+        Assert.Contains("x:Name=\"ProfileBasicsGrid\"", xaml);
+        Assert.Contains("x:Key=\"PersonalCenter.TabRail\"", xaml);
+        Assert.Contains("x:Key=\"PersonalCenter.ToolButton\"", xaml);
+        Assert.Contains("<Setter Property=\"CornerRadius\" Value=\"16\"/>", xaml);
+        Assert.Contains("<Setter Property=\"MinHeight\" Value=\"34\"/>", xaml);
+        Assert.Contains("x:Name=\"AccountSummaryHero\"", xaml);
+        Assert.Contains("x:Name=\"ProfileProfileCard\"", xaml);
+        Assert.Contains("HorizontalAlignment=\"Left\"", xaml);
+        Assert.Contains("Margin=\"0,2,0,0\"", xaml);
+        Assert.DoesNotContain("当前用户工作台", xaml);
+        Assert.DoesNotContain("集中维护账号资料、效果图参考档案和登录安全。", xaml);
+        Assert.Contains("x:Name=\"AvatarPreview\"", xaml);
+        Assert.Contains("x:Name=\"FullBodyPreview\"", xaml);
+        Assert.Contains("Stretch=\"Uniform\"", xaml);
+        Assert.Contains("Style=\"{StaticResource SettingsGhostButton}\"", xaml);
+        Assert.DoesNotContain("Style=\"{StaticResource SecondaryButton}\"", xaml);
+        Assert.DoesNotContain("x:Name=\"AvatarPreview\"\r\n                                                               Stretch=\"UniformToFill\"", xaml);
     }
 
     [Fact]

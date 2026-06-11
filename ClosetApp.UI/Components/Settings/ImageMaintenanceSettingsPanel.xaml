@@ -27,7 +27,9 @@
                         VerticalAlignment="Top"/>
             </Grid>
 
-            <UniformGrid Columns="3" Margin="0,0,0,10">
+            <UniformGrid x:Name="ImageStatsGrid"
+                         Columns="3"
+                         Margin="0,0,0,10">
                 <Border Style="{StaticResource SettingsStatCard}">
                     <StackPanel>
                         <TextBlock Text="原图规模" Style="{StaticResource SettingsStatLabel}"/>
@@ -48,7 +50,7 @@
                 </Border>
             </UniformGrid>
 
-            <Grid>
+            <Grid x:Name="ImageHealthGrid">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="12"/>
@@ -76,32 +78,40 @@
                 </Border>
             </Grid>
 
-            <WrapPanel Style="{StaticResource SettingsActionWrap}">
-                <Button x:Name="BtnRebuildThumbnails"
-                        Content="重建缓存"
-                        Style="{StaticResource SettingsButton}"
-                        Click="RebuildThumbnails_Click"
-                        Margin="0,0,8,8"/>
-                <Button x:Name="BtnRepairMissingImages"
-                        Content="修复缺图"
-                        Style="{StaticResource SettingsButton}"
-                        Click="RepairMissingImages_Click"
-                        Margin="0,0,8,8"/>
-                <Button x:Name="BtnCheckWornRecordImages"
-                        Content="检查历史图"
-                        Style="{StaticResource SettingsButton}"
-                        Click="CheckWornRecordImages_Click"
-                        Margin="0,0,8,8"/>
-                <Button x:Name="BtnClearThumbnails"
-                        Content="清理缓存"
-                        Style="{StaticResource PageToolbarDangerButton}"
-                        Click="ClearThumbnails_Click"
-                        Margin="0,0,8,8"/>
-                <Button x:Name="BtnCleanupOrphanOriginals"
-                        Content="清理原图"
-                        Style="{StaticResource PageToolbarDangerButton}"
-                        Click="CleanupOrphanOriginals_Click"/>
-            </WrapPanel>
+            <StackPanel x:Name="ImageActionsWrap"
+                        Margin="0,14,0,0">
+                <WrapPanel x:Name="ImagePrimaryActions">
+                    <Button x:Name="BtnRebuildThumbnails"
+                            Content="重建缓存"
+                            Style="{StaticResource SettingsButton}"
+                            Click="RebuildThumbnails_Click"
+                            Margin="0,0,8,8"/>
+                    <Button x:Name="BtnRepairMissingImages"
+                            Content="修复缺图"
+                            Style="{StaticResource SettingsButton}"
+                            Click="RepairMissingImages_Click"
+                            Margin="0,0,8,8"/>
+                    <Button x:Name="BtnCheckWornRecordImages"
+                            Content="检查历史图"
+                            Style="{StaticResource SettingsGhostButton}"
+                            Click="CheckWornRecordImages_Click"
+                            Margin="0,0,8,8"/>
+                </WrapPanel>
+
+                <WrapPanel x:Name="ImageDangerActions"
+                           Margin="0,2,0,0">
+                    <Button x:Name="BtnClearThumbnails"
+                            Content="清理缓存"
+                            Style="{StaticResource SettingsDangerGhostButton}"
+                            Click="ClearThumbnails_Click"
+                            Margin="0,0,8,0"/>
+                    <Button x:Name="BtnCleanupOrphanOriginals"
+                            Content="清理原图"
+                            Style="{StaticResource SettingsDangerButton}"
+                            MinWidth="104"
+                            Click="CleanupOrphanOriginals_Click"/>
+                </WrapPanel>
+            </StackPanel>
             <TextBlock x:Name="TxtImageOperationStatus"
                        Style="{StaticResource PageMutedBodyText}"
                        Margin="0,2,0,0"

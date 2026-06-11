@@ -22,7 +22,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         ClothesTabContent.ClothingCountChanged += ClothesTabContent_ClothingCountChanged;
-        Sidebar.PersonalProfileRequested += Sidebar_PersonalProfileRequested;
+        Sidebar.PersonalCenterRequested += Sidebar_PersonalCenterRequested;
         App.Services.GetRequiredService<ICurrentUserContext>().CurrentUserChanged += MainWindow_CurrentUserChanged;
         PreviewKeyDown += MainWindow_PreviewKeyDown;
         SizeChanged += MainWindow_SizeChanged;
@@ -143,7 +143,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private async void Sidebar_PersonalProfileRequested(object? sender, EventArgs e)
+    private async void Sidebar_PersonalCenterRequested(object? sender, EventArgs e)
     {
         await SettingsTabContent.RefreshAsync();
     }

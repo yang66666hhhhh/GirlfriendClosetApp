@@ -14,10 +14,11 @@
             </Border>
             <TextBlock Text="天气与城市"
                        Style="{StaticResource PageSectionTitleText}"/>
-            <TextBlock Text="默认城市会用于获取实时天气，后续天气穿搭推荐也会直接复用这里。"
+            <TextBlock Text="设置默认城市，并调整今日推荐偏好。"
                        Style="{StaticResource PageSectionBodyText}"/>
 
-            <Border Style="{StaticResource SettingsInsetCard}"
+            <Border x:Name="WeatherCityCard"
+                    Style="{StaticResource SettingsInsetCard}"
                     Margin="0,0,0,14">
                 <StackPanel>
                     <TextBlock Text="默认城市"
@@ -32,8 +33,7 @@
                         </Grid.ColumnDefinitions>
                         <TextBox x:Name="TxtWeatherCity"
                                  Grid.Column="0"
-                                 MinHeight="40"
-                                 Padding="12,9"
+                                 Style="{StaticResource SettingsFieldInput}"
                                  IsEnabled="{Binding CanEditWeather}"
                                  Text="{Binding WeatherCity, UpdateSourceTrigger=PropertyChanged}"/>
                         <Button x:Name="BtnSaveWeatherCity"
@@ -52,7 +52,8 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource SettingsInsetCard}">
+            <Border x:Name="WeatherSnapshotCard"
+                    Style="{StaticResource SettingsInsetCard}">
                 <StackPanel>
                     <TextBlock Text="{Binding WeatherSummary}"
                                Foreground="{DynamicResource TextPrimaryBrush}"
@@ -76,12 +77,13 @@
                 </StackPanel>
             </Border>
 
-            <Border Style="{StaticResource SettingsInsetCard}"
+            <Border x:Name="WeatherRecommendationCard"
+                    Style="{StaticResource SettingsInsetCard}"
                     Margin="0,14,0,0">
                 <StackPanel>
                     <TextBlock Text="今日推荐偏好"
                                Style="{StaticResource PageFieldLabelText}"/>
-                    <TextBlock Text="这里会影响搭配页的天气推荐，先把常用场景、轮换方式和是否避开今天已穿过设好。"
+                    <TextBlock Text="影响搭配页的天气推荐结果。"
                                Foreground="{DynamicResource TextSecondaryBrush}"
                                TextWrapping="Wrap"
                                Margin="0,6,0,0"/>
@@ -94,14 +96,14 @@
                         </Grid.ColumnDefinitions>
 
                         <ComboBox Grid.Column="0"
-                                  MinHeight="36"
+                                  Style="{StaticResource SettingsFieldComboBox}"
                                   ItemsSource="{Binding RecommendationSceneOptions}"
                                   DisplayMemberPath="Label"
                                   SelectedValuePath="Value"
                                   IsEnabled="{Binding CanEditRecommendationPreferences}"
                                   SelectedValue="{Binding RecommendationDefaultScene, Mode=TwoWay}"/>
                         <ComboBox Grid.Column="2"
-                                  MinHeight="36"
+                                  Style="{StaticResource SettingsFieldComboBox}"
                                   ItemsSource="{Binding RecommendationRotationStrategyOptions}"
                                   DisplayMemberPath="Label"
                                   SelectedValuePath="Value"

@@ -3,18 +3,16 @@ using Xunit;
 
 namespace ClosetApp.Tests;
 
-public class SettingsTabLayoutTests
+public class OutfitsTabThreadingTests
 {
     [Fact]
-    public void SettingsTab_UsesCondensedWorkbenchSummaryDeck()
+    public void OutfitsTab_DisplayModeUpdate_MarshalsBackToDispatcher()
     {
-        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml.cs"));
 
-        Assert.Contains("x:Name=\"SettingsOverviewHero\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewThemeCard\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewDisplayCard\"", xaml);
-        Assert.Contains("Style=\"{StaticResource SettingsOverviewSignalCard}\"", xaml);
-        Assert.Contains("x:Name=\"SettingsWorkbenchColumns\"", xaml);
+        Assert.Contains("Dispatcher.CheckAccess()", code);
+        Assert.Contains("Dispatcher.InvokeAsync(HandleCardDisplayModeChanged", code);
+        Assert.Contains("HandleCardDisplayModeChanged();", code);
     }
 
     private static string FindProjectFile(string relativePath)

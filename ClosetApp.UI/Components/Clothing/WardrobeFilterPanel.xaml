@@ -23,9 +23,6 @@
                     <TextBlock Text="筛选"
                                Style="{StaticResource PageSummaryTitleText}"
                                FontSize="14"/>
-                    <TextBlock Text="{Binding FilterHint}"
-                               Style="{StaticResource PageSummaryBodyText}"
-                               Margin="0,3,0,0"/>
                 </StackPanel>
                 <TextBlock Grid.Column="1"
                            Text="{Binding FilterResultText}"

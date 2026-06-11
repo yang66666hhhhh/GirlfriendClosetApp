@@ -114,10 +114,16 @@
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
                                 <ComboBox x:Name="OutfitPicker"
                                           Width="180"
-                                          DisplayMemberPath="Name"
                                           SelectedValuePath="Id"
                                           VerticalContentAlignment="Center"
-                                          Margin="0,0,10,0"/>
+                                          Margin="0,0,10,0">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Name}"
+                                                       TextTrimming="CharacterEllipsis"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
                                 <Button Content="添加"
                                         Style="{StaticResource ModalSaveButton}"
                                         MinWidth="86"

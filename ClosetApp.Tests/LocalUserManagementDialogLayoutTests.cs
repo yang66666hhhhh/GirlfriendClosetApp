@@ -38,11 +38,15 @@ public class LocalUserManagementDialogLayoutTests
     public void LocalUserAvatar_KeepsInitialInsideSafeContentBounds()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/LocalUserAvatar.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/LocalUserAvatar.xaml.cs"));
 
         Assert.Contains("x:Name=\"AvatarContentHost\"", xaml);
-        Assert.Contains("Margin=\"7\"", xaml);
+        Assert.Contains("Margin=\"5\"", xaml);
         Assert.Contains("Viewbox x:Name=\"InitialViewbox\"", xaml);
-        Assert.Contains("Margin=\"3\"", xaml);
+        Assert.Contains("Margin=\"2\"", xaml);
+        Assert.Contains("x:Name=\"AvatarPhoto\"", xaml);
+        Assert.Contains("Margin=\"4.5\"", xaml);
+        Assert.Contains("Stretch = Stretch.Uniform", code);
         Assert.DoesNotContain("Viewbox Width=\"48\"", xaml);
         Assert.DoesNotContain("Height=\"48\"", xaml);
     }
@@ -53,9 +57,10 @@ public class LocalUserManagementDialogLayoutTests
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
 
         Assert.Contains("x:Name=\"CurrentUserAvatar\"", xaml);
-        Assert.Contains("Width=\"52\"", xaml);
-        Assert.Contains("Height=\"52\"", xaml);
-        Assert.Contains("MinHeight=\"74\"", xaml);
+        Assert.Contains("Width=\"56\"", xaml);
+        Assert.Contains("Height=\"56\"", xaml);
+        Assert.Contains("ShowStatus=\"False\"", xaml);
+        Assert.Contains("MinHeight=\"82\"", xaml);
         Assert.Contains("Margin=\"54,8,0,0\"", xaml);
         Assert.DoesNotContain("Width=\"44\"\r\n                                                Height=\"44\"", xaml);
     }
@@ -83,6 +88,18 @@ public class LocalUserManagementDialogLayoutTests
         Assert.Contains("x:Name=\"CreateUserFormGrid\"", xaml);
         Assert.Contains("x:Name=\"CreateUserCredentialGrid\"", xaml);
         Assert.Contains("Content=\"创建用户\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_UsesWorkbenchActionSections()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("x:Name=\"CredentialActionCard\"", xaml);
+        Assert.Contains("x:Name=\"DangerActionCard\"", xaml);
+        Assert.Contains("x:Name=\"UserDirectorySearchCard\"", xaml);
+        Assert.Contains("Style=\"{StaticResource WorkbenchTextInput}\"", xaml);
+        Assert.Contains("Style=\"{StaticResource WorkbenchPasswordInput}\"", xaml);
     }
 
     private static XElement? FindElement(XDocument document, string elementName, string attributeName, string attributeValue)

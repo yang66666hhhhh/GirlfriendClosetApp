@@ -11,13 +11,13 @@
         </Style>
 
         <Style x:Key="PresetButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">
-            <Setter Property="MinHeight" Value="84"/>
-            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="MinHeight" Value="74"/>
+            <Setter Property="Padding" Value="12,10"/>
             <Setter Property="HorizontalContentAlignment" Value="Left"/>
             <Setter Property="VerticalContentAlignment" Value="Top"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="11.5"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
@@ -58,18 +58,16 @@
 
             <TextBlock Text="AI 图片生成"
                        Style="{StaticResource PageSectionTitleText}"/>
-            <TextBlock Text="管理中转接口、模型和 API Key，让生成配置更稳定也更容易切换。"
+            <TextBlock Text="管理接口、模型和 API Key。"
                        Style="{StaticResource PageSectionBodyText}"/>
 
-            <Border Style="{StaticResource SettingsInsetCard}">
+            <Border x:Name="AiPresetCard"
+                    Style="{StaticResource SettingsInsetCard}">
                 <StackPanel>
                     <DockPanel LastChildFill="False">
                         <StackPanel>
                             <TextBlock Text="快捷预设"
                                        Style="{StaticResource PageFieldLabelText}"/>
-                            <TextBlock Text="切换时会保留你已保存的 API Key。"
-                                       Style="{StaticResource PageMutedBodyText}"
-                                       Margin="0,4,0,0"/>
                         </StackPanel>
                         <Button x:Name="BtnTestConnection"
                                 Content="测试连接"
@@ -78,10 +76,11 @@
                                 Margin="12,0,0,0"/>
                     </DockPanel>
 
-                    <UniformGrid Columns="2"
-                                 Margin="0,14,0,0">
+                    <UniformGrid x:Name="AiPresetGrid"
+                                 Columns="2"
+                                 Margin="0,10,0,0">
                         <Button x:Name="BtnPresetOpenAiMain"
-                                Margin="0,0,10,10"
+                                Margin="0,0,8,8"
                                 Style="{StaticResource PresetButton}"
                                 Click="Preset_Click">
                             <StackPanel>
@@ -90,17 +89,14 @@
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="gpt-image-2"
+                                <TextBlock Text="gpt-image-2 · 主路线"
                                            Style="{StaticResource PageMutedBodyText}"
                                            Margin="0,6,0,0"/>
-                                <TextBlock Text="当前中转主路线"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="BtnPresetOpenAi15"
-                                Margin="0,0,0,10"
+                                Margin="0,0,0,8"
                                 Style="{StaticResource PresetButton}"
                                 Click="Preset_Click">
                             <StackPanel>
@@ -109,17 +105,14 @@
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="gpt-image-1.5"
+                                <TextBlock Text="gpt-image-1.5 · 高质量"
                                            Style="{StaticResource PageMutedBodyText}"
                                            Margin="0,6,0,0"/>
-                                <TextBlock Text="更高质量优先"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
 
                         <Button x:Name="BtnPresetOpenAiMini"
-                                Margin="0,0,10,0"
+                                Margin="0,0,8,0"
                                 Style="{StaticResource PresetButton}"
                                 Click="Preset_Click">
                             <StackPanel>
@@ -128,12 +121,9 @@
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="gpt-image-1-mini"
+                                <TextBlock Text="gpt-image-1-mini · 低成本"
                                            Style="{StaticResource PageMutedBodyText}"
                                            Margin="0,6,0,0"/>
-                                <TextBlock Text="低成本尝试"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
 
@@ -146,28 +136,20 @@
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="responses 路由"
+                                <TextBlock Text="responses · 实验兼容"
                                            Style="{StaticResource PageMutedBodyText}"
                                            Margin="0,6,0,0"/>
-                                <TextBlock Text="实验兼容"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,3,0,0"/>
                             </StackPanel>
                         </Button>
                     </UniformGrid>
                 </StackPanel>
             </Border>
 
-            <Grid Margin="0,14,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.1*"/>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="0.9*"/>
-                </Grid.ColumnDefinitions>
-
-                <Border Grid.Column="0"
-                        Style="{StaticResource SettingsInsetCard}">
-                    <StackPanel>
+            <StackPanel x:Name="AiConnectionGrid"
+                        Margin="0,14,0,0">
+                <Border Style="{StaticResource SettingsInsetCard}">
+                    <StackPanel x:Name="AiConnectionContent"
+                                VerticalAlignment="Stretch">
                         <TextBlock Text="连接配置"
                                    Style="{StaticResource PageFieldLabelText}"/>
 
@@ -178,48 +160,74 @@
                                  Style="{StaticResource SettingsFieldInput}"
                                  Text="{Binding AiBaseUrl, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <TextBlock Text="模型"
-                                   Margin="0,12,0,6"
-                                   Style="{StaticResource PageFieldLabelText}"/>
-                        <Grid>
+                        <Grid x:Name="AiConnectionMetaGrid"
+                              Margin="0,12,0,0">
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="160"/>
-                                <ColumnDefinition Width="10"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="1.35*"/>
+                                <ColumnDefinition Width="14"/>
+                                <ColumnDefinition Width="0.65*"/>
                             </Grid.ColumnDefinitions>
-                            <ComboBox x:Name="CmbModelPreset"
-                                      Grid.Column="0"
-                                      MinHeight="40"
-                                      SelectionChanged="ModelPreset_SelectionChanged">
-                                <ComboBoxItem Content="gpt-image-2" Tag="gpt-image-2"/>
-                                <ComboBoxItem Content="gpt-image-1" Tag="gpt-image-1"/>
-                                <ComboBoxItem Content="gpt-image-1.5" Tag="gpt-image-1.5"/>
-                                <ComboBoxItem Content="gpt-image-1-mini" Tag="gpt-image-1-mini"/>
-                                <ComboBoxItem Content="gpt-5.5" Tag="gpt-5.5"/>
-                                <ComboBoxItem Content="gpt-5.4" Tag="gpt-5.4"/>
-                                <ComboBoxItem Content="自定义" Tag="__custom__"/>
-                            </ComboBox>
-                            <TextBox x:Name="TxtModel"
-                                     Grid.Column="2"
-                                     Style="{StaticResource SettingsFieldInput}"
-                                     Text="{Binding AiModel, UpdateSourceTrigger=PropertyChanged}"/>
-                        </Grid>
 
-                        <TextBlock Text="超时（秒）"
-                                   Margin="0,12,0,6"
-                                   Style="{StaticResource PageFieldLabelText}"/>
-                        <TextBox x:Name="TxtTimeoutSeconds"
-                                 Width="120"
-                                 HorizontalAlignment="Left"
-                                 Style="{StaticResource SettingsFieldInput}"
-                                 Text="{Binding AiTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}"/>
+                            <StackPanel Grid.Column="0">
+                                <TextBlock Text="模型"
+                                           Margin="0,0,0,6"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <Grid x:Name="AiModelGrid">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <ComboBox x:Name="CmbModelPreset"
+                                              Width="170"
+                                              HorizontalAlignment="Left"
+                                              Style="{StaticResource SettingsFieldComboBox}"
+                                              SelectionChanged="ModelPreset_SelectionChanged">
+                                        <ComboBoxItem Content="gpt-image-2" Tag="gpt-image-2"/>
+                                        <ComboBoxItem Content="gpt-image-1" Tag="gpt-image-1"/>
+                                        <ComboBoxItem Content="gpt-image-1.5" Tag="gpt-image-1.5"/>
+                                        <ComboBoxItem Content="gpt-image-1-mini" Tag="gpt-image-1-mini"/>
+                                        <ComboBoxItem Content="gpt-5.5" Tag="gpt-5.5"/>
+                                        <ComboBoxItem Content="gpt-5.4" Tag="gpt-5.4"/>
+                                        <ComboBoxItem Content="自定义" Tag="__custom__"/>
+                                    </ComboBox>
+
+                                    <StackPanel x:Name="AiCustomModelPanel"
+                                                Grid.Row="1"
+                                                Margin="0,8,0,0"
+                                                Visibility="Collapsed">
+                                        <TextBox x:Name="TxtModel"
+                                                 Style="{StaticResource SettingsFieldInput}"
+                                                 Text="{Binding AiModel, UpdateSourceTrigger=PropertyChanged}"/>
+                                        <TextBlock Text="仅在自定义模型时填写完整模型名。"
+                                                   Style="{StaticResource PageMutedBodyText}"
+                                                   Margin="0,5,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="超时（秒）"
+                                           Margin="0,0,0,6"
+                                           Style="{StaticResource PageFieldLabelText}"/>
+                                <TextBox x:Name="TxtTimeoutSeconds"
+                                         Width="96"
+                                         HorizontalAlignment="Left"
+                                         Style="{StaticResource SettingsFieldInput}"
+                                         Text="{Binding AiTimeoutSeconds, UpdateSourceTrigger=PropertyChanged}"/>
+                                <TextBlock Text="建议 90 到 180 秒。"
+                                           Style="{StaticResource PageMutedBodyText}"
+                                           Margin="0,5,0,0"/>
+                            </StackPanel>
+                        </Grid>
                     </StackPanel>
                 </Border>
 
-                <Border Grid.Column="2"
-                        Style="{StaticResource SettingsInsetCard}">
+                <Border x:Name="AiCredentialCard"
+                        Style="{StaticResource SettingsInsetCard}"
+                        Margin="0,12,0,0">
                     <StackPanel>
-                        <TextBlock Text="凭证与说明"
+                        <TextBlock Text="凭证"
                                    Style="{StaticResource PageFieldLabelText}"/>
 
                         <TextBlock Text="API Key"
@@ -238,8 +246,7 @@
                                      TextChanged="ApiKeyVisible_TextChanged"/>
                             <PasswordBox x:Name="TxtApiKey"
                                          Grid.Column="0"
-                                         MinHeight="40"
-                                         Padding="12,0"
+                                         Style="{StaticResource WorkbenchPasswordInput}"
                                          PasswordChanged="ApiKeyPasswordChanged"/>
                             <Button x:Name="BtnToggleApiKeyVisibility"
                                     Grid.Column="2"
@@ -249,40 +256,50 @@
                                     Click="ToggleApiKeyVisibility_Click"/>
                         </Grid>
 
-                        <TextBlock x:Name="TxtApiKeyHint"
-                                   Text="可切换显示或隐藏。"
-                                   Style="{StaticResource PageMutedBodyText}"
-                                   Margin="0,8,0,0"/>
-
-                        <Border Style="{StaticResource PageInsetCard}"
+                        <Border x:Name="AiStatusCard"
+                                Style="{StaticResource PageInsetCard}"
                                 Background="{DynamicResource SurfacePageBrush}"
-                                Margin="0,14,0,0"
-                                Padding="12">
+                                Margin="0,12,0,0"
+                                Padding="12,10">
                             <StackPanel>
                                 <TextBlock Text="{Binding AiSettingsSummary}"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource TextPrimaryBrush}"/>
                                 <TextBlock Text="{Binding AiSettingsDetail}"
                                            Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,6,0,0"/>
+                                           Margin="0,4,0,0"
+                                           MaxHeight="72"
+                                           TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
-                        <WrapPanel Margin="0,14,0,0">
+                        <Grid x:Name="AiCredentialActionRow"
+                              Margin="0,14,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
                             <Button x:Name="BtnSaveConfig"
+                                    Grid.Column="0"
                                     Content="保存配置"
                                     Style="{StaticResource SettingsButton}"
-                                    Margin="0,0,8,8"
                                     Click="Save_Click"/>
                             <Button x:Name="BtnOpenProfile"
-                                    Content="编辑个人档案"
+                                    Grid.Column="2"
+                                    Content="个人中心"
                                     Style="{StaticResource SettingsGhostButton}"
-                                    Margin="0,0,0,8"
                                     Click="OpenProfile_Click"/>
-                        </WrapPanel>
+                        </Grid>
+
+                        <UniformGrid x:Name="AiCredentialActions"
+                                     Columns="2"
+                                     Visibility="Collapsed"/>
                     </StackPanel>
                 </Border>
-            </Grid>
+            </StackPanel>
 
             <TextBlock x:Name="TxtAiOperationStatus"
                        Style="{StaticResource PageMutedBodyText}"

@@ -23,7 +23,7 @@
                 <StackPanel>
                     <TextBlock Text="数据备份与恢复"
                                Style="{StaticResource PageSectionTitleText}"/>
-                    <TextBlock Text="导出、导入和历史记录。"
+                    <TextBlock Text="导出、导入与历史。"
                                Style="{StaticResource PageSectionBodyText}"/>
                 </StackPanel>
                 <Button x:Name="BtnRefreshBackupState"
@@ -34,50 +34,64 @@
                         VerticalAlignment="Top"/>
             </Grid>
 
-            <Border Style="{StaticResource SettingsInsetCard}" Margin="0,0,0,10">
-                <StackPanel>
-                    <TextBlock Text="导出备份"
-                               Style="{StaticResource PageFieldLabelText}"/>
-                    <TextBlock Text="建议使用 ZIP 格式保留图片，JSON 仅备份数据。"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               FontSize="11"
-                               TextWrapping="Wrap"
-                               Margin="0,4,0,10"/>
-                    <WrapPanel>
-                        <Button x:Name="BtnExportBackup"
-                                Content="导出 ZIP"
-                                Style="{StaticResource SettingsButton}"
-                                Click="ExportBackup_Click"
-                                Margin="0,0,8,8"/>
-                        <Button x:Name="BtnQuickExportBackup"
-                                Content="快速导出"
-                                Style="{StaticResource SettingsButton}"
-                                Click="QuickExportBackup_Click"
-                                Margin="0,0,8,8"/>
+            <Grid x:Name="BackupActionGrid"
+                  Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="12"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Border x:Name="BackupExportCard"
+                        Style="{StaticResource SettingsInsetCard}"
+                        Margin="0">
+                    <StackPanel>
+                        <TextBlock Text="导出备份"
+                                   Style="{StaticResource PageFieldLabelText}"/>
+                        <TextBlock Text="ZIP 保留图片。"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="11"
+                                   Margin="0,4,0,10"/>
+                        <UniformGrid x:Name="BackupExportActions"
+                                     Columns="2">
+                            <Button x:Name="BtnExportBackup"
+                                    Content="导出 ZIP"
+                                    Style="{StaticResource SettingsButton}"
+                                    Click="ExportBackup_Click"
+                                    Margin="0,0,8,8"/>
+                            <Button x:Name="BtnQuickExportBackup"
+                                    Content="快速导出"
+                                    Style="{StaticResource SettingsGhostButton}"
+                                    Click="QuickExportBackup_Click"
+                                    Margin="8,0,0,8"/>
+                        </UniformGrid>
                         <Button x:Name="BtnOpenBackupsDir"
                                 Content="打开备份目录"
-                                Style="{StaticResource SettingsButton}"
-                                Click="OpenBackupsDir_Click"/>
-                    </WrapPanel>
-                </StackPanel>
-            </Border>
+                                Style="{StaticResource SettingsGhostButton}"
+                                Click="OpenBackupsDir_Click"
+                                HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
 
-            <Border Style="{StaticResource SettingsInsetCard}" Margin="0,0,0,10">
-                <StackPanel>
-                    <TextBlock Text="导入恢复"
-                               Style="{StaticResource PageFieldLabelText}"/>
-                    <TextBlock Text="导入会覆盖当前数据，请确认后再操作。"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               FontSize="11"
-                               TextWrapping="Wrap"
-                               Margin="0,4,0,10"/>
-                    <Button x:Name="BtnImportBackup"
-                            Content="导入备份"
-                            Style="{StaticResource PageToolbarDangerButton}"
-                            Click="ImportBackup_Click"
-                            HorizontalAlignment="Left"/>
-                </StackPanel>
-            </Border>
+                <Border x:Name="BackupImportCard"
+                        Grid.Column="2"
+                        Style="{StaticResource SettingsInsetCard}"
+                        Margin="0">
+                    <StackPanel>
+                        <TextBlock Text="导入恢复"
+                                   Style="{StaticResource PageFieldLabelText}"/>
+                        <TextBlock Text="会覆盖当前数据。"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                   FontSize="11"
+                                   Margin="0,4,0,10"/>
+                        <Button x:Name="BtnImportBackup"
+                                Content="导入备份"
+                                Style="{StaticResource SettingsDangerButton}"
+                                Click="ImportBackup_Click"
+                                HorizontalAlignment="Left"/>
+                    </StackPanel>
+                </Border>
+            </Grid>
 
             <Grid Margin="0,0,0,10">
                 <Grid.ColumnDefinitions>
@@ -174,14 +188,15 @@
                 </Border>
             </Grid>
 
-            <Border Style="{StaticResource SettingsInsetCard}">
+            <Border x:Name="BackupHistoryCard"
+                    Style="{StaticResource SettingsInsetCard}">
                 <StackPanel>
                     <DockPanel LastChildFill="False">
                         <TextBlock Text="备份历史"
                                    Style="{StaticResource PageFieldLabelText}"/>
                         <Button x:Name="BtnClearBackupHistory"
                                 Content="清空历史"
-                                Style="{StaticResource PageToolbarDangerButton}"
+                                Style="{StaticResource SettingsDangerGhostButton}"
                                 HorizontalAlignment="Right"
                                 Click="ClearBackupHistory_Click"/>
                     </DockPanel>
@@ -214,25 +229,28 @@
                                         </Grid>
                                         <TextBlock Text="{Binding MetaText}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   Margin="0,6,0,0"/>
+                                                   Margin="0,5,0,0"/>
                                         <TextBlock Text="{Binding FileName}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                    TextWrapping="Wrap"
-                                                   Margin="0,4,0,0"/>
+                                                   Margin="0,3,0,0"/>
                                         <TextBlock Text="{Binding TimestampText}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   Margin="0,4,0,0"/>
-                                        <WrapPanel Margin="0,10,0,0">
+                                                   Margin="0,3,0,0"/>
+                                        <UniformGrid x:Name="BackupHistoryActions"
+                                                     Columns="2"
+                                                     Margin="0,8,0,0">
                                             <Button Content="打开文件"
-                                                    Style="{StaticResource SettingsButton}"
+                                                    Style="{StaticResource SettingsGhostButton}"
                                                     Click="OpenBackupFile_Click"
                                                     Tag="{Binding FilePath}"
-                                                    Margin="0,0,8,8"/>
+                                                    Margin="0,0,8,0"/>
                                             <Button Content="打开目录"
-                                                    Style="{StaticResource SettingsButton}"
+                                                    Style="{StaticResource SettingsGhostButton}"
                                                     Click="OpenBackupFolder_Click"
-                                                    Tag="{Binding FilePath}"/>
-                                        </WrapPanel>
+                                                    Tag="{Binding FilePath}"
+                                                    Margin="8,0,0,0"/>
+                                        </UniformGrid>
                                     </StackPanel>
                                 </Border>
                             </DataTemplate>

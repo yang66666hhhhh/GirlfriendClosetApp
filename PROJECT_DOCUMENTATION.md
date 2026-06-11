@@ -1,6 +1,6 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-06-07
+> 最后更新时间：2026-06-11
 > 文档目标：对齐当前代码真实状态，作为项目结构、运行机制、AI 效果图能力与维护约定的主说明文档
 
 ---
@@ -156,7 +156,7 @@ View / Component
 7. 各页面在真正读取数据前调用 `WaitUntilReadyAsync()`
 8. `ILocalUserService.EnsureInitializedAsync()` 创建或修复本地超级管理员，并把旧数据归属到该用户
 9. 登录窗口在数据库 ready 后显示；首次升级时若超级管理员无凭证，先设置管理员密码，再进入主窗口
-10. 登录页会展示最近成功登录过的账号，并自动预填最近一次登录账号；密码不保存，已设置 PIN 的账号会给出更快的快捷登录提示
+10. 登录页会展示最近成功登录过的账号，并自动预填最近一次登录账号；密码不保存，已设置 PIN 的账号会自动切到更快的 PIN 登录模式
 
 `AppStartupCoordinator` 位于 [`D:\03_Projects\Personal\GirlfriendClosetApp\ClosetApp.UI\Services\AppStartupCoordinator.cs`](D:/03_Projects/Personal/GirlfriendClosetApp/ClosetApp.UI/Services/AppStartupCoordinator.cs)。
 
@@ -341,7 +341,17 @@ View / Component
 - `TagsTab`
 - `SettingsTab`
 
-左侧头像区是当前账号入口：悬停有高亮反馈，点击打开带头像的用户菜单，可编辑当前档案、退出登录；超级管理员额外显示用户管理入口。用户管理以管理台形式呈现，包含用户统计、搜索列表、选中用户详情和新增用户面板，支持创建、编辑、头像上传/移除、重置凭证和删除用户，不切换当前会话；更换账号必须先退出登录后重新输入账号密码或 PIN。登录页会保留最近登录账号痕迹，方便下次快速回访，并优先显示最近账号头像。
+左侧头像区是当前账号入口：悬停有高亮反馈，点击打开带头像的用户菜单，可进入个人中心、退出登录；超级管理员额外显示用户管理入口。用户管理以管理台形式呈现，包含用户统计、搜索列表、选中用户详情和新增用户面板，支持创建、编辑、头像上传/移除、重置凭证和删除用户，不切换当前会话；更换账号必须先退出登录后重新输入账号密码或 PIN。登录页会保留最近登录账号痕迹，方便下次快速回访，并优先显示最近账号头像。
+
+### 8.1.1 PersonalCenterDialog
+
+当前“编辑当前档案”入口已经收敛为统一的 `PersonalCenterDialog`：
+
+- `账号资料`：账号头像、显示名称、账号名
+- `个人档案`：身高、外形、风格关键词、头像照、全身照、云端同意
+- `安全`：修改密码、修改可选 PIN
+
+这个弹窗保存后不自动关闭，目标是让当前用户可以连续完成头像、档案和安全信息维护，而不是反复开关弹窗。
 
 ### 8.2 ClothesTab
 
@@ -432,6 +442,13 @@ View / Component
 
 - 主题切换
 - 搭配卡片展示模式默认值设置
+
+设置页本轮进一步收敛成“总览工作台 + 两列维护区”结构：
+
+- 顶部总览区负责主题、卡片策略、AI 状态和图片资产摘要
+- 中部按“日常偏好 / 维护治理”分两列组织稳定分区
+- 各分区统一使用 `SettingsFieldInput / SettingsFieldComboBox / SettingsGhostButton / SettingsDangerGhostButton` 共享样式
+- 主题卡、头像预览和 AI 设置卡片都收紧了高度与留白，减少设置页空洞感和按钮文字被挤压的问题
 
 ---
 
@@ -632,6 +649,8 @@ AI 工作流不完全依赖远端生成。
 - 缺图时仍尽量保留文字信息
 - 历史展示优先使用 snapshot，而不是 live 导航属性
 
+当前日历详情中的 `WornDayDetailsDialog` 还承担“补记当天穿搭”的入口。这里的搭配下拉框已经统一为显式 `ItemTemplate` 显示，避免在自定义下拉模板下退回到对象类型名显示。
+
 ### 11.3 历史图片健康检查
 
 当前支持：
@@ -708,6 +727,19 @@ AI 相关备份范围已扩展为：
 ---
 
 ## 14. 测试现状
+
+除业务和布局测试外，当前还补充了几类 UI 回归测试：
+
+- `WornDayDetailsDialogLayoutTests`
+  - 保护“给这一天补一条穿搭记录”的搭配下拉不再混用 `DisplayMemberPath` 和 `ItemTemplate`
+- `ComboBoxLayoutRulesTests`
+  - 扫描项目关键对象型 `ComboBox`
+  - 要求同一个下拉框要么使用 `DisplayMemberPath`，要么使用 `ItemTemplate`
+  - 防止选中态或展开项退回对象 `ToString()`
+- `SettingsLayoutTests`
+  - 保护设置页工作台结构、共享输入样式和卡片布局
+- `LoginWindowLayoutTests`
+  - 保护最近登录账号下拉、个人中心入口和登录页错误提示布局
 
 测试工程：[`D:\03_Projects\Personal\GirlfriendClosetApp\ClosetApp.Tests\ClosetApp.Tests.csproj`](D:/03_Projects/Personal/GirlfriendClosetApp/ClosetApp.Tests/ClosetApp.Tests.csproj)
 

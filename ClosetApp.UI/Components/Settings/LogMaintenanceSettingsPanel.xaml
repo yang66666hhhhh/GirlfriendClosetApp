@@ -7,7 +7,8 @@
                 <TextBlock Text="排障"
                            Style="{StaticResource SettingsEyebrowBadgeText}"/>
             </Border>
-            <Grid Margin="0,0,0,14">
+            <Grid x:Name="LogHeaderGrid"
+                  Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
@@ -15,7 +16,7 @@
                 <StackPanel>
                     <TextBlock Text="系统日志"
                                Style="{StaticResource PageSectionTitleText}"/>
-                    <TextBlock Text="查看目录并清理历史日志。"
+                    <TextBlock Text="查看日志位置与清理状态。"
                                Style="{StaticResource PageSectionBodyText}"/>
                 </StackPanel>
                 <Button x:Name="BtnRefreshStats"
@@ -26,7 +27,8 @@
                         VerticalAlignment="Top"/>
             </Grid>
 
-            <Border Style="{StaticResource SettingsInsetCard}">
+            <Border x:Name="LogSummaryCard"
+                    Style="{StaticResource SettingsInsetCard}">
                 <StackPanel>
                     <TextBlock Text="{Binding LogStats}"
                                Foreground="{DynamicResource TextPrimaryBrush}"
@@ -41,12 +43,12 @@
             <WrapPanel Style="{StaticResource SettingsActionWrap}">
                 <Button x:Name="BtnOpenLogsDir"
                         Content="打开日志目录"
-                        Style="{StaticResource SettingsButton}"
+                        Style="{StaticResource SettingsGhostButton}"
                         Click="OpenLogsDir_Click"
                         Margin="0,0,8,8"/>
                 <Button x:Name="BtnClearLogs"
                         Content="清理历史日志"
-                        Style="{StaticResource PageToolbarDangerButton}"
+                        Style="{StaticResource SettingsDangerGhostButton}"
                         Click="ClearLogs_Click"/>
             </WrapPanel>
             <TextBlock x:Name="TxtLogOperationStatus"
