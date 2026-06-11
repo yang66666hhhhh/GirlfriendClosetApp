@@ -119,9 +119,12 @@ public class SettingsLayoutTests
 
         Assert.Contains("x:Key=\"Radius.XLarge\"", radiusXaml);
         Assert.Contains("x:Key=\"Radius.Control\"", radiusXaml);
+        Assert.Contains("<CornerRadius x:Key=\"Radius.XLarge\">", radiusXaml);
+        Assert.Contains("<CornerRadius x:Key=\"Radius.Control\">", radiusXaml);
         Assert.Contains("x:Key=\"Motion.PressMs\"", motionXaml);
         Assert.Contains("x:Key=\"Motion.ModalMs\"", motionXaml);
         Assert.Contains("x:Key=\"HoverLiftUp\"", buttonsXaml);
+        Assert.Contains("Storyboard.TargetName=\"BtnBorder\"", buttonsXaml);
         Assert.Contains("TranslateTransform", buttonsXaml);
         Assert.Contains("x:Key=\"InputFocusGlow\"", inputsXaml);
         Assert.Contains("x:Key=\"ComboBoxPopupLift\"", inputsXaml);

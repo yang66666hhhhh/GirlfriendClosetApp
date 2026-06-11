@@ -2,21 +2,24 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Storyboard x:Key="HoverLiftUp">
-        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+        <DoubleAnimation Storyboard.TargetName="BtnBorder"
+                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
                          To="1.012"
                          Duration="0:0:0.16">
             <DoubleAnimation.EasingFunction>
                 <CubicEase EasingMode="EaseOut"/>
             </DoubleAnimation.EasingFunction>
         </DoubleAnimation>
-        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+        <DoubleAnimation Storyboard.TargetName="BtnBorder"
+                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
                          To="1.012"
                          Duration="0:0:0.16">
             <DoubleAnimation.EasingFunction>
                 <CubicEase EasingMode="EaseOut"/>
             </DoubleAnimation.EasingFunction>
         </DoubleAnimation>
-        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
+        <DoubleAnimation Storyboard.TargetName="BtnBorder"
+                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
                          To="-1"
                          Duration="0:0:0.16">
             <DoubleAnimation.EasingFunction>
@@ -26,21 +29,24 @@
     </Storyboard>
 
     <Storyboard x:Key="HoverLiftDown">
-        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
+        <DoubleAnimation Storyboard.TargetName="BtnBorder"
+                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleX)"
                          To="1"
                          Duration="0:0:0.14">
             <DoubleAnimation.EasingFunction>
                 <CubicEase EasingMode="EaseOut"/>
             </DoubleAnimation.EasingFunction>
         </DoubleAnimation>
-        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
+        <DoubleAnimation Storyboard.TargetName="BtnBorder"
+                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(ScaleTransform.ScaleY)"
                          To="1"
                          Duration="0:0:0.14">
             <DoubleAnimation.EasingFunction>
                 <CubicEase EasingMode="EaseOut"/>
             </DoubleAnimation.EasingFunction>
         </DoubleAnimation>
-        <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
+        <DoubleAnimation Storyboard.TargetName="BtnBorder"
+                         Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(TranslateTransform.Y)"
                          To="0"
                          Duration="0:0:0.14">
             <DoubleAnimation.EasingFunction>

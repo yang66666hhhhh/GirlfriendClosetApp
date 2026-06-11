@@ -5,8 +5,8 @@
     <sys:Double x:Key="Radius.Small">11</sys:Double>
     <sys:Double x:Key="Radius.Medium">15</sys:Double>
     <sys:Double x:Key="Radius.Large">22</sys:Double>
-    <sys:Double x:Key="Radius.XLarge">26</sys:Double>
-    <sys:Double x:Key="Radius.Control">16</sys:Double>
+    <CornerRadius x:Key="Radius.XLarge">26</CornerRadius>
+    <CornerRadius x:Key="Radius.Control">16</CornerRadius>
     <sys:Double x:Key="Radius.Pill">999</sys:Double>
     <CornerRadius x:Key="Radius.Chip">18</CornerRadius>
 
