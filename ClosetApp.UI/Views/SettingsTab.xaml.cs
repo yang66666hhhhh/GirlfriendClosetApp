@@ -98,4 +98,14 @@ public partial class SettingsTab : UserControl
         await _viewModel.SaveOutfitCardDisplayModeAsync(e);
         await RequestAppRefreshAsync(outfits: true);
     }
+
+    private void OverviewThemeShortcut_Click(object sender, RoutedEventArgs e)
+    {
+        AppearancePanel.BringIntoView();
+    }
+
+    private void OverviewAiShortcut_Click(object sender, RoutedEventArgs e)
+    {
+        AiImageGenerationPanel.BringIntoView();
+    }
 }

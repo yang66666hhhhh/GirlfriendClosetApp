@@ -83,7 +83,7 @@ public partial class AiImageGenerationSettingsPanel : UserControl
 
     private void OpenProfile_Click(object sender, RoutedEventArgs e)
     {
-        ModalService.Instance.Show(new PersonalCenterDialog());
+        ModalService.Instance.ShowCached<PersonalCenterDialog>();
     }
 
     public async Task RefreshAsync()

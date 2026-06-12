@@ -23,6 +23,23 @@ public class SettingsLayoutTests
     }
 
     [Fact]
+    public void SettingsTab_UsesTactileOverviewSurfaces()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml.cs"));
+
+        Assert.Contains("x:Name=\"SettingsOverviewHeroSurface\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewSignalRail\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewActionRail\"", xaml);
+        Assert.Contains("x:Name=\"SettingsWorkbenchSectionDivider\"", xaml);
+        Assert.Contains("Click=\"OverviewThemeShortcut_Click\"", xaml);
+        Assert.Contains("Click=\"OverviewAiShortcut_Click\"", xaml);
+        Assert.Contains("OverviewThemeShortcut_Click", code);
+        Assert.Contains("OverviewAiShortcut_Click", code);
+        Assert.Contains("AiImageGenerationPanel.BringIntoView()", code);
+    }
+
+    [Fact]
     public void AppearanceSettingsPanel_UsesWorkbenchCards()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AppearanceSettingsPanel.xaml"));
@@ -30,6 +47,9 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"AppearanceWorkbenchHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceDisplayModeCard\"", xaml);
         Assert.Contains("x:Name=\"AppearanceAppInfoCard\"", xaml);
+        Assert.Contains("x:Name=\"AppearancePreferenceHeader\"", xaml);
+        Assert.Contains("x:Name=\"AppearancePreferenceSummaryCard\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceInfoHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceThemeGrid\"", xaml);
         Assert.Contains("VerticalAlignment=\"Top\"", xaml);
         Assert.Contains("AppSegmentedTabShell", xaml);

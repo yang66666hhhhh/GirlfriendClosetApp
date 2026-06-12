@@ -271,7 +271,7 @@ public partial class SettingsViewModel : ObservableObject
             ? $"个人档案已完成：{profile!.DisplayName}。"
             : string.Equals(preferences.Model, "gpt-image-2", StringComparison.OrdinalIgnoreCase)
                 ? "个人档案还缺少昵称或云端同意。"
-                : "个人档案还缺少昵称、头像照或云端同意。");
+                : "个人档案还缺少昵称、上半身参考照或云端同意。");
 
         if (preferences.LastConnectionCheckAt.HasValue)
             detailParts.Add($"最近一次接口连通性测试：{preferences.LastConnectionCheckAt:yyyy-MM-dd HH:mm}。");
