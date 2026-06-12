@@ -10,15 +10,16 @@ using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Windows.Threading;
 
 namespace ClosetApp.UI.Components.Shared.Modal;
 
-public partial class PersonalCenterDialog : UserControl
+public partial class PersonalCenterDialog : UserControl, IModalActivationAware
 {
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
     private readonly IPersonalProfileService _personalProfileService;
-    private readonly ICurrentUserContext _currentUserContext;
+    private readonly IAiAssetStorageService _assetStorageService;
 
     private Guid _currentUserId;
     private string? _accountAvatarSourcePath;
@@ -29,32 +30,59 @@ public partial class PersonalCenterDialog : UserControl
     private bool _removeAvatarPhoto;
     private bool _removeFullBodyPhoto;
     private string? _effectiveAccountAvatarPath;
+    private bool _isLoading;
 
     public PersonalCenterDialog()
     {
         _localUserService = App.Services.GetRequiredService<ILocalUserService>();
         _localAuthService = App.Services.GetRequiredService<ILocalAuthService>();
         _personalProfileService = App.Services.GetRequiredService<IPersonalProfileService>();
-        _currentUserContext = App.Services.GetRequiredService<ICurrentUserContext>();
+        _assetStorageService = App.Services.GetRequiredService<IAiAssetStorageService>();
         InitializeComponent();
-        Loaded += PersonalCenterDialog_Loaded;
+        AccountAvatar.AvatarAssetResolver = relativePath => _assetStorageService.GetProfileReferenceFullPath(relativePath, _currentUserId);
+        AccountAvatarPreview.AvatarAssetResolver = relativePath => _assetStorageService.GetProfileReferenceFullPath(relativePath, _currentUserId);
     }
 
-    private async void PersonalCenterDialog_Loaded(object sender, RoutedEventArgs e)
+    public Task OnModalActivatedAsync()
     {
-        await LoadAsync();
+        if (_isLoading)
+            return Task.CompletedTask;
+
+        return Dispatcher.InvokeAsync(LoadAsync, DispatcherPriority.Background).Task.Unwrap();
     }
 
     private async Task LoadAsync()
     {
-        var user = await _localUserService.GetCurrentAsync();
-        _currentUserId = user.Id;
-        _currentProfile = await _personalProfileService.GetCurrentAsync();
-        _effectiveAccountAvatarPath = user.AvatarPhotoPath;
+        if (_isLoading)
+            return;
 
-        BindUser(user);
-        BindProfile(_currentProfile);
-        ShowSection(AccountPanel);
+        _isLoading = true;
+        try
+        {
+            ResetTransientSelections();
+            var user = await _localUserService.GetCurrentAsync();
+            _currentUserId = user.Id;
+            _currentProfile = await _personalProfileService.GetCurrentAsync();
+            _effectiveAccountAvatarPath = user.AvatarPhotoPath;
+
+            BindUser(user);
+            BindProfile(_currentProfile);
+            ShowSection(AccountPanel);
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void ResetTransientSelections()
+    {
+        _accountAvatarSourcePath = null;
+        _removeAccountAvatarPhoto = false;
+        _avatarSourcePath = null;
+        _fullBodySourcePath = null;
+        _removeAvatarPhoto = false;
+        _removeFullBodyPhoto = false;
     }
 
     private void BindUser(Domain.Entities.LocalUser user)
@@ -91,19 +119,13 @@ public partial class PersonalCenterDialog : UserControl
 
     private static void ApplyPreview(Image image, string? path)
     {
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        var bitmap = PreviewImageSourceFactory.TryCreateBitmapSource(path, decodePixelWidth: 720);
+        if (bitmap == null)
         {
             image.Source = null;
             return;
         }
 
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.UriSource = new Uri(path);
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.DecodePixelWidth = 720;
-        bitmap.EndInit();
-        bitmap.Freeze();
         image.Source = bitmap;
     }
 
@@ -118,23 +140,17 @@ public partial class PersonalCenterDialog : UserControl
         if (!string.IsNullOrWhiteSpace(avatarPath))
             return ResolveStoredImagePath(avatarPath);
 
-        if (_removeAccountAvatarPhoto)
-            return null;
-
-        if (!string.IsNullOrWhiteSpace(_accountAvatarSourcePath))
-            return _accountAvatarSourcePath;
-
-        return ResolveStoredImagePath(_effectiveAccountAvatarPath);
+        return null;
     }
 
-    private static string? ResolveStoredImagePath(string? relativePath)
+    private string? ResolveStoredImagePath(string? relativePath)
     {
         if (string.IsNullOrWhiteSpace(relativePath))
             return null;
 
         return Path.IsPathRooted(relativePath)
             ? relativePath
-            : Path.Combine(ClosetApp.Infrastructure.AppPaths.AiProfileDir, relativePath);
+            : _assetStorageService.GetProfileReferenceFullPath(relativePath);
     }
 
     private void AccountTab_Checked(object sender, RoutedEventArgs e) => ShowSection(AccountPanel);
@@ -145,13 +161,23 @@ public partial class PersonalCenterDialog : UserControl
 
     private void ShowSection(UIElement section)
     {
-        AccountPanel.Visibility = section == AccountPanel ? Visibility.Visible : Visibility.Collapsed;
-        ProfilePanel.Visibility = section == ProfilePanel ? Visibility.Visible : Visibility.Collapsed;
-        SecurityPanel.Visibility = section == SecurityPanel ? Visibility.Visible : Visibility.Collapsed;
+        if (AccountPanel != null)
+            AccountPanel.Visibility = section == AccountPanel ? Visibility.Visible : Visibility.Collapsed;
 
-        BtnAccountTab.IsChecked = section == AccountPanel;
-        BtnProfileTab.IsChecked = section == ProfilePanel;
-        BtnSecurityTab.IsChecked = section == SecurityPanel;
+        if (ProfilePanel != null)
+            ProfilePanel.Visibility = section == ProfilePanel ? Visibility.Visible : Visibility.Collapsed;
+
+        if (SecurityPanel != null)
+            SecurityPanel.Visibility = section == SecurityPanel ? Visibility.Visible : Visibility.Collapsed;
+
+        if (BtnAccountTab != null)
+            BtnAccountTab.IsChecked = section == AccountPanel;
+
+        if (BtnProfileTab != null)
+            BtnProfileTab.IsChecked = section == ProfilePanel;
+
+        if (BtnSecurityTab != null)
+            BtnSecurityTab.IsChecked = section == SecurityPanel;
     }
 
     private void SelectAccountAvatar_Click(object sender, RoutedEventArgs e)
@@ -159,6 +185,12 @@ public partial class PersonalCenterDialog : UserControl
         var path = SelectImageFile("选择账号头像");
         if (path == null)
             return;
+
+        if (PreviewImageSourceFactory.TryCreateNormalizedPngBytes(path) == null)
+        {
+            ToastService.Instance.ShowError("头像暂时无法读取", "换一张常规图片试试，比如 JPG、PNG 或导出的原图。");
+            return;
+        }
 
         _accountAvatarSourcePath = path;
         _removeAccountAvatarPhoto = false;
@@ -174,9 +206,15 @@ public partial class PersonalCenterDialog : UserControl
 
     private void SelectAvatar_Click(object sender, RoutedEventArgs e)
     {
-        var path = SelectImageFile("选择头像参考照");
+        var path = SelectImageFile("选择上半身照");
         if (path == null)
             return;
+
+        if (PreviewImageSourceFactory.TryCreateNormalizedPngBytes(path) == null)
+        {
+            ToastService.Instance.ShowError("上半身照暂时无法读取", "换一张常规图片试试，比如 JPG、PNG 或导出的原图。");
+            return;
+        }
 
         _avatarSourcePath = path;
         _removeAvatarPhoto = false;
@@ -197,6 +235,12 @@ public partial class PersonalCenterDialog : UserControl
         var path = SelectImageFile("选择全身照");
         if (path == null)
             return;
+
+        if (PreviewImageSourceFactory.TryCreateNormalizedPngBytes(path) == null)
+        {
+            ToastService.Instance.ShowError("全身照暂时无法读取", "换一张常规图片试试，比如 JPG、PNG 或导出的原图。");
+            return;
+        }
 
         _fullBodySourcePath = path;
         _removeFullBodyPhoto = false;
@@ -305,12 +349,7 @@ public partial class PersonalCenterDialog : UserControl
         if (!string.IsNullOrWhiteSpace(_currentProfile?.AvatarPhotoPath))
             return _currentProfile.AvatarPhotoPath;
 
-        if (_removeAccountAvatarPhoto)
-            return null;
-
-        return !string.IsNullOrWhiteSpace(_accountAvatarSourcePath)
-            ? _accountAvatarSourcePath
-            : _effectiveAccountAvatarPath;
+        return null;
     }
 
     private static string? ResolvePreviewPhotoPath(bool markedForRemoval, string? selectedSourcePath, string? persistedRelativePath)
@@ -338,7 +377,7 @@ public partial class PersonalCenterDialog : UserControl
             _effectiveAccountAvatarPath = user.AvatarPhotoPath;
             _accountAvatarSourcePath = null;
             _removeAccountAvatarPhoto = false;
-            await _currentUserContext.SetCurrentUserIdAsync(_currentUserId);
+            await RefreshCurrentUserShellAsync();
             BindUser(user);
             ToastService.Instance.ShowSuccess("账号资料已保存");
         }
@@ -346,6 +385,15 @@ public partial class PersonalCenterDialog : UserControl
         {
             ToastService.Instance.ShowError("账号资料保存失败", ex.Message);
         }
+    }
+
+    // 这里只刷新当前会话外壳，不重写当前用户文件，避免把同用户资料修改误当成“切换用户”广播到整页。
+    private async Task RefreshCurrentUserShellAsync()
+    {
+        if (Window.GetWindow(this) is not MainWindow window)
+            return;
+
+        await window.RefreshCurrentUserShellAsync();
     }
 
     private async void SaveProfile_Click(object sender, RoutedEventArgs e)

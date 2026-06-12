@@ -16,6 +16,7 @@ namespace ClosetApp.UI.Components.Shared.Modal;
 public partial class PersonalProfileEditorPanel : UserControl, IEditorPanel<PersonalProfileDto>
 {
     private readonly IPersonalProfileService _service;
+    private readonly IAiAssetStorageService _assetStorageService;
     private PersonalProfileDto? _currentProfile;
     private string? _avatarSourcePath;
     private string? _fullBodySourcePath;
@@ -25,6 +26,7 @@ public partial class PersonalProfileEditorPanel : UserControl, IEditorPanel<Pers
     public PersonalProfileEditorPanel()
     {
         _service = App.Services.GetRequiredService<IPersonalProfileService>();
+        _assetStorageService = App.Services.GetRequiredService<IAiAssetStorageService>();
         InitializeComponent();
         Loaded += PersonalProfileEditorPanel_Loaded;
     }
@@ -57,35 +59,37 @@ public partial class PersonalProfileEditorPanel : UserControl, IEditorPanel<Pers
 
     private static void ApplyPreview(Image image, string? path)
     {
-        if (string.IsNullOrWhiteSpace(path) || !File.Exists(path))
+        var bitmap = PreviewImageSourceFactory.TryCreateBitmapSource(path, decodePixelWidth: 720);
+        if (bitmap == null)
         {
             image.Source = null;
             return;
         }
 
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.UriSource = new Uri(path);
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.DecodePixelWidth = 720;
-        bitmap.EndInit();
-        bitmap.Freeze();
         image.Source = bitmap;
     }
 
-    private static string? ResolveProfileImagePath(string? relativePath)
+    private string? ResolveProfileImagePath(string? relativePath)
     {
         if (string.IsNullOrWhiteSpace(relativePath))
             return null;
 
-        return Path.Combine(ClosetApp.Infrastructure.AppPaths.AiProfileDir, relativePath);
+        return Path.IsPathRooted(relativePath)
+            ? relativePath
+            : _assetStorageService.GetProfileReferenceFullPath(relativePath);
     }
 
     private void SelectAvatar_Click(object sender, RoutedEventArgs e)
     {
-        var path = SelectImageFile("选择头像照");
+        var path = SelectImageFile("选择上半身照");
         if (path == null)
             return;
+
+        if (PreviewImageSourceFactory.TryCreateNormalizedPngBytes(path) == null)
+        {
+            ToastService.Instance.ShowError("上半身照暂时无法读取", "换一张常规图片试试，比如 JPG、PNG 或导出的原图。");
+            return;
+        }
 
         _avatarSourcePath = path;
         _removeAvatarPhoto = false;
@@ -98,6 +102,12 @@ public partial class PersonalProfileEditorPanel : UserControl, IEditorPanel<Pers
         var path = SelectImageFile("选择全身照");
         if (path == null)
             return;
+
+        if (PreviewImageSourceFactory.TryCreateNormalizedPngBytes(path) == null)
+        {
+            ToastService.Instance.ShowError("全身照暂时无法读取", "换一张常规图片试试，比如 JPG、PNG 或导出的原图。");
+            return;
+        }
 
         _fullBodySourcePath = path;
         _removeFullBodyPhoto = false;

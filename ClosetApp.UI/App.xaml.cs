@@ -139,12 +139,14 @@ public partial class App : System.Windows.Application
         services.AddMemoryCache();
         services.AddSingleton<IBackupService, BackupService>();
         services.AddSingleton<IImageMaintenanceService, ImageMaintenanceService>();
-        services.AddSingleton<IImageStorageService, ImageStorageService>();
+        services.AddSingleton<IImageStorageService>(sp =>
+            new ImageStorageService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();
-        services.AddSingleton<IAiAssetStorageService, AiAssetStorageService>();
         services.AddSingleton<IAuthSessionContext, AuthSessionContext>();
         services.AddSingleton<ICurrentUserContext>(sp =>
             new CurrentUserContext(authSessionContext: sp.GetRequiredService<IAuthSessionContext>()));
+        services.AddSingleton<IAiAssetStorageService>(sp =>
+            new AiAssetStorageService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
         services.AddTransient<ILocalAuthService, LocalAuthService>();
         services.AddSingleton<IAiGenerationPreferencesService>(sp =>
             new AiGenerationPreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));

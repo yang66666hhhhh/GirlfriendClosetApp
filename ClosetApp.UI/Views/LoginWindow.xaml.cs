@@ -230,9 +230,15 @@ public partial class LoginWindow : Window
     private void FocusCredentialInput(bool preferPin = false)
     {
         if (preferPin || SelectedCredentialMode == LoginCredentialMode.Pin)
-            LoginPinBox.Focus();
+        {
+            if (LoginPinBox != null)
+                LoginPinBox.Focus();
+        }
         else
-            LoginPasswordBox.Focus();
+        {
+            if (LoginPasswordBox != null)
+                LoginPasswordBox.Focus();
+        }
     }
 
     private void PasswordMode_Checked(object sender, RoutedEventArgs e)
@@ -251,11 +257,20 @@ public partial class LoginWindow : Window
     {
         SelectedCredentialMode = mode;
         var usePin = SelectedCredentialMode == LoginCredentialMode.Pin;
-        PasswordCredentialPanel.Visibility = usePin ? Visibility.Collapsed : Visibility.Visible;
-        PinCredentialPanel.Visibility = usePin ? Visibility.Visible : Visibility.Collapsed;
-        BtnPasswordMode.IsChecked = !usePin;
-        BtnPinMode.IsChecked = usePin;
-        ClearFieldError(TxtLoginPasswordError);
+        if (PasswordCredentialPanel != null)
+            PasswordCredentialPanel.Visibility = usePin ? Visibility.Collapsed : Visibility.Visible;
+
+        if (PinCredentialPanel != null)
+            PinCredentialPanel.Visibility = usePin ? Visibility.Visible : Visibility.Collapsed;
+
+        if (BtnPasswordMode != null)
+            BtnPasswordMode.IsChecked = !usePin;
+
+        if (BtnPinMode != null)
+            BtnPinMode.IsChecked = usePin;
+
+        if (TxtLoginPasswordError != null)
+            ClearFieldError(TxtLoginPasswordError);
     }
 
     private void HookInputErrorClearing()

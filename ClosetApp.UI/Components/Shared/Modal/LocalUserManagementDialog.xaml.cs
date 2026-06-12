@@ -9,51 +9,72 @@ using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
+using System.Windows.Threading;
 
 namespace ClosetApp.UI.Components.Shared.Modal;
 
-public partial class LocalUserManagementDialog : UserControl
+public partial class LocalUserManagementDialog : UserControl, IModalActivationAware
 {
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
+    private readonly IAiAssetStorageService _assetStorageService;
     private string? _avatarSourcePath;
     private bool _removeAvatarPhoto;
     private List<LocalUserRow> _allRows = [];
     private Guid? _selectedUserId;
     private Guid? _currentUserId;
+    private LocalUser? _currentUser;
+    private bool _isRefreshing;
 
     public LocalUserManagementDialog()
     {
         _localUserService = App.Services.GetRequiredService<ILocalUserService>();
         _localAuthService = App.Services.GetRequiredService<ILocalAuthService>();
+        _assetStorageService = App.Services.GetRequiredService<IAiAssetStorageService>();
         InitializeComponent();
-        Loaded += LocalUserManagementDialog_Loaded;
     }
 
-    private async void LocalUserManagementDialog_Loaded(object sender, RoutedEventArgs e)
+    public Task OnModalActivatedAsync()
     {
-        await RefreshAsync();
+        if (_isRefreshing)
+            return Task.CompletedTask;
+
+        return Dispatcher.InvokeAsync(RefreshAsync, DispatcherPriority.Background).Task.Unwrap();
     }
 
     private async Task RefreshAsync()
     {
-        var currentUser = await _localUserService.GetCurrentAsync();
-        if (currentUser.Role != LocalUserRole.SuperAdmin)
-        {
-            ToastService.Instance.ShowError("无权管理用户", "只有超级管理员可以打开用户管理。");
-            ModalService.Instance.Hide();
+        if (_isRefreshing)
             return;
+
+        _isRefreshing = true;
+        try
+        {
+            _avatarSourcePath = null;
+            _removeAvatarPhoto = false;
+            var currentUser = await _localUserService.GetCurrentAsync();
+            if (currentUser.Role != LocalUserRole.SuperAdmin)
+            {
+                ToastService.Instance.ShowError("无权管理用户", "只有超级管理员可以打开用户管理。");
+                ModalService.Instance.Hide();
+                return;
+            }
+
+            _currentUserId = currentUser.Id;
+            _currentUser = currentUser;
+            _selectedUserId ??= currentUser.Id;
+
+            _allRows = (await _localUserService.GetAllAsync())
+                .Select(user => new LocalUserRow(user, _currentUserId.Value, ResolveAvatarPath(user)))
+                .ToList();
+
+            UpdateStats(currentUser);
+            ApplyUserFilter();
         }
-
-        _currentUserId = currentUser.Id;
-        _selectedUserId ??= currentUser.Id;
-
-        _allRows = (await _localUserService.GetAllAsync())
-            .Select(user => new LocalUserRow(user, _currentUserId.Value))
-            .ToList();
-
-        UpdateStats(currentUser);
-        ApplyUserFilter();
+        finally
+        {
+            _isRefreshing = false;
+        }
     }
 
     private void UsersList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -103,7 +124,8 @@ public partial class LocalUserManagementDialog : UserControl
 
     private async void SaveUser_Click(object sender, RoutedEventArgs e)
     {
-        if ((sender as FrameworkElement)?.DataContext is not LocalUserRow row)
+        var row = ResolveTargetRow(sender, preferCurrentUser: false);
+        if (row == null)
             return;
 
         await _localUserService.UpdateAsync(
@@ -136,7 +158,8 @@ public partial class LocalUserManagementDialog : UserControl
 
     private async void ResetCredential_Click(object sender, RoutedEventArgs e)
     {
-        if ((sender as FrameworkElement)?.DataContext is not LocalUserRow row || !row.CanResetCredential)
+        var row = ResolveTargetRow(sender, preferCurrentUser: false);
+        if (row == null || !row.CanResetCredential)
             return;
 
         try
@@ -164,7 +187,8 @@ public partial class LocalUserManagementDialog : UserControl
 
     private void SelectAvatar_Click(object sender, RoutedEventArgs e)
     {
-        if (UsersList.SelectedItem is not LocalUserRow)
+        var row = ResolveTargetRow(sender, preferCurrentUser: false);
+        if (row == null)
             return;
 
         var path = SelectImageFile("选择用户头像");
@@ -173,7 +197,10 @@ public partial class LocalUserManagementDialog : UserControl
 
         _avatarSourcePath = path;
         _removeAvatarPhoto = false;
-        ((LocalUserRow)UsersList.SelectedItem).AvatarPath = path;
+        row.AvatarPath = path;
+
+        if (row.IsCurrent)
+            ApplyCurrentUserHero(row);
     }
 
     private void RemoveAvatar_Click(object sender, RoutedEventArgs e)
@@ -205,7 +232,26 @@ public partial class LocalUserManagementDialog : UserControl
     {
         TxtTotalUsers.Text = _allRows.Count.ToString();
         TxtMemberUsers.Text = _allRows.Count(row => row.User.Role == LocalUserRole.Member).ToString();
-        TxtCurrentSession.Text = currentUser.DisplayName;
+        ApplyCurrentUserHero(_allRows.First(row => row.Id == currentUser.Id));
+    }
+
+    private LocalUserRow? ResolveTargetRow(object sender, bool preferCurrentUser)
+    {
+        if (!preferCurrentUser && (sender as FrameworkElement)?.DataContext is LocalUserRow boundRow)
+            return boundRow;
+
+        if (_currentUserId == null)
+            return null;
+
+        return _allRows.FirstOrDefault(row => row.Id == _currentUserId.Value);
+    }
+
+    private void ApplyCurrentUserHero(LocalUserRow row)
+    {
+        CurrentSessionAvatar.AvatarPath = row.AvatarPath;
+        CurrentSessionAvatar.Initial = row.AvatarInitial;
+        TxtCurrentSessionUser.Text = $"{row.EditableName} · {row.RoleText}";
+        TxtCurrentSessionContext.Text = row.IsCurrent ? "当前登录用户" : row.SessionText;
     }
 
     private static string? SelectImageFile(string title)
@@ -219,19 +265,29 @@ public partial class LocalUserManagementDialog : UserControl
         return dialog.ShowDialog() == true ? dialog.FileName : null;
     }
 
+    private string? ResolveAvatarPath(LocalUser user)
+    {
+        if (string.IsNullOrWhiteSpace(user.AvatarPhotoPath))
+            return null;
+
+        return Path.IsPathRooted(user.AvatarPhotoPath)
+            ? user.AvatarPhotoPath
+            : _assetStorageService.GetProfileReferenceFullPath(user.AvatarPhotoPath, user.Id);
+    }
+
     private sealed class LocalUserRow : INotifyPropertyChanged
     {
         private string? _avatarPath;
         private string _editableAccountName;
         private string _editableName;
 
-        public LocalUserRow(LocalUser user, Guid currentUserId)
+        public LocalUserRow(LocalUser user, Guid currentUserId, string? resolvedAvatarPath)
         {
             User = user;
             IsCurrent = user.Id == currentUserId;
             _editableAccountName = user.AccountName;
             _editableName = user.DisplayName;
-            _avatarPath = user.AvatarPhotoPath;
+            _avatarPath = resolvedAvatarPath;
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

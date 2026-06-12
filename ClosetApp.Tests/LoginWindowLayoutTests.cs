@@ -40,7 +40,22 @@ public class LoginWindowLayoutTests
         Assert.Contains("MinWidth=\"900\"", xaml);
         Assert.Contains("MinHeight=\"660\"", xaml);
         Assert.DoesNotContain("<Border Margin=\"42\"", xaml);
-        Assert.Contains("<Border Margin=\"34\"", xaml);
+        Assert.Contains("x:Name=\"LoginWorkspaceShell\"", xaml);
+        Assert.Contains("Margin=\"34\"", xaml);
+    }
+
+    [Fact]
+    public void LoginWindow_UsesTactileWorkspaceSurfaces()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.Contains("x:Name=\"LoginWorkspaceShell\"", xaml);
+        Assert.Contains("x:Name=\"LoginHeroSurface\"", xaml);
+        Assert.Contains("x:Name=\"LoginFormSurface\"", xaml);
+        Assert.Contains("x:Name=\"RecentAccountSectionCard\"", xaml);
+        Assert.Contains("x:Name=\"CredentialModeSurface\"", xaml);
+        Assert.Contains("x:Name=\"LoginActionRail\"", xaml);
+        Assert.Contains("x:Name=\"LoginSectionBadge\"", xaml);
     }
 
     [Fact]
@@ -142,20 +157,59 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
-    public void UserManagementDialog_UsesManagementConsoleLayout()
+    public void LoginWindow_GuardsCredentialModeControlsDuringInitialization()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
+
+        Assert.Contains("if (PasswordCredentialPanel != null)", code);
+        Assert.Contains("if (PinCredentialPanel != null)", code);
+        Assert.Contains("if (BtnPasswordMode != null)", code);
+        Assert.Contains("if (BtnPinMode != null)", code);
+        Assert.Contains("if (TxtLoginPasswordError != null)", code);
+        Assert.Contains("if (LoginPinBox != null)", code);
+        Assert.Contains("if (LoginPasswordBox != null)", code);
+    }
+
+    [Fact]
+    public void UserManagementDialog_CodeBehindSupportsSessionBarLayout()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml.cs"));
+
+        Assert.Contains("ApplyCurrentUserHero", code);
+        Assert.Contains("CurrentSessionAvatar.AvatarPath", code);
+        Assert.Contains("TxtCurrentSessionUser.Text", code);
+        Assert.Contains("TxtCurrentSessionContext.Text", code);
+        Assert.DoesNotContain("CurrentUserHeroAvatar.AvatarPath", code);
+    }
+
+    [Fact]
+    public void UserManagementDialog_UsesSelectedUserWorkbenchLayout()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
 
-        Assert.Contains("x:Name=\"UserManagerStatsBar\"", xaml);
-        Assert.Contains("x:Name=\"UserManagerToolbar\"", xaml);
-        Assert.Contains("x:Name=\"UserManagerWorkspaceCard\"", xaml);
+        Assert.Contains("x:Name=\"CurrentSessionBar\"", xaml);
+        Assert.Contains("x:Name=\"CurrentSessionAvatar\"", xaml);
+        Assert.Contains("x:Name=\"TxtCurrentSessionUser\"", xaml);
+        Assert.Contains("x:Name=\"TxtCurrentSessionContext\"", xaml);
+        Assert.Contains("x:Name=\"MemberManagementCard\"", xaml);
+        Assert.Contains("x:Name=\"MemberSectionHeader\"", xaml);
+        Assert.Contains("x:Name=\"MemberListActionBar\"", xaml);
         Assert.Contains("x:Name=\"TxtUserSearch\"", xaml);
-        Assert.Contains("x:Name=\"BtnShowCreateUser\"", xaml);
+        Assert.Contains("x:Name=\"BtnCreateUserInline\"", xaml);
         Assert.Contains("x:Name=\"CreateUserPanel\"", xaml);
-        Assert.Contains("x:Name=\"UserDetailPanel\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserWorkbench\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserHeroCard\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserAccountSection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserSecuritySection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserDangerSection\"", xaml);
+        Assert.Contains("Content=\"删除用户\"", xaml);
         Assert.Contains("Content=\"保存资料\"", xaml);
         Assert.Contains("Content=\"重置凭证\"", xaml);
-        Assert.Contains("Content=\"删除用户\"", xaml);
+        Assert.DoesNotContain("x:Name=\"UserManagerStatsBar\"", xaml);
+        Assert.DoesNotContain("x:Name=\"UserManagerToolbar\"", xaml);
+        Assert.DoesNotContain("x:Name=\"UserManagerWorkspaceCard\"", xaml);
+        Assert.DoesNotContain("x:Name=\"BtnShowCreateUser\"", xaml);
+        Assert.DoesNotContain("x:Name=\"CurrentUserWorkbenchCard\"", xaml);
     }
 
     [Fact]
@@ -190,11 +244,13 @@ public class LoginWindowLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
 
         Assert.Contains("个人中心", xaml);
-        Assert.Contains("x:Name=\"ProfileHoverHint\"", xaml);
+        Assert.Contains("x:Name=\"ProfileChevronShell\"", xaml);
+        Assert.Contains("x:Name=\"TxtClothingCount\"", xaml);
+        Assert.Contains("ToolTip=\"个人中心 / 账号菜单\"", xaml);
         Assert.Contains("RenderTransformOrigin=\"0.5,0.5\"", xaml);
         Assert.Contains("TransformGroup", xaml);
         Assert.Contains("Header = \"个人中心\"", code);
-        Assert.Contains("new PersonalCenterDialog()", code);
+        Assert.Contains("ShowCached<PersonalCenterDialog>()", code);
         Assert.DoesNotContain("Header = \"编辑当前档案\"", code);
     }
 
@@ -226,7 +282,7 @@ public class LoginWindowLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AiImageGenerationSettingsPanel.xaml.cs"));
 
         Assert.Contains("Content=\"个人中心\"", xaml);
-        Assert.Contains("new PersonalCenterDialog()", code);
+        Assert.Contains("ShowCached<PersonalCenterDialog>()", code);
         Assert.DoesNotContain("new PersonalProfileEditorPanel()", code);
         Assert.DoesNotContain("Content=\"编辑个人档案\"", xaml);
     }
@@ -244,6 +300,17 @@ public class LoginWindowLayoutTests
         Assert.Contains("BtnRemoveAccountAvatar", xaml);
         Assert.Contains("BtnRemoveProfileAvatar", xaml);
         Assert.Contains("BtnRemoveFullBody", xaml);
+    }
+
+    [Fact]
+    public void PersonalCenterDialog_SavingAccountOnlyRefreshesShellUser()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/PersonalCenterDialog.xaml.cs"));
+        var mainWindowCode = File.ReadAllText(FindProjectFile("ClosetApp.UI/MainWindow.xaml.cs"));
+
+        Assert.Contains("RefreshCurrentUserShellAsync", code);
+        Assert.Contains("RefreshCurrentUserShellAsync", mainWindowCode);
+        Assert.DoesNotContain("SetCurrentUserIdAsync(_currentUserId)", code);
     }
 
     [Fact]
@@ -273,17 +340,47 @@ public class LoginWindowLayoutTests
         Assert.Contains("<Setter Property=\"CornerRadius\" Value=\"16\"/>", xaml);
         Assert.Contains("<Setter Property=\"MinHeight\" Value=\"34\"/>", xaml);
         Assert.Contains("x:Name=\"AccountSummaryHero\"", xaml);
+        Assert.Contains("x:Name=\"AccountHeroIdentityStack\"", xaml);
+        Assert.Contains("x:Name=\"AccountHeroMetricsRow\"", xaml);
+        Assert.Contains("x:Name=\"AccountHeroActionRow\"", xaml);
+        Assert.Contains("x:Name=\"AccountAvatarPreview\"", xaml);
+        Assert.Contains("x:Name=\"AccountHeroStatusRail\"", xaml);
+        Assert.Contains("x:Name=\"AccountHeroTouchHint\"", xaml);
+        Assert.Contains("Columns=\"2\"", xaml);
+        Assert.Contains("x:Name=\"AccountWorkspaceGrid\"", xaml);
+        Assert.Contains("<ColumnDefinition Width=\"280\"/>", xaml);
+        Assert.Contains("Width=\"156\"", xaml);
+        Assert.Contains("Height=\"156\"", xaml);
+        Assert.Contains("Text=\"当前账号\"", xaml);
+        Assert.Contains("Text=\"上传后这里会立即预览，保存后才会正式替换账号头像。\"", xaml);
+        Assert.Contains("Text=\"侧边栏、菜单与登录页都会复用这张头像。\"", xaml);
+        Assert.Contains("Grid.Row=\"6\"", xaml);
         Assert.Contains("x:Name=\"ProfileProfileCard\"", xaml);
         Assert.Contains("HorizontalAlignment=\"Left\"", xaml);
-        Assert.Contains("Margin=\"0,2,0,0\"", xaml);
+        Assert.Contains("Margin=\"0,10,0,0\"", xaml);
         Assert.DoesNotContain("当前用户工作台", xaml);
         Assert.DoesNotContain("集中维护账号资料、效果图参考档案和登录安全。", xaml);
+        Assert.DoesNotContain("Text=\"{Binding ThemeSummary}\"", xaml);
         Assert.Contains("x:Name=\"AvatarPreview\"", xaml);
         Assert.Contains("x:Name=\"FullBodyPreview\"", xaml);
         Assert.Contains("Stretch=\"Uniform\"", xaml);
         Assert.Contains("Style=\"{StaticResource SettingsGhostButton}\"", xaml);
         Assert.DoesNotContain("Style=\"{StaticResource SecondaryButton}\"", xaml);
         Assert.DoesNotContain("x:Name=\"AvatarPreview\"\r\n                                                               Stretch=\"UniformToFill\"", xaml);
+        Assert.DoesNotContain("Grid.Row=\"2\"\r\n                                        x:Name=\"AccountIdentityCard\"", xaml);
+    }
+
+    [Fact]
+    public void PersonalCenterDialog_GuardsSectionControlsDuringInitialization()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/PersonalCenterDialog.xaml.cs"));
+
+        Assert.Contains("if (AccountPanel != null)", code);
+        Assert.Contains("if (ProfilePanel != null)", code);
+        Assert.Contains("if (SecurityPanel != null)", code);
+        Assert.Contains("if (BtnAccountTab != null)", code);
+        Assert.Contains("if (BtnProfileTab != null)", code);
+        Assert.Contains("if (BtnSecurityTab != null)", code);
     }
 
     [Fact]
@@ -299,6 +396,18 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
+    public void NavigationSidebar_UsesCachedModalOpenPathForHeavyDialogs()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
+        var modalServiceCode = File.ReadAllText(FindProjectFile("ClosetApp.UI/Services/ModalService.cs"));
+
+        Assert.Contains("ShowCached<PersonalCenterDialog>()", code);
+        Assert.Contains("ShowCached<LocalUserManagementDialog>()", code);
+        Assert.Contains("DispatcherPriority.Loaded", modalServiceCode);
+        Assert.Contains("GetOrCreateCachedView", modalServiceCode);
+    }
+
+    [Fact]
     public void OutfitWorkspaceDialog_UsesSharedActionButtons()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/OutfitWorkspaceDialog.xaml"));
@@ -307,6 +416,16 @@ public class LoginWindowLayoutTests
         Assert.Contains("BasedOn=\"{StaticResource SecondaryButton}\"", xaml);
         Assert.Contains("x:Key=\"Workspace.PrimaryButton\"", xaml);
         Assert.Contains("BasedOn=\"{StaticResource ModalSaveButton}\"", xaml);
+    }
+
+    [Fact]
+    public void ModalCloseButton_DoesNotSetStyleFromInsideItself()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/ModalCardStyles.xaml"));
+
+        Assert.Contains("x:Key=\"ModalCloseButton\"", xaml);
+        Assert.Contains("BasedOn=\"{StaticResource IconButton}\"", xaml);
+        Assert.DoesNotContain("<Setter Property=\"Style\" Value=\"{StaticResource IconButton}\"/>", xaml);
     }
 
     private static string FindProjectFile(string relativePath)

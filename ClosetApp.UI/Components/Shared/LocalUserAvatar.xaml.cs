@@ -2,8 +2,8 @@ using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using ClosetApp.Infrastructure;
+using ClosetApp.UI.Services;
 
 namespace ClosetApp.UI.Components.Shared;
 
@@ -37,6 +37,13 @@ public partial class LocalUserAvatar : UserControl
             typeof(LocalUserAvatar),
             new PropertyMetadata(true, OnAvatarPropertyChanged));
 
+    public static readonly DependencyProperty AvatarAssetResolverProperty =
+        DependencyProperty.Register(
+            nameof(AvatarAssetResolver),
+            typeof(Func<string, string>),
+            typeof(LocalUserAvatar),
+            new PropertyMetadata(null, OnAvatarPropertyChanged));
+
     public LocalUserAvatar()
     {
         InitializeComponent();
@@ -67,6 +74,12 @@ public partial class LocalUserAvatar : UserControl
         set => SetValue(ShowStatusProperty, value);
     }
 
+    public Func<string, string>? AvatarAssetResolver
+    {
+        get => (Func<string, string>?)GetValue(AvatarAssetResolverProperty);
+        set => SetValue(AvatarAssetResolverProperty, value);
+    }
+
     private static void OnAvatarPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         ((LocalUserAvatar)d).RefreshAvatar();
@@ -87,7 +100,7 @@ public partial class LocalUserAvatar : UserControl
         AvatarPhoto.HorizontalAlignment = HorizontalAlignment.Stretch;
         AvatarPhoto.VerticalAlignment = VerticalAlignment.Stretch;
 
-        var resolvedPath = ResolveAvatarPath(AvatarPath);
+        var resolvedPath = ResolveAvatarPath(AvatarPath, AvatarAssetResolver);
         if (string.IsNullOrWhiteSpace(resolvedPath) || !File.Exists(resolvedPath))
         {
             AvatarPhoto.Fill = null;
@@ -96,7 +109,16 @@ public partial class LocalUserAvatar : UserControl
             return;
         }
 
-        AvatarPhoto.Fill = new ImageBrush(LoadBitmap(resolvedPath))
+        var bitmap = PreviewImageSourceFactory.TryCreateBitmapSource(resolvedPath, decodePixelWidth: 160);
+        if (bitmap == null)
+        {
+            AvatarPhoto.Fill = null;
+            AvatarPhoto.Visibility = Visibility.Collapsed;
+            InitialHost.Visibility = Visibility.Visible;
+            return;
+        }
+
+        AvatarPhoto.Fill = new ImageBrush(bitmap)
         {
             Stretch = Stretch.UniformToFill,
             AlignmentX = AlignmentX.Center,
@@ -113,25 +135,18 @@ public partial class LocalUserAvatar : UserControl
             : value.Trim()[0].ToString();
     }
 
-    private static string? ResolveAvatarPath(string? avatarPath)
+    private static string? ResolveAvatarPath(string? avatarPath, Func<string, string>? avatarAssetResolver)
     {
         if (string.IsNullOrWhiteSpace(avatarPath))
             return null;
 
-        return Path.IsPathRooted(avatarPath)
-            ? avatarPath
-            : Path.Combine(AppPaths.AiProfileDir, avatarPath);
+        if (Path.IsPathRooted(avatarPath))
+            return avatarPath;
+
+        if (avatarAssetResolver != null)
+            return avatarAssetResolver(avatarPath);
+
+        return Path.Combine(AppPaths.AiProfileDir, avatarPath);
     }
 
-    private static BitmapImage LoadBitmap(string path)
-    {
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.UriSource = new Uri(path);
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.DecodePixelWidth = 160;
-        bitmap.EndInit();
-        bitmap.Freeze();
-        return bitmap;
-    }
 }

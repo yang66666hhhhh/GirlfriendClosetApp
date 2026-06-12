@@ -48,6 +48,9 @@ public class LocalUserManagementDialogLayoutTests
         Assert.Contains("x:Name=\"AvatarPhoto\"", xaml);
         Assert.Contains("Margin=\"1.5\"", xaml);
         Assert.Contains("Stretch = Stretch.UniformToFill", code);
+        Assert.Contains("AlignmentY = AlignmentY.Center", code);
+        Assert.DoesNotContain("OpacityMask", xaml);
+        Assert.DoesNotContain("x:Name=\"PhotoMask\"", xaml);
         Assert.DoesNotContain("Viewbox Width=\"48\"", xaml);
         Assert.DoesNotContain("Height=\"48\"", xaml);
     }
@@ -61,9 +64,15 @@ public class LocalUserManagementDialogLayoutTests
         Assert.Contains("Width=\"56\"", xaml);
         Assert.Contains("Height=\"56\"", xaml);
         Assert.Contains("ShowStatus=\"False\"", xaml);
-        Assert.Contains("MinHeight=\"82\"", xaml);
-        Assert.Contains("Margin=\"54,8,0,0\"", xaml);
-        Assert.Contains("x:Name=\"ProfileHoverHint\"", xaml);
+        Assert.Contains("MinHeight=\"116\"", xaml);
+        Assert.Contains("Padding=\"12\"", xaml);
+        Assert.Contains("x:Name=\"ProfileCountBadge\"", xaml);
+        Assert.Contains("x:Name=\"TxtClothingCount\"", xaml);
+        Assert.Contains("Text=\"0 件衣服\"", xaml);
+        Assert.Contains("x:Name=\"TxtCurrentUserRole\"", xaml);
+        Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
+        Assert.Contains("x:Name=\"ProfileIdentitySurface\"", xaml);
+        Assert.DoesNotContain("x:Name=\"ProfileTouchHintCard\"", xaml);
         Assert.DoesNotContain("Width=\"44\"\r\n                                                Height=\"44\"", xaml);
     }
 
@@ -97,11 +106,114 @@ public class LocalUserManagementDialogLayoutTests
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
 
-        Assert.Contains("x:Name=\"CredentialActionCard\"", xaml);
-        Assert.Contains("x:Name=\"DangerActionCard\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserAccountSection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserSecuritySection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserDangerSection\"", xaml);
         Assert.Contains("x:Name=\"UserDirectorySearchCard\"", xaml);
         Assert.Contains("Style=\"{StaticResource WorkbenchTextInput}\"", xaml);
         Assert.Contains("Style=\"{StaticResource WorkbenchPasswordInput}\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_UsesCurrentUserWorkbenchLayout()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("x:Name=\"CurrentSessionBar\"", xaml);
+        Assert.Contains("x:Name=\"CurrentSessionAvatar\"", xaml);
+        Assert.Contains("x:Name=\"TxtCurrentSessionUser\"", xaml);
+        Assert.Contains("x:Name=\"TxtCurrentSessionContext\"", xaml);
+        Assert.Contains("x:Name=\"MemberManagementCard\"", xaml);
+        Assert.Contains("x:Name=\"MemberSectionHeader\"", xaml);
+        Assert.Contains("x:Name=\"MemberListActionBar\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserWorkbench\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserHeroCard\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserAccountSection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserSecuritySection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserDangerSection\"", xaml);
+        Assert.DoesNotContain("x:Name=\"UserManagerStatsBar\"", xaml);
+        Assert.DoesNotContain("x:Name=\"UserManagerToolbar\"", xaml);
+        Assert.DoesNotContain("x:Name=\"CurrentUserWorkbenchCard\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_HasSingleCreateUserEntryPoint()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("x:Name=\"BtnCreateUserInline\"", xaml);
+        Assert.DoesNotContain("x:Name=\"BtnShowCreateUserToolbar\"", xaml);
+        Assert.DoesNotContain("x:Name=\"BtnShowCreateUser\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_UsesTighterHeroAndMoreOpenMemberWorkspace()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.DoesNotContain("先维护当前账号，再管理其他本地成员与独立衣柜工作区。", xaml);
+        Assert.DoesNotContain("这里先处理自己的头像、资料和登录凭证。", xaml);
+        Assert.DoesNotContain("新增用户只放在这里，避免重复入口。", xaml);
+        Assert.Contains("Height=\"756\"", xaml);
+        Assert.Contains("Margin=\"28,18,28,0\"", xaml);
+        Assert.Contains("<RowDefinition Height=\"18\"/>", xaml);
+        Assert.Contains("Padding=\"26,26,26,32\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_PrioritizesDetailWorkspaceOverHeroHeight()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("Height=\"756\"", xaml);
+        Assert.Contains("Width=\"34\"", xaml);
+        Assert.Contains("FontSize=\"24\"", xaml);
+        Assert.Contains("<ColumnDefinition Width=\"300\"/>", xaml);
+        Assert.Contains("<ColumnDefinition Width=\"32\"/>", xaml);
+        Assert.Contains("<ColumnDefinition Width=\"*\"/>", xaml);
+        Assert.Contains("Padding=\"26,26,26,32\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_UsesSelectedUserWorkbenchLayout()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("x:Name=\"CurrentSessionBar\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserWorkbench\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserHeroCard\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserAccountSection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserSecuritySection\"", xaml);
+        Assert.Contains("x:Name=\"SelectedUserDangerSection\"", xaml);
+        Assert.DoesNotContain("x:Name=\"CurrentUserWorkbenchCard\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_GivesMoreSpaceToSelectedUserDetail()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        Assert.Contains("<ColumnDefinition Width=\"300\"/>", xaml);
+        Assert.Contains("<ColumnDefinition Width=\"32\"/>", xaml);
+        Assert.Contains("<ColumnDefinition Width=\"*\"/>", xaml);
+        Assert.Contains("Padding=\"26,26,26,32\"", xaml);
+    }
+
+    [Fact]
+    public void UserManagementDialog_TopLevelSections_AreNotPlacedInSpacerRows()
+    {
+        var document = XDocument.Load(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/LocalUserManagementDialog.xaml"));
+
+        var currentWorkbench = FindElement(document, "Border", "x:Name", "CurrentSessionBar");
+        var memberManagement = FindElement(document, "Border", "x:Name", "MemberManagementCard");
+        var detailRegion = FindElement(document, "StackPanel", "x:Name", "SelectedUserWorkbench");
+
+        Assert.NotNull(currentWorkbench);
+        Assert.NotNull(memberManagement);
+        Assert.NotNull(detailRegion);
+        Assert.True(IsInContentRow(currentWorkbench!), "CurrentSessionBar is assigned to a spacer Grid.Row.");
+        Assert.True(IsInContentRow(memberManagement!), "MemberManagementCard is assigned to a spacer Grid.Row.");
+        Assert.True(IsInContentRow(detailRegion!), "Selected user workbench is assigned to a spacer Grid.Row.");
     }
 
     private static XElement? FindElement(XDocument document, string elementName, string attributeName, string attributeValue)

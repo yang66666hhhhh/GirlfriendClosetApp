@@ -2,7 +2,9 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using System.Windows.Threading;
 using System.Threading;
+using System.IO;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -24,8 +26,11 @@ public partial class NavigationSidebar : UserControl
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
     private readonly ICurrentUserContext _currentUserContext;
+    private readonly IAiAssetStorageService _assetStorageService;
     private readonly SemaphoreSlim _refreshUserGate = new(1, 1);
     private LocalUser? _currentUser;
+    private bool _profileDialogPrewarmed;
+    private bool _userManagementDialogPrewarmed;
 
     public bool IsCollapsed => _isCollapsed;
 
@@ -34,6 +39,7 @@ public partial class NavigationSidebar : UserControl
         _localUserService = App.Services.GetRequiredService<ILocalUserService>();
         _localAuthService = App.Services.GetRequiredService<ILocalAuthService>();
         _currentUserContext = App.Services.GetRequiredService<ICurrentUserContext>();
+        _assetStorageService = App.Services.GetRequiredService<IAiAssetStorageService>();
         InitializeComponent();
         Loaded += NavigationSidebar_Loaded;
         _currentUserContext.CurrentUserChanged += CurrentUserContext_CurrentUserChanged;
@@ -47,10 +53,11 @@ public partial class NavigationSidebar : UserControl
             _currentUser = await _localUserService.GetCurrentAsync();
             TxtCurrentUserName.Text = _currentUser.DisplayName;
             TxtCurrentUserRole.Text = _currentUser.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "本地用户";
-            CurrentUserAvatar.AvatarPath = _currentUser.AvatarPhotoPath;
+            CurrentUserAvatar.AvatarPath = ResolveAvatarPath(_currentUser);
             CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
             CurrentUserAvatar.IsCurrent = true;
             RebuildUserMenu();
+            ScheduleModalPrewarm();
         }
         finally
         {
@@ -192,7 +199,7 @@ public partial class NavigationSidebar : UserControl
     private void OpenPersonalCenter_Click(object sender, RoutedEventArgs e)
     {
         PersonalCenterRequested?.Invoke(this, EventArgs.Empty);
-        ModalService.Instance.Show(new PersonalCenterDialog());
+        ModalService.Instance.ShowCached<PersonalCenterDialog>();
     }
 
     private void ManageUsers_Click(object sender, RoutedEventArgs e)
@@ -203,7 +210,7 @@ public partial class NavigationSidebar : UserControl
             return;
         }
 
-        ModalService.Instance.Show(new LocalUserManagementDialog());
+        ModalService.Instance.ShowCached<LocalUserManagementDialog>();
     }
 
     private async void Logout_Click(object sender, RoutedEventArgs e)
@@ -220,7 +227,7 @@ public partial class NavigationSidebar : UserControl
         {
             Width = 52,
             Height = 52,
-            AvatarPath = user.AvatarPhotoPath,
+            AvatarPath = ResolveAvatarPath(user),
             Initial = BuildAvatarInitial(user.DisplayName),
             IsCurrent = true
         };
@@ -307,6 +314,35 @@ public partial class NavigationSidebar : UserControl
             : displayName.Trim()[0].ToString();
     }
 
+    private string? ResolveAvatarPath(LocalUser user)
+    {
+        if (string.IsNullOrWhiteSpace(user.AvatarPhotoPath))
+            return null;
+
+        return Path.IsPathRooted(user.AvatarPhotoPath)
+            ? user.AvatarPhotoPath
+            : _assetStorageService.GetProfileReferenceFullPath(user.AvatarPhotoPath, user.Id);
+    }
+
+    private void ScheduleModalPrewarm()
+    {
+        if (!_profileDialogPrewarmed)
+        {
+            _profileDialogPrewarmed = true;
+            Dispatcher.BeginInvoke(
+                DispatcherPriority.ApplicationIdle,
+                new Action(() => ModalService.Instance.PrewarmCached<PersonalCenterDialog>()));
+        }
+
+        if (_currentUser?.Role == LocalUserRole.SuperAdmin && !_userManagementDialogPrewarmed)
+        {
+            _userManagementDialogPrewarmed = true;
+            Dispatcher.BeginInvoke(
+                DispatcherPriority.ApplicationIdle,
+                new Action(() => ModalService.Instance.PrewarmCached<LocalUserManagementDialog>()));
+        }
+    }
+
     private void UpdateProfileCompactState()
     {
         HeaderPanel.Margin = _isCollapsed
@@ -320,7 +356,5 @@ public partial class NavigationSidebar : UserControl
             : HorizontalAlignment.Stretch;
         ProfileTextPanel.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         ProfileChevron.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ProfileHoverHint.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        TxtClothingCount.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
     }
 }

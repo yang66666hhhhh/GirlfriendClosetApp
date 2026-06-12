@@ -113,6 +113,13 @@ public partial class MainWindow : Window
             await SettingsTabContent.RefreshAsync();
     }
 
+    // 当前用户资料更新只需要刷新壳层身份信息和设置入口，不应该触发整套数据页重载。
+    public async Task RefreshCurrentUserShellAsync()
+    {
+        await Sidebar.RefreshCurrentUserAsync();
+        await SettingsTabContent.RefreshAsync();
+    }
+
     private void ShowTab(int tabIndex)
     {
         _currentTabIndex = tabIndex;

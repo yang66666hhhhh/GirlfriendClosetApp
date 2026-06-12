@@ -192,7 +192,8 @@
 
     </Window.Resources>
 
-    <Border Margin="34"
+    <Border x:Name="LoginWorkspaceShell"
+            Margin="34"
             Background="{DynamicResource SurfaceCardBrush}"
             BorderBrush="{DynamicResource BorderLightBrush}"
             BorderThickness="1"
@@ -204,7 +205,8 @@
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 
-        <Border Grid.Column="0"
+        <Border x:Name="LoginHeroSurface"
+                Grid.Column="0"
                 Background="{DynamicResource SurfaceSectionBrush}"
                 CornerRadius="28,0,0,28"
                 Padding="30">
@@ -214,7 +216,8 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <StackPanel>
-                    <Border Background="{DynamicResource PrimaryLightBrush}"
+                    <Border x:Name="LoginSectionBadge"
+                            Background="{DynamicResource PrimaryLightBrush}"
                             BorderBrush="{DynamicResource PrimaryBrush}"
                             BorderThickness="1"
                             CornerRadius="10"
@@ -305,7 +308,8 @@
 
         <Border Grid.Column="1" Background="{DynamicResource BorderLightBrush}"/>
 
-        <Border Grid.Column="2"
+        <Border x:Name="LoginFormSurface"
+                Grid.Column="2"
                 Background="{DynamicResource SurfaceCardBrush}"
                 CornerRadius="0,28,28,0"
                 Padding="46,42">
@@ -368,45 +372,55 @@
                 </StackPanel>
 
                 <StackPanel x:Name="LoginPanel">
-                    <TextBlock Text="账号" Style="{StaticResource LoginInputLabel}"/>
-                    <ComboBox x:Name="RecentAccountSelector"
-                              Margin="0,8,0,14"
-                              DisplayMemberPath="AccountName"
-                              IsEditable="True"
-                              ItemContainerStyle="{StaticResource RecentAccountComboBoxItem}"
-                              Style="{StaticResource RecentAccountComboBox}"
-                              TextSearch.TextPath="AccountName"
-                              SelectionChanged="RecentAccountSelector_SelectionChanged"/>
-                    <TextBlock x:Name="TxtLoginAccountError"
-                               Style="{StaticResource LoginFieldErrorText}"/>
-                    <Grid x:Name="CredentialModePanel"
-                          Margin="0,0,0,14">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="登录方式"
-                                   Style="{StaticResource LoginInputLabel}"
-                                   VerticalAlignment="Center"/>
-                        <Border Grid.Column="1"
-                                Margin="14,0,0,0"
-                                HorizontalAlignment="Right"
-                                Style="{StaticResource AppSegmentedTabShell}">
-                            <UniformGrid Columns="2">
-                                <RadioButton x:Name="BtnPasswordMode"
-                                             Content="密码"
-                                             GroupName="LoginCredentialMode"
-                                             IsChecked="True"
-                                             Style="{StaticResource AppSegmentedTabButton}"
-                                             Checked="PasswordMode_Checked"/>
-                                <RadioButton x:Name="BtnPinMode"
-                                             Content="PIN"
-                                             GroupName="LoginCredentialMode"
-                                             Style="{StaticResource AppSegmentedTabButton}"
-                                             Checked="PinMode_Checked"/>
-                            </UniformGrid>
-                        </Border>
-                    </Grid>
+                    <Border x:Name="RecentAccountSectionCard"
+                            Margin="0,0,0,16"
+                            Padding="16,14"
+                            Background="{DynamicResource SurfaceSectionBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="18">
+                        <StackPanel>
+                            <TextBlock Text="账号" Style="{StaticResource LoginInputLabel}"/>
+                            <ComboBox x:Name="RecentAccountSelector"
+                                      Margin="0,8,0,14"
+                                      DisplayMemberPath="AccountName"
+                                      IsEditable="True"
+                                      ItemContainerStyle="{StaticResource RecentAccountComboBoxItem}"
+                                      Style="{StaticResource RecentAccountComboBox}"
+                                      TextSearch.TextPath="AccountName"
+                                      SelectionChanged="RecentAccountSelector_SelectionChanged"/>
+                            <TextBlock x:Name="TxtLoginAccountError"
+                                       Style="{StaticResource LoginFieldErrorText}"/>
+                            <Grid x:Name="CredentialModePanel">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="登录方式"
+                                           Style="{StaticResource LoginInputLabel}"
+                                           VerticalAlignment="Center"/>
+                                <Border x:Name="CredentialModeSurface"
+                                        Grid.Column="1"
+                                        Margin="14,0,0,0"
+                                        HorizontalAlignment="Right"
+                                        Style="{StaticResource AppSegmentedTabShell}">
+                                    <UniformGrid Columns="2">
+                                        <RadioButton x:Name="BtnPasswordMode"
+                                                     Content="密码"
+                                                     GroupName="LoginCredentialMode"
+                                                     IsChecked="True"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="PasswordMode_Checked"/>
+                                        <RadioButton x:Name="BtnPinMode"
+                                                     Content="PIN"
+                                                     GroupName="LoginCredentialMode"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="PinMode_Checked"/>
+                                    </UniformGrid>
+                                </Border>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
                     <StackPanel x:Name="PasswordCredentialPanel">
                         <TextBlock Text="密码" Style="{StaticResource LoginInputLabel}"/>
                         <PasswordBox x:Name="LoginPasswordBox"
@@ -467,25 +481,32 @@
                     </Grid>
                 </Border>
 
-                <Button x:Name="BtnSubmit"
+                <Border x:Name="LoginActionRail"
                         Margin="0,22,0,0"
-                        HorizontalAlignment="Stretch"
-                        HorizontalContentAlignment="Center"
-                        Style="{StaticResource LoginSubmitButton}"
-                        Click="Submit_Click">
-                    <StackPanel Orientation="Horizontal"
-                                HorizontalAlignment="Center">
-                        <ProgressBar x:Name="SubmitBusyIndicator"
-                                     Width="28"
-                                     Height="8"
-                                     Margin="0,0,10,0"
-                                     IsIndeterminate="True"
-                                     Visibility="Collapsed"/>
-                        <TextBlock x:Name="TxtSubmitLabel"
-                                   Text="登录"
-                                   VerticalAlignment="Center"/>
-                    </StackPanel>
-                </Button>
+                        Padding="14"
+                        Background="{DynamicResource SurfaceSectionBrush}"
+                        BorderBrush="{DynamicResource BorderLightBrush}"
+                        BorderThickness="1"
+                        CornerRadius="18">
+                    <Button x:Name="BtnSubmit"
+                            HorizontalAlignment="Stretch"
+                            HorizontalContentAlignment="Center"
+                            Style="{StaticResource LoginSubmitButton}"
+                            Click="Submit_Click">
+                        <StackPanel Orientation="Horizontal"
+                                    HorizontalAlignment="Center">
+                            <ProgressBar x:Name="SubmitBusyIndicator"
+                                         Width="28"
+                                         Height="8"
+                                         Margin="0,0,10,0"
+                                         IsIndeterminate="True"
+                                         Visibility="Collapsed"/>
+                            <TextBlock x:Name="TxtSubmitLabel"
+                                       Text="登录"
+                                       VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Border>
                     </StackPanel>
                 </ScrollViewer>
             </Grid>

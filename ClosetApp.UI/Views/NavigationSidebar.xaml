@@ -198,8 +198,8 @@
                 <Button x:Name="BtnProfile"
                         Background="Transparent"
                         BorderThickness="0"
-                        Padding="11"
-                        MinHeight="82"
+                        Padding="12"
+                        MinHeight="116"
                         HorizontalAlignment="Stretch"
                         ToolTip="个人中心 / 账号菜单"
                         Click="Profile_Click">
@@ -220,13 +220,20 @@
                                         <TranslateTransform Y="0"/>
                                     </TransformGroup>
                                 </Border.RenderTransform>
-                                <ContentPresenter HorizontalAlignment="Stretch"
-                                                  VerticalAlignment="Center"/>
+                                <Border x:Name="ProfileIdentitySurface"
+                                        Margin="0"
+                                        Padding="0"
+                                        Background="{DynamicResource SurfaceCardBrush}"
+                                        CornerRadius="15">
+                                    <ContentPresenter HorizontalAlignment="Stretch"
+                                                      VerticalAlignment="Center"/>
+                                </Border>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
                                     <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
                                     <Setter TargetName="ProfileShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                    <Setter TargetName="ProfileIdentitySurface" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
                                     <Setter TargetName="ProfileShell" Property="RenderTransform">
                                         <Setter.Value>
                                             <TransformGroup>
@@ -238,6 +245,7 @@
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                    <Setter TargetName="ProfileIdentitySurface" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                                     <Setter TargetName="ProfileShell" Property="RenderTransform">
                                         <Setter.Value>
                                             <TransformGroup>
@@ -273,6 +281,7 @@
                                        Text="私人衣橱"
                                        FontSize="15"
                                        FontWeight="SemiBold"
+                                       MaxWidth="86"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                        TextTrimming="CharacterEllipsis"/>
                             <TextBlock x:Name="TxtCurrentUserRole"
@@ -281,12 +290,19 @@
                                        Foreground="{DynamicResource TextPlaceholderBrush}"
                                        Margin="0,2,0,0"
                                        TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="ProfileHoverHint"
-                                       Text="个人中心"
-                                       FontSize="10"
-                                       Margin="0,6,0,0"
-                                       Foreground="{DynamicResource PrimaryBrush}"
-                                       Visibility="Collapsed"/>
+                            <Border x:Name="ProfileCountBadge"
+                                    Margin="0,7,0,0"
+                                    Padding="8,4"
+                                    HorizontalAlignment="Left"
+                                    Background="{DynamicResource SurfaceSectionBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="9">
+                                <TextBlock x:Name="TxtClothingCount"
+                                           Text="0 件衣服"
+                                           FontSize="10"
+                                           Foreground="{DynamicResource TextPlaceholderBrush}"/>
+                            </Border>
                         </StackPanel>
                         <Border x:Name="ProfileChevronShell"
                                 Grid.Column="2"
@@ -307,11 +323,6 @@
                         </Border>
                     </Grid>
                 </Button>
-                <TextBlock x:Name="TxtClothingCount"
-                           Text="0 件衣服"
-                           FontSize="12"
-                           Foreground="{DynamicResource TextPlaceholderBrush}"
-                           Margin="54,8,0,0"/>
             </StackPanel>
 
             <!-- Navigation Items -->
