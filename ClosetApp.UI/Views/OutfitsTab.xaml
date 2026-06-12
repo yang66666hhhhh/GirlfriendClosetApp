@@ -540,12 +540,14 @@
                     </Border>
                 </Grid>
 
-                <Border Background="Transparent"
+                <Border x:Name="OutfitsBrowseWorkbench"
+                        Background="Transparent"
                         BorderBrush="{DynamicResource BorderDividerBrush}"
                         BorderThickness="0,1,0,0"
                         Margin="0,2,0,0"
                         Padding="0,16,0,0">
-                    <Grid Style="{StaticResource PageCollectionHeaderGrid}"
+                    <Grid x:Name="OutfitsToolbarSurface"
+                          Style="{StaticResource PageCollectionHeaderGrid}"
                           Margin="0,0,0,8">
                         <Grid.RowDefinitions>
                             <RowDefinition Height="Auto"/>
@@ -553,109 +555,115 @@
                             <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
 
-                        <Grid Grid.Row="0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                        <TextBlock Grid.Row="0"
+                                   Text="{Binding CollectionSectionTitle}"
+                                   Style="{StaticResource PageSectionTitleText}"/>
 
-                            <TextBlock Grid.Column="0"
-                                       Text="{Binding CollectionSectionTitle}"
-                                       Style="{StaticResource PageSectionTitleText}"/>
+                        <Border x:Name="OutfitsFilterRail"
+                                Grid.Row="1"
+                                Margin="0,12,0,0"
+                                Padding="14,12"
+                                Background="{DynamicResource SurfaceSectionBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="18">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="1"
-                                    Style="{StaticResource AppSegmentedTabShell}"
-                                    HorizontalAlignment="Right"
-                                    VerticalAlignment="Center">
-                                <UniformGrid Columns="2">
-                                    <RadioButton x:Name="DisplayModeOutfitFirst"
-                                                 Content="搭配"
-                                                 GroupName="OutfitsDisplayMode"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="DisplayMode_Checked"/>
-                                    <RadioButton x:Name="DisplayModeEffectImageFirst"
-                                                 Content="效果图"
-                                                 GroupName="OutfitsDisplayMode"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="DisplayMode_Checked"/>
-                                </UniformGrid>
-                            </Border>
-                        </Grid>
+                                <WrapPanel Grid.Column="0"
+                                           VerticalAlignment="Center"
+                                           ItemHeight="40">
+                                    <shared:SearchBox Width="280"
+                                                      Margin="0,0,12,0"
+                                                      Placeholder="搜索搭配名称、标签..."
+                                                      Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
 
-                        <Grid Grid.Row="1"
-                              Margin="0,12,0,0">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                                    <ComboBox x:Name="SceneFilterComboBox"
+                                              Width="144"
+                                              MinHeight="40"
+                                              ItemsSource="{Binding SceneFilterOptions}"
+                                              ItemTemplate="{StaticResource OutfitFilterOptionTemplate}"
+                                              SelectedValuePath="Value"
+                                              SelectedValue="{Binding SelectedScene, Mode=TwoWay}"
+                                              Margin="0,0,12,0"/>
 
-                            <WrapPanel Grid.Column="0"
-                                       VerticalAlignment="Center"
-                                       ItemHeight="40">
-                                <shared:SearchBox Width="280"
-                                                  Margin="0,0,12,0"
-                                                  Placeholder="搜索搭配名称、标签..."
-                                                  Text="{Binding SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                                    <ComboBox x:Name="SeasonFilterComboBox"
+                                              Width="144"
+                                              MinHeight="40"
+                                              ItemsSource="{Binding SeasonFilterOptions}"
+                                              ItemTemplate="{StaticResource OutfitFilterOptionTemplate}"
+                                              SelectedValuePath="Value"
+                                              SelectedValue="{Binding SelectedSeason, Mode=TwoWay}"
+                                              Margin="0,0,12,0"/>
 
-                                <ComboBox x:Name="SceneFilterComboBox"
-                                          Width="144"
-                                          MinHeight="40"
-                                          ItemsSource="{Binding SceneFilterOptions}"
-                                          ItemTemplate="{StaticResource OutfitFilterOptionTemplate}"
-                                          SelectedValuePath="Value"
-                                          SelectedValue="{Binding SelectedScene, Mode=TwoWay}"
-                                          Margin="0,0,12,0"/>
+                                    <CheckBox Content="仅收藏"
+                                              IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"
+                                              Style="{StaticResource AppToolbarToggleChip}"
+                                              Margin="0,0,12,0"
+                                              VerticalAlignment="Center"/>
 
-                                <ComboBox x:Name="SeasonFilterComboBox"
-                                          Width="144"
-                                          MinHeight="40"
-                                          ItemsSource="{Binding SeasonFilterOptions}"
-                                          ItemTemplate="{StaticResource OutfitFilterOptionTemplate}"
-                                          SelectedValuePath="Value"
-                                          SelectedValue="{Binding SelectedSeason, Mode=TwoWay}"
-                                          Margin="0,0,12,0"/>
+                                    <CheckBox Content="有效果图"
+                                              IsChecked="{Binding EffectImageOnly, Mode=TwoWay}"
+                                              Style="{StaticResource AppToolbarToggleChip}"
+                                              Margin="0,0,12,0"
+                                              VerticalAlignment="Center"
+                                              Visibility="{Binding IsEffectImageFirstDisplayMode, Converter={StaticResource BooleanToVisibilityConverter}}"/>
 
-                                <CheckBox Content="仅收藏"
-                                          IsChecked="{Binding FavoriteOnly, Mode=TwoWay}"
-                                          Style="{StaticResource AppToolbarToggleChip}"
-                                          Margin="0,0,12,0"
-                                          VerticalAlignment="Center"/>
+                                    <Button Content="清除"
+                                            Style="{StaticResource PageToolbarCapsuleButton}"
+                                            Background="{DynamicResource SurfaceElevatedBrush}"
+                                            BorderBrush="{DynamicResource BorderLightBrush}"
+                                            Foreground="{DynamicResource TextSecondaryBrush}"
+                                            Padding="10,5"
+                                            VerticalAlignment="Center"
+                                            Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                            Command="{Binding ClearFiltersCommand}"/>
+                                </WrapPanel>
 
-                                <CheckBox Content="有效果图"
-                                          IsChecked="{Binding EffectImageOnly, Mode=TwoWay}"
-                                          Style="{StaticResource AppToolbarToggleChip}"
-                                          Margin="0,0,12,0"
-                                          VerticalAlignment="Center"
-                                          Visibility="{Binding IsEffectImageFirstDisplayMode, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                <StackPanel x:Name="OutfitsDisplayActionRail"
+                                            Grid.Column="2"
+                                            Orientation="Horizontal"
+                                            VerticalAlignment="Center">
+                                    <Border Style="{StaticResource AppSegmentedTabShell}"
+                                            HorizontalAlignment="Right"
+                                            VerticalAlignment="Center"
+                                            Margin="0,0,12,0">
+                                        <UniformGrid Columns="2">
+                                            <RadioButton x:Name="DisplayModeOutfitFirst"
+                                                         Content="搭配"
+                                                         GroupName="OutfitsDisplayMode"
+                                                         Style="{StaticResource AppSegmentedTabButton}"
+                                                         Checked="DisplayMode_Checked"/>
+                                            <RadioButton x:Name="DisplayModeEffectImageFirst"
+                                                         Content="效果图"
+                                                         GroupName="OutfitsDisplayMode"
+                                                         Style="{StaticResource AppSegmentedTabButton}"
+                                                         Checked="DisplayMode_Checked"/>
+                                        </UniformGrid>
+                                    </Border>
 
-                                <Button Content="清除"
-                                        Style="{StaticResource PageToolbarCapsuleButton}"
-                                        Background="{DynamicResource SurfaceElevatedBrush}"
-                                        BorderBrush="{DynamicResource BorderLightBrush}"
-                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                        Padding="10,5"
-                                        VerticalAlignment="Center"
-                                        Visibility="{Binding HasActiveFilters, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                        Command="{Binding ClearFiltersCommand}"/>
-                            </WrapPanel>
+                                    <ComboBox x:Name="OutfitsSortComboBox"
+                                              Width="128"
+                                              MinHeight="40"
+                                              VerticalAlignment="Center"
+                                              ItemsSource="{Binding SortOptions}"
+                                              SelectedItem="{Binding SortBy, Mode=TwoWay}">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Converter={StaticResource OutfitSortByLabelConverter}}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
 
-                            <ComboBox x:Name="SortComboBox"
-                                      Grid.Column="2"
-                                      Width="128"
-                                      MinHeight="40"
-                                      VerticalAlignment="Center"
-                                      ItemsSource="{Binding SortOptions}"
-                                      SelectedItem="{Binding SortBy, Mode=TwoWay}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Converter={StaticResource OutfitSortByLabelConverter}}"/>
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </Grid>
-
-                        <Border Grid.Row="2"
+                        <Border x:Name="OutfitsToolbarDivider"
+                                Grid.Row="2"
                                 Margin="0,12,0,0"
                                 Height="1"
                                 Background="{DynamicResource BorderDividerBrush}"/>

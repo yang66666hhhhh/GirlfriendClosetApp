@@ -1,6 +1,7 @@
 using ClosetApp.Domain.Entities;
 using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Logic.States;
+using Serilog;
 
 namespace ClosetApp.UI.ViewModels;
 
@@ -56,6 +57,31 @@ public partial class OutfitsViewModel
     {
         var recentRecords = await _outfitService.GetRecentWornRecordsAsync(6);
         _state.SetRecentWornRecords(recentRecords);
+    }
+
+    // 首屏先展示搭配列表，历史与日历状态在后台补齐，减少空白等待。
+    private async Task RefreshDerivedStateInBackgroundAsync()
+    {
+        var refreshVersion = Interlocked.Increment(ref _derivedStateRefreshVersion);
+
+        try
+        {
+            await RefreshDerivedStateAsync();
+
+            if (refreshVersion != _derivedStateRefreshVersion)
+                return;
+
+            await RefreshCalendarIfLoadedAsync();
+
+            if (refreshVersion != _derivedStateRefreshVersion)
+                return;
+
+            NotifyStateChanged();
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Background refresh for outfit history state failed.");
+        }
     }
 
     public async Task EnsureCalendarLoadedAsync()

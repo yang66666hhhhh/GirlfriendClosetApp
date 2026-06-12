@@ -67,6 +67,7 @@ public partial class OutfitsViewModel : ViewModelBase
     private IReadOnlyList<Outfit> _displayedOutfits = [];
     private int _displayedOutfitCount = 20;
     private const int PageSize = 20;
+    private int _derivedStateRefreshVersion;
     private Outfit? _selectedOutfit;
 
     private string _searchText = string.Empty;
@@ -273,8 +274,6 @@ public partial class OutfitsViewModel : ViewModelBase
             _state.SetOutfits(outfits);
             SelectedOutfit = ResolveSelection(SelectedOutfit?.Id);
             InvalidateInsightsCache();
-            await RefreshDerivedStateAsync();
-            await RefreshCalendarIfLoadedAsync();
 
             Log.Debug("Loaded outfits. Count={OutfitCount}", OutfitCount);
         }
@@ -282,6 +281,8 @@ public partial class OutfitsViewModel : ViewModelBase
         {
             NotifyStateChanged();
         }
+
+        _ = RefreshDerivedStateInBackgroundAsync();
 
         if (refreshWeather || WeatherRecommendations.Count == 0)
         {

@@ -351,6 +351,24 @@ public class OutfitsViewModelTests
     }
 
     [Fact]
+    public async Task LoadOutfitsAsync_DoesNotWaitForRecentWornRecordsBeforeShowingList()
+    {
+        var first = CreateOutfit("第一套", OutfitScene.Work, Season.Spring);
+        var outfitService = new FakeOutfitService([first]);
+        outfitService.BlockRecentWornRecords();
+        var viewModel = CreateViewModel([first], outfitService: outfitService);
+
+        var loadTask = viewModel.LoadOutfitsAsync();
+        await Task.Delay(300);
+
+        outfitService.ReleaseRecentWornRecords();
+
+        Assert.True(loadTask.IsCompleted, "加载搭配列表不应该等待最近穿着记录返回。");
+        Assert.Single(viewModel.Outfits);
+        Assert.Equal("第一套", viewModel.Outfits[0].Name);
+    }
+
+    [Fact]
     public async Task PreferenceChanged_UpdatesExistingViewModelDisplayMode()
     {
         using var displayPreferences = CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst);
@@ -494,6 +512,7 @@ public class OutfitsViewModelTests
     {
         private readonly List<Outfit> _outfits;
         private readonly List<OutfitWornRecord> _records = [];
+        private TaskCompletionSource<bool>? _recentWornRecordsGate;
 
         public FakeOutfitService(IReadOnlyList<Outfit> outfits)
         {
@@ -517,7 +536,13 @@ public class OutfitsViewModelTests
         }
         public Task<IEnumerable<Outfit>> GetOutfitsBySceneAsync(OutfitScene scene) => Task.FromResult(_outfits.Where(outfit => outfit.Scene == scene));
         public Task<IEnumerable<Outfit>> GetRecentlyWornOutfitsAsync(int count) => Task.FromResult(_outfits.Where(outfit => outfit.WornDate.HasValue).Take(count));
-        public Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count) => Task.FromResult(_records.OrderByDescending(record => record.WornDate).Take(count).AsEnumerable());
+        public async Task<IEnumerable<OutfitWornRecord>> GetRecentWornRecordsAsync(int count)
+        {
+            if (_recentWornRecordsGate != null)
+                await _recentWornRecordsGate.Task;
+
+            return _records.OrderByDescending(record => record.WornDate).Take(count).AsEnumerable();
+        }
         public Task<IEnumerable<OutfitWornRecord>> GetWornRecordsAsync(DateTime start, DateTime end)
         {
             return Task.FromResult(_records
@@ -577,6 +602,17 @@ public class OutfitsViewModelTests
         public void AddStoredOutfit(Outfit outfit)
         {
             _outfits.Add(outfit);
+        }
+
+        public void BlockRecentWornRecords()
+        {
+            _recentWornRecordsGate = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+        }
+
+        public void ReleaseRecentWornRecords()
+        {
+            _recentWornRecordsGate?.TrySetResult(true);
+            _recentWornRecordsGate = null;
         }
     }
 
