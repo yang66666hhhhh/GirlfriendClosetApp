@@ -17,24 +17,40 @@ public class ImageStorageService : IImageStorageService
     private const int DefaultDisplayWidth = 900;
     private const int DefaultThumbnailSize = 200;
 
-    private readonly string _originalFolder;
-    private readonly string _imageFolder;
-    private readonly string _displayFolder;
-    private readonly string _thumbnailFolder;
+    private readonly string _appFolder;
+    private readonly ICurrentUserContext? _currentUserContext;
 
-    public ImageStorageService(string? baseFolder = null)
+    public ImageStorageService(string? baseFolder = null, ICurrentUserContext? currentUserContext = null)
     {
-        var appFolder = string.IsNullOrWhiteSpace(baseFolder)
+        _appFolder = string.IsNullOrWhiteSpace(baseFolder)
             ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "ClosetApp")
             : baseFolder;
-        _imageFolder = Path.Combine(appFolder, "images");
-        _originalFolder = Path.Combine(_imageFolder, "originals");
-        _displayFolder = Path.Combine(_imageFolder, "display");
-        _thumbnailFolder = Path.Combine(_imageFolder, "thumbnails");
-        Directory.CreateDirectory(_imageFolder);
-        Directory.CreateDirectory(_originalFolder);
-        Directory.CreateDirectory(_displayFolder);
-        Directory.CreateDirectory(_thumbnailFolder);
+        _currentUserContext = currentUserContext;
+        EnsureDirectories(ResolveStorageRoot());
+    }
+
+    private string ResolveStorageRoot()
+    {
+        if (_currentUserContext == null)
+            return _appFolder;
+
+        try
+        {
+            var userId = _currentUserContext.GetRequiredStoredUserIdAsync().GetAwaiter().GetResult();
+            return Path.Combine(_appFolder, "users", userId.ToString("N"));
+        }
+        catch (InvalidOperationException)
+        {
+            return _appFolder;
+        }
+    }
+
+    private static void EnsureDirectories(string storageRoot)
+    {
+        Directory.CreateDirectory(GetImageFolder(storageRoot));
+        Directory.CreateDirectory(GetOriginalFolder(storageRoot));
+        Directory.CreateDirectory(GetDisplayFolder(storageRoot));
+        Directory.CreateDirectory(GetThumbnailFolder(storageRoot));
     }
 
     public async Task<string> SaveImageAsync(string sourcePath)
@@ -42,7 +58,7 @@ public class ImageStorageService : IImageStorageService
         return await Task.Run(async () =>
         {
             var fileName = $"{Guid.NewGuid()}{Path.GetExtension(sourcePath)}";
-            var destPath = Path.Combine(_originalFolder, fileName);
+            var destPath = GetImageFullPath(fileName);
             Directory.CreateDirectory(Path.GetDirectoryName(destPath)!);
 
             using var image = await Image.LoadAsync<Rgba32>(sourcePath);
@@ -59,7 +75,7 @@ public class ImageStorageService : IImageStorageService
     public async Task<string> SaveThumbnailAsync(string sourcePath, int maxSize = 200)
     {
         var fileName = $"{Guid.NewGuid()}_thumb{Path.GetExtension(sourcePath)}";
-        var destPath = Path.Combine(_thumbnailFolder, fileName);
+        var destPath = Path.Combine(GetThumbnailFolder(ResolveStorageRoot()), fileName);
 
         using var image = await Image.LoadAsync<Rgba32>(sourcePath);
         CropTransparentPadding(image);
@@ -239,27 +255,28 @@ public class ImageStorageService : IImageStorageService
 
     public string GetImageFullPath(string relativePath)
     {
-        return Path.Combine(_originalFolder, relativePath);
+        return Path.Combine(GetOriginalFolder(ResolveStorageRoot()), relativePath);
     }
 
     public string GetDisplayFullPath(string relativePath)
     {
-        return Path.Combine(_displayFolder, relativePath);
+        return Path.Combine(GetDisplayFolder(ResolveStorageRoot()), relativePath);
     }
 
     public string GetThumbnailFullPath(string relativePath)
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
-        return Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
+        return Path.Combine(GetThumbnailFolder(ResolveStorageRoot()), $"{name}_thumb{ext}");
     }
 
     public IReadOnlyList<string> GetOriginalImageFullPaths()
     {
-        if (!Directory.Exists(_originalFolder))
+        var originalFolder = GetOriginalFolder(ResolveStorageRoot());
+        if (!Directory.Exists(originalFolder))
             return [];
 
-        return Directory.EnumerateFiles(_originalFolder, "*", SearchOption.TopDirectoryOnly)
+        return Directory.EnumerateFiles(originalFolder, "*", SearchOption.TopDirectoryOnly)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
     }
@@ -275,10 +292,19 @@ public class ImageStorageService : IImageStorageService
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);
         var ext = Path.GetExtension(relativePath);
-        yield return Path.Combine(_originalFolder, relativePath);
-        yield return Path.Combine(_displayFolder, relativePath);
-        yield return Path.Combine(_thumbnailFolder, $"{name}_thumb{ext}");
+        var storageRoot = ResolveStorageRoot();
+        yield return Path.Combine(GetOriginalFolder(storageRoot), relativePath);
+        yield return Path.Combine(GetDisplayFolder(storageRoot), relativePath);
+        yield return Path.Combine(GetThumbnailFolder(storageRoot), $"{name}_thumb{ext}");
     }
+
+    private static string GetImageFolder(string storageRoot) => Path.Combine(storageRoot, "images");
+
+    private static string GetOriginalFolder(string storageRoot) => Path.Combine(GetImageFolder(storageRoot), "originals");
+
+    private static string GetDisplayFolder(string storageRoot) => Path.Combine(GetImageFolder(storageRoot), "display");
+
+    private static string GetThumbnailFolder(string storageRoot) => Path.Combine(GetImageFolder(storageRoot), "thumbnails");
 
     private static IImageEncoder CreateDisplayEncoder(string destinationPath, bool hasTransparency)
     {

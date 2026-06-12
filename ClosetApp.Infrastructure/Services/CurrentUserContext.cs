@@ -55,8 +55,11 @@ public sealed class CurrentUserContext : ICurrentUserContext
             throw new ArgumentException("当前用户 ID 不能为空。", nameof(userId));
 
         Directory.CreateDirectory(Path.GetDirectoryName(_filePath)!);
-        await using var stream = File.Create(_filePath);
-        await JsonSerializer.SerializeAsync(stream, new CurrentUserDocument { CurrentUserId = userId }, JsonOptions).ConfigureAwait(false);
+        await using (var stream = File.Create(_filePath))
+        {
+            await JsonSerializer.SerializeAsync(stream, new CurrentUserDocument { CurrentUserId = userId }, JsonOptions).ConfigureAwait(false);
+        }
+
         CurrentUserChanged?.Invoke(this, new CurrentUserChangedEventArgs(userId));
     }
 

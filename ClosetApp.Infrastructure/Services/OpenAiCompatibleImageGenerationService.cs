@@ -483,7 +483,7 @@ public sealed class OpenAiCompatibleImageGenerationService : IAiImageGenerationS
         if (string.IsNullOrWhiteSpace(profile.AvatarPhotoPath))
         {
             if (requireAvatar)
-                throw new InvalidOperationException("生成效果图至少需要一张头像照。");
+                throw new InvalidOperationException("生成效果图至少需要一张上半身参考照。");
 
             return [];
         }

@@ -139,18 +139,18 @@ public class DeleteOutfitGeneratedImageTests
             _onDelete = onDelete;
         }
 
-        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName) => throw new NotImplementedException();
+        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName, Guid? userId = null) => throw new NotImplementedException();
         public Task<string> SaveGeneratedImageAsync(byte[] bytes, string mimeType) => throw new NotImplementedException();
-        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName) => throw new NotImplementedException();
+        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName, Guid? userId = null) => throw new NotImplementedException();
         public Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName) => throw new NotImplementedException();
-        public Task TryDeleteProfileReferenceImageAsync(string? imagePath) => Task.CompletedTask;
+        public Task TryDeleteProfileReferenceImageAsync(string? imagePath, Guid? userId = null) => Task.CompletedTask;
         public Task TryDeleteGeneratedImageAsync(string? imagePath)
         {
             _onDelete(imagePath);
             return Task.CompletedTask;
         }
 
-        public string GetProfileReferenceFullPath(string relativePath) => relativePath;
+        public string GetProfileReferenceFullPath(string relativePath, Guid? userId = null) => relativePath;
         public string GetGeneratedImageFullPath(string relativePath) => relativePath;
         public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath) => [relativePath];
     }

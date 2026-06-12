@@ -6,12 +6,14 @@ public sealed class UserScopedSettingsPath
 {
     private readonly ICurrentUserContext? _currentUserContext;
     private readonly string _globalFilePath;
+    private readonly string _baseDirectory;
     private readonly string _fileName;
 
     public UserScopedSettingsPath(ICurrentUserContext? currentUserContext, string globalFilePath)
     {
         _currentUserContext = currentUserContext;
         _globalFilePath = globalFilePath;
+        _baseDirectory = Path.GetDirectoryName(globalFilePath) ?? AppPaths.BaseDir;
         _fileName = Path.GetFileName(globalFilePath);
     }
 
@@ -30,7 +32,7 @@ public sealed class UserScopedSettingsPath
             return _globalFilePath;
         }
 
-        return Path.Combine(AppPaths.BaseDir, "users", userId.ToString("N"), _fileName);
+        return Path.Combine(_baseDirectory, "users", userId.ToString("N"), _fileName);
     }
 
     public async Task MigrateGlobalFileIfNeededAsync()

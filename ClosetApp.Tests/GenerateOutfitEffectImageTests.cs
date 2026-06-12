@@ -71,7 +71,7 @@ public class GenerateOutfitEffectImageTests
         Assert.True(result.WasReused);
         Assert.Equal(existingImage.Id, result.Id);
         Assert.Equal(0, generationService.CallCount);
-        Assert.Equal(1, repository.Images.Count);
+        Assert.Single(repository.Images);
     }
 
     [Fact]
@@ -340,13 +340,13 @@ public class GenerateOutfitEffectImageTests
 
     private sealed class FakeAiAssetStorageService : IAiAssetStorageService
     {
-        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName) => throw new NotImplementedException();
+        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName, Guid? userId = null) => throw new NotImplementedException();
         public Task<string> SaveGeneratedImageAsync(byte[] bytes, string mimeType) => throw new NotImplementedException();
-        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName) => throw new NotImplementedException();
+        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName, Guid? userId = null) => throw new NotImplementedException();
         public Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName) => throw new NotImplementedException();
-        public Task TryDeleteProfileReferenceImageAsync(string? imagePath) => Task.CompletedTask;
+        public Task TryDeleteProfileReferenceImageAsync(string? imagePath, Guid? userId = null) => Task.CompletedTask;
         public Task TryDeleteGeneratedImageAsync(string? imagePath) => Task.CompletedTask;
-        public string GetProfileReferenceFullPath(string relativePath) => relativePath;
+        public string GetProfileReferenceFullPath(string relativePath, Guid? userId = null) => relativePath;
         public string GetGeneratedImageFullPath(string relativePath) => relativePath;
         public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath) => [relativePath];
     }

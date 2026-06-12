@@ -74,12 +74,12 @@ public static class AiGenerationPromptBuilder
         var hasFullBody = !string.IsNullOrWhiteSpace(fullBodyPhotoPath);
 
         if (hasAvatar && hasFullBody)
-            return "参考图：当前包含头像照和全身照。";
+            return "参考图：当前包含上半身照和全身照。";
 
         if (hasAvatar)
-            return "参考图：当前已提供头像照，全身照暂未提供，生成时会更依赖头像与文字描述。";
+            return "参考图：当前已提供上半身照，全身照暂未提供，生成时会更依赖上半身特征与文字描述。";
 
-        return "参考图：当前还没有头像照，正式生成前需要先补充。";
+        return "参考图：当前还没有上半身照，正式生成前需要先补充。";
     }
 
     private static string ValueOrFallback(string? value, string fallback)

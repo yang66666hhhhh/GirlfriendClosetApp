@@ -58,6 +58,7 @@
 ## 5. Outfits 页职责
 
 - `OutfitCard` 优先保持轻浏览卡，不再承载重管理逻辑。
+- `OutfitsViewModel.LoadOutfitsAsync()` 首屏优先返回搭配列表，最近穿着记录和日历状态后台补载；不要再把历史查询重新塞回首屏阻塞链路。
 - 卡片正面只保留：
   - 原始搭配预览或效果图优先主视觉
   - 标题与轻量元信息
@@ -90,9 +91,9 @@
 
 ### 6.2 生成前置条件
 
-- `gpt-image-2` 文生图不强制要求头像照
-- 参考图工作流至少需要个人头像照
-- 全身照为可选增强参考图
+- `gpt-image-2` 文生图不强制要求效果图上半身照
+- 参考图工作流至少需要效果图上半身照
+- 效果图全身照为可选增强参考图
 - 必须完成云端上传同意
 - 必须已保存 API Key 和基础配置
 
@@ -113,6 +114,7 @@
 
 - 个人档案使用 `PersonalProfile`，按 `LocalUserId` 隔离，走 SQLite，不走普通 JSON 偏好。
 - 主题、天气、推荐、AI 图片生成和搭配卡片展示设置按当前本地用户隔离。
+- 用户作用域设置文件统一落到 `users/{userId}/{setting-name}.json`，禁止继续从全局 JSON 直接读取当前用户设置。
 - API Key 不明文存普通设置 JSON。
 - 设置页稳定分区组件放在 `Components/Settings`：
   - `StorageLocationsSettingsPanel`
@@ -143,14 +145,12 @@
 ## 9. 图片资产与保留规则
 
 - 衣物图片使用：
-  - `images/originals`
-  - `images/display`
-  - `images/thumbnails`
+  - 未登录回退：`images/originals` / `images/display` / `images/thumbnails`
+  - 当前用户：`users/{userId}/images/originals` / `display` / `thumbnails`
 - AI 图片使用：
-  - `ai/profile`
-  - `ai/renders/originals`
-  - `ai/renders/display`
-  - `ai/renders/thumbnails`
+  - 未登录回退：`ai/profile` / `ai/renders/originals` / `display` / `thumbnails`
+  - 当前用户：`users/{userId}/ai/profile` / `ai/renders/originals` / `display` / `thumbnails`
+- UI 预览解析必须优先通过存储服务按目标用户解析，不能在 UI 层手写全局 `AppPaths.AiProfileDir` 拼接。
 
 ### 9.1 不可破坏规则
 

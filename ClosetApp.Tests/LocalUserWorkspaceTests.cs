@@ -308,7 +308,7 @@ public class LocalUserWorkspaceTests
     }
 
     [Fact]
-    public async Task PersonalProfileService_SaveAsync_UsesUserScopedAvatarSlot()
+    public async Task PersonalProfileService_SaveAsync_UsesDedicatedProfileUpperBodySlot()
     {
         var tempDir = CreateTempDir();
         var dbPath = Path.Combine(tempDir, "closet.db");
@@ -339,7 +339,6 @@ public class LocalUserWorkspaceTests
             var service = new PersonalProfileService(
                 new PersonalProfileRepository(context, currentUser),
                 assetStorage,
-                new LocalUserRepository(context),
                 currentUser);
 
             await service.SaveAsync(new SavePersonalProfileRequest(
@@ -356,7 +355,7 @@ public class LocalUserWorkspaceTests
                 null,
                 false));
 
-            Assert.Equal($"user-{userId:N}-avatar", assetStorage.LastSlotName);
+            Assert.Equal($"user-{userId:N}-profile-upper-body", assetStorage.LastSlotName);
         }
         finally
         {
@@ -365,7 +364,7 @@ public class LocalUserWorkspaceTests
     }
 
     [Fact]
-    public async Task PersonalProfileService_GetCurrentAsync_UsesAccountAvatarWhenProfileAvatarIsEmpty()
+    public async Task PersonalProfileService_GetCurrentAsync_DoesNotReuseAccountAvatarWhenProfileAvatarIsEmpty()
     {
         var tempDir = CreateTempDir();
         var dbPath = Path.Combine(tempDir, "closet.db");
@@ -401,13 +400,12 @@ public class LocalUserWorkspaceTests
             var service = new PersonalProfileService(
                 new PersonalProfileRepository(context, currentUser),
                 new FakeAiAssetStorageService(),
-                new LocalUserRepository(context),
                 currentUser);
 
             var profile = await service.GetCurrentAsync();
 
             Assert.NotNull(profile);
-            Assert.Equal("account-avatar.png", profile.AvatarPhotoPath);
+            Assert.Null(profile.AvatarPhotoPath);
         }
         finally
         {
@@ -446,7 +444,6 @@ public class LocalUserWorkspaceTests
             var service = new PersonalProfileService(
                 new PersonalProfileRepository(context, currentUser),
                 new RecordingAiAssetStorageService("profile-avatar.png"),
-                new LocalUserRepository(context),
                 currentUser);
 
             await service.SaveAsync(new SavePersonalProfileRequest(
@@ -691,6 +688,7 @@ public class LocalUserWorkspaceTests
             var refreshed = await context.LocalUsers.AsNoTracking().SingleAsync(item => item.Id == userId);
             Assert.Equal("user-avatar.png", refreshed.AvatarPhotoPath);
             Assert.Equal($"user-{userId:N}-avatar", assetStorage.LastSlotName);
+            Assert.Equal(userId, assetStorage.LastUserId);
         }
         finally
         {
@@ -819,6 +817,43 @@ public class LocalUserWorkspaceTests
         }
     }
 
+    [Fact]
+    public async Task CurrentUserContext_SetCurrentUserIdAsync_PersistsBeforeRaisingChangedEvent()
+    {
+        var tempDir = CreateTempDir();
+        var userId = Guid.NewGuid();
+
+        try
+        {
+            var session = new AuthSessionContext();
+            session.MarkAuthenticated(userId);
+            var currentUser = new CurrentUserContext(Path.Combine(tempDir, "current-user.json"), session);
+            Guid? observedUserId = null;
+            Exception? callbackException = null;
+
+            currentUser.CurrentUserChanged += (_, _) =>
+            {
+                try
+                {
+                    observedUserId = currentUser.GetRequiredCurrentUserIdAsync().GetAwaiter().GetResult();
+                }
+                catch (Exception ex)
+                {
+                    callbackException = ex;
+                }
+            };
+
+            await currentUser.SetCurrentUserIdAsync(userId);
+
+            Assert.Null(callbackException);
+            Assert.Equal(userId, observedUserId);
+        }
+        finally
+        {
+            TryDeleteDirectory(tempDir);
+        }
+    }
+
     private static DbContextOptions<ClosetDbContext> CreateOptions(string dbPath)
     {
         return new DbContextOptionsBuilder<ClosetDbContext>()
@@ -847,13 +882,13 @@ public class LocalUserWorkspaceTests
 
     private sealed class FakeAiAssetStorageService : ClosetApp.Application.Interfaces.IAiAssetStorageService
     {
-        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName) => Task.FromResult(sourcePath);
+        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName, Guid? userId = null) => Task.FromResult(sourcePath);
         public Task<string> SaveGeneratedImageAsync(byte[] bytes, string mimeType) => Task.FromResult("generated.png");
-        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
+        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName, Guid? userId = null) => Task.CompletedTask;
         public Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
-        public Task TryDeleteProfileReferenceImageAsync(string? imagePath) => Task.CompletedTask;
+        public Task TryDeleteProfileReferenceImageAsync(string? imagePath, Guid? userId = null) => Task.CompletedTask;
         public Task TryDeleteGeneratedImageAsync(string? imagePath) => Task.CompletedTask;
-        public string GetProfileReferenceFullPath(string relativePath) => relativePath;
+        public string GetProfileReferenceFullPath(string relativePath, Guid? userId = null) => relativePath;
         public string GetGeneratedImageFullPath(string relativePath) => relativePath;
         public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath) => [relativePath];
     }
@@ -868,19 +903,21 @@ public class LocalUserWorkspaceTests
         }
 
         public string? LastSlotName { get; private set; }
+        public Guid? LastUserId { get; private set; }
 
-        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName)
+        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName, Guid? userId = null)
         {
             LastSlotName = slotName;
+            LastUserId = userId;
             return Task.FromResult(_storedFileName);
         }
 
         public Task<string> SaveGeneratedImageAsync(byte[] bytes, string mimeType) => Task.FromResult("generated.png");
-        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
+        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName, Guid? userId = null) => Task.CompletedTask;
         public Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
-        public Task TryDeleteProfileReferenceImageAsync(string? imagePath) => Task.CompletedTask;
+        public Task TryDeleteProfileReferenceImageAsync(string? imagePath, Guid? userId = null) => Task.CompletedTask;
         public Task TryDeleteGeneratedImageAsync(string? imagePath) => Task.CompletedTask;
-        public string GetProfileReferenceFullPath(string relativePath) => relativePath;
+        public string GetProfileReferenceFullPath(string relativePath, Guid? userId = null) => relativePath;
         public string GetGeneratedImageFullPath(string relativePath) => relativePath;
         public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath) => [relativePath];
     }

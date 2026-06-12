@@ -35,7 +35,7 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 
 ### AI 效果图
 
-- 当前用户档案：昵称、身高、外形、风格关键词、头像照、全身照、云端同意
+- 当前用户档案：昵称、身高、外形、风格关键词、效果图上半身照、效果图全身照、云端同意
 - OpenAI 兼容接口配置：`Base URL`、模型、超时、API Key
 - 支持远端生成搭配效果图
 - 支持手动上传效果图，进入同一套历史管理链路
@@ -47,8 +47,9 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 
 - SQLite 本地数据库
 - 本地用户隔离：衣物、搭配、标签、记录、效果图、个人档案和主要设置按用户隔离
-- 三层图片缓存：`originals / display / thumbnails`
-- AI 资产独立目录：`ai/profile`、`ai/renders/*`
+- 三层图片缓存：默认全局为 `images/originals / display / thumbnails`，登录后按用户隔离到 `users/{userId}/images/*`
+- AI 资产独立目录：默认全局为 `ai/profile`、`ai/renders/*`，登录后按用户隔离到 `users/{userId}/ai/profile` 与 `users/{userId}/ai/renders/*`
+- 主题、天气城市、推荐偏好、AI 配置、搭配卡片展示模式等设置写入 `users/{userId}/*.json`
 - ZIP 备份与恢复
 - 图片缓存重建、缺图修复、孤儿原图清理、历史图片健康检查
 - 本地滚动日志
@@ -64,7 +65,7 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 
 几个和最近迭代强相关的入口：
 
-- 左侧栏头像是当前账号入口，悬停有高亮反馈，点击打开带头像的用户菜单；可退出登录、编辑当前档案，超级管理员可进入带搜索和详情区的用户管理台，维护用户的新增、编辑、头像上传/移除、重置凭证和删除；用户头像与个人档案头像都按用户独立存储，用户管理不切换当前会话，更换账号必须先退出登录后重新输入账号密码
+- 左侧栏头像是当前账号入口，悬停有高亮反馈，点击打开带头像的用户菜单；可退出登录、编辑当前档案，超级管理员可进入“顶部状态栏 + 左侧成员导航 + 右侧选中用户工作台”的用户管理弹窗，维护用户的新增、编辑、头像上传/移除、重置凭证和删除；系统头像与效果图参考照按用户独立存储，用户管理不切换当前会话，更换账号必须先退出登录后重新输入账号密码
 - 侧边栏“编辑当前档案”入口已经整合为 `个人中心`，在同一个弹窗里分成“账号资料 / 个人档案 / 安全”三段；账号头像、账号名、显示名、密码/PIN 和 AI 参考档案都从这里维护
 - 登录页使用最近登录账号下拉作为快捷入口：会保留最近成功登录的账号痕迹并自动预填最近一次登录账号，但不会保存密码；已设置 PIN 的账号会自动切到更快的 PIN 登录模式
 - `SettingsTab` 中使用 `AiImageGenerationSettingsPanel` 管理 AI 配置
@@ -124,6 +125,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
   2. 先显示主窗口
   3. 再由 `AppStartupCoordinator` 在后台完成数据库初始化
   4. 各个 Tab 在真正加载数据前统一等待 readiness
+  5. 搭配页首屏优先返回列表，最近穿着记录与日历状态改为后台补载，减少空白等待
 - 本地路径由 [`D:\03_Projects\Personal\GirlfriendClosetApp\ClosetApp.Infrastructure\AppPaths.cs`](D:/03_Projects/Personal/GirlfriendClosetApp/ClosetApp.Infrastructure/AppPaths.cs) 统一定义
 - 关键对象型下拉框现在统一要求显式声明显示映射：要么使用 `DisplayMemberPath`，要么使用 `ItemTemplate`，不能混用；项目里已有对应回归测试，避免选中态退回对象 `ToString()`
 
@@ -136,7 +138,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `gpt-image-2` 走 `images/generations`
 - 其他 `gpt-image-*` 模型走 `images/edits`
 - 非 `gpt-image-*` 模型走 `responses`
-- `gpt-image-2` 文生图接入不强制要求头像照；其余参考图工作流仍至少需要头像照
+- `gpt-image-2` 文生图接入不强制要求效果图上半身照；其余参考图工作流仍至少需要效果图上半身照
 - `Base URL` 已兼容是否自带 `/v1`
 - 生成请求对超时和 502/503/504/522/524 做一次自动重试
 - `TimeoutSeconds` 会被限制在 `30-300` 秒之间
@@ -148,7 +150,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `rtk dotnet build ClosetApp.slnx /m:1`
 - `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1`
 
-当前测试规模为 **294 个测试**。
+当前测试规模为 **322 个测试**。
 
 ## 文档入口
 

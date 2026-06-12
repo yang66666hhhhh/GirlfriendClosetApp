@@ -1,4 +1,5 @@
 using System.IO;
+using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure.Services;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.PixelFormats;
@@ -39,6 +40,38 @@ public class ImageStorageServiceTests
             using var thumbnail = await Image.LoadAsync<Rgba32>(thumbnailPath);
             Assert.True(thumbnail.Width <= 200);
             Assert.True(thumbnail.Height <= 200);
+        }
+        finally
+        {
+            Directory.Delete(tempDir, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task SaveImageAsync_WithCurrentUserContext_StoresAssetsUnderUserDirectory()
+    {
+        var tempDir = CreateTempDir();
+        var userId = Guid.NewGuid();
+
+        try
+        {
+            var currentUser = new StaticCurrentUserContext(userId);
+            var service = new ImageStorageService(tempDir, currentUser);
+            var sourcePath = Path.Combine(tempDir, "source.png");
+            await CreateSourceImageAsync(sourcePath, width: 320, height: 320);
+
+            var storedFileName = await service.SaveImageAsync(sourcePath);
+            var originalPath = service.GetImageFullPath(storedFileName);
+            var displayPath = service.GetDisplayFullPath(storedFileName);
+            var thumbnailPath = service.GetThumbnailFullPath(storedFileName);
+
+            var expectedUserRoot = Path.Combine(tempDir, "users", userId.ToString("N"));
+            Assert.StartsWith(expectedUserRoot, originalPath);
+            Assert.StartsWith(expectedUserRoot, displayPath);
+            Assert.StartsWith(expectedUserRoot, thumbnailPath);
+            Assert.True(File.Exists(originalPath));
+            Assert.True(File.Exists(displayPath));
+            Assert.True(File.Exists(thumbnailPath));
         }
         finally
         {
@@ -225,5 +258,29 @@ public class ImageStorageServiceTests
         var path = Path.Combine(Path.GetTempPath(), "ClosetApp.Tests", Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(path);
         return path;
+    }
+
+    private sealed class StaticCurrentUserContext : ICurrentUserContext
+    {
+        private readonly Guid _userId;
+
+        public StaticCurrentUserContext(Guid userId)
+        {
+            _userId = userId;
+        }
+
+        public event EventHandler<CurrentUserChangedEventArgs>? CurrentUserChanged;
+
+        public Task<Guid?> GetCurrentUserIdAsync() => Task.FromResult<Guid?>(_userId);
+
+        public Task<Guid> GetRequiredCurrentUserIdAsync() => Task.FromResult(_userId);
+
+        public Task<Guid> GetRequiredStoredUserIdAsync() => Task.FromResult(_userId);
+
+        public Task SetCurrentUserIdAsync(Guid userId)
+        {
+            CurrentUserChanged?.Invoke(this, new CurrentUserChangedEventArgs(userId));
+            return Task.CompletedTask;
+        }
     }
 }

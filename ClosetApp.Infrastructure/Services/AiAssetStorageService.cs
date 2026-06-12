@@ -11,14 +11,26 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
 {
     private const int DisplayWidth = 900;
     private const int ThumbnailSize = 200;
+    private readonly string _appFolder;
+    private readonly ICurrentUserContext? _currentUserContext;
 
-    public async Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName)
+    public AiAssetStorageService(string? baseFolder = null, ICurrentUserContext? currentUserContext = null)
     {
-        var extension = NormalizeExtension(Path.GetExtension(sourcePath));
+        _appFolder = string.IsNullOrWhiteSpace(baseFolder) ? AppPaths.BaseDir : baseFolder;
+        _currentUserContext = currentUserContext;
+        EnsureDirectories(ResolveStorageRoot());
+    }
+
+    public async Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName, Guid? userId = null)
+    {
+        const string extension = ".png";
         var storedFileName = $"{slotName}{extension}";
-        var destinationPath = Path.Combine(AppPaths.AiProfileDir, storedFileName);
-        Directory.CreateDirectory(AppPaths.AiProfileDir);
-        File.Copy(sourcePath, destinationPath, overwrite: true);
+        var destinationPath = Path.Combine(GetAiProfileDir(ResolveStorageRoot(userId)), storedFileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+
+        using var image = await Image.LoadAsync<Rgba32>(sourcePath);
+        await image.SaveAsync(destinationPath, new PngEncoder());
+
         return storedFileName;
     }
 
@@ -26,8 +38,9 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
     {
         var extension = GetExtensionFromMimeType(mimeType);
         var storedFileName = $"{Guid.NewGuid():N}{extension}";
-        var originalPath = Path.Combine(AppPaths.AiRendersOriginalsDir, storedFileName);
-        var displayPath = Path.Combine(AppPaths.AiRendersDisplayDir, storedFileName);
+        var storageRoot = ResolveStorageRoot();
+        var originalPath = Path.Combine(GetAiRendersOriginalsDir(storageRoot), storedFileName);
+        var displayPath = Path.Combine(GetAiRendersDisplayDir(storageRoot), storedFileName);
         var thumbnailPath = BuildThumbnailPath(storedFileName);
 
         await File.WriteAllBytesAsync(originalPath, bytes);
@@ -39,10 +52,10 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
         return storedFileName;
     }
 
-    public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName)
+    public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName, Guid? userId = null)
     {
-        var destinationPath = Path.Combine(AppPaths.AiProfileDir, storedFileName);
-        Directory.CreateDirectory(AppPaths.AiProfileDir);
+        var destinationPath = Path.Combine(GetAiProfileDir(ResolveStorageRoot(userId)), storedFileName);
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
         File.Copy(sourcePath, destinationPath, overwrite: true);
         return Task.CompletedTask;
     }
@@ -50,21 +63,22 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
     public async Task RestoreGeneratedImageAsync(string sourcePath, string storedFileName)
     {
         var bytes = await File.ReadAllBytesAsync(sourcePath);
-        var originalPath = Path.Combine(AppPaths.AiRendersOriginalsDir, storedFileName);
+        var storageRoot = ResolveStorageRoot();
+        var originalPath = Path.Combine(GetAiRendersOriginalsDir(storageRoot), storedFileName);
         await File.WriteAllBytesAsync(originalPath, bytes);
 
         await using var memoryStream = new MemoryStream(bytes);
         using var image = await Image.LoadAsync<Rgba32>(memoryStream);
-        await SaveVariantAsync(image, Path.Combine(AppPaths.AiRendersDisplayDir, storedFileName), DisplayWidth);
+        await SaveVariantAsync(image, Path.Combine(GetAiRendersDisplayDir(storageRoot), storedFileName), DisplayWidth);
         await SaveVariantAsync(image, BuildThumbnailPath(storedFileName), ThumbnailSize);
     }
 
-    public Task TryDeleteProfileReferenceImageAsync(string? imagePath)
+    public Task TryDeleteProfileReferenceImageAsync(string? imagePath, Guid? userId = null)
     {
         if (string.IsNullOrWhiteSpace(imagePath))
             return Task.CompletedTask;
 
-        var fullPath = GetProfileReferenceFullPath(imagePath);
+        var fullPath = GetProfileReferenceFullPath(imagePath, userId);
         if (File.Exists(fullPath))
             File.Delete(fullPath);
 
@@ -85,14 +99,14 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
         return Task.CompletedTask;
     }
 
-    public string GetProfileReferenceFullPath(string relativePath)
+    public string GetProfileReferenceFullPath(string relativePath, Guid? userId = null)
     {
-        return Path.Combine(AppPaths.AiProfileDir, relativePath);
+        return Path.Combine(GetAiProfileDir(ResolveStorageRoot(userId)), relativePath);
     }
 
     public string GetGeneratedImageFullPath(string relativePath)
     {
-        return Path.Combine(AppPaths.AiRendersOriginalsDir, relativePath);
+        return Path.Combine(GetAiRendersOriginalsDir(ResolveStorageRoot()), relativePath);
     }
 
     public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath)
@@ -100,7 +114,7 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
         return
         [
             GetGeneratedImageFullPath(relativePath),
-            Path.Combine(AppPaths.AiRendersDisplayDir, relativePath),
+            Path.Combine(GetAiRendersDisplayDir(ResolveStorageRoot()), relativePath),
             BuildThumbnailPath(relativePath)
         ];
     }
@@ -125,17 +139,51 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
         await clone.SaveAsync(path, new PngEncoder());
     }
 
-    private static string BuildThumbnailPath(string storedFileName)
+    private string BuildThumbnailPath(string storedFileName)
     {
         var fileName = Path.GetFileNameWithoutExtension(storedFileName);
         var extension = Path.GetExtension(storedFileName);
-        return Path.Combine(AppPaths.AiRendersThumbnailsDir, $"{fileName}_thumb{extension}");
+        return Path.Combine(GetAiRendersThumbnailsDir(ResolveStorageRoot()), $"{fileName}_thumb{extension}");
     }
 
-    private static string NormalizeExtension(string extension)
+    private string ResolveStorageRoot(Guid? explicitUserId = null)
     {
-        return string.IsNullOrWhiteSpace(extension) ? ".png" : extension.ToLowerInvariant();
+        if (explicitUserId.HasValue && explicitUserId.Value != Guid.Empty)
+            return Path.Combine(_appFolder, "users", explicitUserId.Value.ToString("N"));
+
+        if (_currentUserContext == null)
+            return _appFolder;
+
+        try
+        {
+            var userId = _currentUserContext.GetRequiredStoredUserIdAsync().GetAwaiter().GetResult();
+            return Path.Combine(_appFolder, "users", userId.ToString("N"));
+        }
+        catch (InvalidOperationException)
+        {
+            return _appFolder;
+        }
     }
+
+    private static void EnsureDirectories(string storageRoot)
+    {
+        Directory.CreateDirectory(GetAiProfileDir(storageRoot));
+        Directory.CreateDirectory(GetAiRendersOriginalsDir(storageRoot));
+        Directory.CreateDirectory(GetAiRendersDisplayDir(storageRoot));
+        Directory.CreateDirectory(GetAiRendersThumbnailsDir(storageRoot));
+    }
+
+    private static string GetAiDir(string storageRoot) => Path.Combine(storageRoot, "ai");
+
+    private static string GetAiProfileDir(string storageRoot) => Path.Combine(GetAiDir(storageRoot), "profile");
+
+    private static string GetAiRendersDir(string storageRoot) => Path.Combine(GetAiDir(storageRoot), "renders");
+
+    private static string GetAiRendersOriginalsDir(string storageRoot) => Path.Combine(GetAiRendersDir(storageRoot), "originals");
+
+    private static string GetAiRendersDisplayDir(string storageRoot) => Path.Combine(GetAiRendersDir(storageRoot), "display");
+
+    private static string GetAiRendersThumbnailsDir(string storageRoot) => Path.Combine(GetAiRendersDir(storageRoot), "thumbnails");
 
     private static string GetExtensionFromMimeType(string mimeType)
     {

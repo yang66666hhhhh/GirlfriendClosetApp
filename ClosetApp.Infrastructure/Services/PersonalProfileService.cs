@@ -9,65 +9,56 @@ public sealed class PersonalProfileService : IPersonalProfileService
 {
     private readonly IPersonalProfileRepository _repository;
     private readonly IAiAssetStorageService _assetStorageService;
-    private readonly ILocalUserRepository? _localUserRepository;
     private readonly ICurrentUserContext? _currentUserContext;
 
     public PersonalProfileService(
         IPersonalProfileRepository repository,
         IAiAssetStorageService assetStorageService,
-        ILocalUserRepository? localUserRepository = null,
         ICurrentUserContext? currentUserContext = null)
     {
         _repository = repository;
         _assetStorageService = assetStorageService;
-        _localUserRepository = localUserRepository;
         _currentUserContext = currentUserContext;
     }
 
     public async Task<PersonalProfileDto?> GetCurrentAsync()
     {
         var profile = await _repository.GetCurrentAsync();
-        if (profile == null)
-            return null;
-
-        var dto = profile.ToDto();
-        if (!string.IsNullOrWhiteSpace(dto.AvatarPhotoPath) || _localUserRepository == null || _currentUserContext == null)
-            return dto;
-
-        var userId = await _currentUserContext.GetRequiredCurrentUserIdAsync();
-        var user = await _localUserRepository.GetActiveByIdAsync(userId);
-        return string.IsNullOrWhiteSpace(user?.AvatarPhotoPath)
-            ? dto
-            : dto with { AvatarPhotoPath = user.AvatarPhotoPath };
+        return profile?.ToDto();
     }
 
     public async Task<PersonalProfileDto> SaveAsync(SavePersonalProfileRequest request)
     {
         var profile = await _repository.GetCurrentAsync() ?? new PersonalProfile();
+        var currentUserId = _currentUserContext == null
+            ? (Guid?)null
+            : await _currentUserContext.GetRequiredCurrentUserIdAsync();
 
         if (request.RemoveAvatarPhoto)
         {
-            await _assetStorageService.TryDeleteProfileReferenceImageAsync(profile.AvatarPhotoPath);
+            await _assetStorageService.TryDeleteProfileReferenceImageAsync(profile.AvatarPhotoPath, currentUserId);
             profile.AvatarPhotoPath = null;
         }
         else if (!string.IsNullOrWhiteSpace(request.AvatarSourcePath))
         {
             var storedFileName = await _assetStorageService.SaveProfileReferenceImageAsync(
                 request.AvatarSourcePath,
-                await BuildProfileSlotNameAsync("avatar"));
+                await BuildProfileSlotNameAsync("profile-upper-body"),
+                currentUserId);
             profile.AvatarPhotoPath = storedFileName;
         }
 
         if (request.RemoveFullBodyPhoto)
         {
-            await _assetStorageService.TryDeleteProfileReferenceImageAsync(profile.FullBodyPhotoPath);
+            await _assetStorageService.TryDeleteProfileReferenceImageAsync(profile.FullBodyPhotoPath, currentUserId);
             profile.FullBodyPhotoPath = null;
         }
         else if (!string.IsNullOrWhiteSpace(request.FullBodySourcePath))
         {
             var storedFileName = await _assetStorageService.SaveProfileReferenceImageAsync(
                 request.FullBodySourcePath,
-                await BuildProfileSlotNameAsync("full-body"));
+                await BuildProfileSlotNameAsync("full-body"),
+                currentUserId);
             profile.FullBodyPhotoPath = storedFileName;
         }
 

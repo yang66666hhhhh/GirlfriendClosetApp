@@ -24,7 +24,9 @@ public sealed class AiGenerationPreferencesService : IAiGenerationPreferencesSer
 
     public async Task<AiGenerationPreferences> GetAsync()
     {
-        if (!File.Exists(_filePath))
+        await _settingsPath.MigrateGlobalFileIfNeededAsync();
+        var path = await _settingsPath.ResolveAsync();
+        if (!File.Exists(path))
             return BuildDefault();
 
         try

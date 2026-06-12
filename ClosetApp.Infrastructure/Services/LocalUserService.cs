@@ -219,17 +219,17 @@ public sealed class LocalUserService : ILocalUserService
         if (removeAvatarPhoto)
         {
             if (_assetStorageService != null)
-                await _assetStorageService.TryDeleteProfileReferenceImageAsync(user.AvatarPhotoPath).ConfigureAwait(false);
+                await _assetStorageService.TryDeleteProfileReferenceImageAsync(user.AvatarPhotoPath, user.Id).ConfigureAwait(false);
             user.AvatarPhotoPath = null;
         }
         else if (!string.IsNullOrWhiteSpace(avatarSourcePath) && _assetStorageService != null)
         {
             if (!string.IsNullOrWhiteSpace(user.AvatarPhotoPath))
-                await _assetStorageService.TryDeleteProfileReferenceImageAsync(user.AvatarPhotoPath).ConfigureAwait(false);
+                await _assetStorageService.TryDeleteProfileReferenceImageAsync(user.AvatarPhotoPath, user.Id).ConfigureAwait(false);
 
             var slotName = $"user-{user.Id:N}-avatar";
             user.AvatarPhotoPath = await _assetStorageService
-                .SaveProfileReferenceImageAsync(avatarSourcePath, slotName)
+                .SaveProfileReferenceImageAsync(avatarSourcePath, slotName, user.Id)
                 .ConfigureAwait(false);
         }
         else if (avatarPhotoPath != null)

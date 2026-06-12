@@ -854,7 +854,7 @@ public class BackupServiceTests
             Directory.CreateDirectory(_renderThumbnailsDir);
         }
 
-        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName)
+        public Task<string> SaveProfileReferenceImageAsync(string sourcePath, string slotName, Guid? userId = null)
         {
             var fileName = $"{slotName}{Path.GetExtension(sourcePath)}";
             File.Copy(sourcePath, Path.Combine(_profileDir, fileName), overwrite: true);
@@ -871,7 +871,7 @@ public class BackupServiceTests
             return fileName;
         }
 
-        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName)
+        public Task RestoreProfileReferenceImageAsync(string sourcePath, string storedFileName, Guid? userId = null)
         {
             File.Copy(sourcePath, Path.Combine(_profileDir, storedFileName), overwrite: true);
             return Task.CompletedTask;
@@ -886,7 +886,7 @@ public class BackupServiceTests
             return Task.CompletedTask;
         }
 
-        public Task TryDeleteProfileReferenceImageAsync(string? imagePath)
+        public Task TryDeleteProfileReferenceImageAsync(string? imagePath, Guid? userId = null)
         {
             if (!string.IsNullOrWhiteSpace(imagePath))
             {
@@ -912,7 +912,7 @@ public class BackupServiceTests
             return Task.CompletedTask;
         }
 
-        public string GetProfileReferenceFullPath(string relativePath) => Path.Combine(_profileDir, relativePath);
+        public string GetProfileReferenceFullPath(string relativePath, Guid? userId = null) => Path.Combine(_profileDir, relativePath);
         public string GetGeneratedImageFullPath(string relativePath) => Path.Combine(_renderOriginalsDir, relativePath);
 
         public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath)

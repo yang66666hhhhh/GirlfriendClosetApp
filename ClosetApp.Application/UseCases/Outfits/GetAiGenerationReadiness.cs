@@ -38,7 +38,7 @@ public sealed class GetAiGenerationReadiness
                 reasons.Add("个人档案还缺少昵称。");
 
             if (!profile.HasAvatarPhoto && RequiresReferenceImages(preferences.Model))
-                reasons.Add("请先上传至少一张头像照。");
+                reasons.Add("请先上传至少一张效果图上半身照。");
 
             if (!profile.HasConsent)
                 reasons.Add("请先同意把参考照发送到云端生成。");
