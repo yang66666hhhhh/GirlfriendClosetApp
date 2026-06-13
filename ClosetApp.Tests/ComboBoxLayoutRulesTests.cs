@@ -74,6 +74,25 @@ public class ComboBoxLayoutRulesTests
         Assert.Contains("<ComboBox.ItemTemplate>", wardrobeHeaderXaml);
     }
 
+    [Fact]
+    public void SharedComboBoxTemplate_SeparatesPopupShadowFromRoundedContentSurface()
+    {
+        var inputsXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Controls/Inputs.xaml"));
+
+        Assert.Contains("x:Name=\"DropDownShadow\"", inputsXaml);
+        Assert.Contains("x:Name=\"DropDownBorder\"", inputsXaml);
+        Assert.Contains("x:Name=\"DropDownShadow\"", inputsXaml);
+        Assert.Contains("Effect=\"{StaticResource ComboBoxPopupLift}\"", inputsXaml);
+
+        var shadowStart = inputsXaml.IndexOf("x:Name=\"DropDownShadow\"", StringComparison.Ordinal);
+        var borderStart = inputsXaml.IndexOf("x:Name=\"DropDownBorder\"", StringComparison.Ordinal);
+
+        Assert.True(shadowStart >= 0 && borderStart > shadowStart, "共享 ComboBox 弹层应先渲染阴影层，再渲染圆角内容层。");
+
+        var borderSection = inputsXaml.Substring(borderStart, Math.Min(420, inputsXaml.Length - borderStart));
+        Assert.Contains("<ScrollViewer", borderSection);
+    }
+
     private static string ExtractFirstLine(string block)
     {
         using var reader = new StringReader(block);

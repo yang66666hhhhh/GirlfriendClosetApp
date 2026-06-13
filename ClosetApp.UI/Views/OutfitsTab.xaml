@@ -390,28 +390,14 @@
 
                             <StackPanel Grid.Column="1"
                                         Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <Border Background="{DynamicResource SurfaceCardBrush}"
-                                        BorderBrush="{DynamicResource BorderLightBrush}"
-                                        BorderThickness="1"
-                                        CornerRadius="12"
-                                        Padding="12,8"
-                                        Margin="0,0,0,12">
-                                    <StackPanel Orientation="Horizontal">
-                                        <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                Background="{StaticResource OutfitSkySurfaceBrush}"
-                                                BorderBrush="{StaticResource OutfitSkyBorderBrush}"
-                                                Padding="8,3"
-                                                Margin="0,0,10,0">
-                                            <TextBlock Text="备选搭配"
-                                                       Style="{StaticResource RecommendationStatusBadgeText}"/>
-                                        </Border>
-                                        <TextBlock Text="{Binding SecondaryWeatherRecommendationSectionBody}"
-                                                   Style="{StaticResource RecommendationActionHintText}"
-                                                   VerticalAlignment="Center"
-                                                   Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                   TextTrimming="CharacterEllipsis"/>
-                                    </StackPanel>
-                                </Border>
+                                <TextBlock x:Name="SecondaryRecommendationHintText"
+                                           Text="{Binding SecondaryWeatherRecommendationSectionBody}"
+                                           Foreground="{DynamicResource TextTertiaryBrush}"
+                                           FontSize="10.5"
+                                           FontWeight="Medium"
+                                           Margin="8,2,0,12"
+                                           Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                           TextTrimming="CharacterEllipsis"/>
 
                                 <ItemsControl ItemsSource="{Binding SecondaryWeatherRecommendations}">
                                     <ItemsControl.ItemTemplate>

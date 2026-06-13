@@ -18,6 +18,17 @@ public class OutfitsTabLayoutTests
         Assert.Contains("x:Name=\"OutfitsToolbarDivider\"", xaml);
     }
 
+    [Fact]
+    public void OutfitsTab_SecondaryRecommendationHint_UsesLightweightTextHint()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml"));
+
+        Assert.Contains("x:Name=\"SecondaryRecommendationHintText\"", xaml);
+        Assert.Contains("Text=\"{Binding SecondaryWeatherRecommendationSectionBody}\"", xaml);
+        Assert.Contains("Foreground=\"{DynamicResource TextTertiaryBrush}\"", xaml);
+        Assert.DoesNotContain("Text=\"备选搭配\"", xaml);
+    }
+
     private static string FindProjectFile(string relativePath)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

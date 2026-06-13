@@ -377,19 +377,27 @@
                                   MinWidth="{TemplateBinding ActualWidth}"
                                   MaxHeight="{TemplateBinding MaxDropDownHeight}"
                                   SnapsToDevicePixels="True">
+                                <!-- 阴影和实体面分层，避免 Popup 圆角边缘被滚动内容叠出灰边。 -->
+                                <Border x:Name="DropDownShadow"
+                                        Margin="0,2,0,0"
+                                        Background="White"
+                                        CornerRadius="14"
+                                        Opacity="0.01"
+                                        Effect="{StaticResource ComboBoxPopupLift}"/>
                                 <Border x:Name="DropDownBorder"
                                         Background="{DynamicResource SurfaceElevatedBrush}"
                                         BorderBrush="{DynamicResource BorderLightBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="14"
-                                        Effect="{StaticResource ComboBoxPopupLift}"/>
-                                <ScrollViewer Margin="0,4"
-                                              CanContentScroll="True"
-                                              VerticalScrollBarVisibility="Auto"
-                                              HorizontalScrollBarVisibility="Disabled">
-                                    <StackPanel IsItemsHost="True"
-                                                KeyboardNavigation.DirectionalNavigation="Contained"/>
-                                </ScrollViewer>
+                                        CornerRadius="14">
+                                    <ScrollViewer Margin="0,4"
+                                                  Background="Transparent"
+                                                  CanContentScroll="True"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel IsItemsHost="True"
+                                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
                             </Grid>
                         </Popup>
                     </Grid>
