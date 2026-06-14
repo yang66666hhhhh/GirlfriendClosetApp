@@ -5,20 +5,129 @@
         Icon="../Assets/Icons/app-avatar.png"
         Width="1040"
         Height="780"
-        MinWidth="900"
-        MinHeight="760"
+        MinWidth="1040"
+        MinHeight="780"
+        MaxWidth="1040"
+        MaxHeight="780"
+        ResizeMode="NoResize"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SurfacePageBrush}">
     <Window.Resources>
+        <!-- 登录窗口没有主界面级容器，输入右键菜单在这里单独收敛成统一浅色样式。 -->
+        <Style x:Key="LoginContextMenu"
+               TargetType="ContextMenu">
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Hint}"/>
+            <Setter Property="Padding" Value="6"/>
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+            <Setter Property="OverridesDefaultStyle" Value="True"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ContextMenu">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="14"
+                                Padding="{TemplateBinding Padding}"
+                                Effect="{StaticResource ComboBoxPopupLift}">
+                            <StackPanel IsItemsHost="True"
+                                        KeyboardNavigation.DirectionalNavigation="Cycle"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LoginContextMenuItem"
+               TargetType="MenuItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Hint}"/>
+            <Setter Property="FontWeight" Value="Medium"/>
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="Margin" Value="0,1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="MenuItem">
+                        <Border x:Name="MenuItemShell"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="10"
+                                Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter VerticalAlignment="Center"
+                                                  RecognizesAccessKey="True"/>
+                                <TextBlock Grid.Column="1"
+                                           Margin="16,0,0,0"
+                                           VerticalAlignment="Center"
+                                           FontSize="{DynamicResource FontSize.Meta}"
+                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                           Text="{TemplateBinding InputGestureText}"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="MenuItemShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryDarkBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="MenuItemShell" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <ContextMenu x:Key="LoginTextContextMenu"
+                     x:Shared="False"
+                     Style="{StaticResource LoginContextMenu}">
+            <MenuItem Header="剪切"
+                      InputGestureText="Ctrl+X"
+                      Style="{StaticResource LoginContextMenuItem}"
+                      Command="ApplicationCommands.Cut"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="复制"
+                      InputGestureText="Ctrl+C"
+                      Style="{StaticResource LoginContextMenuItem}"
+                      Command="ApplicationCommands.Copy"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="粘贴"
+                      InputGestureText="Ctrl+V"
+                      Style="{StaticResource LoginContextMenuItem}"
+                      Command="ApplicationCommands.Paste"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+        </ContextMenu>
+
+        <ContextMenu x:Key="LoginPasswordContextMenu"
+                     x:Shared="False"
+                     Style="{StaticResource LoginContextMenu}">
+            <MenuItem Header="粘贴"
+                      InputGestureText="Ctrl+V"
+                      Style="{StaticResource LoginContextMenuItem}"
+                      Command="ApplicationCommands.Paste"
+                      CommandTarget="{Binding PlacementTarget, RelativeSource={RelativeSource AncestorType=ContextMenu}}"/>
+            <MenuItem Header="清空"
+                      Style="{StaticResource LoginContextMenuItem}"
+                      Click="PasswordContextMenuClear_Click"/>
+        </ContextMenu>
         <Style x:Key="LoginInputLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Hint}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
 
         <Style x:Key="LoginFieldErrorText" TargetType="TextBlock">
             <Setter Property="Margin" Value="2,-6,0,12"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
             <Setter Property="LineHeight" Value="17"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Foreground" Value="{DynamicResource DangerBrush}"/>
@@ -30,7 +139,8 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
+            <Setter Property="ContextMenu" Value="{StaticResource LoginTextContextMenu}"/>
             <Setter Property="MinHeight" Value="52"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
@@ -72,7 +182,8 @@
             <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
+            <Setter Property="ContextMenu" Value="{StaticResource LoginPasswordContextMenu}"/>
             <Setter Property="Height" Value="52"/>
             <Setter Property="Padding" Value="16,0"/>
             <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
@@ -109,10 +220,113 @@
         </Style>
 
         <Style x:Key="LoginInfoText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
             <Setter Property="LineHeight" Value="22"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        </Style>
+
+        <Style x:Key="LoginInlineLinkButton"
+               TargetType="Button">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="6,3"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="Transparent"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryDarkBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.8"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="LoginRecentAccountButton"
+               TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="Padding" Value="14,12"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CardShell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="16"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    <TranslateTransform Y="0"/>
+                                </TransformGroup>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CardShell" Property="Background" Value="White"/>
+                                <Setter TargetName="CardShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter TargetName="CardShell" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                            <TranslateTransform Y="-1"/>
+                                        </TransformGroup>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="CardShell" Property="Background" Value="White"/>
+                                <Setter TargetName="CardShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="CardShell" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="0.992" ScaleY="0.992"/>
+                                            <TranslateTransform Y="0"/>
+                                        </TransformGroup>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="CardShell" Property="Opacity" Value="0.45"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="LoginSubmitButton"
@@ -124,7 +338,7 @@
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="MinHeight" Value="56"/>
             <Setter Property="Padding" Value="22,0"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
             <Setter Property="MinWidth" Value="0"/>
             <Setter Property="Effect" Value="{x:Null}"/>
             <Setter Property="Template">
@@ -186,7 +400,7 @@
                BasedOn="{StaticResource AppComboBoxBase}">
             <Setter Property="Height" Value="52"/>
             <Setter Property="Padding" Value="16,0"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
             <Setter Property="Template">
@@ -218,6 +432,7 @@
                                              HorizontalAlignment="Stretch"
                                              Background="Transparent"
                                              BorderThickness="0"
+                                             ContextMenu="{StaticResource LoginTextContextMenu}"
                                              FontSize="{TemplateBinding FontSize}"
                                              Foreground="{TemplateBinding Foreground}"
                                              Visibility="Hidden"/>
@@ -231,7 +446,7 @@
                                                   IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
                                         <TextBlock Text="⌄"
                                                    Margin="0,0,0,2"
-                                                   FontSize="16"
+                                                   FontSize="{DynamicResource FontSize.SectionTitle}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
                                                    VerticalAlignment="Center"
                                                    HorizontalAlignment="Center"/>
@@ -283,7 +498,7 @@
                TargetType="ComboBoxItem"
                BasedOn="{StaticResource AppComboBoxItemBase}">
             <Setter Property="Padding" Value="12,8"/>
-            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBoxItem">
@@ -309,31 +524,52 @@
 
     </Window.Resources>
 
-    <Grid Background="#F8FAFF">
+    <Grid Background="{DynamicResource SurfacePageBrush}">
+        <StackPanel x:Name="LoginThemeToggle"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Top"
+                    Margin="0,16,16,0"
+                    Orientation="Horizontal"
+                    Panel.ZIndex="2">
+            <Border Style="{StaticResource AppSegmentedTabShell}">
+                <UniformGrid Columns="2">
+                    <RadioButton x:Name="BtnThemeRose"
+                                 Content="柔粉"
+                                 GroupName="LoginTheme"
+                                 Style="{StaticResource AppSegmentedTabButton}"
+                                 Checked="LoginThemeRose_Checked"/>
+                    <RadioButton x:Name="BtnThemeBlue"
+                                 Content="清蓝"
+                                 GroupName="LoginTheme"
+                                 Style="{StaticResource AppSegmentedTabButton}"
+                                 Checked="LoginThemeBlue_Checked"/>
+                </UniformGrid>
+            </Border>
+        </StackPanel>
         <StackPanel x:Name="LoginWorkspaceShell"
                     Width="480"
                     HorizontalAlignment="Center"
-                    VerticalAlignment="Center"
-                    Margin="20,24,20,24">
+                    VerticalAlignment="Top"
+                    Margin="20,74,20,24">
             <StackPanel x:Name="LoginHeroSurface"
-                        Margin="0,0,0,20"
+                        Margin="0,0,0,14"
                         HorizontalAlignment="Center">
                 <Image Width="40"
                        Height="40"
                        HorizontalAlignment="Center"
                        Source="../Assets/Icons/app-avatar.png"/>
                 <TextBlock Text="我的衣橱"
-                           Margin="0,10,0,0"
+                           Margin="0,8,0,0"
                            HorizontalAlignment="Center"
-                           FontSize="28"
+                           FontSize="{DynamicResource FontSize.Hero}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
                 <TextBlock x:Name="TxtSubtitle"
                            Text="Closet Companion&#x0a;记录搭配与衣柜管理"
-                           Margin="0,6,0,0"
+                           Margin="0,4,0,0"
                            HorizontalAlignment="Center"
-                           FontSize="12"
-                           LineHeight="18"
+                           FontSize="{DynamicResource FontSize.Hint}"
+                           LineHeight="17"
                            TextAlignment="Center"
                            Foreground="{DynamicResource TextSecondaryBrush}"/>
             </StackPanel>
@@ -341,18 +577,18 @@
             <StackPanel x:Name="LoginFormSurface">
                 <TextBlock x:Name="TxtModeTitle"
                            Text="登录"
-                           FontSize="26"
+                           FontSize="{DynamicResource FontSize.PageTitle}"
                            FontWeight="SemiBold"
                            Foreground="{DynamicResource TextPrimaryBrush}"/>
                 <TextBlock x:Name="TxtModeDescription"
                            Text="使用本地账号继续"
-                           Margin="0,4,0,0"
-                           FontSize="12"
+                           Margin="0,2,0,0"
+                           FontSize="{DynamicResource FontSize.Hint}"
                            LineHeight="18"
                            TextWrapping="Wrap"
                            Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-                <StackPanel Margin="0,20,0,0"
+                <StackPanel Margin="0,16,0,0"
                             HorizontalAlignment="Stretch"
                             VerticalAlignment="Top">
 
@@ -375,19 +611,13 @@
                                  Style="{StaticResource LoginPasswordBox}"/>
                     <TextBlock x:Name="TxtSetupConfirmPasswordError"
                                Style="{StaticResource LoginFieldErrorText}"/>
-                    <TextBlock Text="快捷 PIN（可选）" Style="{StaticResource LoginInputLabel}"/>
-                    <PasswordBox x:Name="SetupPinBox"
-                                 Margin="0,6,0,0"
-                                 Style="{StaticResource LoginPasswordBox}"/>
-                    <TextBlock Text="PIN 只用于本机快捷登录，可以之后再设置。"
-                               Margin="2,6,0,0"
-                               FontSize="11"
-                               Foreground="{DynamicResource TextPlaceholderBrush}"/>
                 </StackPanel>
 
                 <StackPanel x:Name="LoginPanel">
+                    <TextBlock Text="账号"
+                               Style="{StaticResource LoginInputLabel}"/>
                     <ComboBox x:Name="RecentAccountSelector"
-                              Margin="0,0,0,12"
+                              Margin="0,6,0,12"
                               DisplayMemberPath="AccountName"
                               IsEditable="True"
                               ItemContainerStyle="{StaticResource RecentAccountComboBoxItem}"
@@ -396,46 +626,11 @@
                               SelectionChanged="RecentAccountSelector_SelectionChanged"/>
                     <TextBlock x:Name="TxtLoginAccountError"
                                Style="{StaticResource LoginFieldErrorText}"/>
-                    <Grid x:Name="CredentialModePanel"
-                          Margin="0,0,0,10">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*"/>
-                            <ColumnDefinition Width="Auto"/>
-                        </Grid.ColumnDefinitions>
-                        <TextBlock Text="登录凭证"
-                                   Style="{StaticResource LoginInputLabel}"
-                                   VerticalAlignment="Center"/>
-                        <Border x:Name="CredentialModeSurface"
-                                Grid.Column="1"
-                                Margin="10,0,0,0"
-                                HorizontalAlignment="Right"
-                                Style="{StaticResource AppSegmentedTabShell}">
-                            <UniformGrid Columns="2">
-                                <RadioButton x:Name="BtnPasswordMode"
-                                             Content="密码"
-                                             GroupName="LoginCredentialMode"
-                                             IsChecked="True"
-                                             Style="{StaticResource AppSegmentedTabButton}"
-                                             Checked="PasswordMode_Checked"/>
-                                <RadioButton x:Name="BtnPinMode"
-                                             Content="PIN"
-                                             GroupName="LoginCredentialMode"
-                                             Style="{StaticResource AppSegmentedTabButton}"
-                                             Checked="PinMode_Checked"/>
-                            </UniformGrid>
-                        </Border>
-                    </Grid>
-                    <StackPanel x:Name="PasswordCredentialPanel">
-                        <PasswordBox x:Name="LoginPasswordBox"
-                                     Margin="0,0,0,12"
-                                     Style="{StaticResource LoginPasswordBox}"/>
-                    </StackPanel>
-                    <StackPanel x:Name="PinCredentialPanel"
-                                Visibility="Collapsed">
-                        <PasswordBox x:Name="LoginPinBox"
-                                     Margin="0,0,0,12"
-                                     Style="{StaticResource LoginPasswordBox}"/>
-                    </StackPanel>
+                    <TextBlock Text="密码"
+                               Style="{StaticResource LoginInputLabel}"/>
+                    <PasswordBox x:Name="LoginPasswordBox"
+                                 Margin="0,6,0,12"
+                                 Style="{StaticResource LoginPasswordBox}"/>
                     <TextBlock x:Name="TxtLoginPasswordError"
                                Style="{StaticResource LoginFieldErrorText}"/>
                 </StackPanel>
@@ -470,12 +665,12 @@
                         <StackPanel Grid.Column="1">
                             <TextBlock x:Name="TxtErrorTitle"
                                        Text="登录失败"
-                                       FontSize="12"
+                                       FontSize="{DynamicResource FontSize.Hint}"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TextPrimaryBrush}"/>
                             <TextBlock x:Name="TxtError"
                                        Margin="0,4,0,0"
-                                       FontSize="12"
+                                       FontSize="{DynamicResource FontSize.Hint}"
                                        LineHeight="19"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
                                        TextWrapping="Wrap"/>
@@ -509,12 +704,83 @@
                 </Border>
                 </StackPanel>
 
-                <TextBlock x:Name="HeroSessionHint"
-                           Margin="0,10,0,0"
-                           HorizontalAlignment="Center"
-                           FontSize="12"
-                           Foreground="{DynamicResource TextSecondaryBrush}"
-                           Text="最近使用：admin"/>
+                <Button x:Name="HeroRecentAccountBlock"
+                        Margin="0,14,0,0"
+                        HorizontalAlignment="Stretch"
+                        Style="{StaticResource LoginRecentAccountButton}"
+                        Click="RecentAccountBlock_Click">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <Border Width="34"
+                                Height="34"
+                                VerticalAlignment="Center"
+                                Background="{DynamicResource PrimaryLightBrush}"
+                                CornerRadius="17">
+                            <TextBlock Text="近"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       FontSize="{DynamicResource FontSize.Hint}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryDarkBrush}"/>
+                        </Border>
+                        <StackPanel Grid.Column="1"
+                                    Margin="12,0,0,0">
+                            <TextBlock Text="最近使用"
+                                       FontSize="{DynamicResource FontSize.Meta}"
+                                       Foreground="{DynamicResource TextPlaceholderBrush}"/>
+                            <TextBlock x:Name="TxtRecentAccountName"
+                                       Margin="0,2,0,0"
+                                       FontSize="{DynamicResource FontSize.Label}"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
+                            <TextBlock x:Name="TxtRecentAccountLastLogin"
+                                       Margin="0,2,0,0"
+                                       FontSize="{DynamicResource FontSize.Meta}"
+                                       Foreground="{DynamicResource TextSecondaryBrush}"/>
+                        </StackPanel>
+                        <TextBlock Grid.Column="2"
+                                   Margin="12,0,0,0"
+                                   VerticalAlignment="Center"
+                                   FontSize="{DynamicResource FontSize.Meta}"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource PrimaryBrush}"
+                                   Text="填入"/>
+                    </Grid>
+                </Button>
+
+                <StackPanel x:Name="FirstTimeHintBlock"
+                            Margin="0,18,0,0"
+                            HorizontalAlignment="Center">
+                    <TextBlock HorizontalAlignment="Center"
+                               FontSize="{DynamicResource FontSize.Hint}"
+                               Foreground="{DynamicResource TextSecondaryBrush}">
+                        <Run Text="首次使用？"/>
+                        <Run Text="请先完成管理员初始化"/>
+                    </TextBlock>
+                    <Button x:Name="BtnLearnMultiUser"
+                            Content="了解本地多用户模式"
+                            HorizontalAlignment="Center"
+                            Margin="0,6,0,0"
+                            Style="{StaticResource LoginInlineLinkButton}"
+                            Click="LearnMultiUser_Click"/>
+                    <Border x:Name="MultiUserModeInfoPanel"
+                            Margin="0,6,0,0"
+                            Padding="14,12"
+                            MaxWidth="360"
+                            Background="{DynamicResource SurfaceSectionBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="14"
+                            Visibility="Collapsed">
+                        <TextBlock Style="{StaticResource LoginInfoText}"
+                                   FontSize="{DynamicResource FontSize.Meta}"
+                                   Text="这是本地多用户工作区。成员由超级管理员在登录后创建和管理，登录页本身不开放公开注册。"/>
+                    </Border>
+                </StackPanel>
             </StackPanel>
         </StackPanel>
     </Grid>

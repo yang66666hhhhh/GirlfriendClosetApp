@@ -1,4 +1,5 @@
 using ClosetApp.UI.Services;
+using System.Windows;
 
 namespace ClosetApp.UI.Components.Shared.Modal;
 
@@ -9,7 +10,9 @@ public static class ConfirmModal
         string body,
         string detail,
         string confirmText = "确认",
-        string cancelText = "取消")
+        string cancelText = "取消",
+        string confirmStyleKey = "ModalSaveButton",
+        bool showCancel = true)
     {
         var dialog = new ConfirmDialog
         {
@@ -17,7 +20,9 @@ public static class ConfirmModal
             Body = body,
             Detail = detail,
             ConfirmText = confirmText,
-            CancelText = cancelText
+            CancelText = cancelText,
+            IsCancelVisible = showCancel,
+            ConfirmButtonStyle = (Style)System.Windows.Application.Current.FindResource(confirmStyleKey)
         };
 
         var tcs = new TaskCompletionSource<bool>();
@@ -53,6 +58,23 @@ public static class ConfirmModal
         string confirmText = "删除",
         string cancelText = "取消")
     {
-        return ShowAsync(title, body, detail, confirmText, cancelText);
+        return ShowAsync(title, body, detail, confirmText, cancelText, confirmStyleKey: "ModalDangerButton");
+    }
+
+    public static Task ShowMessageAsync(
+        string title,
+        string body,
+        string detail,
+        string confirmText = "我知道了",
+        string confirmStyleKey = "ModalSaveButton")
+    {
+        return ShowAsync(
+            title,
+            body,
+            detail,
+            confirmText,
+            cancelText: string.Empty,
+            confirmStyleKey: confirmStyleKey,
+            showCancel: false);
     }
 }

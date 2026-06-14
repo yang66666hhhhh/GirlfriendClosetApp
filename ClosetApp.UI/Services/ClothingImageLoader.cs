@@ -106,12 +106,17 @@ public static class ClothingImageLoader
             return Task.FromResult(cached);
         if (HasRecentFailure(key))
             return Task.FromResult<ImageSource?>(null);
+        if (cancellationToken.IsCancellationRequested)
+            return Task.FromResult<ImageSource?>(null);
 
         var loadTask = InflightImageLoads.GetOrAdd(key, _ => Task.Run(() =>
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+                return null;
+
             var image = LoadCore(resolved, decodePixelWidth, trimLightPadding, extractForeground);
-            cancellationToken.ThrowIfCancellationRequested();
+            if (cancellationToken.IsCancellationRequested)
+                return null;
 
             if (image != null)
             {
@@ -345,6 +350,10 @@ public static class ClothingImageLoader
         try
         {
             return await loadTask.WaitAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            return null;
         }
         finally
         {

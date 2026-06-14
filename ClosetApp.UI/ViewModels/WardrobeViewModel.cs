@@ -606,8 +606,11 @@ public partial class WardrobeViewModel : ViewModelBase
         var filteredClothes = _state.FilteredClothes;
         var targetItems = filteredClothes.Take(Math.Min(_displayedClothingCount, filteredClothes.Count)).ToList();
         var version = Interlocked.Increment(ref _displayRefreshVersion);
+        var application = System.Windows.Application.Current;
+        var dispatcher = application?.Dispatcher;
 
-        if (System.Windows.Application.Current?.Dispatcher == null)
+        // 只有真实主窗口存在时才分批渲染；单元测试可能创建 Application 但没有 UI 消息循环。
+        if (dispatcher == null || !dispatcher.CheckAccess() || application?.MainWindow == null)
         {
             ReplaceDisplayedClothes(targetItems);
             return;
@@ -633,7 +636,7 @@ public partial class WardrobeViewModel : ViewModelBase
             targetItems,
             startIndex,
             version,
-            System.Windows.Application.Current.Dispatcher);
+            dispatcher);
     }
 
     private async Task ContinueDisplayedClothesRenderAsync(

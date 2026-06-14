@@ -41,7 +41,7 @@
                 <!-- Left: Title -->
                 <TextBlock Grid.Column="0"
                            Text="我的衣柜"
-                           FontSize="14"
+                           FontSize="{DynamicResource FontSize.Body}"
                            FontWeight="Bold"
                            Foreground="{DynamicResource TextPrimaryBrush}"
                            VerticalAlignment="Center"/>

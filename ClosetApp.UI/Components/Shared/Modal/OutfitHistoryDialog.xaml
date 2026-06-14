@@ -18,7 +18,7 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="MinHeight" Value="36"/>
             <Setter Property="Padding" Value="12,7"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
                     <Setter Property="Background" Value="#F6FAFF"/>
@@ -42,6 +42,23 @@
         <Style x:Key="HistoryDangerBadge" TargetType="Border" BasedOn="{StaticResource HistoryStatusBadge}">
             <Setter Property="Background" Value="{DynamicResource TagRoseSurfaceBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource TagRoseBorderBrush}"/>
+        </Style>
+
+        <Style x:Key="HistoryDangerActionButtonStyle"
+               TargetType="Button"
+               BasedOn="{StaticResource CapsuleButton}">
+            <Setter Property="Background" Value="{DynamicResource TagRoseSurfaceBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource TagRoseBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Foreground" Value="{DynamicResource TagRoseTextBrush}"/>
+            <Setter Property="MinHeight" Value="36"/>
+            <Setter Property="Padding" Value="12,7"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#FFF6F8"/>
+                </Trigger>
+            </Style.Triggers>
         </Style>
 
         <DataTemplate x:Key="RecentWornRecordTemplate">
@@ -105,14 +122,14 @@
                             </Grid.ColumnDefinitions>
                             <TextBlock Text="{Binding DateText}"
                                        Foreground="{DynamicResource PrimaryBrush}"
-                                       FontSize="10.5"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="2"
                                        Text="{Binding OutfitName}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                        FontWeight="SemiBold"
-                                       FontSize="13"
+                                       FontSize="{DynamicResource FontSize.Label}"
                                        TextTrimming="CharacterEllipsis"
                                        VerticalAlignment="Center"/>
                         </Grid>
@@ -128,18 +145,18 @@
                             <TextBlock Grid.Column="0"
                                        Text="{Binding TimeText}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                       FontSize="9.5"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
                                        FontWeight="SemiBold"
                                        VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="2"
                                        Text="·"
                                        Foreground="{DynamicResource TextPlaceholderBrush}"
-                                       FontSize="10"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
                                        VerticalAlignment="Center"/>
                             <TextBlock Grid.Column="4"
                                        Text="{Binding MetaText}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                       FontSize="10"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
                                        VerticalAlignment="Center"
                                        TextTrimming="CharacterEllipsis"/>
                         </Grid>
@@ -151,7 +168,7 @@
                                     BorderBrush="{DynamicResource BorderLightBrush}">
                                 <TextBlock Text="{Binding FocusSummaryText}"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                           FontSize="9.5"
+                                           FontSize="{DynamicResource FontSize.Tiny}"
                                            FontWeight="SemiBold"/>
                             </Border>
                             <Border Style="{StaticResource HistoryDangerBadge}"
@@ -159,14 +176,14 @@
                                     Visibility="{Binding HasSnapshotStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <TextBlock Text="{Binding SnapshotStatusText}"
                                            Foreground="{DynamicResource TagRoseTextBrush}"
-                                           FontSize="9.5"
+                                           FontSize="{DynamicResource FontSize.Tiny}"
                                            FontWeight="SemiBold"/>
                             </Border>
                             <Border Style="{StaticResource HistoryWarningBadge}"
                                     Visibility="{Binding HasPreviewAvailabilityHint, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <TextBlock Text="{Binding PreviewAvailabilityText}"
                                            Foreground="{DynamicResource TagAmberTextBrush}"
-                                           FontSize="9.5"
+                                           FontSize="{DynamicResource FontSize.Tiny}"
                                            FontWeight="SemiBold"/>
                             </Border>
                         </WrapPanel>
@@ -183,7 +200,7 @@
                             Visibility="{Binding IsSelected, Converter={StaticResource BooleanToVisibilityConverter}}">
                         <TextBlock Text="预览中"
                                    Foreground="{DynamicResource PrimaryBrush}"
-                                   FontSize="9"
+                                   FontSize="{DynamicResource FontSize.Tiny}"
                                    FontWeight="SemiBold"/>
                     </Border>
                 </Grid>
@@ -205,13 +222,28 @@
 
                     <Border Grid.Row="0" Style="{StaticResource ModalHeaderHost}" Padding="28,22">
                         <Grid>
-                            <StackPanel>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0">
                                 <TextBlock Text="穿着记录"
                                            Style="{StaticResource ModalHeaderTitle}"/>
                                 <TextBlock Text="最近穿着和月历放在一起，回看今天之前都更顺手。"
                                            Style="{StaticResource ModalHeaderSubtitle}"/>
                             </StackPanel>
-                            <Button HorizontalAlignment="Right"
+                            <Button x:Name="ClearHistoryButton"
+                                    Grid.Column="1"
+                                    Style="{StaticResource HistoryDangerActionButtonStyle}"
+                                    VerticalAlignment="Center"
+                                    Content="清空记录"
+                                    ToolTip="删除当前账号的全部穿着记录"
+                                    Visibility="{Binding HasAnyWornRecords, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                    Click="ClearHistoryButton_Click"/>
+                            <Button Grid.Column="3"
+                                    HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
                                     Content="✕"
                                     Style="{StaticResource ModalCloseButton}"
@@ -232,12 +264,12 @@
                                             VerticalAlignment="Center">
                                     <TextBlock Text="最近穿着"
                                                Foreground="{DynamicResource TextPrimaryBrush}"
-                                               FontSize="14"
+                                               FontSize="{DynamicResource FontSize.Body}"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                     <TextBlock x:Name="RecentSectionSummaryText"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
-                                               FontSize="11.5"
+                                               FontSize="{DynamicResource FontSize.Meta}"
                                                Margin="10,1,0,0"
                                                VerticalAlignment="Center"
                                                TextTrimming="CharacterEllipsis"/>
@@ -261,7 +293,7 @@
                                             </Viewbox>
                                             <TextBlock Text="最近穿着"
                                                        Margin="6,0,0,0"
-                                                       FontSize="11"
+                                                       FontSize="{DynamicResource FontSize.Meta}"
                                                        FontWeight="SemiBold"
                                                        VerticalAlignment="Center"/>
                                         </StackPanel>
@@ -290,11 +322,11 @@
                                     <StackPanel Grid.Column="0">
                                         <TextBlock Text="穿搭日历"
                                                    Foreground="{DynamicResource TextPrimaryBrush}"
-                                                   FontSize="16"
+                                                   FontSize="{DynamicResource FontSize.SectionTitle}"
                                                    FontWeight="SemiBold"/>
                                         <TextBlock Text="{Binding CalendarSummaryText}"
                                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   FontSize="12"
+                                                   FontSize="{DynamicResource FontSize.Hint}"
                                                    Margin="0,6,0,0"/>
                                     </StackPanel>
                                     <StackPanel Grid.Column="1"
@@ -379,7 +411,7 @@
                                                         <TextBlock Text="{Binding DayText}"
                                                                    Foreground="{DynamicResource TextPrimaryBrush}"
                                                                    FontWeight="SemiBold"
-                                                                   FontSize="11">
+                                                                   FontSize="{DynamicResource FontSize.Meta}">
                                                             <TextBlock.Style>
                                                                 <Style TargetType="TextBlock">
                                                                     <Style.Triggers>
@@ -399,7 +431,7 @@
                                                                 Visibility="{Binding HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                             <TextBlock Text="{Binding DensityText}"
                                                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                       FontSize="8.5"
+                                                                       FontSize="{DynamicResource FontSize.Tiny}"
                                                                        FontWeight="SemiBold"/>
                                                         </Border>
                                                     </Grid>
@@ -408,16 +440,16 @@
                                                                 Margin="0,6,0,0">
                                                         <TextBlock Text="{Binding CountText}"
                                                                    Foreground="{DynamicResource PrimaryBrush}"
-                                                                   FontSize="10"
+                                                                   FontSize="{DynamicResource FontSize.Tiny}"
                                                                    FontWeight="SemiBold"/>
                                                         <TextBlock Text="{Binding FirstOutfitName}"
                                                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                   FontSize="9.5"
+                                                                   FontSize="{DynamicResource FontSize.Tiny}"
                                                                    TextTrimming="CharacterEllipsis"
                                                                    Margin="0,3,0,0"/>
                                                         <TextBlock Text="{Binding DensitySummaryText}"
                                                                    Foreground="{DynamicResource TextTertiaryBrush}"
-                                                                   FontSize="8.5"
+                                                                   FontSize="{DynamicResource FontSize.Tiny}"
                                                                    Margin="0,2,0,0"
                                                                    TextTrimming="CharacterEllipsis"
                                                                    Visibility="{Binding HasRecords, Converter={StaticResource BooleanToVisibilityConverter}}"/>
@@ -525,7 +557,7 @@
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{Binding DateText}"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                           FontSize="10"
+                                           FontSize="{DynamicResource FontSize.Tiny}"
                                            FontWeight="SemiBold"
                                            VerticalAlignment="Center"/>
                                 <Border Grid.Column="1"
@@ -536,24 +568,24 @@
                                         CornerRadius="8">
                                     <TextBlock Text="当前预览"
                                                Foreground="{DynamicResource PrimaryBrush}"
-                                               FontSize="8.5"
+                                               FontSize="{DynamicResource FontSize.Tiny}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                             </Grid>
                             <TextBlock Text="{Binding OutfitName}"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
-                                       FontSize="13"
+                                       FontSize="{DynamicResource FontSize.Label}"
                                        FontWeight="SemiBold"
                                        Margin="0,7,0,0"
                                        TextTrimming="CharacterEllipsis"/>
                             <TextBlock Text="{Binding FocusSummaryText}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                       FontSize="10"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
                                        Margin="0,4,0,0"
                                        TextWrapping="Wrap"/>
                             <TextBlock Text="{Binding FocusNoteText}"
                                        Foreground="{DynamicResource TextSecondaryBrush}"
-                                       FontSize="10"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
                                        Margin="0,6,0,0"
                                        TextWrapping="Wrap"
                                        MaxHeight="44"/>
@@ -563,7 +595,7 @@
                                     BorderBrush="{DynamicResource BorderLightBrush}">
                                 <TextBlock Text="{Binding FocusSyncText}"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                           FontSize="9.5"
+                                           FontSize="{DynamicResource FontSize.Tiny}"
                                            FontWeight="SemiBold"/>
                             </Border>
                             <WrapPanel Margin="0,8,0,0">
@@ -572,7 +604,7 @@
                                         Visibility="{Binding HasSnapshotStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <TextBlock Text="{Binding SnapshotStatusText}"
                                                Foreground="{DynamicResource TagRoseTextBrush}"
-                                               FontSize="9.5"
+                                               FontSize="{DynamicResource FontSize.Tiny}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                                 <Border Style="{StaticResource HistoryWarningBadge}"
@@ -580,7 +612,7 @@
                                         Visibility="{Binding HasPreviewAvailabilityHint, Converter={StaticResource BooleanToVisibilityConverter}}">
                                     <TextBlock Text="{Binding PreviewAvailabilityText}"
                                                Foreground="{DynamicResource TagAmberTextBrush}"
-                                               FontSize="9.5"
+                                               FontSize="{DynamicResource FontSize.Tiny}"
                                                FontWeight="SemiBold"/>
                                 </Border>
                             </WrapPanel>
@@ -636,7 +668,7 @@
                                                                 Visibility="{Binding HasPreviewClothes, Converter={StaticResource BooleanToVisibilityConverter}}"/>
                                     <TextBlock Text="这条记录暂时没有可预览的单品"
                                                Foreground="{DynamicResource TextSecondaryBrush}"
-                                               FontSize="9.5"
+                                               FontSize="{DynamicResource FontSize.Tiny}"
                                                TextAlignment="Center"
                                                TextWrapping="Wrap"
                                                MaxWidth="130"

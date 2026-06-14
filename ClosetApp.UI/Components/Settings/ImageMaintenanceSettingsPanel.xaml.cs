@@ -56,13 +56,13 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
 
     private async void ClearThumbnails_Click(object sender, RoutedEventArgs e)
     {
-        var result = MessageBox.Show(
-            "确定清理图片缓存吗？原始图片不会被删除。",
+        var confirmed = await ConfirmModal.ShowAsync(
             "清理缓存",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Question);
+            "原始图片不会被删除。",
+            "这会清理当前生成的显示图和缩略图缓存，后续浏览时会按需重新生成。确定继续吗？",
+            confirmText: "清理缓存");
 
-        if (result != MessageBoxResult.OK)
+        if (!confirmed)
             return;
 
         if (_isBusy)
@@ -135,13 +135,13 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
             return;
         }
 
-        var confirm = MessageBox.Show(
-            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FileSizeFormatter.Format(analysis.TotalBytes)}。\n\n清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物或穿着历史引用的图片。确定继续吗？",
+        var confirmed = await ConfirmModal.ShowAsync(
             "清理孤儿原图",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning);
+            $"发现 {analysis.OrphanCount} 张数据库未引用的原图，占用 {FileSizeFormatter.Format(analysis.TotalBytes)}。",
+            "清理会同时删除这些原图对应的主视觉和小预览缓存，但不会删除任何仍被衣物或穿着历史引用的图片。确定继续吗？",
+            confirmText: "清理原图");
 
-        if (confirm != MessageBoxResult.OK)
+        if (!confirmed)
             return;
 
         try
@@ -224,14 +224,13 @@ public partial class ImageMaintenanceSettingsPanel : UserControl
             var moreText = result.MissingRecordItems.Count > previewItems.Count
                 ? $"\n...还有 {result.MissingRecordItems.Count - previewItems.Count} 条记录"
                 : string.Empty;
-            var confirm = MessageBox.Show(
-                $"{result.Summary}\n\n{string.Join("\n", previewItems)}{moreText}\n\n是否打开最近一条缺图记录所在日期？",
-                "穿着历史图片",
-                MessageBoxButton.OKCancel,
-                MessageBoxImage.Warning);
-
             ToastService.Instance.ShowInfo("发现历史缺图", result.Summary);
-            if (confirm == MessageBoxResult.OK)
+            var confirmed = await ConfirmModal.ShowAsync(
+                "穿着历史图片",
+                result.Summary,
+                $"{string.Join("\n", previewItems)}{moreText}\n\n是否打开最近一条缺图记录所在日期？",
+                confirmText: "打开记录");
+            if (confirmed)
                 await OpenWornRecordDayAsync(result.MissingRecordItems[0].WornDate);
         }
         catch (Exception ex)

@@ -1,5 +1,6 @@
 using System.IO;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
 using ClosetApp.Infrastructure.Services;
@@ -9,13 +10,15 @@ namespace ClosetApp.UI.Services;
 public sealed class ThemePreferences
 {
     public AppThemeKind Theme { get; set; } = AppThemeKind.Rose;
+    public AppFontSizeLevel FontSizeLevel { get; set; } = AppFontSizeLevel.Standard;
 }
 
 public sealed class ThemePreferencesService
 {
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        WriteIndented = true
+        WriteIndented = true,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     private static readonly SemaphoreSlim Gate = new(1, 1);
@@ -82,7 +85,10 @@ public sealed class ThemePreferencesService
         {
             Theme = Enum.IsDefined(typeof(AppThemeKind), preferences.Theme)
                 ? preferences.Theme
-                : AppThemeKind.Rose
+                : AppThemeKind.Rose,
+            FontSizeLevel = Enum.IsDefined(typeof(AppFontSizeLevel), preferences.FontSizeLevel)
+                ? preferences.FontSizeLevel
+                : AppFontSizeLevel.Standard
         };
     }
 }

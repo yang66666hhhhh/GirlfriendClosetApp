@@ -53,6 +53,17 @@ public partial class OutfitsViewModel
         NotifyStateChanged();
     }
 
+    public async Task<int> ClearWornHistoryAsync()
+    {
+        var clearedCount = await _outfitService.ClearWornHistoryAsync();
+        await LoadOutfitsAsync(refreshWeather: true);
+        await RefreshDerivedStateAsync();
+        await RefreshCalendarAsync();
+        NotifyStateChanged();
+        await EnsureCalendarLoadedAsync();
+        return clearedCount;
+    }
+
     private async Task RefreshDerivedStateAsync()
     {
         var recentRecords = await _outfitService.GetRecentWornRecordsAsync(6);

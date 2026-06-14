@@ -19,6 +19,7 @@ public interface IOutfitService
     Task<WornRecordImageHealthDto> AnalyzeWornRecordImageHealthAsync();
     Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath);
     Task DeleteWornRecordAsync(Guid recordId);
+    Task<int> ClearWornHistoryAsync();
     Task<bool> ToggleFavoriteAsync(Guid outfitId);
     Task<IReadOnlyList<OutfitGeneratedImage>> GetGeneratedImagesAsync(Guid outfitId);
 }

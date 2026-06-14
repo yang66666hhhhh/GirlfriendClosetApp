@@ -43,6 +43,15 @@ public partial class SettingsViewModel : ObservableObject
     private string _themeDescription = "柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。";
 
     [ObservableProperty]
+    private AppFontSizeLevel _fontSizeLevel = AppFontSizeLevel.Standard;
+
+    [ObservableProperty]
+    private string _fontSizeSummary = "当前字体：标准";
+
+    [ObservableProperty]
+    private string _fontSizeDetail = "标准字号适合大多数桌面窗口。";
+
+    [ObservableProperty]
     private OutfitCardDisplayMode _defaultOutfitCardDisplayMode = OutfitCardDisplayMode.OutfitFirst;
 
     [ObservableProperty]
@@ -230,6 +239,7 @@ public partial class SettingsViewModel : ObservableObject
         await LoadOutfitDisplayPreferencesAsync();
         await RefreshAiGenerationSettingsAsync();
         CurrentTheme = _themeService.CurrentTheme;
+        ApplyFontSizeLevel(_themeService.CurrentFontSizeLevel);
         UpdateThemeText();
     }
 
@@ -308,6 +318,16 @@ public partial class SettingsViewModel : ObservableObject
         UpdateThemeText();
     }
 
+    public async Task SaveFontSizeLevelAsync(AppFontSizeLevel level)
+    {
+        if (FontSizeLevel == level)
+            return;
+
+        await _themeService.ApplyFontSizeAsync(level);
+        ApplyFontSizeLevel(level);
+        ToastService.Instance.ShowSuccess("已调整字体大小", FontSizeSummary);
+    }
+
     private void UpdateThemeText()
     {
         var isRose = CurrentTheme == AppThemeKind.Rose;
@@ -316,6 +336,29 @@ public partial class SettingsViewModel : ObservableObject
             ? "柔粉更柔和、沉稳，能保留生活感，也不会抢照片和衣物本身的视觉重点。"
             : "清蓝更克制、清爽，页面会更冷静，也更偏中性工具感。";
     }
+
+    private void ApplyFontSizeLevel(AppFontSizeLevel level)
+    {
+        FontSizeLevel = level;
+        FontSizeSummary = $"当前字体：{GetFontSizeLevelLabel(level)}";
+        FontSizeDetail = level switch
+        {
+            AppFontSizeLevel.Small => "更紧凑，适合希望一屏看到更多内容的窗口。",
+            AppFontSizeLevel.Comfortable => "比标准略大，阅读更轻松，布局仍然克制。",
+            AppFontSizeLevel.Large => "明显放大，适合长时间浏览衣柜和设置。",
+            AppFontSizeLevel.ExtraLarge => "最大字号，优先保证可读性。",
+            _ => "标准字号适合大多数桌面窗口。"
+        };
+    }
+
+    public static string GetFontSizeLevelLabel(AppFontSizeLevel level) => level switch
+    {
+        AppFontSizeLevel.Small => "小",
+        AppFontSizeLevel.Comfortable => "舒适",
+        AppFontSizeLevel.Large => "大",
+        AppFontSizeLevel.ExtraLarge => "特大",
+        _ => "标准"
+    };
 
     partial void OnWeatherCityChanged(string value)
     {

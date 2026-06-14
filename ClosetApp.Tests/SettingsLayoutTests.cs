@@ -12,11 +12,14 @@ public class SettingsLayoutTests
 
         Assert.Contains("x:Name=\"SettingsOverviewHero\"", xaml);
         Assert.Contains("x:Name=\"SettingsOverviewPrimaryGrid\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewMetricsGrid\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewSummaryGrid\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewMetricMatrix\"", xaml);
         Assert.Contains("x:Name=\"SettingsWorkbenchColumns\"", xaml);
         Assert.Contains("x:Name=\"SettingsDailyWorkbench\"", xaml);
         Assert.Contains("x:Name=\"SettingsMaintenanceWorkbench\"", xaml);
         Assert.Contains("Text=\"设置概览\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewCompactSummaryGrid\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewMetricsGrid\"", xaml);
         Assert.DoesNotContain("设置工作台", xaml);
         Assert.DoesNotContain("当前状态", xaml);
         Assert.DoesNotContain("常用偏好、图片资产和备份维护都集中在这里。", xaml);
@@ -50,7 +53,16 @@ public class SettingsLayoutTests
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AppearanceSettingsPanel.xaml"));
 
         Assert.Contains("x:Name=\"AppearanceWorkbenchHeader\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceLeftRail\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceRightRail\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceThemeSelectionCard\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceControlsStack\"", xaml);
+        Assert.Contains("x:Name=\"AppearancePreviewSummaryCard\"", xaml);
+        Assert.Contains("x:Name=\"AppearancePreviewSummaryHeader\"", xaml);
+        Assert.Contains("x:Name=\"AppearancePreviewSummarySurface\"", xaml);
         Assert.Contains("x:Name=\"AppearanceDisplayModeCard\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceFontSizeCard\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceFontSizeHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceAppInfoCard\"", xaml);
         Assert.Contains("x:Name=\"AppearancePreferenceHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceInfoHeader\"", xaml);
@@ -58,12 +70,42 @@ public class SettingsLayoutTests
         Assert.Contains("VerticalAlignment=\"Top\"", xaml);
         Assert.Contains("AppSegmentedTabShell", xaml);
         Assert.Contains("Text=\"外观\"", xaml);
+        Assert.Contains("Text=\"字体大小\"", xaml);
+        Assert.Contains("x:Name=\"RadioFontSmall\"", xaml);
+        Assert.Contains("x:Name=\"RadioFontStandard\"", xaml);
+        Assert.Contains("x:Name=\"RadioFontComfortable\"", xaml);
+        Assert.Contains("x:Name=\"RadioFontLarge\"", xaml);
+        Assert.Contains("x:Name=\"RadioFontExtraLarge\"", xaml);
+        Assert.Contains("FontSizeLevel_Checked", xaml);
         Assert.DoesNotContain("x:Name=\"AppearancePreferenceSummaryCard\"", xaml);
         Assert.DoesNotContain("选择整体配色，并设置搭配卡片默认展示方式。", xaml);
         Assert.DoesNotContain("设置列表默认更偏向搭配预览，还是效果图主视觉。", xaml);
         Assert.DoesNotContain("当前界面主题与运行环境摘要。", xaml);
         Assert.DoesNotContain("SettingsEyebrowBadge", xaml);
         Assert.DoesNotContain("SettingsEyebrowBadgeText", xaml);
+    }
+
+    [Fact]
+    public void AppearanceSettingsPanel_DoesNotPersistProgrammaticSelectionRefresh()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AppearanceSettingsPanel.xaml.cs"));
+
+        Assert.Contains("_isApplyingSelection", code);
+        Assert.Contains("ApplySelectionSilently", code);
+        Assert.Contains("if (_isApplyingSelection)", code);
+        Assert.Contains("RadioOutfitFirst.IsChecked = mode == OutfitCardDisplayMode.OutfitFirst;", code);
+        Assert.Contains("RadioFontLarge.IsChecked = level == AppFontSizeLevel.Large;", code);
+    }
+
+    [Fact]
+    public void AppearanceSettingsPanel_UsesParentDataContextForRefreshState()
+    {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AppearanceSettingsPanel.xaml.cs"));
+
+        Assert.DoesNotContain("App.Services.GetRequiredService<SettingsViewModel>()", code);
+        Assert.Contains("if (DataContext is SettingsViewModel viewModel)", code);
+        Assert.Contains("ApplyOutfitCardDisplaySelection(viewModel.DefaultOutfitCardDisplayMode);", code);
+        Assert.Contains("ApplyFontSizeSelection(viewModel.FontSizeLevel);", code);
     }
 
     [Fact]
@@ -152,6 +194,7 @@ public class SettingsLayoutTests
         var motionXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Tokens/Motion.xaml"));
         var buttonsXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Controls/Buttons.xaml"));
         var inputsXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Controls/Inputs.xaml"));
+        var typographyXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Tokens/Typography.xaml"));
         var weatherXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/WeatherPreferencesSettingsPanel.xaml"));
         var aiXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/AiImageGenerationSettingsPanel.xaml"));
         var imageXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/ImageMaintenanceSettingsPanel.xaml"));
@@ -172,6 +215,25 @@ public class SettingsLayoutTests
         Assert.Contains("x:Key=\"SettingsFieldInput\"", settingsXaml);
         Assert.Contains("x:Key=\"SettingsFieldComboBox\"", settingsXaml);
         Assert.Contains("x:Key=\"SettingsEditableComboBox\"", settingsXaml);
+        Assert.Contains("x:Key=\"FontSize.PageTitle\"", typographyXaml);
+        Assert.Contains("x:Key=\"FontSize.SectionTitle\"", typographyXaml);
+        Assert.Contains("x:Key=\"FontSize.Body\"", typographyXaml);
+        Assert.Contains("x:Key=\"FontSize.Tiny\"", typographyXaml);
+        Assert.Contains("Value=\"{DynamicResource FontSize.Label}\"", settingsXaml);
+        Assert.Contains("Value=\"{DynamicResource Button.FontSize.Medium}\"", buttonsXaml);
+        Assert.Contains("Value=\"{DynamicResource FontSize.Input}\"", inputsXaml);
+        Assert.Contains("Value=\"{DynamicResource FontSize.Hint}\"", inputsXaml);
+        Assert.Contains("Value=\"{DynamicResource FontSize.Meta}\"", inputsXaml);
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Body}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Hero}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Body}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Hero}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Body}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/ClothesTab.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Body}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/TagsTab.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Hint}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/SearchBox.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Meta}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/ThemeCard.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.PageTitle}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Shared/Modal/ConfirmDialog.xaml")));
+        Assert.Contains("FontSize=\"{DynamicResource FontSize.Hint}\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/PremiumClothingCard.xaml")));
         Assert.Contains("Text=\"{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"", settingsXaml);
         Assert.Contains("Cursor=\"IBeam\"", settingsXaml);
         Assert.Contains("Grid.Column=\"1\"", settingsXaml);

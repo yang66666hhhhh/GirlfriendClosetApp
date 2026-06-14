@@ -8,6 +8,7 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Logic.Components.Clothing;
 using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
@@ -243,7 +244,7 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
         };
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private async void Save_Click(object sender, RoutedEventArgs e)
     {
         try
         {
@@ -252,7 +253,11 @@ public partial class BatchClothingImportPanel : UserControl, IEditorPanel<BatchC
 
             if (_previewItems.Count == 0)
             {
-                MessageBox.Show("先选择要导入的图片。", "批量导入", MessageBoxButton.OK, MessageBoxImage.Information);
+                await ConfirmModal.ShowMessageAsync(
+                    "还没有选择图片",
+                    "先把要导入的衣服图片选进来。",
+                    "可以点击“选择图片”，也可以直接把图片拖进这个面板里。",
+                    confirmText: "去选图片");
                 return;
             }
 

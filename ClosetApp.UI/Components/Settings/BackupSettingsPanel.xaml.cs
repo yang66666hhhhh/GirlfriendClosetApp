@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Infrastructure;
+using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -82,7 +83,7 @@ public partial class BackupSettingsPanel : UserControl
             return;
 
         var validation = await _viewModel.ValidateBackupExportAsync(dialog.FileName);
-        if (!ConfirmExport(validation))
+        if (!await ConfirmExportAsync(validation))
             return;
 
         try
@@ -108,7 +109,7 @@ public partial class BackupSettingsPanel : UserControl
 
         var filePath = _viewModel.BuildDefaultBackupPath();
         var validation = await _viewModel.ValidateBackupExportAsync(filePath);
-        if (!ConfirmExport(validation))
+        if (!await ConfirmExportAsync(validation))
             return;
 
         try
@@ -142,13 +143,13 @@ public partial class BackupSettingsPanel : UserControl
         if (dialog.ShowDialog() != true)
             return;
 
-        var confirm = MessageBox.Show(
-            "导入会覆盖当前数据库中的衣服、搭配、标签和穿着记录。ZIP 备份包会同时恢复图片，旧版 JSON 只恢复核心数据，确定继续吗？",
+        var confirmed = await ConfirmModal.ShowAsync(
             "确认导入备份",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning);
+            "导入会覆盖当前数据库中的核心数据。",
+            "ZIP 备份包会同时恢复图片，旧版 JSON 只恢复衣服、搭配、标签和穿着记录。确定继续吗？",
+            confirmText: "继续导入");
 
-        if (confirm != MessageBoxResult.OK)
+        if (!confirmed)
             return;
 
         try
@@ -195,13 +196,13 @@ public partial class BackupSettingsPanel : UserControl
         if (_isBusy)
             return;
 
-        var confirm = MessageBox.Show(
-            "确定清空备份历史吗？这不会删除已经导出的备份文件。",
+        var confirmed = await ConfirmModal.ShowAsync(
             "清空备份历史",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning);
+            "这不会删除已经导出的备份文件。",
+            "只会清空应用内显示的备份历史记录，确定继续吗？",
+            confirmText: "清空历史");
 
-        if (confirm != MessageBoxResult.OK)
+        if (!confirmed)
             return;
 
         try
@@ -243,17 +244,17 @@ public partial class BackupSettingsPanel : UserControl
             OpenPath(directory);
     }
 
-    private static bool ConfirmExport(BackupValidationResult validation)
+    private static Task<bool> ConfirmExportAsync(BackupValidationResult validation)
     {
         if (!validation.HasWarnings)
-            return true;
+            return Task.FromResult(true);
 
         var message = "导出前提醒：\n\n" + string.Join("\n", validation.Warnings) + "\n\n确定继续导出吗？";
-        return MessageBox.Show(
-            message,
+        return ConfirmModal.ShowAsync(
             "确认导出备份",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning) == MessageBoxResult.OK;
+            "导出前有几条提醒需要确认。",
+            message,
+            confirmText: "继续导出");
     }
 
     private static string BuildImportMessage(BackupImportResult result)

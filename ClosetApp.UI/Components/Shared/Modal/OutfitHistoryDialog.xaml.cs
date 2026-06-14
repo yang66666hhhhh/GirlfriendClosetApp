@@ -32,6 +32,29 @@ public partial class OutfitHistoryDialog : UserControl
         ModalService.Instance.Hide();
     }
 
+    private async void ClearHistoryButton_Click(object sender, RoutedEventArgs e)
+    {
+        var confirmed = await ConfirmModal.ShowAsync(
+            "清空穿着记录",
+            "这个操作会删除当前账号的全部穿着历史。",
+            "月历回顾、最近穿着和相关统计会一起清空，且无法恢复。",
+            confirmText: "清空记录",
+            cancelText: "取消",
+            confirmStyleKey: "ModalDangerButton");
+        if (!confirmed)
+            return;
+
+        var clearedCount = await _viewModel.ClearWornHistoryAsync();
+        RecentWornPopup.IsOpen = false;
+        CloseDayDetailsOverlay();
+        SyncCurrentPreview(_viewModel.SelectedRecentWornRecord);
+
+        if (clearedCount > 0)
+        {
+            ToastService.Instance.ShowSuccess("已清空穿着记录", $"共删除 {clearedCount} 条历史记录。");
+        }
+    }
+
     private async void EmptyRecordToday_Click(object sender, RoutedEventArgs e)
     {
         await _viewModel.FocusHistoryDateAsync(DateTime.Today);

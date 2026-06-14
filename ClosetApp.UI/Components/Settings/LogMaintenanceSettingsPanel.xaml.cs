@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
+using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,13 +70,13 @@ public partial class LogMaintenanceSettingsPanel : UserControl
         if (_isBusy)
             return;
 
-        var result = MessageBox.Show(
-            "确定清理历史日志吗？今天正在写入的日志会保留。",
+        var confirmed = await ConfirmModal.ShowAsync(
             "清理日志",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Question);
+            "今天正在写入的日志会保留。",
+            "只会清理历史日志文件，方便释放空间并保持日志目录整洁。确定继续吗？",
+            confirmText: "清理日志");
 
-        if (result != MessageBoxResult.OK)
+        if (!confirmed)
             return;
 
         try

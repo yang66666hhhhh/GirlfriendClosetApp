@@ -260,6 +260,31 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task InitializeAsync_LoadsCurrentFontSizeLevel()
+    {
+        var themeService = CreateThemeService(AppFontSizeLevel.Comfortable);
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), themeService: themeService);
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal(AppFontSizeLevel.Comfortable, viewModel.FontSizeLevel);
+        Assert.Equal("当前字体：舒适", viewModel.FontSizeSummary);
+    }
+
+    [Fact]
+    public async Task SaveFontSizeLevelAsync_AppliesAndSummarizesLevel()
+    {
+        var themeService = CreateThemeService(AppFontSizeLevel.Standard);
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), themeService: themeService);
+
+        await viewModel.SaveFontSizeLevelAsync(AppFontSizeLevel.Large);
+
+        Assert.Equal(AppFontSizeLevel.Large, themeService.CurrentFontSizeLevel);
+        Assert.Equal(AppFontSizeLevel.Large, viewModel.FontSizeLevel);
+        Assert.Equal("当前字体：大", viewModel.FontSizeSummary);
+    }
+
+    [Fact]
     public void WeatherCityChanged_WithInput_ShowsPendingWeatherPrompt()
     {
         var viewModel = CreateViewModel(new FakeImageMaintenanceService());
@@ -347,7 +372,8 @@ public class SettingsViewModelTests
         FakeRecommendationPreferencesService? recommendationPreferences = null,
         OutfitDisplayPreferencesService? outfitDisplayPreferences = null,
         FakeWeatherPreferencesService? weatherPreferences = null,
-        FakeWeatherService? weatherService = null)
+        FakeWeatherService? weatherService = null,
+        ThemeService? themeService = null)
     {
         return new SettingsViewModel(
             backup ?? new FakeBackupService(),
@@ -355,8 +381,22 @@ public class SettingsViewModelTests
             weatherService ?? new FakeWeatherService(),
             weatherPreferences ?? new FakeWeatherPreferencesService(),
             recommendationPreferences ?? new FakeRecommendationPreferencesService(),
-            new ThemeService(new ThemePreferencesService(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json"))),
+            themeService ?? CreateThemeService(AppFontSizeLevel.Standard),
             outfitDisplayPreferences ?? CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst));
+    }
+
+    private static ThemeService CreateThemeService(AppFontSizeLevel fontSizeLevel)
+    {
+        var filePath = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json");
+        var preferencesService = new ThemePreferencesService(filePath);
+        preferencesService.SaveAsync(new ThemePreferences
+        {
+            Theme = AppThemeKind.Rose,
+            FontSizeLevel = fontSizeLevel
+        }).GetAwaiter().GetResult();
+        var themeService = new ThemeService(preferencesService);
+        themeService.InitializeAsync().GetAwaiter().GetResult();
+        return themeService;
     }
 
     private static BackupValidationResult CreateValidation(IReadOnlyList<string>? warnings = null)

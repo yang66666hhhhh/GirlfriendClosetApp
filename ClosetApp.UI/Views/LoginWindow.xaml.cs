@@ -15,19 +15,21 @@ public partial class LoginWindow : Window
     private readonly AppStartupCoordinator _startupCoordinator;
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
+    private readonly ThemeService _themeService;
     private bool _isSetupMode;
     private bool _isSubmitting;
     private bool _openedMainWindow;
     private LocalUser? _superAdmin;
     private IReadOnlyList<LocalUser> _users = [];
     private bool _isSyncingRecentAccountSelection;
-    private LoginCredentialMode SelectedCredentialMode { get; set; } = LoginCredentialMode.Password;
+
 
     public LoginWindow()
     {
         _startupCoordinator = App.Services.GetRequiredService<AppStartupCoordinator>();
         _localUserService = App.Services.GetRequiredService<ILocalUserService>();
         _localAuthService = App.Services.GetRequiredService<ILocalAuthService>();
+        _themeService = App.Services.GetRequiredService<ThemeService>();
         InitializeComponent();
         HookInputErrorClearing();
         RecentAccountSelector.Loaded += RecentAccountSelector_Loaded;
@@ -41,6 +43,7 @@ public partial class LoginWindow : Window
         try
         {
             ClearError();
+            ApplyThemeToggleSelection(_themeService.CurrentTheme);
             await _startupCoordinator.WaitUntilReadyAsync();
             await RefreshUsersAsync();
         }
@@ -133,7 +136,6 @@ public partial class LoginWindow : Window
         if (!string.Equals(_superAdmin.AccountName, SetupAccountBox.Text.Trim(), StringComparison.Ordinal))
             await _localUserService.UpdateAsync(_superAdmin.Id, _superAdmin.DisplayName, accountName: SetupAccountBox.Text);
         await _localAuthService.SetPasswordAsync(_superAdmin.Id, SetupPasswordBox.Password);
-        await _localAuthService.SetPinAsync(_superAdmin.Id, SetupPinBox.Password);
         var result = await _localAuthService.LoginAsync(SetupAccountBox.Text, SetupPasswordBox.Password, LocalCredentialKind.Password);
         if (!result.Success)
             throw new InvalidOperationException(result.ErrorMessage ?? "登录失败。");
@@ -143,11 +145,7 @@ public partial class LoginWindow : Window
 
     private async Task LoginAsync()
     {
-        var usePin = SelectedCredentialMode == LoginCredentialMode.Pin;
-        var secret = usePin ? LoginPinBox.Password : LoginPasswordBox.Password;
-        var kind = usePin ? LocalCredentialKind.Pin : LocalCredentialKind.Password;
-
-        var result = await _localAuthService.LoginAsync(GetLoginAccountName(), secret, kind);
+        var result = await _localAuthService.LoginAsync(GetLoginAccountName(), LoginPasswordBox.Password, LocalCredentialKind.Password);
         if (!result.Success)
             throw new InvalidOperationException(result.ErrorMessage ?? "登录失败。");
 
@@ -170,9 +168,18 @@ public partial class LoginWindow : Window
             SelectRecentAccount(null);
         }
 
+        if (state.HasRecentAccounts && state.RecentAccounts[0] is var mostRecent)
+        {
+            TxtRecentAccountName.Text = mostRecent.AccountName;
+            TxtRecentAccountLastLogin.Text = mostRecent.LastLoginText;
+            HeroRecentAccountBlock.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            HeroRecentAccountBlock.Visibility = Visibility.Collapsed;
+        }
+
         LoginPasswordBox.Clear();
-        LoginPinBox.Clear();
-        SetLoginCredentialMode(LoginCredentialMode.Password);
         FocusCredentialInput();
     }
 
@@ -192,9 +199,7 @@ public partial class LoginWindow : Window
 
         RecentAccountSelector.Text = account.AccountName;
         LoginPasswordBox.Clear();
-        LoginPinBox.Clear();
-        SetLoginCredentialMode(account.HasPinCredential ? LoginCredentialMode.Pin : LoginCredentialMode.Password);
-        FocusCredentialInput(account.HasPinCredential);
+        FocusCredentialInput();
     }
 
     private void RecentAccountSelector_TextChanged(object sender, TextChangedEventArgs e)
@@ -227,60 +232,31 @@ public partial class LoginWindow : Window
 
     private string GetLoginAccountName() => RecentAccountSelector.Text.Trim();
 
-    private void FocusCredentialInput(bool preferPin = false)
+    private void RecentAccountBlock_Click(object sender, RoutedEventArgs e)
     {
-        if (preferPin || SelectedCredentialMode == LoginCredentialMode.Pin)
+        if (!string.IsNullOrWhiteSpace(TxtRecentAccountName.Text))
         {
-            if (LoginPinBox != null)
-                LoginPinBox.Focus();
-        }
-        else
-        {
-            if (LoginPasswordBox != null)
-                LoginPasswordBox.Focus();
+            RecentAccountSelector.Text = TxtRecentAccountName.Text;
+            SelectRecentAccount(TxtRecentAccountName.Text);
+            LoginPasswordBox.Clear();
+            LoginPasswordBox.Focus();
         }
     }
 
-    private void PasswordMode_Checked(object sender, RoutedEventArgs e)
+    private void FocusCredentialInput()
     {
-        SetLoginCredentialMode(LoginCredentialMode.Password);
-        FocusCredentialInput();
+        if (LoginPasswordBox != null)
+            LoginPasswordBox.Focus();
     }
 
-    private void PinMode_Checked(object sender, RoutedEventArgs e)
-    {
-        SetLoginCredentialMode(LoginCredentialMode.Pin);
-        FocusCredentialInput(preferPin: true);
-    }
 
-    private void SetLoginCredentialMode(LoginCredentialMode mode)
-    {
-        SelectedCredentialMode = mode;
-        var usePin = SelectedCredentialMode == LoginCredentialMode.Pin;
-        if (PasswordCredentialPanel != null)
-            PasswordCredentialPanel.Visibility = usePin ? Visibility.Collapsed : Visibility.Visible;
-
-        if (PinCredentialPanel != null)
-            PinCredentialPanel.Visibility = usePin ? Visibility.Visible : Visibility.Collapsed;
-
-        if (BtnPasswordMode != null)
-            BtnPasswordMode.IsChecked = !usePin;
-
-        if (BtnPinMode != null)
-            BtnPinMode.IsChecked = usePin;
-
-        if (TxtLoginPasswordError != null)
-            ClearFieldError(TxtLoginPasswordError);
-    }
 
     private void HookInputErrorClearing()
     {
         SetupAccountBox.TextChanged += ClearErrorIfUserEditing;
         LoginPasswordBox.PasswordChanged += ClearErrorIfUserEditing;
-        LoginPinBox.PasswordChanged += ClearErrorIfUserEditing;
         SetupPasswordBox.PasswordChanged += ClearErrorIfUserEditing;
         SetupConfirmPasswordBox.PasswordChanged += ClearErrorIfUserEditing;
-        SetupPinBox.PasswordChanged += ClearErrorIfUserEditing;
     }
 
     private void SetSubmittingState(bool isSubmitting)
@@ -312,17 +288,7 @@ public partial class LoginWindow : Window
         if (string.IsNullOrWhiteSpace(GetLoginAccountName()))
             throw BuildInputError(RecentAccountSelector, TxtLoginAccountError, "请输入账号。");
 
-        var hasPassword = !string.IsNullOrWhiteSpace(LoginPasswordBox.Password);
-        var hasPin = !string.IsNullOrWhiteSpace(LoginPinBox.Password);
-        if (SelectedCredentialMode == LoginCredentialMode.Pin)
-        {
-            if (!hasPin)
-                throw BuildInputError(LoginPinBox, TxtLoginPasswordError, "请输入该账号的 PIN。");
-
-            return;
-        }
-
-        if (!hasPassword)
+        if (string.IsNullOrWhiteSpace(LoginPasswordBox.Password))
             throw BuildInputError(LoginPasswordBox, TxtLoginPasswordError, "请输入该账号的密码。");
     }
 
@@ -392,6 +358,57 @@ public partial class LoginWindow : Window
         errorText.Visibility = Visibility.Collapsed;
     }
 
+    private void ApplyThemeToggleSelection(AppThemeKind theme)
+    {
+        BtnThemeRose.IsChecked = theme == AppThemeKind.Rose;
+        BtnThemeBlue.IsChecked = theme == AppThemeKind.Blue;
+    }
+
+    private async void LoginThemeRose_Checked(object sender, RoutedEventArgs e)
+    {
+        if (BtnThemeRose.IsChecked != true) return;
+        try
+        {
+            await _themeService.ApplyThemeAsync(AppThemeKind.Rose);
+        }
+        catch
+        {
+            ApplyThemeToggleSelection(_themeService.CurrentTheme);
+        }
+    }
+
+    private async void LoginThemeBlue_Checked(object sender, RoutedEventArgs e)
+    {
+        if (BtnThemeBlue.IsChecked != true) return;
+        try
+        {
+            await _themeService.ApplyThemeAsync(AppThemeKind.Blue);
+        }
+        catch
+        {
+            ApplyThemeToggleSelection(_themeService.CurrentTheme);
+        }
+    }
+
+    private void LearnMultiUser_Click(object sender, RoutedEventArgs e)
+    {
+        MultiUserModeInfoPanel.Visibility = MultiUserModeInfoPanel.Visibility == Visibility.Visible
+            ? Visibility.Collapsed
+            : Visibility.Visible;
+    }
+
+    private void PasswordContextMenuClear_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is not MenuItem menuItem)
+            return;
+
+        if (menuItem.Parent is not ContextMenu contextMenu)
+            return;
+
+        if (contextMenu.PlacementTarget is PasswordBox passwordBox)
+            passwordBox.Clear();
+    }
+
     private sealed class InputValidationException : InvalidOperationException
     {
         public InputValidationException(string message)
@@ -400,9 +417,4 @@ public partial class LoginWindow : Window
         }
     }
 
-    private enum LoginCredentialMode
-    {
-        Password,
-        Pin
-    }
 }

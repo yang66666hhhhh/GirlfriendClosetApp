@@ -297,6 +297,7 @@ public class WardrobeViewModelTests
         public Task AddAsync(OutfitWornRecord entity) => Task.CompletedTask;
         public Task UpdateAsync(OutfitWornRecord entity) => Task.CompletedTask;
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
+        public Task<int> DeleteAllAsync() => Task.FromResult(0);
         public Task<IEnumerable<OutfitWornRecord>> GetByDateRangeAsync(DateTime start, DateTime end) => Task.FromResult<IEnumerable<OutfitWornRecord>>([]);
         public Task<IEnumerable<OutfitWornRecord>> GetByOutfitIdAsync(Guid outfitId) => Task.FromResult<IEnumerable<OutfitWornRecord>>([]);
         public Task<IEnumerable<OutfitWornRecord>> GetRecentAsync(int count) => Task.FromResult<IEnumerable<OutfitWornRecord>>([]);

@@ -22,9 +22,12 @@ public class LoginWindowLayoutTests
 
         Assert.Contains("x:Name=\"LoginErrorHost\"", xaml);
         Assert.Contains("x:Key=\"LoginSubmitButton\"", xaml);
+        Assert.Contains("x:Key=\"LoginTextContextMenu\"", xaml);
+        Assert.Contains("x:Key=\"LoginPasswordContextMenu\"", xaml);
         Assert.Contains("<Setter Property=\"MinHeight\" Value=\"56\"/>", xaml);
-        Assert.Contains("VerticalAlignment=\"Top\"", xaml);
-        Assert.Contains("Width=\"480\"", xaml);
+        Assert.Contains("x:Name=\"LoginThemeToggle\"", xaml);
+        Assert.Contains("HorizontalAlignment=\"Right\"", xaml);
+        Assert.Contains("Panel.ZIndex=\"2\"", xaml);
         Assert.DoesNotContain("<ScrollViewer VerticalScrollBarVisibility=\"Auto\"", xaml);
         Assert.DoesNotContain("Effect=\"{StaticResource LoginCardShadow}\"", xaml);
     }
@@ -36,9 +39,12 @@ public class LoginWindowLayoutTests
 
         Assert.Contains("Width=\"1040\"", xaml);
         Assert.Contains("Height=\"780\"", xaml);
-        Assert.Contains("MinWidth=\"900\"", xaml);
-        Assert.Contains("MinHeight=\"760\"", xaml);
-        Assert.Contains("Background=\"#F8FAFF\"", xaml);
+        Assert.Contains("MinWidth=\"1040\"", xaml);
+        Assert.Contains("MinHeight=\"780\"", xaml);
+        Assert.Contains("MaxWidth=\"1040\"", xaml);
+        Assert.Contains("MaxHeight=\"780\"", xaml);
+        Assert.Contains("ResizeMode=\"NoResize\"", xaml);
+        Assert.Contains("Background=\"{DynamicResource SurfacePageBrush}\"", xaml);
         Assert.Contains("x:Name=\"LoginWorkspaceShell\"", xaml);
         Assert.Contains("HorizontalAlignment=\"Center\"", xaml);
         Assert.DoesNotContain("<ScrollViewer VerticalScrollBarVisibility=\"Auto\"", xaml);
@@ -53,9 +59,10 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Name=\"LoginWorkspaceShell\"", xaml);
         Assert.Contains("x:Name=\"LoginHeroSurface\"", xaml);
         Assert.Contains("x:Name=\"LoginFormSurface\"", xaml);
-        Assert.Contains("x:Name=\"CredentialModeSurface\"", xaml);
         Assert.Contains("x:Name=\"LoginActionRail\"", xaml);
-        Assert.Contains("x:Name=\"HeroSessionHint\"", xaml);
+        Assert.Contains("x:Name=\"HeroRecentAccountBlock\"", xaml);
+        Assert.Contains("Style=\"{StaticResource LoginRecentAccountButton}\"", xaml);
+        Assert.Contains("x:Name=\"FirstTimeHintBlock\"", xaml);
         Assert.DoesNotContain("x:Name=\"HeroVisualStage\"", xaml);
         Assert.DoesNotContain("x:Name=\"HeroSignalsGrid\"", xaml);
         Assert.DoesNotContain("<ScrollViewer VerticalScrollBarVisibility=\"Auto\"", xaml);
@@ -72,11 +79,23 @@ public class LoginWindowLayoutTests
         Assert.Contains("<Setter Property=\"Height\" Value=\"52\"/>", xaml);
         Assert.Contains("IsEditable=\"True\"", xaml);
         Assert.Contains("TextSearch.TextPath=\"AccountName\"", xaml);
+        Assert.Contains("Text=\"账号\"", xaml);
+        Assert.Contains("Text=\"密码\"", xaml);
         Assert.Contains("x:Name=\"TxtSubmitLabel\"", xaml);
         Assert.Contains("x:Name=\"SubmitBusyIndicator\"", xaml);
         Assert.Contains("Text=\"我的衣橱\"", xaml);
         Assert.Contains("Text=\"Closet Companion&#x0a;记录搭配与衣柜管理\"", xaml);
-        Assert.Contains("Text=\"最近使用：admin\"", xaml);
+        Assert.Contains("x:Name=\"HeroRecentAccountBlock\"", xaml);
+        Assert.Contains("x:Name=\"TxtRecentAccountName\"", xaml);
+        Assert.Contains("x:Name=\"TxtRecentAccountLastLogin\"", xaml);
+        Assert.Contains("Text=\"最近使用\"", xaml);
+        Assert.Contains("Text=\"填入\"", xaml);
+        Assert.DoesNotContain("Width=\"250\"", xaml);
+        Assert.Contains("VerticalAlignment=\"Top\"", xaml);
+        Assert.Contains("ContextMenu=\"{StaticResource LoginTextContextMenu}\"", xaml);
+        Assert.Contains("<Setter Property=\"ContextMenu\" Value=\"{StaticResource LoginPasswordContextMenu}\"/>", xaml);
+        Assert.Contains("x:Name=\"MultiUserModeInfoPanel\"", xaml);
+        Assert.Contains("Style=\"{StaticResource LoginInlineLinkButton}\"", xaml);
         Assert.Contains("x:Name=\"LoginErrorIcon\"", xaml);
         Assert.Contains("x:Name=\"TxtErrorTitle\"", xaml);
         Assert.Contains("Background=\"{DynamicResource DangerLightBrush}\"", xaml);
@@ -92,6 +111,20 @@ public class LoginWindowLayoutTests
         Assert.DoesNotContain("Text=\"账号工作区\"", xaml);
         Assert.DoesNotContain("Text=\"LOCAL WORKSPACE\"", xaml);
         Assert.DoesNotContain("Text=\"独立保存\"", xaml);
+    }
+
+    [Fact]
+    public void LoginWindow_UsesInlineMultiUserExplanation()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
+
+        Assert.Contains("MultiUserModeInfoPanel.Visibility", code);
+        Assert.Contains("passwordBox.Clear();", code);
+        Assert.DoesNotContain("ConfirmModal.ShowMessageAsync", code);
+        Assert.DoesNotContain("ModalService.Instance.Show", code);
+        Assert.DoesNotContain("这是一个本地多用户工作区。", xaml);
+        Assert.Contains("登录页本身不开放公开注册", xaml);
     }
 
     [Fact]
@@ -138,30 +171,6 @@ public class LoginWindowLayoutTests
     }
 
     [Fact]
-    public void LoginWindow_UsesExplicitCredentialModeSelector()
-    {
-        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
-        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
-
-        Assert.Contains("x:Name=\"CredentialModePanel\"", xaml);
-        Assert.Contains("x:Name=\"BtnPasswordMode\"", xaml);
-        Assert.Contains("x:Name=\"BtnPinMode\"", xaml);
-        Assert.Contains("Style=\"{StaticResource AppSegmentedTabShell}\"", xaml);
-        Assert.Contains("Style=\"{StaticResource AppSegmentedTabButton}\"", xaml);
-        Assert.Contains("UniformGrid Columns=\"2\"", xaml);
-        Assert.Contains("Checked=\"PasswordMode_Checked\"", xaml);
-        Assert.Contains("Checked=\"PinMode_Checked\"", xaml);
-        Assert.Contains("x:Name=\"PasswordCredentialPanel\"", xaml);
-        Assert.Contains("x:Name=\"PinCredentialPanel\"", xaml);
-        Assert.Contains("Text=\"登录凭证\"", xaml);
-        Assert.Contains("LoginCredentialMode", code);
-        Assert.Contains("SetLoginCredentialMode", code);
-        Assert.Contains("PasswordMode_Checked", code);
-        Assert.Contains("PinMode_Checked", code);
-        Assert.Contains("SelectedCredentialMode == LoginCredentialMode.Pin", code);
-    }
-
-    [Fact]
     public void LoginWindow_DropsSplitShowcaseContent()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
@@ -172,21 +181,6 @@ public class LoginWindowLayoutTests
         Assert.DoesNotContain("x:Name=\"HeroVisualStage\"", xaml);
         Assert.DoesNotContain("x:Name=\"HeroSignalsGrid\"", xaml);
         Assert.DoesNotContain("CornerRadius=\"24\"", xaml);
-        Assert.Contains("Text=\"最近使用：admin\"", xaml);
-    }
-
-    [Fact]
-    public void LoginWindow_GuardsCredentialModeControlsDuringInitialization()
-    {
-        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml.cs"));
-
-        Assert.Contains("if (PasswordCredentialPanel != null)", code);
-        Assert.Contains("if (PinCredentialPanel != null)", code);
-        Assert.Contains("if (BtnPasswordMode != null)", code);
-        Assert.Contains("if (BtnPinMode != null)", code);
-        Assert.Contains("if (TxtLoginPasswordError != null)", code);
-        Assert.Contains("if (LoginPinBox != null)", code);
-        Assert.Contains("if (LoginPasswordBox != null)", code);
     }
 
     [Fact]
@@ -445,6 +439,46 @@ public class LoginWindowLayoutTests
         Assert.Contains("x:Key=\"ModalCloseButton\"", xaml);
         Assert.Contains("BasedOn=\"{StaticResource IconButton}\"", xaml);
         Assert.DoesNotContain("<Setter Property=\"Style\" Value=\"{StaticResource IconButton}\"/>", xaml);
+    }
+
+    [Fact]
+    public void LoginWindow_ContainsThemeToggle()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.Contains("x:Name=\"LoginThemeToggle\"", xaml);
+        Assert.Contains("x:Name=\"BtnThemeRose\"", xaml);
+        Assert.Contains("x:Name=\"BtnThemeBlue\"", xaml);
+        Assert.Contains("Content=\"柔粉\"", xaml);
+        Assert.Contains("Content=\"清蓝\"", xaml);
+        Assert.Contains("Style=\"{StaticResource AppSegmentedTabShell}\"", xaml);
+    }
+
+    [Fact]
+    public void LoginWindow_ContainsFirstTimeHint()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.Contains("x:Name=\"FirstTimeHintBlock\"", xaml);
+        Assert.Contains("首次使用", xaml);
+        Assert.Contains("管理员初始化", xaml);
+        Assert.Contains("了解本地多用户模式", xaml);
+        Assert.DoesNotContain("Content=\"注册\"", xaml);
+        Assert.DoesNotContain("Content=\"创建账号\"", xaml);
+        Assert.DoesNotContain("Content=\"新增成员\"", xaml);
+    }
+
+    [Fact]
+    public void LoginWindow_DoesNotContainPinControls()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/LoginWindow.xaml"));
+
+        Assert.DoesNotContain("x:Name=\"BtnPinMode\"", xaml);
+        Assert.DoesNotContain("x:Name=\"PinCredentialPanel\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SetupPinBox\"", xaml);
+        Assert.DoesNotContain("x:Name=\"LoginPinBox\"", xaml);
+        Assert.DoesNotContain("快捷 PIN", xaml);
+        Assert.DoesNotContain("x:Name=\"CredentialModePanel\"", xaml);
     }
 
     private static string FindProjectFile(string relativePath)

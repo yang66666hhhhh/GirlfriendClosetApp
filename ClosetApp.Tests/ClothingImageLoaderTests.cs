@@ -1,4 +1,5 @@
 using System.IO;
+using System.Threading;
 using ClosetApp.Application.Images;
 using ClosetApp.UI.Services;
 using Xunit;
@@ -52,6 +53,33 @@ public sealed class ClothingImageLoaderTests : IDisposable
                 invalidImagePath,
                 ImageVariant.Display,
                 280));
+        }
+        finally
+        {
+            File.Delete(invalidImagePath);
+        }
+    }
+
+    [Fact]
+    public async Task LoadAsync_WhenCanceled_ReturnsNullWithoutCachingFailure()
+    {
+        var invalidImagePath = CreateInvalidImageFile();
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        try
+        {
+            var image = await ClothingImageLoader.LoadAsync(
+                invalidImagePath,
+                ImageVariant.Original,
+                320,
+                cancellationToken: cts.Token);
+
+            Assert.Null(image);
+            Assert.False(ClothingImageLoader.HasRecentFailureForDiagnostics(
+                invalidImagePath,
+                ImageVariant.Original,
+                320));
         }
         finally
         {

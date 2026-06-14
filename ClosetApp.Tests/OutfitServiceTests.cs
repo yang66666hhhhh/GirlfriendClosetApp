@@ -168,6 +168,41 @@ public class OutfitServiceTests
             service.RepairWornRecordSnapshotImageAsync(record.Id, Guid.NewGuid(), "new.jpg"));
     }
 
+    [Fact]
+    public async Task ClearWornHistoryAsync_RemovesRecordsAndResetsAffectedOutfitWearState()
+    {
+        var outfitId = Guid.NewGuid();
+        var outfit = new Outfit
+        {
+            Id = outfitId,
+            Name = "通勤套装",
+            WearCount = 3,
+            WornDate = new DateTime(2026, 5, 20)
+        };
+        var wornRecordRepository = new FakeOutfitWornRecordRepository
+        {
+            Records =
+            [
+                new OutfitWornRecord { Id = Guid.NewGuid(), OutfitId = outfitId, WornDate = new DateTime(2026, 5, 19) },
+                new OutfitWornRecord { Id = Guid.NewGuid(), OutfitId = outfitId, WornDate = new DateTime(2026, 5, 20) },
+                new OutfitWornRecord { Id = Guid.NewGuid(), OutfitId = null, WornDate = new DateTime(2026, 5, 18) }
+            ]
+        };
+        var outfitRepository = new FakeOutfitRepository([outfit]);
+        var service = new OutfitService(
+            outfitRepository,
+            wornRecordRepository,
+            new FakeFavoriteRepository());
+
+        var clearedCount = await service.ClearWornHistoryAsync();
+
+        Assert.Equal(3, clearedCount);
+        Assert.Empty(wornRecordRepository.Records);
+        Assert.Equal(1, outfit.WearCount);
+        Assert.Null(outfit.WornDate);
+        Assert.Equal(outfitId, outfitRepository.UpdatedOutfitId);
+    }
+
     private sealed class FakeClothingRepository : IClothingRepository
     {
         private readonly Clothing _clothing;
@@ -197,10 +232,18 @@ public class OutfitServiceTests
 
     private sealed class FakeOutfitRepository : IOutfitRepository
     {
-        public List<Outfit> AddedOutfits { get; } = [];
+        private readonly List<Outfit> _outfits;
 
-        public Task<IEnumerable<Outfit>> GetAllAsync() => Task.FromResult(Enumerable.Empty<Outfit>());
-        public Task<Outfit?> GetByIdAsync(Guid id) => Task.FromResult<Outfit?>(null);
+        public FakeOutfitRepository(IEnumerable<Outfit>? outfits = null)
+        {
+            _outfits = outfits?.ToList() ?? [];
+        }
+
+        public List<Outfit> AddedOutfits { get; } = [];
+        public Guid? UpdatedOutfitId { get; private set; }
+
+        public Task<IEnumerable<Outfit>> GetAllAsync() => Task.FromResult(_outfits.AsEnumerable());
+        public Task<Outfit?> GetByIdAsync(Guid id) => Task.FromResult(_outfits.FirstOrDefault(outfit => outfit.Id == id));
         public Task<Outfit?> GetByIdForUpdateAsync(Guid id) => Task.FromResult<Outfit?>(null);
 
         public Task AddAsync(Outfit entity)
@@ -209,7 +252,11 @@ public class OutfitServiceTests
             return Task.CompletedTask;
         }
 
-        public Task UpdateAsync(Outfit entity) => Task.CompletedTask;
+        public Task UpdateAsync(Outfit entity)
+        {
+            UpdatedOutfitId = entity.Id;
+            return Task.CompletedTask;
+        }
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
         public Task<IEnumerable<Outfit>> GetBySceneAsync(OutfitScene scene) => Task.FromResult(Enumerable.Empty<Outfit>());
         public Task<IEnumerable<Outfit>> GetBySeasonAsync(Season season) => Task.FromResult(Enumerable.Empty<Outfit>());
@@ -235,6 +282,12 @@ public class OutfitServiceTests
             return Task.CompletedTask;
         }
         public Task DeleteAsync(Guid id) => Task.CompletedTask;
+        public Task<int> DeleteAllAsync()
+        {
+            var count = Records.Count;
+            Records.Clear();
+            return Task.FromResult(count);
+        }
         public Task<IEnumerable<OutfitWornRecord>> GetByDateRangeAsync(DateTime start, DateTime end) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
         public Task<IEnumerable<OutfitWornRecord>> GetByOutfitIdAsync(Guid outfitId) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());
         public Task<IEnumerable<OutfitWornRecord>> GetRecentAsync(int count) => Task.FromResult(Enumerable.Empty<OutfitWornRecord>());

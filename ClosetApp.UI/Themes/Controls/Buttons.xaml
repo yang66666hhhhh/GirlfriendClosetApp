@@ -57,7 +57,7 @@
 
     <Style x:Key="AppButtonBase" TargetType="Button">
         <Setter Property="Cursor" Value="Hand"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="{DynamicResource Button.FontSize.Medium}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="VerticalAlignment" Value="Center"/>
         <Setter Property="HorizontalAlignment" Value="Center"/>
@@ -120,7 +120,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="24,12"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="{DynamicResource Button.FontSize.Medium}"/>
         <Setter Property="MinHeight" Value="46"/>
         <Setter Property="MinWidth" Value="152"/>
         <Setter Property="Effect" Value="{StaticResource Shadow.Button}"/>
@@ -138,7 +138,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="18,10"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
         <Setter Property="MinHeight" Value="40"/>
         <Setter Property="MinWidth" Value="88"/>
         <Style.Triggers>
@@ -155,7 +155,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="16,10"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
         <Setter Property="MinHeight" Value="38"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
@@ -171,7 +171,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource DangerBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Padding" Value="16,10"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
         <Setter Property="MinHeight" Value="38"/>
         <Setter Property="Effect" Value="{StaticResource Shadow.Button}"/>
         <Style.Triggers>
@@ -187,7 +187,7 @@
         <Setter Property="BorderBrush" Value="#78FFFFFF"/>
         <Setter Property="BorderThickness" Value="1.2"/>
         <Setter Property="Padding" Value="22,12"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="{DynamicResource Button.FontSize.Medium}"/>
         <Setter Property="MinHeight" Value="44"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">

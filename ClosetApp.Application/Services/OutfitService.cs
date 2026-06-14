@@ -198,6 +198,31 @@ public class OutfitService : IOutfitService
         }
     }
 
+    public async Task<int> ClearWornHistoryAsync()
+    {
+        var records = (await _wornRecordRepository.GetAllAsync()).ToList();
+        if (records.Count == 0)
+            return 0;
+
+        var affectedOutfitIds = records
+            .Where(record => record.OutfitId.HasValue)
+            .GroupBy(record => record.OutfitId!.Value)
+            .ToList();
+
+        foreach (var outfitRecords in affectedOutfitIds)
+        {
+            var outfit = await _repository.GetByIdAsync(outfitRecords.Key);
+            if (outfit == null)
+                continue;
+
+            outfit.WearCount = Math.Max(0, outfit.WearCount - outfitRecords.Count());
+            outfit.WornDate = null;
+            await _repository.UpdateAsync(outfit);
+        }
+
+        return await _wornRecordRepository.DeleteAllAsync();
+    }
+
     public async Task<WornRecordImageHealthDto> AnalyzeWornRecordImageHealthAsync()
     {
         var records = (await _wornRecordRepository.GetAllAsync()).ToList();

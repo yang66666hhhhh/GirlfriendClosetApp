@@ -21,14 +21,14 @@
 
     <Style x:Key="ModalHeaderTitle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="26"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Hero}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
     </Style>
 
     <Style x:Key="ModalHeaderSubtitle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Hint}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Margin" Value="0,4,0,0"/>
     </Style>
@@ -41,7 +41,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Content" Value="✕"/>
-        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Input}"/>
     </Style>
 
     <Style x:Key="ModalFooterHost" TargetType="Border">
@@ -54,7 +54,7 @@
     <Style x:Key="WorkbenchTextInput" TargetType="TextBox">
         <Setter Property="MinHeight" Value="40"/>
         <Setter Property="Padding" Value="12,8"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
@@ -93,7 +93,7 @@
     <Style x:Key="WorkbenchPasswordInput" TargetType="PasswordBox">
         <Setter Property="Height" Value="40"/>
         <Setter Property="Padding" Value="12,0"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>

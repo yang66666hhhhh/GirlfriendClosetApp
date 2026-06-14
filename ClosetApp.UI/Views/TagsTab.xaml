@@ -43,7 +43,7 @@
         </Style>
 
         <Style x:Key="TagEyebrowBadgeText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource TagLavenderTextBrush}"/>
         </Style>
@@ -57,7 +57,7 @@
         </Style>
 
         <Style x:Key="TagMetaBadgeText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
@@ -121,7 +121,7 @@
             <Setter Property="BorderBrush" Value="Transparent"/>
             <Setter Property="BorderThickness" Value="0"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
-            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
             <Setter Property="HorizontalAlignment" Value="Right"/>
             <Setter Property="VerticalAlignment" Value="Top"/>
             <Setter Property="Opacity" Value="0"/>
@@ -192,7 +192,7 @@
         </Style>
 
         <Style x:Key="TagCardMoreMenuItem" TargetType="MenuItem" BasedOn="{StaticResource WardrobeCard.MoreMenuItem}">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
             <Setter Property="Padding" Value="9,7,10,7"/>
         </Style>
 
@@ -225,7 +225,7 @@
                                     <TextBlock Grid.Column="2"
                                                Text="编辑"
                                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                               FontSize="11"
+                                               FontSize="{DynamicResource FontSize.Meta}"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                 </Grid>
@@ -251,7 +251,7 @@
                                     <TextBlock Grid.Column="2"
                                                Text="删除"
                                                Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                               FontSize="11"
+                                               FontSize="{DynamicResource FontSize.Meta}"
                                                FontWeight="SemiBold"
                                                VerticalAlignment="Center"/>
                                 </Grid>
@@ -314,7 +314,7 @@
                                                 <TextBlock Grid.Column="2"
                                                            Text="编辑"
                                                            Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                                           FontSize="11"
+                                                           FontSize="{DynamicResource FontSize.Meta}"
                                                            FontWeight="SemiBold"
                                                            VerticalAlignment="Center"/>
                                             </Grid>
@@ -340,7 +340,7 @@
                                                 <TextBlock Grid.Column="2"
                                                            Text="删除"
                                                            Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                                           FontSize="11"
+                                                           FontSize="{DynamicResource FontSize.Meta}"
                                                            FontWeight="SemiBold"
                                                            VerticalAlignment="Center"/>
                                             </Grid>
@@ -365,7 +365,7 @@
                                 BorderThickness="1"
                                 Visibility="{Binding HasOutfitUsage, Converter={StaticResource BooleanToVisibilityConverter}}">
                             <TextBlock Text="{Binding OutfitUsageText}"
-                                       FontSize="10"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
                                        FontWeight="SemiBold"
                                        Foreground="{DynamicResource TagMintTextBrush}"/>
                         </Border>
@@ -389,7 +389,7 @@
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0"
                            Text="标签管理"
-                           FontSize="14"
+                           FontSize="{DynamicResource FontSize.Body}"
                            FontWeight="Bold"
                            Foreground="{DynamicResource TextPrimaryBrush}"
                            VerticalAlignment="Center"/>

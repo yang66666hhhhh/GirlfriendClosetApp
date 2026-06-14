@@ -12,8 +12,10 @@ public class SettingsTabLayoutTests
 
         Assert.Contains("x:Name=\"SettingsOverviewHero\"", xaml);
         Assert.Contains("x:Name=\"SettingsOverviewHeroSurface\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewCompactSummaryGrid\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewMetricsGrid\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewSummaryGrid\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewMetricMatrix\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewCompactSummaryGrid\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewMetricsGrid\"", xaml);
         Assert.Contains("Text=\"设置概览\"", xaml);
         Assert.Contains("x:Name=\"SettingsWorkbenchColumns\"", xaml);
     }

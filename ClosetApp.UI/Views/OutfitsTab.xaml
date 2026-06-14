@@ -16,7 +16,7 @@
         <DataTemplate x:Key="OutfitFilterOptionTemplate">
             <TextBlock Text="{Binding Label}"
                        Foreground="{DynamicResource TextPrimaryBrush}"
-                       FontSize="12.5"
+                       FontSize="{DynamicResource FontSize.Hint}"
                        TextTrimming="CharacterEllipsis"/>
         </DataTemplate>
 
@@ -53,8 +53,8 @@
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
             <Setter Property="BorderThickness" Value="1"/>
             <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="Padding" Value="14,13"/>
-            <Setter Property="MinHeight" Value="190"/>
+            <Setter Property="Padding" Value="12,11"/>
+            <Setter Property="MinHeight" Value="138"/>
         </Style>
 
         <Style x:Key="WeatherRecommendationChip" TargetType="Border">
@@ -68,13 +68,13 @@
 
         <Style x:Key="WeatherRecommendationChipText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource OutfitSkyTextBrush}"/>
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
         <Style x:Key="WeatherRecommendationMetaText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
         </Style>
 
         <Style x:Key="RecommendationStatusBadge" TargetType="Border">
@@ -88,14 +88,23 @@
 
         <Style x:Key="RecommendationStatusBadgeText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource OutfitSkyTextBrush}"/>
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
         <Style x:Key="RecommendationActionHintText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <Style x:Key="TodayHeroStatusPanel" TargetType="Border">
+            <Setter Property="Background" Value="{DynamicResource SurfaceSectionBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="12"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="Margin" Value="0,12,0,0"/>
         </Style>
 
         <Style x:Key="TodayHeroSecondaryActionButton" TargetType="Button" BasedOn="{StaticResource CapsuleButton}">
@@ -104,18 +113,26 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="Padding" Value="0"/>
             <Setter Property="MinHeight" Value="24"/>
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
         <Style x:Key="TodayHeroLinkButton" TargetType="Button" BasedOn="{StaticResource TodayHeroSecondaryActionButton}">
-            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="MinHeight" Value="20"/>
+            <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="TodayHeroFooterRail" TargetType="WrapPanel">
+            <Setter Property="Margin" Value="0,12,0,0"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
 
         <Style x:Key="TodayHeroMetaText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
@@ -151,12 +168,12 @@
 
         <Style x:Key="SecondaryRecommendationDetailButton" TargetType="Button" BasedOn="{StaticResource TodayHeroSecondaryActionButton}">
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="FontSize" Value="10.5"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="MinHeight" Value="22"/>
         </Style>
 
         <Style x:Key="OutfitToolbarLabelText" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="VerticalAlignment" Value="Center"/>
         </Style>
@@ -184,11 +201,11 @@
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="我的搭配"
-                               FontSize="14"
-                               FontWeight="Bold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"
-                               VerticalAlignment="Center"/>
+                     <TextBlock Text="我的搭配"
+                                FontSize="{DynamicResource FontSize.Body}"
+                                FontWeight="Bold"
+                                Foreground="{DynamicResource TextPrimaryBrush}"
+                                VerticalAlignment="Center"/>
                     <Border Width="1"
                             Height="16"
                             Background="{DynamicResource BorderDividerBrush}"
@@ -273,13 +290,13 @@
 
                                                 <TextBlock Text="今天穿什么"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"
-                                                           FontSize="15"
+                                                           FontSize="{DynamicResource FontSize.Input}"
                                                            FontWeight="SemiBold"
                                                            Margin="0,12,0,0"/>
 
                                                 <TextBlock Text="{Binding TodayHeroRecommendationNameText}"
                                                            Foreground="{DynamicResource TextPrimaryBrush}"
-                                                           FontSize="24"
+                                                           FontSize="{DynamicResource FontSize.Hero}"
                                                            FontWeight="SemiBold"
                                                            Margin="0,6,0,0"
                                                            TextWrapping="Wrap"
@@ -287,36 +304,39 @@
 
                                                 <TextBlock Text="{Binding TodayHeroRecommendationSupportText}"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                                           FontSize="12.5"
+                                                           FontSize="{DynamicResource FontSize.Hint}"
                                                            Margin="0,4,0,0"
                                                            TextWrapping="Wrap"
                                                            TextTrimming="CharacterEllipsis"
                                                            MaxWidth="490"
                                                            MaxHeight="40"/>
 
-                                                <WrapPanel Margin="0,12,0,0"
-                                                           Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                    <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                            Margin="0,0,8,8">
-                                                        <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
-                                                                   Style="{StaticResource RecommendationStatusBadgeText}"/>
-                                                    </Border>
-                                                    <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                            Margin="0,0,0,8"
-                                                            Background="{StaticResource OutfitMintSurfaceBrush}"
-                                                            BorderBrush="{StaticResource OutfitMintBorderBrush}">
-                                                        <TextBlock Text="{Binding RecommendationReadinessTitle}"
-                                                                   Style="{StaticResource RecommendationStatusBadgeText}"
-                                                                   Foreground="{StaticResource OutfitMintTextBrush}"/>
-                                                    </Border>
-                                                </WrapPanel>
+                                                <Border x:Name="TodayHeroStatusPanelHost"
+                                                        Style="{StaticResource TodayHeroStatusPanel}">
+                                                    <StackPanel>
+                                                        <WrapPanel Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                            <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                                    Margin="0,0,8,6">
+                                                                <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
+                                                                           Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                                            </Border>
+                                                            <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                                    Margin="0,0,0,6"
+                                                                    Background="{StaticResource OutfitMintSurfaceBrush}"
+                                                                    BorderBrush="{StaticResource OutfitMintBorderBrush}">
+                                                                <TextBlock Text="{Binding RecommendationReadinessTitle}"
+                                                                           Style="{StaticResource RecommendationStatusBadgeText}"
+                                                                           Foreground="{StaticResource OutfitMintTextBrush}"/>
+                                                            </Border>
+                                                        </WrapPanel>
 
-                                                <TextBlock Text="{Binding TodayHeroStatusSummaryText}"
-                                                           Style="{StaticResource RecommendationActionHintText}"
-                                                           Margin="0,2,0,0"
-                                                           TextWrapping="Wrap"
-                                                           TextTrimming="CharacterEllipsis"
-                                                           MaxHeight="34"/>
+                                                        <TextBlock Text="{Binding TodayHeroStatusSummaryText}"
+                                                                   Style="{StaticResource RecommendationActionHintText}"
+                                                                   TextWrapping="Wrap"
+                                                                   TextTrimming="CharacterEllipsis"
+                                                                   MaxHeight="34"/>
+                                                    </StackPanel>
+                                                </Border>
                                             </StackPanel>
 
                                             <Border Grid.Row="1"
@@ -326,9 +346,14 @@
                                             <StackPanel x:Name="TodayHeroActionsPanel"
                                                         Grid.Row="2"
                                                         VerticalAlignment="Bottom">
-                                                <StackPanel Orientation="Horizontal"
-                                                            Margin="0,0,0,0">
+                                                <Grid x:Name="TodayHeroPrimaryActionRow">
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="Auto"/>
+                                                        <ColumnDefinition Width="*"/>
+                                                    </Grid.ColumnDefinitions>
                                                     <Button Content="{Binding TodayHeroPrimaryActionText}"
+                                                            Grid.Column="0"
                                                             Style="{StaticResource OutfitMintButton}"
                                                             Padding="16,9"
                                                             Margin="0,0,10,0"
@@ -337,15 +362,14 @@
                                                             CommandParameter="{Binding PrimaryWeatherRecommendation}"
                                                             Click="TodayHeroPrimaryAction_Click"/>
                                                     <Button Content="{Binding RefreshWeatherButtonText}"
+                                                            Grid.Column="1"
                                                             Style="{StaticResource TodayHeroInlineActionButton}"
                                                             Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
                                                             IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
-                                                </StackPanel>
+                                                </Grid>
 
-                                                <StackPanel x:Name="TodayHeroQuickLinksPanel"
-                                                            Orientation="Horizontal"
-                                                            Margin="0,10,0,0"
-                                                            VerticalAlignment="Center">
+                                                <WrapPanel x:Name="TodayHeroFooterRailHost"
+                                                           Style="{StaticResource TodayHeroFooterRail}">
                                                     <Button Content="查看记录"
                                                             Style="{StaticResource TodayHeroLinkButton}"
                                                             HorizontalAlignment="Left"
@@ -365,7 +389,7 @@
                                                             VerticalAlignment="Center"
                                                             Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"
                                                             Click="OpenSettings_Click"/>
-                                                </StackPanel>
+                                                </WrapPanel>
                                             </StackPanel>
                                         </Grid>
 
@@ -389,12 +413,12 @@
                                                             Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
                                                     <TextBlock Text="今天还没有合适推荐"
                                                                Foreground="{DynamicResource TextPrimaryBrush}"
-                                                               FontSize="14"
+                                                               FontSize="{DynamicResource FontSize.Body}"
                                                                FontWeight="SemiBold"
                                                                HorizontalAlignment="Center"/>
                                                     <TextBlock Text="{Binding TodayHeroCompactSummaryText}"
                                                                Foreground="{DynamicResource TextSecondaryBrush}"
-                                                               FontSize="11"
+                                                               FontSize="{DynamicResource FontSize.Meta}"
                                                                Margin="0,6,0,0"
                                                                TextWrapping="NoWrap"
                                                                TextTrimming="CharacterEllipsis"
@@ -407,140 +431,178 @@
                                 </Border>
                             </Grid>
 
-                            <StackPanel Grid.Column="1"
-                                        Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                <TextBlock x:Name="SecondaryRecommendationHintText"
-                                           Text="{Binding SecondaryWeatherRecommendationSectionBody}"
-                                           Foreground="{DynamicResource TextTertiaryBrush}"
-                                           FontSize="10.5"
-                                           FontWeight="Medium"
-                                           Margin="8,2,0,12"
-                                           Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                           TextTrimming="CharacterEllipsis"/>
+                            <Border x:Name="SecondaryRecommendationRail"
+                                    Grid.Column="1"
+                                    Background="{DynamicResource SurfaceCardBrush}"
+                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="16"
+                                    Padding="14,12"
+                                    MinHeight="320"
+                                    VerticalAlignment="Top"
+                                    Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Grid>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="*"/>
+                                    </Grid.RowDefinitions>
 
-                                <ItemsControl ItemsSource="{Binding SecondaryWeatherRecommendations}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Style="{StaticResource WeatherRecommendationCard}"
-                                                    Margin="0,0,0,12">
-                                                <Grid>
-                                                    <Grid.ColumnDefinitions>
-                                                        <ColumnDefinition Width="136"/>
-                                                        <ColumnDefinition Width="12"/>
-                                                        <ColumnDefinition Width="*"/>
-                                                    </Grid.ColumnDefinitions>
+                                    <Grid x:Name="SecondaryRecommendationHeader">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
 
-                                                    <Border Grid.Column="0"
-                                                            Background="{DynamicResource SurfaceHeroBrush}"
-                                                            BorderBrush="{DynamicResource BorderLightBrush}"
-                                                            BorderThickness="1"
-                                                            CornerRadius="12"
-                                                            Height="148"
-                                                            Padding="8"
-                                                            VerticalAlignment="Top">
-                                                        <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"/>
-                                                    </Border>
+                                        <TextBlock x:Name="SecondaryRecommendationHintText"
+                                                   Text="{Binding SecondaryWeatherRecommendationSectionBody}"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"
+                                                   FontSize="{DynamicResource FontSize.Meta}"
+                                                   FontWeight="SemiBold"
+                                                   VerticalAlignment="Center"
+                                                   TextTrimming="CharacterEllipsis"/>
 
-                                                    <Grid Grid.Column="2">
-                                                        <Grid.RowDefinitions>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="Auto"/>
-                                                            <RowDefinition Height="Auto"/>
-                                                        </Grid.RowDefinitions>
+                                        <Border Grid.Column="1"
+                                                Background="{DynamicResource SurfaceSectionBrush}"
+                                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                                BorderThickness="1"
+                                                CornerRadius="10"
+                                                Padding="8,4"
+                                                Margin="10,0,0,0"
+                                                VerticalAlignment="Center">
+                                            <TextBlock Text="{Binding SecondaryWeatherRecommendations.Count, StringFormat=再看 {0} 套}"
+                                                       Foreground="{DynamicResource TextSecondaryBrush}"
+                                                       FontSize="{DynamicResource FontSize.Tiny}"
+                                                       FontWeight="SemiBold"/>
+                                        </Border>
+                                    </Grid>
 
-                                                        <WrapPanel>
-                                                            <Border Style="{StaticResource WeatherRecommendationChip}"
-                                                                    Margin="0,0,6,6">
-                                                                <TextBlock Text="{Binding ReasonChipText}"
-                                                                           Style="{StaticResource WeatherRecommendationChipText}"/>
-                                                            </Border>
-                                                            <Border Background="{DynamicResource SurfaceSectionBrush}"
-                                                                    BorderBrush="{DynamicResource BorderLightBrush}"
-                                                                    BorderThickness="1"
-                                                                    CornerRadius="8"
-                                                                    Padding="8,3"
-                                                                    Margin="0,0,0,6">
-                                                                <TextBlock Text="{Binding WearSummaryText}"
+                                    <ItemsControl x:Name="SecondaryRecommendationCardsHost"
+                                                  Grid.Row="1"
+                                                  ItemsSource="{Binding SecondaryWeatherRecommendations}"
+                                                  Margin="0,10,0,0">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Style="{StaticResource WeatherRecommendationCard}"
+                                                        Margin="0,0,0,10">
+                                                    <Grid>
+                                                        <Grid.ColumnDefinitions>
+                                                            <ColumnDefinition Width="118"/>
+                                                            <ColumnDefinition Width="12"/>
+                                                            <ColumnDefinition Width="*"/>
+                                                        </Grid.ColumnDefinitions>
+
+                                                        <Border Grid.Column="0"
+                                                                Background="{DynamicResource SurfaceHeroBrush}"
+                                                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                                                BorderThickness="1"
+                                                                CornerRadius="12"
+                                                                Height="126"
+                                                                Padding="8"
+                                                                VerticalAlignment="Top">
+                                                            <outfit:OutfitPreviewCanvas Clothes="{Binding PreviewClothes}"/>
+                                                        </Border>
+
+                                                        <Grid Grid.Column="2">
+                                                            <Grid.RowDefinitions>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="Auto"/>
+                                                            </Grid.RowDefinitions>
+
+                                                            <WrapPanel>
+                                                                <Border Style="{StaticResource WeatherRecommendationChip}"
+                                                                        Margin="0,0,6,6">
+                                                                    <TextBlock Text="{Binding ReasonChipText}"
+                                                                               Style="{StaticResource WeatherRecommendationChipText}"/>
+                                                                </Border>
+                                                                <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="8"
+                                                                        Padding="8,3"
+                                                                        Margin="0,0,0,6">
+                                                                    <TextBlock Text="{Binding WearSummaryText}"
+                                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                               FontSize="{DynamicResource FontSize.Tiny}"
+                                                                               FontWeight="SemiBold"/>
+                                                                </Border>
+                                                            </WrapPanel>
+
+                                                            <StackPanel Grid.Row="1"
+                                                                        Margin="0,1,0,0">
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                           FontSize="{DynamicResource FontSize.Body}"
+                                                                           FontWeight="SemiBold"
+                                                                           TextWrapping="Wrap"
+                                                                           MaxHeight="36"/>
+                                                                <TextBlock Text="{Binding UserReasonHeadline}"
                                                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                           FontSize="10"
-                                                                           FontWeight="SemiBold"/>
-                                                            </Border>
-                                                        </WrapPanel>
+                                                                           FontSize="{DynamicResource FontSize.Tiny}"
+                                                                           Margin="0,4,0,0"
+                                                                           TextWrapping="NoWrap"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                            </StackPanel>
 
-                                                        <StackPanel Grid.Row="1"
-                                                                    Margin="0,2,0,0">
-                                                            <TextBlock Text="{Binding Name}"
-                                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                                       FontSize="15"
-                                                                       FontWeight="SemiBold"
-                                                                       TextWrapping="Wrap"
-                                                                       MaxHeight="38"/>
-                                                            <TextBlock Text="{Binding UserReasonHeadline}"
-                                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                       FontSize="11"
-                                                                       Margin="0,4,0,0"
-                                                                       TextWrapping="NoWrap"
-                                                                       TextTrimming="CharacterEllipsis"/>
-                                                        </StackPanel>
+                                                            <WrapPanel Grid.Row="2"
+                                                                       Margin="0,7,0,0"
+                                                                       MaxHeight="24">
+                                                                <ItemsControl ItemsSource="{Binding HighlightTags}">
+                                                                    <ItemsControl.ItemsPanel>
+                                                                        <ItemsPanelTemplate>
+                                                                            <WrapPanel/>
+                                                                        </ItemsPanelTemplate>
+                                                                    </ItemsControl.ItemsPanel>
+                                                                    <ItemsControl.ItemTemplate>
+                                                                        <DataTemplate>
+                                                                            <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                                                                    BorderBrush="{DynamicResource BorderLightBrush}"
+                                                                                    BorderThickness="1"
+                                                                                    CornerRadius="8"
+                                                                                    Margin="0,0,6,0"
+                                                                                    Padding="7,3">
+                                                                                <TextBlock Text="{Binding}"
+                                                                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                                           FontSize="{DynamicResource FontSize.Tiny}"
+                                                                                           FontWeight="SemiBold"/>
+                                                                            </Border>
+                                                                        </DataTemplate>
+                                                                    </ItemsControl.ItemTemplate>
+                                                                </ItemsControl>
+                                                            </WrapPanel>
 
-                                                        <WrapPanel Grid.Row="2"
-                                                                   Margin="0,8,0,0"
-                                                                   MaxHeight="24">
-                                                            <ItemsControl ItemsSource="{Binding HighlightTags}">
-                                                                <ItemsControl.ItemsPanel>
-                                                                    <ItemsPanelTemplate>
-                                                                        <WrapPanel/>
-                                                                    </ItemsPanelTemplate>
-                                                                </ItemsControl.ItemsPanel>
-                                                                <ItemsControl.ItemTemplate>
-                                                                    <DataTemplate>
-                                                                        <Border Background="{DynamicResource SurfaceSectionBrush}"
-                                                                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                                                                BorderThickness="1"
-                                                                                CornerRadius="8"
-                                                                                Margin="0,0,6,0"
-                                                                                Padding="7,3">
-                                                                            <TextBlock Text="{Binding}"
-                                                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                                       FontSize="9.5"
-                                                                                       FontWeight="SemiBold"/>
-                                                                        </Border>
-                                                                    </DataTemplate>
-                                                                </ItemsControl.ItemTemplate>
-                                                            </ItemsControl>
-                                                        </WrapPanel>
-
-                                                        <Grid Grid.Row="3"
-                                                              Margin="0,10,0,0">
-                                                            <Grid.ColumnDefinitions>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="Auto"/>
-                                                                <ColumnDefinition Width="*"/>
-                                                            </Grid.ColumnDefinitions>
-                                                            <Button Grid.Column="0"
-                                                                    Content="记这套"
-                                                                    Style="{StaticResource SecondaryRecommendationActionButton}"
-                                                                    HorizontalAlignment="Left"
-                                                                    MinWidth="76"
-                                                                    Command="{Binding DataContext.RecordRecommendedOutfitWornCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                    CommandParameter="{Binding}"/>
-                                                            <Button Grid.Column="1"
-                                                                    Content="详情"
-                                                                    Style="{StaticResource SecondaryRecommendationDetailButton}"
-                                                                    Margin="8,0,0,0"
-                                                                    HorizontalAlignment="Left"
-                                                                    MinWidth="54"
-                                                                    Command="{Binding DataContext.ShowRecommendationDebugForOutfitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                    CommandParameter="{Binding}"/>
+                                                            <Grid Grid.Row="3"
+                                                                  Margin="0,9,0,0">
+                                                                <Grid.ColumnDefinitions>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="Auto"/>
+                                                                    <ColumnDefinition Width="*"/>
+                                                                </Grid.ColumnDefinitions>
+                                                                <Button Grid.Column="0"
+                                                                        Content="记这套"
+                                                                        Style="{StaticResource SecondaryRecommendationActionButton}"
+                                                                        HorizontalAlignment="Left"
+                                                                        MinWidth="74"
+                                                                        Command="{Binding DataContext.RecordRecommendedOutfitWornCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                        CommandParameter="{Binding}"/>
+                                                                <Button Grid.Column="1"
+                                                                        Content="详情"
+                                                                        Style="{StaticResource SecondaryRecommendationDetailButton}"
+                                                                        Margin="8,0,0,0"
+                                                                        HorizontalAlignment="Left"
+                                                                        MinWidth="52"
+                                                                        Command="{Binding DataContext.ShowRecommendationDebugForOutfitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                                                                        CommandParameter="{Binding}"/>
+                                                            </Grid>
                                                         </Grid>
                                                     </Grid>
-                                                </Grid>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </Grid>
+                            </Border>
                         </Grid>
                     </Border>
                 </Grid>

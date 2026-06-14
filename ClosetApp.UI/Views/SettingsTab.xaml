@@ -8,8 +8,8 @@
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <Style x:Key="SettingsWorkbenchHeroCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
-            <Setter Property="Margin" Value="0,0,0,14"/>
-            <Setter Property="Padding" Value="20,18"/>
+            <Setter Property="Margin" Value="0,0,0,12"/>
+            <Setter Property="Padding" Value="18,16"/>
             <Setter Property="CornerRadius" Value="20"/>
             <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
@@ -36,12 +36,12 @@
         </Style>
 
         <Style x:Key="SettingsWorkbenchMetricLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="10"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
 
         <Style x:Key="SettingsWorkbenchMetricValue" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontSize" Value="{DynamicResource FontSize.Input}"/>
             <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
             <Setter Property="Margin" Value="0,5,0,0"/>
@@ -73,7 +73,7 @@
         <Border Grid.Row="0" Style="{StaticResource PageHeaderBorder}">
             <Grid Height="48" Margin="44,0">
                 <TextBlock Text="设置"
-                           FontSize="14"
+                           FontSize="{DynamicResource FontSize.Body}"
                            FontWeight="Bold"
                            Foreground="{DynamicResource TextPrimaryBrush}"
                            VerticalAlignment="Center"/>
@@ -82,7 +82,7 @@
 
         <ScrollViewer Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="44,12,44,48">
+                      Padding="44,10,44,40">
             <StackPanel>
                 <Border x:Name="SettingsOverviewHero"
                         Style="{StaticResource SettingsWorkbenchHeroCard}">
@@ -110,16 +110,17 @@
                         </Grid>
 
                         <Border x:Name="SettingsOverviewHeroSurface"
-                                Margin="0,12,0,0"
+                                Margin="0,10,0,0"
                                 Style="{StaticResource SettingsWorkbenchHeroNoteCard}">
-                            <Grid x:Name="SettingsOverviewCompactSummaryGrid">
+                            <Grid x:Name="SettingsOverviewSummaryGrid">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="10"/>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="12"/>
+                                    <ColumnDefinition Width="16"/>
                                     <ColumnDefinition Width="*"/>
                                 </Grid.ColumnDefinitions>
 
@@ -141,7 +142,8 @@
                                                TextWrapping="Wrap"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="4">
+                                <StackPanel Grid.Row="2"
+                                            Grid.Column="0">
                                     <TextBlock Text="AI"
                                                Style="{StaticResource PageSummaryHintText}"/>
                                     <TextBlock Text="{Binding AiSettingsSummary}"
@@ -150,7 +152,8 @@
                                                TextWrapping="Wrap"/>
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="6">
+                                <StackPanel Grid.Row="2"
+                                            Grid.Column="2">
                                     <TextBlock Text="城市"
                                                Style="{StaticResource PageSummaryHintText}"/>
                                     <TextBlock Text="{Binding WeatherCity}"
@@ -161,13 +164,14 @@
                             </Grid>
                         </Border>
 
-                        <Grid x:Name="SettingsOverviewMetricsGrid"
-                              Margin="0,12,0,0">
+                        <Grid x:Name="SettingsOverviewMetricMatrix"
+                              Margin="0,10,0,0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="12"/>
                                 <ColumnDefinition Width="*"/>
@@ -189,7 +193,8 @@
                                     <TextBlock x:Name="TxtCacheStats" Text="{Binding CacheStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Grid.Column="4"
+                            <Border Grid.Row="2"
+                                    Grid.Column="0"
                                     Style="{StaticResource SettingsWorkbenchMetricCard}"
                                     Margin="0">
                                 <StackPanel>
@@ -197,7 +202,8 @@
                                     <TextBlock Text="{Binding AiSettingsSummary}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
                                 </StackPanel>
                             </Border>
-                            <Border Grid.Column="6"
+                            <Border Grid.Row="2"
+                                    Grid.Column="2"
                                     Style="{StaticResource SettingsWorkbenchMetricCard}"
                                     Margin="0">
                                 <StackPanel>
@@ -211,18 +217,19 @@
 
                 <Border x:Name="SettingsWorkbenchSectionDivider"
                         Height="1"
-                        Margin="0,4,0,16"
+                        Margin="0,2,0,14"
                         Background="{DynamicResource BorderDividerBrush}"/>
 
                 <settings:AppearanceSettingsPanel x:Name="AppearancePanel"
                                                   ThemeChanged="AppearancePanel_ThemeChanged"
+                                                  FontSizeLevelChanged="AppearancePanel_FontSizeLevelChanged"
                                                   OutfitCardDisplayModeChanged="AppearancePanel_OutfitCardDisplayModeChanged"/>
 
                 <Grid x:Name="SettingsWorkbenchColumns"
-                      Margin="0,0,0,12">
+                      Margin="0,0,0,8">
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="20"/>
+                        <ColumnDefinition Width="16"/>
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 

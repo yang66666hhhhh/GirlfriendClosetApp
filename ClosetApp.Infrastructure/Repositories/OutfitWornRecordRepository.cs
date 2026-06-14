@@ -94,6 +94,18 @@ public class OutfitWornRecordRepository : IOutfitWornRecordRepository
             .ToListAsync();
     }
 
+    public async Task<int> DeleteAllAsync()
+    {
+        var query = await ForCurrentUserAsync(_context.OutfitWornRecords);
+        var records = await query.ToListAsync();
+        if (records.Count == 0)
+            return 0;
+
+        _context.OutfitWornRecords.RemoveRange(records);
+        await _context.SaveChangesAsync();
+        return records.Count;
+    }
+
     public async Task<bool> IsImageReferencedBySnapshotAsync(string imagePath)
     {
         if (string.IsNullOrWhiteSpace(imagePath))

@@ -150,6 +150,7 @@ public class ClearWardrobeByTypesTests
         public Task AddAsync(OutfitWornRecord entity) => throw new NotImplementedException();
         public Task UpdateAsync(OutfitWornRecord entity) => throw new NotImplementedException();
         public Task DeleteAsync(Guid id) => throw new NotImplementedException();
+        public Task<int> DeleteAllAsync() => throw new NotImplementedException();
         public Task<IEnumerable<OutfitWornRecord>> GetByDateRangeAsync(DateTime start, DateTime end) => throw new NotImplementedException();
         public Task<IEnumerable<OutfitWornRecord>> GetByOutfitIdAsync(Guid outfitId) => throw new NotImplementedException();
         public Task<IEnumerable<OutfitWornRecord>> GetRecentAsync(int count) => throw new NotImplementedException();

@@ -32,12 +32,12 @@
 
                     <StackPanel>
                         <TextBlock x:Name="TxtName"
-                                   FontSize="14"
+                                   FontSize="{DynamicResource FontSize.Body}"
                                    FontWeight="SemiBold"
                                    VerticalAlignment="Center"/>
                         <TextBlock x:Name="StateHint"
                                    Margin="0,4,0,0"
-                                   FontSize="11"
+                                   FontSize="{DynamicResource FontSize.Meta}"
                                    TextWrapping="Wrap"/>
                     </StackPanel>
 
@@ -47,7 +47,7 @@
                             Padding="8,3"
                             Visibility="Collapsed">
                         <TextBlock Text="当前使用"
-                                   FontSize="10"
+                                   FontSize="{DynamicResource FontSize.Tiny}"
                                    FontWeight="SemiBold"/>
                     </Border>
                 </Grid>
@@ -83,14 +83,14 @@
                                     Padding="8,3"
                                     BorderThickness="1">
                                 <TextBlock x:Name="ActionPillText"
-                                           FontSize="10"
+                                           FontSize="{DynamicResource FontSize.Tiny}"
                                            FontWeight="SemiBold"/>
                             </Border>
                         </Grid>
 
                         <TextBlock x:Name="TxtDescription"
                                    Grid.Row="1"
-                                   FontSize="11"
+                                   FontSize="{DynamicResource FontSize.Meta}"
                                    Margin="0,12,0,0"
                                    TextWrapping="Wrap"/>
                     </Grid>
@@ -99,7 +99,7 @@
                 <TextBlock x:Name="ActionHint"
                            Grid.Row="2"
                            Margin="0,12,0,0"
-                           FontSize="11"
+                           FontSize="{DynamicResource FontSize.Meta}"
                            FontWeight="SemiBold"/>
             </Grid>
         </Border>

@@ -99,6 +99,12 @@ public partial class SettingsTab : UserControl
         await RequestAppRefreshAsync(outfits: true);
     }
 
+    private async void AppearancePanel_FontSizeLevelChanged(object sender, AppFontSizeLevel e)
+    {
+        await _viewModel.SaveFontSizeLevelAsync(e);
+        AppearancePanel.ApplyFontSizeSelection(e);
+    }
+
     private void OverviewThemeShortcut_Click(object sender, RoutedEventArgs e)
     {
         AppearancePanel.BringIntoView();

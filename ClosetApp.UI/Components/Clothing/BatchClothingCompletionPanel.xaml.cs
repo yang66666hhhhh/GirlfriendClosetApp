@@ -5,6 +5,8 @@ using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.UI.Components.Shared.Editor;
+using ClosetApp.UI.Components.Shared.Modal;
+using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Components.Clothing;
@@ -83,7 +85,7 @@ public partial class BatchClothingCompletionPanel : UserControl, IEditorPanel<Ba
         };
     }
 
-    private void Save_Click(object sender, RoutedEventArgs e)
+    private async void Save_Click(object sender, RoutedEventArgs e)
     {
         if (_isSubmitting)
             return;
@@ -98,7 +100,11 @@ public partial class BatchClothingCompletionPanel : UserControl, IEditorPanel<Ba
 
         if (!HasAnyRequestedChange(request))
         {
-            MessageBox.Show("请至少选择一项要补全的信息。", "批量补全", MessageBoxButton.OK, MessageBoxImage.Information);
+            await ConfirmModal.ShowMessageAsync(
+                "还没有选择补全项",
+                "请至少勾选一项要补全的信息。",
+                "比如类型、季节、颜色、品牌或标签。选中后这批衣服才知道要统一补什么。",
+                confirmText: "继续编辑");
             return;
         }
 

@@ -15,7 +15,7 @@
 
     <Style x:Key="FormSectionTitle" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Margin" Value="0,0,0,14"/>
@@ -23,7 +23,7 @@
 
     <Style x:Key="FormFieldLabel" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Hint}"/>
         <Setter Property="FontWeight" Value="Medium"/>
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="Margin" Value="0,0,0,6"/>
@@ -33,7 +33,7 @@
         <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Input}"/>
         <Setter Property="Padding" Value="14,10"/>
         <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
@@ -51,7 +51,7 @@
                             <TextBlock x:Name="Placeholder"
                                        Text="{TemplateBinding Tag}"
                                        Foreground="{DynamicResource TextPlaceholderBrush}"
-                                       FontSize="13"
+                                       FontSize="{DynamicResource FontSize.Label}"
                                        VerticalAlignment="Center"
                                        Visibility="Collapsed"
                                        IsHitTestVisible="False"/>
@@ -97,7 +97,7 @@
     <Style x:Key="AppSegmentedTabButton" TargetType="RadioButton">
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="MinHeight" Value="34"/>
@@ -166,7 +166,7 @@
     <Style x:Key="AppToolbarToggleChip" TargetType="CheckBox">
         <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="11"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
         <Setter Property="FontWeight" Value="SemiBold"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="Padding" Value="12,8"/>
@@ -230,7 +230,7 @@
 
     <Style x:Key="AppComboBoxItemBase" TargetType="ComboBoxItem">
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
         <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
         <Setter Property="Background" Value="Transparent"/>
         <Setter Property="Padding" Value="12,8"/>
@@ -300,7 +300,7 @@
 
     <Style x:Key="AppComboBoxBase" TargetType="ComboBox">
         <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
-        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
         <Setter Property="MinHeight" Value="40"/>
         <Setter Property="HorizontalAlignment" Value="Stretch"/>
         <Setter Property="VerticalContentAlignment" Value="Center"/>

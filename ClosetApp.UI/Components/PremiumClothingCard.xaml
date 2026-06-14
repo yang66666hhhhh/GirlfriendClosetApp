@@ -151,7 +151,7 @@
                                                 <TextBlock Grid.Column="2"
                                                            Text="编辑"
                                                            Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                                           FontSize="12"
+                                                           FontSize="{DynamicResource FontSize.Hint}"
                                                            FontWeight="SemiBold"
                                                            VerticalAlignment="Center"/>
                                             </Grid>
@@ -178,7 +178,7 @@
                                                 <TextBlock Grid.Column="2"
                                                            Text="删除"
                                                            Foreground="{Binding RelativeSource={RelativeSource AncestorType=MenuItem}, Path=Foreground}"
-                                                           FontSize="12"
+                                                           FontSize="{DynamicResource FontSize.Hint}"
                                                            FontWeight="SemiBold"
                                                            VerticalAlignment="Center"/>
                                             </Grid>

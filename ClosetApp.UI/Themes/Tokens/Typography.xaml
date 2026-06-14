@@ -5,11 +5,15 @@
     <FontFamily x:Key="Font.Primary">system-ui, "Segoe UI", sans-serif</FontFamily>
 
     <sys:Double x:Key="FontSize.Hero">28</sys:Double>
+    <sys:Double x:Key="FontSize.PageTitle">20</sys:Double>
+    <sys:Double x:Key="FontSize.SectionTitle">18</sys:Double>
     <sys:Double x:Key="FontSize.Section">11</sys:Double>
     <sys:Double x:Key="FontSize.Label">13</sys:Double>
+    <sys:Double x:Key="FontSize.Body">14</sys:Double>
     <sys:Double x:Key="FontSize.Input">15</sys:Double>
     <sys:Double x:Key="FontSize.Hint">12</sys:Double>
     <sys:Double x:Key="FontSize.Meta">11</sys:Double>
+    <sys:Double x:Key="FontSize.Tiny">10</sys:Double>
 
     <sys:Double x:Key="Button.FontSize.Small">12</sys:Double>
     <sys:Double x:Key="Button.FontSize.Medium">14</sys:Double>

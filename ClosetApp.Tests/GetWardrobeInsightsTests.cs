@@ -193,6 +193,7 @@ public class GetWardrobeInsightsTests
         public Task<WornRecordImageHealthDto> AnalyzeWornRecordImageHealthAsync() => Task.FromResult(new WornRecordImageHealthDto(0, 0, 0, 0));
         public Task RepairWornRecordSnapshotImageAsync(Guid recordId, Guid clothingId, string imagePath) => throw new NotImplementedException();
         public Task DeleteWornRecordAsync(Guid recordId) => throw new NotImplementedException();
+        public Task<int> ClearWornHistoryAsync() => Task.FromResult(0);
         public Task<bool> ToggleFavoriteAsync(Guid outfitId) => throw new NotImplementedException();
         public Task<IReadOnlyList<OutfitGeneratedImage>> GetGeneratedImagesAsync(Guid outfitId) => Task.FromResult<IReadOnlyList<OutfitGeneratedImage>>([]);
     }

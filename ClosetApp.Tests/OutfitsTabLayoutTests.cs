@@ -23,10 +23,13 @@ public class OutfitsTabLayoutTests
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml"));
 
+        Assert.Contains("x:Name=\"SecondaryRecommendationRail\"", xaml);
+        Assert.Contains("x:Name=\"SecondaryRecommendationHeader\"", xaml);
+        Assert.Contains("x:Name=\"SecondaryRecommendationCardsHost\"", xaml);
         Assert.Contains("x:Name=\"SecondaryRecommendationHintText\"", xaml);
         Assert.Contains("Text=\"{Binding SecondaryWeatherRecommendationSectionBody}\"", xaml);
-        Assert.Contains("Foreground=\"{DynamicResource TextTertiaryBrush}\"", xaml);
-        Assert.DoesNotContain("Text=\"备选搭配\"", xaml);
+        Assert.Contains("Text=\"{Binding SecondaryWeatherRecommendations.Count, StringFormat=再看 {0} 套}\"", xaml);
+        Assert.DoesNotContain("Foreground=\"{DynamicResource TextTertiaryBrush}\"", xaml);
     }
 
     [Fact]
@@ -36,9 +39,15 @@ public class OutfitsTabLayoutTests
 
         Assert.Contains("x:Name=\"TodayHeroCardGrid\"", xaml);
         Assert.Contains("x:Name=\"TodayHeroInfoColumn\"", xaml);
+        Assert.Contains("x:Name=\"TodayHeroStatusPanelHost\"", xaml);
         Assert.Contains("x:Name=\"TodayHeroActionsPanel\"", xaml);
-        Assert.Contains("x:Name=\"TodayHeroQuickLinksPanel\"", xaml);
+        Assert.Contains("x:Name=\"TodayHeroPrimaryActionRow\"", xaml);
+        Assert.Contains("x:Name=\"TodayHeroFooterRailHost\"", xaml);
+        Assert.Contains("<WrapPanel x:Name=\"TodayHeroFooterRailHost\"", xaml);
+        Assert.DoesNotContain("<Border x:Name=\"TodayHeroFooterRailHost\"", xaml);
         Assert.Contains("MinHeight=\"320\"", xaml);
+        Assert.Contains("x:Name=\"SecondaryRecommendationRail\"", xaml);
+        Assert.Contains("VerticalAlignment=\"Top\"", xaml);
     }
 
     private static string FindProjectFile(string relativePath)

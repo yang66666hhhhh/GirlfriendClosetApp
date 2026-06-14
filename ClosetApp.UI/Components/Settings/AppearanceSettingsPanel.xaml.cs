@@ -3,9 +3,9 @@ using System.IO;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
+using ClosetApp.UI.ViewModels;
 using ClosetApp.UI.Logic.Services;
 using ClosetApp.UI.Services;
-using ClosetApp.UI.ViewModels;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace ClosetApp.UI.Components.Settings;
@@ -13,24 +13,28 @@ namespace ClosetApp.UI.Components.Settings;
 public partial class AppearanceSettingsPanel : UserControl
 {
     private readonly ThemeService _themeService;
-    private readonly SettingsViewModel _viewModel;
+    private bool _isApplyingSelection;
 
     public AppearanceSettingsPanel()
     {
         InitializeComponent();
         _themeService = App.Services.GetRequiredService<ThemeService>();
-        _viewModel = App.Services.GetRequiredService<SettingsViewModel>();
     }
 
     public void Refresh()
     {
         TxtVersion.Text = $"版本 {GetVersion()}";
         ApplyThemeCardSelection(_themeService.CurrentTheme);
-        ApplyOutfitCardDisplaySelection(_viewModel.DefaultOutfitCardDisplayMode);
+        if (DataContext is SettingsViewModel viewModel)
+        {
+            ApplyOutfitCardDisplaySelection(viewModel.DefaultOutfitCardDisplayMode);
+            ApplyFontSizeSelection(viewModel.FontSizeLevel);
+        }
     }
 
     public event EventHandler<AppThemeKind>? ThemeChanged;
     public event EventHandler<OutfitCardDisplayMode>? OutfitCardDisplayModeChanged;
+    public event EventHandler<AppFontSizeLevel>? FontSizeLevelChanged;
 
     private static string GetVersion()
     {
@@ -59,8 +63,37 @@ public partial class AppearanceSettingsPanel : UserControl
 
     public void ApplyOutfitCardDisplaySelection(OutfitCardDisplayMode mode)
     {
-        RadioOutfitFirst.IsChecked = mode == OutfitCardDisplayMode.OutfitFirst;
-        RadioEffectImageFirst.IsChecked = mode == OutfitCardDisplayMode.EffectImageFirst;
+        ApplySelectionSilently(() =>
+        {
+            RadioOutfitFirst.IsChecked = mode == OutfitCardDisplayMode.OutfitFirst;
+            RadioEffectImageFirst.IsChecked = mode == OutfitCardDisplayMode.EffectImageFirst;
+        });
+    }
+
+    public void ApplyFontSizeSelection(AppFontSizeLevel level)
+    {
+        ApplySelectionSilently(() =>
+        {
+            RadioFontSmall.IsChecked = level == AppFontSizeLevel.Small;
+            RadioFontStandard.IsChecked = level == AppFontSizeLevel.Standard;
+            RadioFontComfortable.IsChecked = level == AppFontSizeLevel.Comfortable;
+            RadioFontLarge.IsChecked = level == AppFontSizeLevel.Large;
+            RadioFontExtraLarge.IsChecked = level == AppFontSizeLevel.ExtraLarge;
+        });
+    }
+
+    private void ApplySelectionSilently(Action apply)
+    {
+        var wasApplying = _isApplyingSelection;
+        _isApplyingSelection = true;
+        try
+        {
+            apply();
+        }
+        finally
+        {
+            _isApplyingSelection = wasApplying;
+        }
     }
 
     private void OpenAppDir_Click(object sender, RoutedEventArgs e)
@@ -70,6 +103,9 @@ public partial class AppearanceSettingsPanel : UserControl
 
     private void OutfitDisplayMode_Checked(object sender, RoutedEventArgs e)
     {
+        if (_isApplyingSelection)
+            return;
+
         if (sender is not RadioButton radioButton || radioButton.IsChecked != true)
             return;
 
@@ -80,5 +116,19 @@ public partial class AppearanceSettingsPanel : UserControl
         }
 
         OutfitCardDisplayModeChanged?.Invoke(this, OutfitCardDisplayMode.OutfitFirst);
+    }
+
+    private void FontSizeLevel_Checked(object sender, RoutedEventArgs e)
+    {
+        if (_isApplyingSelection)
+            return;
+
+        if (sender is not RadioButton { IsChecked: true, Tag: string levelName })
+            return;
+
+        if (!Enum.TryParse<AppFontSizeLevel>(levelName, out var level))
+            return;
+
+        FontSizeLevelChanged?.Invoke(this, level);
     }
 }

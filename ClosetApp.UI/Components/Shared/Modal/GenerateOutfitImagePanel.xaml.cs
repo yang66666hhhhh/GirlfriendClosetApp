@@ -327,12 +327,12 @@ public partial class GenerateOutfitImagePanel : UserControl
         if (_isBusy || sender is not Button { Tag: Guid imageId })
             return;
 
-        var confirmResult = MessageBox.Show(
-            "确定删除这条失败记录吗？\n\n删除后不会影响已经保存成功的效果图，只会把这次失败尝试从列表里移除。",
+        var confirmed = await ConfirmModal.ShowAsync(
             "删除失败记录",
-            MessageBoxButton.OKCancel,
-            MessageBoxImage.Warning);
-        if (confirmResult != MessageBoxResult.OK)
+            "删除后不会影响已经保存成功的效果图。",
+            "只会把这次失败尝试从最近生成状态列表里移除，确定继续吗？",
+            confirmText: "删除记录");
+        if (!confirmed)
             return;
 
         try

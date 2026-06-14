@@ -131,7 +131,11 @@ public partial class WornDayDetailsDialog : UserControl
     {
         if (OutfitPicker.SelectedItem is not OutfitEntity outfit)
         {
-            ToastService.Instance.ShowInfo("先选择一套搭配再添加记录");
+            await ConfirmModal.ShowMessageAsync(
+                "还没有选中搭配",
+                "先选择一套搭配，再把它记到这一天。",
+                "上面的下拉框会列出当前可用的搭配；选中之后再点“添加记录”就行。",
+                confirmText: "继续选择");
             return;
         }
 

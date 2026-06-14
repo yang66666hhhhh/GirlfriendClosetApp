@@ -5,7 +5,7 @@
         <Setter Property="MinHeight" Value="44"/>
         <Setter Property="MinWidth" Value="104"/>
         <Setter Property="Padding" Value="18,10"/>
-        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontSize" Value="{DynamicResource Button.FontSize.Medium}"/>
     </Style>
 
     <Style x:Key="ModalCancelButton" TargetType="Button" BasedOn="{StaticResource ModalFooterButtonBase}">

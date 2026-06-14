@@ -195,6 +195,7 @@ MainWindow 2 列布局：
 - State 负责：搜索文本、筛选器、加载标记、空状态、当前集合
 - 纯展示文案、排序标签、推荐提示等无副作用 helper 优先收敛到 `ClosetApp.UI.Logic/Services`
 - Code-behind 负责：点击处理、动画、弹窗编排
+- 业务弹窗统一优先走 `ModalService + Components/Shared/Modal/*`；不要继续新增普通 `Window` 作为页面内编辑、确认、预览、详情入口
 - `Components/Outfit/Controls/OutfitCard` 优先保持浏览轻量化：卡片只保留原始搭配预览、收藏、更多和 AI 状态；效果图查看与管理统一进入 `Components/Shared/Modal/OutfitWorkspaceDialog`
 - 启动性能优先保证“窗口先出现”：数据库迁移链通过 `AppStartupCoordinator` 后台启动，各 Tab 在读取数据前统一等待 readiness；不要再让隐藏 Tab 依赖 `Loaded` 自动首刷制造二次刷新体感
 
@@ -235,9 +236,11 @@ MainWindow 2 列布局：
 ThemeService (Singleton)
   → ThemePalette.Create(AppThemeKind) → 返回完整调色板
   → ApplyPalette() → 更新 Application.Resources 中所有 Color/Brush
+  → ApplyTypography() → 更新 Application.Resources 中所有字体 token
 ```
 
 主题调色板包含 5 套辅助色系：Sky、Mint、Rose、Amber、Lavender。
+字体大小支持 `小 / 标准 / 舒适 / 大 / 特大` 五档，按当前登录用户持久化，默认 `标准`。
 
 ### 8.2 Color Tokens
 
@@ -275,6 +278,17 @@ Card.HoverDurationMs = 220
 ```
 HandyControl → Tokens/* → Controls/* → Shared/Modal/* → Shared/Form/*
 ```
+
+### 8.6 对话框与样式统一
+
+- 对话框样式必须保持全局一致，优先复用现有 `Components/Shared/Modal` 弹窗体系
+- 新增确认、警告、说明、编辑、预览、工作台类弹窗时，优先复用现有组件与样式，不要为单个页面再手写一套按钮、页脚、标题区和卡片外壳
+- 优先复用的共享样式包括：`ModalCardRoot`、`ModalCloseButton`、`ModalCancelButton`、`ModalSaveButton`、`ModalDangerButton`、`AppSegmentedTabShell`、`AppSegmentedTabButton`
+- 主要文字样式必须优先复用 `Themes/Tokens/Typography.xaml` 中的动态字号 token；标题、正文、按钮、输入框、标签、设置卡片和共享弹窗不要继续硬编码主文字字号
+- 允许保留少量装饰性固定字号，例如图标字符、关闭符号、评分星标、局部画布标记，但必须确认它们不承担主要阅读信息
+- 已有共享确认弹窗可满足场景时，优先使用 `ConfirmModal`，不要继续直接使用系统 `MessageBox` 做常规业务确认
+- `OpenFileDialog`、`SaveFileDialog`、`OpenFolderDialog` 这类系统文件/目录选择器允许保留原生样式；`LoginWindow`、`MainWindow` 这类应用根窗口不属于本规则中的“业务弹窗”
+- 只有应用启动失败、全局未捕获异常这类无法依赖主界面 `ModalContainer` 的兜底场景，才允许使用系统原始对话框
 
 ---
 
@@ -495,8 +509,11 @@ DON'T:
 ToastService.Instance.ShowSuccess("已保存");
 ToastService.Instance.ShowError("保存失败", ex.Message);
 
-// 确认弹窗：使用 MessageBox
-var result = MessageBox.Show("确定删除吗？", "确认", MessageBoxButton.OKCancel);
+// 常规业务确认：优先使用 ConfirmModal
+var confirmed = await ConfirmModal.ShowDeleteAsync("确定删除吗？");
+
+// 只有无法依赖主界面 ModalContainer 的兜底场景才使用 MessageBox
+var result = MessageBox.Show("启动失败", "错误", MessageBoxButton.OK, MessageBoxImage.Error);
 
 // 统一错误分类：使用 WardrobeActionErrorPresenter
 var feedback = WardrobeActionErrorPresenter.ForClothingSave(ex, isEditMode);
@@ -512,12 +529,15 @@ DO:
   - 新控件使用 DependencyProperties（非 CLR 属性）
   - 卡片组件使用路由事件（CardClicked, EditClicked, DeleteClicked）
   - 图片绑定使用 ImagePathConverter
+  - 弹窗优先复用 Shared/Modal 下已有结构与主题资源
+  - 弹窗页脚、关闭按钮、分段切换优先复用现有共享样式
 
 DON'T:
   - 不要硬编码颜色/尺寸（用 Token 资源）
   - 不要用 Border.MouseLeftButtonDown 包裹卡片（会被内部事件消费）
   - 不要在 code-behind 中直接操作文件系统（用 Service）
   - 不要在 XAML 中使用 {Binding} 调用方法（用属性或转换器）
+  - 不要新增风格割裂的原始业务对话框或局部自定义弹窗样式
 ```
 
 ### 11.5 依赖注入规则
@@ -703,7 +723,8 @@ public async Task DoSomethingAsync() { ... }
 ### 错误处理
 - [ ] 使用 WardrobeActionErrorPresenter 处理用户可见错误
 - [ ] 使用 ToastService.ShowSuccess/ShowError 反馈操作结果
-- [ ] 使用 MessageBox 进行确认对话
+- [ ] 常规业务确认优先使用 `ConfirmModal` 或共享 Modal 体系
+- [ ] `MessageBox` 仅用于启动/崩溃兜底等无法依赖主界面 Modal 的场景
 
 ### 文档
 - [ ] 任何代码行为、业务规则、接口、UI 入口或维护流程变化，都已同步更新对应文档（至少检查 `PROJECT_DOCUMENTATION.md`、`README.md`、`docs/ARCHITECTURE_CONVENTIONS.md`、`AGENTS.md`）

@@ -108,7 +108,7 @@
                                            FontWeight="SemiBold"/>
                                 <TextBlock Text="适合补记昨天、周末或者约会那天穿了什么。"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                           FontSize="12"
+                                           FontSize="{DynamicResource FontSize.Hint}"
                                            Margin="0,4,0,0"/>
                             </StackPanel>
                             <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Margin="16,0,0,0">
@@ -182,7 +182,7 @@
                                                         <ColumnDefinition Width="Auto"/>
                                                     </Grid.ColumnDefinitions>
                                                     <TextBlock Text="{Binding OutfitName}"
-                                                               FontSize="14"
+                                                               FontSize="{DynamicResource FontSize.Body}"
                                                                FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TextPrimaryBrush}"
                                                                TextTrimming="CharacterEllipsis"
@@ -199,13 +199,13 @@
                                                             Visibility="Collapsed"/>
                                                 </Grid>
                                                 <TextBlock Text="{Binding TimeText}"
-                                                           FontSize="11.5"
+                                                           FontSize="{DynamicResource FontSize.Meta}"
                                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                                            Margin="0,6,0,0"/>
                                                 <Border Style="{StaticResource WornRecordMetaBadge}"
                                                         Margin="0,6,0,0">
                                                     <TextBlock Text="{Binding PreviewMetaText}"
-                                                               FontSize="9.5"
+                                                               FontSize="{DynamicResource FontSize.Tiny}"
                                                                FontWeight="SemiBold"
                                                                Foreground="{DynamicResource TextSecondaryBrush}"/>
                                                 </Border>
@@ -214,7 +214,7 @@
                                                             Margin="0,0,6,6"
                                                             Visibility="{Binding HasStatus, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                         <TextBlock Text="{Binding StatusText}"
-                                                                   FontSize="11"
+                                                                   FontSize="{DynamicResource FontSize.Meta}"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{DynamicResource TagRoseTextBrush}"/>
                                                     </Border>
@@ -222,7 +222,7 @@
                                                             Margin="0,0,0,6"
                                                             Visibility="{Binding HasPreviewAvailabilityHint, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                         <TextBlock Text="{Binding PreviewAvailabilityText}"
-                                                                   FontSize="11"
+                                                                    FontSize="{DynamicResource FontSize.Meta}"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{DynamicResource TagAmberTextBrush}"/>
                                                     </Border>
@@ -233,7 +233,7 @@
                                                         Visibility="{Binding HasMissingImages, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                     <StackPanel Orientation="Horizontal">
                                                         <TextBlock Text="{Binding MissingImageText}"
-                                                                   FontSize="11"
+                                                                   FontSize="{DynamicResource FontSize.Meta}"
                                                                    FontWeight="SemiBold"
                                                                    Foreground="{DynamicResource TagAmberTextBrush}"
                                                                    VerticalAlignment="Center"/>
@@ -321,12 +321,12 @@
                     <StackPanel>
                         <TextBlock x:Name="PreviewPopupTitleText"
                                    Foreground="{DynamicResource TextPrimaryBrush}"
-                                   FontSize="12"
+                                   FontSize="{DynamicResource FontSize.Hint}"
                                    FontWeight="SemiBold"
                                    TextTrimming="CharacterEllipsis"/>
                         <TextBlock x:Name="PreviewPopupMetaText"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                   FontSize="10"
+                                   FontSize="{DynamicResource FontSize.Tiny}"
                                    Margin="0,3,0,0"
                                    TextWrapping="Wrap"/>
                         <Border Height="210"
@@ -373,7 +373,7 @@
                                                             VerticalAlignment="Center"/>
                                 <TextBlock x:Name="PreviewPopupEmptyText"
                                            Foreground="{DynamicResource TextSecondaryBrush}"
-                                           FontSize="10.5"
+                                           FontSize="{DynamicResource FontSize.Tiny}"
                                            MaxWidth="152"
                                            TextAlignment="Center"
                                            TextWrapping="Wrap"

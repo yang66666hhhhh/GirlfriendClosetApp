@@ -578,6 +578,7 @@ public class OutfitsViewModelTests
         }
 
         public Task DeleteWornRecordAsync(Guid recordId) => throw new NotImplementedException();
+        public Task<int> ClearWornHistoryAsync() => Task.FromResult(0);
         public Task<bool> ToggleFavoriteAsync(Guid outfitId)
         {
             var outfit = _outfits.First(outfit => outfit.Id == outfitId);

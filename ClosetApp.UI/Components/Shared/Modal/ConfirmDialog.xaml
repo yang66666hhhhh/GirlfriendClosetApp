@@ -13,7 +13,7 @@
                 <StackPanel Grid.Row="0" Margin="28,26,28,22">
                     <TextBlock x:Name="TitleText"
                                Style="{StaticResource ModalHeaderTitle}"
-                               FontSize="22"
+                               FontSize="{DynamicResource FontSize.PageTitle}"
                                Text="确认操作"/>
                     <TextBlock x:Name="BodyText"
                                Style="{StaticResource ModalHeaderSubtitle}"
@@ -25,7 +25,7 @@
                             Margin="0,20,0,0">
                         <TextBlock x:Name="DetailText"
                                    Foreground="{DynamicResource TextSecondaryBrush}"
-                                   FontSize="13"
+                                   FontSize="{DynamicResource FontSize.Label}"
                                    TextWrapping="Wrap"/>
                     </Border>
                 </StackPanel>
@@ -41,7 +41,7 @@
                                 Click="CancelButton_Click"/>
                         <Button x:Name="ConfirmButton"
                                 Content="确认"
-                                Style="{StaticResource ModalDangerButton}"
+                                Style="{StaticResource ModalSaveButton}"
                                 Click="ConfirmButton_Click"/>
                     </StackPanel>
                 </Border>

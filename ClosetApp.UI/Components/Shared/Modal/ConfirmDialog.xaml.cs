@@ -34,10 +34,25 @@ public partial class ConfirmDialog : UserControl
         set => ConfirmButton.Content = value;
     }
 
+    public Style ConfirmButtonStyle
+    {
+        get => ConfirmButton.Style;
+        set => ConfirmButton.Style = value;
+    }
+
     public string CancelText
     {
         get => (string)CancelButton.Content;
         set => CancelButton.Content = value;
+    }
+
+    public bool IsCancelVisible
+    {
+        get => CancelButton.Visibility == Visibility.Visible;
+        set
+        {
+            CancelButton.Visibility = value ? Visibility.Visible : Visibility.Collapsed;
+        }
     }
 
     public event EventHandler? Confirmed;
