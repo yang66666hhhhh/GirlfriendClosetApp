@@ -1,6 +1,6 @@
 # Architecture Conventions
 
-> 最后更新时间：2026-06-11
+> 最后更新时间：2026-06-14
 > 本文档记录当前项目的高价值架构约束，重点是分层、页面职责、AI 工作流边界、历史快照和图片资产规则。
 
 ## 1. 分层与依赖
@@ -28,7 +28,7 @@
 - `Clothing`、`Outfit`、`Tag`、`Favorite`、`OutfitWornRecord`、`PersonalProfile`、`OutfitGeneratedImage` 都必须带 `LocalUserId`。
 - 仓储默认按 `ICurrentUserContext` 过滤当前用户数据；新增实体要自动写入当前用户 ID。
 - 旧数据升级后归属超级管理员；超级管理员不可删除。
-- 本地登录使用 `AccountName` + 密码/PIN 凭证；账号名作为本地登录标识，密码和 PIN 必须使用 PBKDF2 + 随机 salt 存储，禁止保存明文。
+- 登录页主流程只使用 `AccountName` + 密码；账号名作为本地登录标识，密码和保留的 PIN 凭证能力必须使用 PBKDF2 + 随机 salt 存储，禁止保存明文。
 - 普通用户不能看到或打开用户管理入口；超级管理员负责创建、重置和删除普通用户。
 - 登录后不提供无验证用户切换；更换本地用户必须退出登录并重新输入账号密码或 PIN。
 - 用户管理弹窗不承担会话切换职责，只负责用户资料、头像、凭证和删除管理。
@@ -113,7 +113,7 @@
 ## 7. PersonalProfile 与设置页分区
 
 - 个人档案使用 `PersonalProfile`，按 `LocalUserId` 隔离，走 SQLite，不走普通 JSON 偏好。
-- 主题、天气、推荐、AI 图片生成和搭配卡片展示设置按当前本地用户隔离。
+- 主题、天气、推荐、AI 图片生成、字体大小和搭配卡片展示设置按当前本地用户隔离。
 - 用户作用域设置文件统一落到 `users/{userId}/{setting-name}.json`，禁止继续从全局 JSON 直接读取当前用户设置。
 - API Key 不明文存普通设置 JSON。
 - 设置页稳定分区组件放在 `Components/Settings`：
@@ -124,9 +124,10 @@
 - `WeatherPreferencesSettingsPanel`
 - `AppearanceSettingsPanel`
 - `BackupSettingsPanel`
-- `AppearanceSettingsPanel` 同时承接主题切换和搭配卡片展示模式默认值设置
+- `AppearanceSettingsPanel` 同时承接主题切换、字体大小等级和搭配卡片展示模式默认值设置
 - `SettingsTab` 负责初始化和跨分区协调，不重新吞回所有局部按钮逻辑。
 - `SettingsTab` 顶部保持总览工作台，下方稳定分成“日常偏好 / 维护治理”两列；不要再回到大段说明文字 + 多层卡片嵌套的旧布局。
+- `AppearanceSettingsPanel` 保留紧凑小预览摘要卡，只用于展示主题、字号和卡片策略效果；不要恢复占高的大预览区。
 - `AiImageGenerationSettingsPanel` 只保留必要接口设置，不再回到“模型预设卡片 + 说明堆叠”的旧方案。
 - `WeatherPreferencesSettingsPanel` 的城市输入允许展示 `城市 · 省/州 · 国家` 这样的候选文案，但传给天气 geocoding 接口前必须先规范化为主城市名。
 
@@ -190,13 +191,17 @@
 - 设计 token 放在 `ClosetApp.UI/Themes/Tokens`
 - 控件样式放在 `ClosetApp.UI/Themes/Controls`
 - 新 UI 优先复用 token，不要硬编码颜色、阴影、圆角和间距
+- 主要文字优先复用 `Typography.xaml` 中的动态字号 token，不要为标题、正文、按钮、输入框、标签、设置卡片和共享弹窗持续写死 `FontSize="12"` 这类值
 - 共享控件优先放 `Components/Shared`
 - 自定义控件优先用 DependencyProperty，不要用大量命令式视觉同步
+- 业务弹窗统一优先使用 `ModalService + Components/Shared/Modal/*`；不要继续新增风格独立的普通 `Window` 作为编辑、确认、详情、预览入口
 - 弹窗内高频操作优先复用共享样式：
   - 关闭按钮：`ModalCloseButton`
   - 页脚取消 / 保存：`ModalCancelButton` / `ModalSaveButton`
   - 次级工具按钮：`SecondaryButton` / `GhostButton`
   - 模式切换：`AppSegmentedTabShell` + `AppSegmentedTabButton`
+- 常规业务确认优先复用 `ConfirmModal`，不要继续用系统 `MessageBox` 承担主要确认流程
+- `OpenFileDialog`、`SaveFileDialog`、`OpenFolderDialog` 这类系统文件选择器允许保留原生样式；应用启动失败、全局未捕获异常等无法依赖主界面 `ModalContainer` 的兜底场景，才允许使用 `MessageBox`
 - 本地用户头像统一使用 `Components/Shared/LocalUserAvatar`；侧边栏、登录页、用户管理弹窗不要各自手写头像壳。
 - 本地用户头像和个人档案参考图都必须按用户 ID 生成独立文件槽名，禁止继续使用全局固定 `avatar` / `full-body` 文件名覆盖不同用户资源。
 - 对象型 `ComboBox` 必须显式声明显示映射：
@@ -205,6 +210,8 @@
   - 不允许在同一个 `ComboBox` 上同时混用 `DisplayMemberPath` 和 `ItemTemplate`
 - 登录页最近账号下拉、搭配页筛选下拉、设置页偏好下拉都应复用共享样式，并通过测试保护选中态显示，避免退回对象 `ToString()`
 - 登录页保持居中悬浮表单结构，不再恢复左右分栏的大介绍区；品牌区只保留头像、主标题和简短副标题，视觉焦点必须优先落在登录操作。
+- `ThemeService` 不仅负责调色板，也负责把当前用户的字体等级写回 `Application.Resources` 中的 typography token；测试场景下若没有真实 WPF `Application`，服务也必须能安全初始化与持久化状态。
+- `ThemeService` 必须监听当前用户变化并重新读取用户作用域主题/字号偏好，保证登录或重新登录后恢复当前用户上次选择的字体大小。
 
 ## 13. 命名空间安全
 

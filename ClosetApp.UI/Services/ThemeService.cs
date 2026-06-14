@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using ClosetApp.Application.Interfaces;
 
 namespace ClosetApp.UI.Services;
 
@@ -8,47 +9,93 @@ public sealed class ThemeService
 {
     private readonly ThemePreferencesService _preferencesService;
 
-    public ThemeService(ThemePreferencesService preferencesService)
+    public ThemeService(ThemePreferencesService preferencesService, ICurrentUserContext? currentUserContext = null)
     {
         _preferencesService = preferencesService;
+        if (currentUserContext != null)
+            currentUserContext.CurrentUserChanged += CurrentUserContext_CurrentUserChanged;
     }
 
     public AppThemeKind CurrentTheme { get; private set; } = AppThemeKind.Rose;
+    public AppFontSizeLevel CurrentFontSizeLevel { get; private set; } = AppFontSizeLevel.Standard;
 
     public event EventHandler<AppThemeKind>? ThemeChanged;
+    public event EventHandler<AppFontSizeLevel>? FontSizeLevelChanged;
 
     public async Task InitializeAsync()
     {
-        var preferences = await _preferencesService.GetAsync().ConfigureAwait(false);
-        ApplyThemeCore(preferences.Theme, raiseChanged: false);
+        await ReloadPreferencesAsync(raiseThemeChanged: false, raiseFontSizeChanged: false).ConfigureAwait(false);
     }
 
     public async Task ApplyThemeAsync(AppThemeKind theme)
     {
-        ApplyThemeCore(theme, raiseChanged: true);
+        ApplyThemeCore(theme, CurrentFontSizeLevel, raiseThemeChanged: true, raiseFontSizeChanged: false);
         await _preferencesService.SaveAsync(new ThemePreferences
         {
-            Theme = theme
+            Theme = theme,
+            FontSizeLevel = CurrentFontSizeLevel
         }).ConfigureAwait(false);
     }
 
-    private void ApplyThemeCore(AppThemeKind theme, bool raiseChanged)
+    public async Task ApplyFontSizeAsync(AppFontSizeLevel level)
+    {
+        ApplyFontSizeCore(level, raiseChanged: true);
+        await _preferencesService.SaveAsync(new ThemePreferences
+        {
+            Theme = CurrentTheme,
+            FontSizeLevel = level
+        }).ConfigureAwait(false);
+    }
+
+    private void CurrentUserContext_CurrentUserChanged(object? sender, CurrentUserChangedEventArgs e)
+    {
+        ReloadPreferencesAsync(raiseThemeChanged: true, raiseFontSizeChanged: true).GetAwaiter().GetResult();
+    }
+
+    private async Task ReloadPreferencesAsync(bool raiseThemeChanged, bool raiseFontSizeChanged)
+    {
+        var preferences = await _preferencesService.GetAsync().ConfigureAwait(false);
+        ApplyThemeCore(preferences.Theme, preferences.FontSizeLevel, raiseThemeChanged, raiseFontSizeChanged);
+    }
+
+    private void ApplyThemeCore(
+        AppThemeKind theme,
+        AppFontSizeLevel fontSizeLevel,
+        bool raiseThemeChanged,
+        bool raiseFontSizeChanged)
     {
         var palette = ThemePalette.Create(theme);
+        var typography = TypographyScale.Create(fontSizeLevel);
         var dispatcher = global::System.Windows.Application.Current?.Dispatcher;
 
         if (dispatcher == null || dispatcher.CheckAccess())
         {
             ApplyPalette(palette);
+            ApplyTypography(typography);
         }
         else
         {
-            _ = dispatcher.BeginInvoke(new Action(() => ApplyPalette(palette)));
+            _ = dispatcher.BeginInvoke(new Action(() =>
+            {
+                ApplyPalette(palette);
+                ApplyTypography(typography);
+            }));
         }
 
         CurrentTheme = theme;
-        if (raiseChanged)
+        CurrentFontSizeLevel = fontSizeLevel;
+        if (raiseThemeChanged)
             ThemeChanged?.Invoke(this, theme);
+        if (raiseFontSizeChanged)
+            FontSizeLevelChanged?.Invoke(this, fontSizeLevel);
+    }
+
+    private void ApplyFontSizeCore(AppFontSizeLevel level, bool raiseChanged)
+    {
+        ApplyTypography(TypographyScale.Create(level));
+        CurrentFontSizeLevel = level;
+        if (raiseChanged)
+            FontSizeLevelChanged?.Invoke(this, level);
     }
 
     private static void ApplyPalette(ThemePalette palette)
@@ -138,15 +185,49 @@ public sealed class ThemeService
         UpdateBrush("ShadowColorBrush", palette.ShadowColor);
     }
 
+    private static void ApplyTypography(TypographyScale typography)
+    {
+        UpdateDouble("FontSize.Hero", typography.Hero);
+        UpdateDouble("FontSize.PageTitle", typography.PageTitle);
+        UpdateDouble("FontSize.SectionTitle", typography.SectionTitle);
+        UpdateDouble("FontSize.Section", typography.Section);
+        UpdateDouble("FontSize.Label", typography.Label);
+        UpdateDouble("FontSize.Body", typography.Body);
+        UpdateDouble("FontSize.Input", typography.Input);
+        UpdateDouble("FontSize.Hint", typography.Hint);
+        UpdateDouble("FontSize.Meta", typography.Meta);
+        UpdateDouble("FontSize.Tiny", typography.Tiny);
+        UpdateDouble("Button.FontSize.Small", typography.ButtonSmall);
+        UpdateDouble("Button.FontSize.Medium", typography.ButtonMedium);
+        UpdateDouble("Button.FontSize.Large", typography.ButtonLarge);
+    }
+
+    private static void UpdateDouble(string key, double value)
+    {
+        var resources = CurrentResources;
+        if (resources == null)
+            return;
+
+        resources[key] = value;
+    }
+
     private static void UpdateColor(string key, Color color)
     {
-        if (global::System.Windows.Application.Current?.Resources[key] is Color)
-            global::System.Windows.Application.Current.Resources[key] = color;
+        var resources = CurrentResources;
+        if (resources == null)
+            return;
+
+        if (resources[key] is Color)
+            resources[key] = color;
     }
 
     private static void UpdateBrush(string key, Color color)
     {
-        if (global::System.Windows.Application.Current?.Resources[key] is SolidColorBrush brush)
+        var resources = CurrentResources;
+        if (resources == null)
+            return;
+
+        if (resources[key] is SolidColorBrush brush)
         {
             if (!brush.IsFrozen)
             {
@@ -156,16 +237,20 @@ public sealed class ThemeService
 
             var mutableBrush = brush.CloneCurrentValue();
             mutableBrush.Color = color;
-            global::System.Windows.Application.Current.Resources[key] = mutableBrush;
+            resources[key] = mutableBrush;
             return;
         }
 
-        global::System.Windows.Application.Current!.Resources[key] = new SolidColorBrush(color);
+        resources[key] = new SolidColorBrush(color);
     }
 
     private static void UpdateShadow(string key, Color color)
     {
-        if (global::System.Windows.Application.Current?.Resources[key] is DropShadowEffect shadow)
+        var resources = CurrentResources;
+        if (resources == null)
+            return;
+
+        if (resources[key] is DropShadowEffect shadow)
         {
             if (!shadow.IsFrozen)
             {
@@ -175,9 +260,12 @@ public sealed class ThemeService
 
             var mutableShadow = shadow.CloneCurrentValue();
             mutableShadow.Color = color;
-            global::System.Windows.Application.Current.Resources[key] = mutableShadow;
+            resources[key] = mutableShadow;
         }
     }
+
+    // 单元测试可能没有创建 WPF Application，主题状态仍应可初始化与持久化。
+    private static ResourceDictionary? CurrentResources => global::System.Windows.Application.Current?.Resources;
 
     private readonly record struct ThemePalette(
         Color Primary,
@@ -281,6 +369,51 @@ public sealed class ThemeService
                     LavenderBorder: Color.FromRgb(225, 215, 221),
                     LavenderText: Color.FromRgb(145, 118, 137))
             };
+        }
+    }
+
+    private readonly record struct TypographyScale(
+        double Hero,
+        double PageTitle,
+        double SectionTitle,
+        double Section,
+        double Label,
+        double Body,
+        double Input,
+        double Hint,
+        double Meta,
+        double Tiny,
+        double ButtonSmall,
+        double ButtonMedium,
+        double ButtonLarge)
+    {
+        public static TypographyScale Create(AppFontSizeLevel level)
+        {
+            var multiplier = level switch
+            {
+                AppFontSizeLevel.Small => 0.92,
+                AppFontSizeLevel.Comfortable => 1.08,
+                AppFontSizeLevel.Large => 1.16,
+                AppFontSizeLevel.ExtraLarge => 1.24,
+                _ => 1.0
+            };
+
+            static double Scale(double baseSize, double multiplier) => Math.Round(baseSize * multiplier, 1);
+
+            return new TypographyScale(
+                Hero: Scale(28, multiplier),
+                PageTitle: Scale(20, multiplier),
+                SectionTitle: Scale(18, multiplier),
+                Section: Scale(11, multiplier),
+                Label: Scale(13, multiplier),
+                Body: Scale(14, multiplier),
+                Input: Scale(15, multiplier),
+                Hint: Scale(12, multiplier),
+                Meta: Scale(11, multiplier),
+                Tiny: Scale(10, multiplier),
+                ButtonSmall: Scale(12, multiplier),
+                ButtonMedium: Scale(14, multiplier),
+                ButtonLarge: Scale(16, multiplier));
         }
     }
 }

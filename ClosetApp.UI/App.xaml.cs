@@ -164,7 +164,9 @@ public partial class App : System.Windows.Application
         services.AddSingleton<ModalService>();
         services.AddSingleton(sp => new ThemePreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton(sp => new OutfitDisplayPreferencesService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
-        services.AddSingleton<ThemeService>();
+        services.AddSingleton(sp => new ThemeService(
+            sp.GetRequiredService<ThemePreferencesService>(),
+            sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<AppStartupCoordinator>();
 
         services.AddTransient<ViewModels.MainViewModel>();
