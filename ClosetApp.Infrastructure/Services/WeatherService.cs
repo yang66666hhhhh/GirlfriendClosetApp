@@ -24,7 +24,7 @@ public class WeatherService : IWeatherService
 
     public async Task<WeatherInfo?> GetCurrentWeatherAsync(string city)
     {
-        var normalizedCity = city?.Trim();
+        var normalizedCity = NormalizeCityQuery(city);
         if (string.IsNullOrWhiteSpace(normalizedCity))
             return null;
 
@@ -64,6 +64,47 @@ public class WeatherService : IWeatherService
         };
     }
 
+    public async Task<IReadOnlyList<WeatherCitySuggestion>> SearchCitiesAsync(string query, int maxResults = 6)
+    {
+        var normalizedQuery = NormalizeCityQuery(query);
+        if (string.IsNullOrWhiteSpace(normalizedQuery))
+            return [];
+
+        var cappedCount = Math.Clamp(maxResults, 1, 10);
+        var cacheKey = $"weather-city-suggestions:{normalizedQuery.ToLowerInvariant()}:{cappedCount}";
+        if (_cache.TryGetValue(cacheKey, out IReadOnlyList<WeatherCitySuggestion>? cached) && cached != null)
+            return cached;
+
+        try
+        {
+            var uri =
+                $"https://geocoding-api.open-meteo.com/v1/search?name={Uri.EscapeDataString(normalizedQuery)}&count={cappedCount}&language=zh&format=json";
+            using var response = await _httpClient.GetAsync(uri);
+            response.EnsureSuccessStatusCode();
+
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            var payload = await JsonSerializer.DeserializeAsync<GeocodingResponse>(stream, JsonOptions);
+            var suggestions = payload?.Results?
+                .Select(result => new WeatherCitySuggestion(BuildCityDisplayName(new WeatherLocation(
+                    result.Name ?? normalizedQuery,
+                    result.Admin1,
+                    result.Country,
+                    result.Latitude,
+                    result.Longitude,
+                    result.Timezone))))
+                .DistinctBy(result => result.DisplayName)
+                .ToList() ?? [];
+
+            _cache.Set(cacheKey, suggestions, TimeSpan.FromMinutes(10));
+            return suggestions;
+        }
+        catch (Exception ex)
+        {
+            Log.Warning(ex, "Failed to search weather cities for query {Query}", normalizedQuery);
+            return [];
+        }
+    }
+
     private async Task<WeatherLocation?> SearchLocationAsync(string city)
     {
         var uri =
@@ -84,6 +125,19 @@ public class WeatherService : IWeatherService
             result.Latitude,
             result.Longitude,
             result.Timezone);
+    }
+
+    private static string NormalizeCityQuery(string? city)
+    {
+        if (string.IsNullOrWhiteSpace(city))
+            return string.Empty;
+
+        var trimmed = city.Trim();
+        var primarySegment = trimmed
+            .Split('·', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .FirstOrDefault();
+
+        return string.IsNullOrWhiteSpace(primarySegment) ? trimmed : primarySegment;
     }
 
     private async Task<WeatherInfo?> FetchWeatherAsync(WeatherLocation location)

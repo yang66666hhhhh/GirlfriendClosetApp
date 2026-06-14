@@ -92,6 +92,54 @@ public class WeatherServiceTests
         Assert.Equal(2, handler.CallCount);
     }
 
+    [Fact]
+    public async Task GetCurrentWeatherAsync_WithDisplayNameQuery_StripsRegionSuffixBeforeGeocoding()
+    {
+        var handler = new AssertingHttpMessageHandler((request, _) =>
+        {
+            if (request.RequestUri!.Host.Contains("geocoding-api.open-meteo.com", StringComparison.OrdinalIgnoreCase))
+            {
+                Assert.Contains("name=%E4%BD%9B%E5%B1%B1%E5%B8%82", request.RequestUri.Query);
+                Assert.DoesNotContain("%C2%B7", request.RequestUri.Query);
+
+                return Task.FromResult(JsonResponse("""
+                    {
+                      "results": [
+                        {
+                          "name": "佛山市",
+                          "latitude": 23.0214,
+                          "longitude": 113.1214,
+                          "timezone": "Asia/Shanghai",
+                          "country": "中国",
+                          "admin1": "广东省"
+                        }
+                      ]
+                    }
+                    """));
+            }
+
+            return Task.FromResult(JsonResponse("""
+                {
+                  "timezone": "Asia/Shanghai",
+                  "current": {
+                    "time": "2026-06-13T16:00",
+                    "temperature_2m": 30.4,
+                    "relative_humidity_2m": 79,
+                    "weather_code": 3
+                  }
+                }
+                """));
+        });
+
+        var service = CreateService(handler);
+
+        var weather = await service.GetCurrentWeatherAsync("佛山市 · 广东 · 中国");
+
+        Assert.NotNull(weather);
+        Assert.Equal("佛山市 · 广东省 · 中国", weather!.City);
+        Assert.Equal(2, handler.CallCount);
+    }
+
     private static WeatherService CreateService(HttpMessageHandler handler)
     {
         var client = new HttpClient(handler);
@@ -120,6 +168,20 @@ public class WeatherServiceTests
                 throw new InvalidOperationException("No more fake responses configured.");
 
             return Task.FromResult(_responses.Dequeue());
+        }
+    }
+
+    private sealed class AssertingHttpMessageHandler(Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> handler)
+        : HttpMessageHandler
+    {
+        private readonly Func<HttpRequestMessage, CancellationToken, Task<HttpResponseMessage>> _handler = handler;
+
+        public int CallCount { get; private set; }
+
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            CallCount++;
+            return _handler(request, cancellationToken);
         }
     }
 }

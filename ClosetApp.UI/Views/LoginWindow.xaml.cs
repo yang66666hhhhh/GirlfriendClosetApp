@@ -60,11 +60,11 @@ public partial class LoginWindow : Window
         LoginPanel.Visibility = _isSetupMode ? Visibility.Collapsed : Visibility.Visible;
         TxtModeTitle.Text = _isSetupMode ? "首次设置管理员密码" : "登录";
         TxtModeDescription.Text = _isSetupMode
-            ? "旧数据已归属超级管理员。先设置本机密码，之后每次启动都需要登录。"
-            : "输入账号和密码，进入对应衣柜工作区。";
+            ? "先完成管理员凭证设置，再进入本地衣柜。"
+            : "使用本地账号继续";
         TxtSubtitle.Text = _isSetupMode
-            ? "完成管理员账号密码后，再创建或管理其它本地用户。"
-            : "请输入本地账号和密码。登录后如需更换用户，请先退出登录。";
+            ? "完成后即可继续创建或管理其他本地用户。"
+            : "记录搭配与衣柜管理";
         SetSubmittingState(false);
         if (_isSetupMode && _superAdmin != null)
             SetupAccountBox.Text = string.IsNullOrWhiteSpace(_superAdmin.AccountName)

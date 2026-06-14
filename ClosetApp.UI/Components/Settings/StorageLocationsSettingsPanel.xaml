@@ -3,10 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Border Style="{StaticResource SettingsSectionCard}">
         <StackPanel>
-            <Border Style="{StaticResource SettingsEyebrowBadge}">
-                <TextBlock Text="资源与目录"
-                           Style="{StaticResource SettingsEyebrowBadgeText}"/>
-            </Border>
             <Grid x:Name="StorageHeaderGrid"
                   Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
@@ -16,8 +12,6 @@
                 <StackPanel>
                     <TextBlock Text="文件位置"
                                Style="{StaticResource PageSectionTitleText}"/>
-                    <TextBlock Text="常用目录与数据位置。"
-                               Style="{StaticResource PageSectionBodyText}"/>
                 </StackPanel>
                 <Button Grid.Column="1"
                         Content="应用目录"

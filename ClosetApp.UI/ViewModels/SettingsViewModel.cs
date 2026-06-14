@@ -28,6 +28,12 @@ public partial class SettingsViewModel : ObservableObject
     private string _weatherCity = "Shanghai";
 
     [ObservableProperty]
+    private IReadOnlyList<WeatherCitySuggestion> _weatherCitySuggestions = [];
+
+    [ObservableProperty]
+    private bool _isWeatherCitySuggestionOpen;
+
+    [ObservableProperty]
     private AppThemeKind _currentTheme = AppThemeKind.Rose;
 
     [ObservableProperty]
@@ -167,6 +173,9 @@ public partial class SettingsViewModel : ObservableObject
     [ObservableProperty]
     private string _aiSettingsDetail = "先保存 Base URL、模型和 API Key，再补齐头像、全身照和云端同意。";
 
+    // 避免初始化或程序性回填城市名时，把状态条误显示成“待保存”。
+    private bool _suppressWeatherCityPrompt;
+    private CancellationTokenSource? _weatherSuggestionCts;
     private bool _isRefreshingWeather;
 
     public SettingsViewModel(
@@ -308,10 +317,33 @@ public partial class SettingsViewModel : ObservableObject
             : "清蓝更克制、清爽，页面会更冷静，也更偏中性工具感。";
     }
 
+    partial void OnWeatherCityChanged(string value)
+    {
+        if (_suppressWeatherCityPrompt || IsWeatherBusy || _isRefreshingWeather)
+        {
+            return;
+        }
+
+        var city = value.Trim();
+        ShowWeatherStatus(string.IsNullOrWhiteSpace(city)
+            ? "请先输入默认城市。"
+            : "城市已更新，点击保存或刷新天气。");
+
+        _ = RefreshWeatherCitySuggestionsAsync(city);
+    }
+
     private async Task LoadWeatherPreferencesAsync()
     {
         var preferences = await _weatherPreferencesService.GetAsync();
-        WeatherCity = preferences.DefaultCity;
+        _suppressWeatherCityPrompt = true;
+        try
+        {
+            WeatherCity = preferences.DefaultCity;
+        }
+        finally
+        {
+            _suppressWeatherCityPrompt = false;
+        }
     }
 
     private async Task LoadRecommendationPreferencesAsync()
@@ -374,6 +406,7 @@ public partial class SettingsViewModel : ObservableObject
         city = city.Trim();
         if (string.IsNullOrWhiteSpace(city))
         {
+            ClearWeatherCitySuggestions();
             ShowWeatherStatus("请先输入默认城市。");
             return;
         }
@@ -387,7 +420,11 @@ public partial class SettingsViewModel : ObservableObject
             {
                 DefaultCity = city
             });
+            ClearWeatherCitySuggestions();
             WeatherCity = city;
+            WeatherSummary = $"默认城市已切换为 {city}";
+            WeatherDetails = "点击刷新天气，更新当前城市的实时天气。";
+            WeatherObservedAt = string.Empty;
             ShowWeatherStatus($"默认城市已保存为 {city}。");
             ToastService.Instance.ShowSuccess("已保存默认城市", city);
         }
@@ -405,6 +442,7 @@ public partial class SettingsViewModel : ObservableObject
         var city = WeatherCity.Trim();
         if (string.IsNullOrWhiteSpace(city))
         {
+            ClearWeatherCitySuggestions();
             WeatherSummary = "暂时没有可用天气。";
             WeatherDetails = "请输入城市后再刷新。";
             WeatherObservedAt = string.Empty;
@@ -430,6 +468,7 @@ public partial class SettingsViewModel : ObservableObject
             {
                 DefaultCity = city
             });
+            ClearWeatherCitySuggestions();
             WeatherCity = city;
 
             var weather = await _weatherService.GetCurrentWeatherAsync(city);
@@ -461,6 +500,80 @@ public partial class SettingsViewModel : ObservableObject
         {
             _isRefreshingWeather = false;
             IsWeatherBusy = false;
+        }
+    }
+
+    public void SelectWeatherCitySuggestion(WeatherCitySuggestion suggestion)
+    {
+        if (suggestion == null || string.IsNullOrWhiteSpace(suggestion.DisplayName))
+            return;
+
+        _suppressWeatherCityPrompt = true;
+        try
+        {
+            WeatherCity = suggestion.DisplayName;
+        }
+        finally
+        {
+            _suppressWeatherCityPrompt = false;
+        }
+
+        HideWeatherCitySuggestions();
+        ShowWeatherStatus("城市已选中，点击保存或刷新天气。");
+    }
+
+    public void HideWeatherCitySuggestions()
+    {
+        _weatherSuggestionCts?.Cancel();
+        IsWeatherCitySuggestionOpen = false;
+    }
+
+    public void ClearWeatherCitySuggestions()
+    {
+        HideWeatherCitySuggestions();
+        WeatherCitySuggestions = [];
+    }
+
+    private async Task RefreshWeatherCitySuggestionsAsync(string city)
+    {
+        _weatherSuggestionCts?.Cancel();
+
+        if (string.IsNullOrWhiteSpace(city) || city.Length < 1)
+        {
+            ClearWeatherCitySuggestions();
+            return;
+        }
+
+        var cts = new CancellationTokenSource();
+        _weatherSuggestionCts = cts;
+
+        try
+        {
+            await Task.Delay(180, cts.Token);
+            var suggestions = await _weatherService.SearchCitiesAsync(city, maxResults: 6);
+            if (cts.IsCancellationRequested)
+                return;
+
+            var exactMatch = suggestions.Any(item => string.Equals(item.DisplayName, city, StringComparison.OrdinalIgnoreCase));
+            WeatherCitySuggestions = suggestions;
+            IsWeatherCitySuggestionOpen = suggestions.Count > 0 && !exactMatch;
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        catch
+        {
+            WeatherCitySuggestions = [];
+            IsWeatherCitySuggestionOpen = false;
+        }
+        finally
+        {
+            if (ReferenceEquals(_weatherSuggestionCts, cts))
+            {
+                _weatherSuggestionCts = null;
+            }
+
+            cts.Dispose();
         }
     }
 

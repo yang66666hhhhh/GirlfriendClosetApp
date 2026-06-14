@@ -157,6 +157,7 @@ View / Component
 8. `ILocalUserService.EnsureInitializedAsync()` 创建或修复本地超级管理员，并把旧数据归属到该用户
 9. 登录窗口在数据库 ready 后显示；首次升级时若超级管理员无凭证，先设置管理员密码，再进入主窗口
 10. 登录页会展示最近成功登录过的账号，并自动预填最近一次登录账号；密码不保存，已设置 PIN 的账号会自动切到更快的 PIN 登录模式
+11. 登录窗口当前采用居中悬浮表单：品牌区只保留头像、主标题和简短副标题，不再使用左右分栏的大介绍卡；视觉重心直接落在账号下拉、密码/PIN 切换、凭证输入和登录按钮
 
 `AppStartupCoordinator` 位于 [`D:\03_Projects\Personal\GirlfriendClosetApp\ClosetApp.UI\Services\AppStartupCoordinator.cs`](D:/03_Projects/Personal/GirlfriendClosetApp/ClosetApp.UI/Services/AppStartupCoordinator.cs)。
 
@@ -462,6 +463,8 @@ View / Component
 - 中部按“日常偏好 / 维护治理”分两列组织稳定分区
 - 各分区统一使用 `SettingsFieldInput / SettingsFieldComboBox / SettingsGhostButton / SettingsDangerGhostButton` 共享样式
 - 主题卡、头像预览和 AI 设置卡片都收紧了高度与留白，减少设置页空洞感和按钮文字被挤压的问题
+- `AiImageGenerationSettingsPanel` 已移除快捷预设，只保留 provider、Base URL、模型、超时、API Key 和连接测试等必要接口设置
+- `WeatherPreferencesSettingsPanel` 的默认城市输入改为可编辑建议下拉；展示值可以保留 `城市 · 省/州 · 国家`，但天气查询与城市搜索都会自动只取主城市段，避免把展示标签整串传给 geocoding 接口
 - 同一批次里，登录页、个人中心、标签编辑器、衣物编辑器和效果图工作台也继续并到共享输入框、主次按钮、弹窗页脚按钮和 segmented tab 样式，避免局部文件继续手写一套新的按钮模板
 
 ---

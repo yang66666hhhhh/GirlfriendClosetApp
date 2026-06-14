@@ -29,6 +29,18 @@ public class OutfitsTabLayoutTests
         Assert.DoesNotContain("Text=\"备选搭配\"", xaml);
     }
 
+    [Fact]
+    public void OutfitsTab_TodayHeroCard_SeparatesInfoAndActionZones()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml"));
+
+        Assert.Contains("x:Name=\"TodayHeroCardGrid\"", xaml);
+        Assert.Contains("x:Name=\"TodayHeroInfoColumn\"", xaml);
+        Assert.Contains("x:Name=\"TodayHeroActionsPanel\"", xaml);
+        Assert.Contains("x:Name=\"TodayHeroQuickLinksPanel\"", xaml);
+        Assert.Contains("MinHeight=\"320\"", xaml);
+    }
+
     private static string FindProjectFile(string relativePath)
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

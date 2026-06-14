@@ -13,13 +13,18 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"SettingsOverviewHero\"", xaml);
         Assert.Contains("x:Name=\"SettingsOverviewPrimaryGrid\"", xaml);
         Assert.Contains("x:Name=\"SettingsOverviewMetricsGrid\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewQuickFactsPanel\"", xaml);
         Assert.Contains("x:Name=\"SettingsWorkbenchColumns\"", xaml);
         Assert.Contains("x:Name=\"SettingsDailyWorkbench\"", xaml);
         Assert.Contains("x:Name=\"SettingsMaintenanceWorkbench\"", xaml);
+        Assert.Contains("Text=\"设置概览\"", xaml);
         Assert.DoesNotContain("设置工作台", xaml);
         Assert.DoesNotContain("当前状态", xaml);
         Assert.DoesNotContain("常用偏好、图片资产和备份维护都集中在这里。", xaml);
+        Assert.DoesNotContain("SettingsWorkbenchBadge", xaml);
+        Assert.DoesNotContain("SettingsWorkbenchColumnBadge", xaml);
+        Assert.DoesNotContain("SettingsWorkbenchColumnBadgeText", xaml);
+        Assert.DoesNotContain("Text=\"日常使用\"", xaml);
+        Assert.DoesNotContain("Text=\"存储与治理\"", xaml);
     }
 
     [Fact]
@@ -29,7 +34,6 @@ public class SettingsLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml.cs"));
 
         Assert.Contains("x:Name=\"SettingsOverviewHeroSurface\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewSignalRail\"", xaml);
         Assert.Contains("x:Name=\"SettingsOverviewActionRail\"", xaml);
         Assert.Contains("x:Name=\"SettingsWorkbenchSectionDivider\"", xaml);
         Assert.Contains("Click=\"OverviewThemeShortcut_Click\"", xaml);
@@ -37,6 +41,7 @@ public class SettingsLayoutTests
         Assert.Contains("OverviewThemeShortcut_Click", code);
         Assert.Contains("OverviewAiShortcut_Click", code);
         Assert.Contains("AiImageGenerationPanel.BringIntoView()", code);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewSignalRail\"", xaml);
     }
 
     [Fact]
@@ -48,11 +53,17 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"AppearanceDisplayModeCard\"", xaml);
         Assert.Contains("x:Name=\"AppearanceAppInfoCard\"", xaml);
         Assert.Contains("x:Name=\"AppearancePreferenceHeader\"", xaml);
-        Assert.Contains("x:Name=\"AppearancePreferenceSummaryCard\"", xaml);
         Assert.Contains("x:Name=\"AppearanceInfoHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceThemeGrid\"", xaml);
         Assert.Contains("VerticalAlignment=\"Top\"", xaml);
         Assert.Contains("AppSegmentedTabShell", xaml);
+        Assert.Contains("Text=\"外观\"", xaml);
+        Assert.DoesNotContain("x:Name=\"AppearancePreferenceSummaryCard\"", xaml);
+        Assert.DoesNotContain("选择整体配色，并设置搭配卡片默认展示方式。", xaml);
+        Assert.DoesNotContain("设置列表默认更偏向搭配预览，还是效果图主视觉。", xaml);
+        Assert.DoesNotContain("当前界面主题与运行环境摘要。", xaml);
+        Assert.DoesNotContain("SettingsEyebrowBadge", xaml);
+        Assert.DoesNotContain("SettingsEyebrowBadgeText", xaml);
     }
 
     [Fact]
@@ -89,29 +100,34 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"WeatherSnapshotCard\"", weatherXaml);
         Assert.Contains("x:Name=\"WeatherRecommendationCard\"", weatherXaml);
         Assert.DoesNotContain("后续天气穿搭推荐也会直接复用这里。", weatherXaml);
+        Assert.DoesNotContain("设置默认城市，并调整今日推荐偏好。", weatherXaml);
+        Assert.DoesNotContain("影响搭配页的天气推荐结果。", weatherXaml);
+        Assert.DoesNotContain("SettingsEyebrowBadge", weatherXaml);
 
-        Assert.Contains("x:Name=\"AiPresetCard\"", aiXaml);
         Assert.Contains("x:Name=\"AiConnectionGrid\"", aiXaml);
         Assert.Contains("x:Name=\"AiCredentialCard\"", aiXaml);
         Assert.Contains("x:Name=\"AiModelGrid\"", aiXaml);
         Assert.Contains("x:Name=\"AiCredentialActions\"", aiXaml);
         Assert.Contains("x:Name=\"AiStatusCard\"", aiXaml);
-        Assert.Contains("x:Name=\"AiPresetGrid\"", aiXaml);
         Assert.Contains("x:Name=\"AiCustomModelPanel\"", aiXaml);
         Assert.Contains("x:Name=\"AiConnectionMetaGrid\"", aiXaml);
         Assert.Contains("x:Name=\"AiCredentialActionRow\"", aiXaml);
-        Assert.Contains("BasedOn=\"{StaticResource SecondaryButton}\"", aiXaml);
         Assert.DoesNotContain("<ControlTemplate TargetType=\"Button\">", aiXaml);
         Assert.Contains("VerticalAlignment=\"Stretch\"", aiXaml);
         Assert.Contains("x:Name=\"AiConnectionContent\"", aiXaml);
-        Assert.Contains("<Setter Property=\"MinHeight\" Value=\"74\"/>", aiXaml);
         Assert.Contains("Width=\"170\"", aiXaml);
-        Assert.Contains("gpt-image-2 · 主路线", aiXaml);
-        Assert.Contains("gpt-image-1.5 · 高质量", aiXaml);
+        Assert.Contains("Content=\"测试连接\"", aiXaml);
+        Assert.DoesNotContain("x:Name=\"AiPresetCard\"", aiXaml);
+        Assert.DoesNotContain("x:Name=\"AiPresetGrid\"", aiXaml);
+        Assert.DoesNotContain("快捷预设", aiXaml);
+        Assert.DoesNotContain("gpt-image-2 · 主路线", aiXaml);
+        Assert.DoesNotContain("gpt-image-1.5 · 高质量", aiXaml);
         Assert.DoesNotContain("当前中转主路线", aiXaml);
         Assert.DoesNotContain("更高质量优先", aiXaml);
         Assert.DoesNotContain("让生成配置更稳定也更容易切换。", aiXaml);
         Assert.DoesNotContain("凭证与说明", aiXaml);
+        Assert.DoesNotContain("管理接口、模型和 API Key。", aiXaml);
+        Assert.DoesNotContain("SettingsEyebrowBadge", aiXaml);
 
         Assert.Contains("x:Name=\"BackupActionGrid\"", backupXaml);
         Assert.Contains("x:Name=\"BackupExportCard\"", backupXaml);
@@ -124,6 +140,8 @@ public class SettingsLayoutTests
         Assert.Contains("Columns=\"2\"", backupXaml);
         Assert.Contains("Style=\"{StaticResource SettingsDangerGhostButton}\"", backupXaml);
         Assert.DoesNotContain("导出、导入和历史记录。", backupXaml);
+        Assert.DoesNotContain("导出、导入与历史。", backupXaml);
+        Assert.DoesNotContain("SettingsEyebrowBadge", backupXaml);
     }
 
     [Fact]
@@ -153,8 +171,12 @@ public class SettingsLayoutTests
         Assert.Contains("x:Key=\"SettingsDangerButton\"", settingsXaml);
         Assert.Contains("x:Key=\"SettingsFieldInput\"", settingsXaml);
         Assert.Contains("x:Key=\"SettingsFieldComboBox\"", settingsXaml);
-        Assert.Contains("Style=\"{StaticResource SettingsFieldInput}\"", weatherXaml);
-        Assert.Contains("Style=\"{StaticResource SettingsFieldComboBox}\"", weatherXaml);
+        Assert.Contains("x:Key=\"SettingsEditableComboBox\"", settingsXaml);
+        Assert.Contains("Text=\"{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}\"", settingsXaml);
+        Assert.Contains("Cursor=\"IBeam\"", settingsXaml);
+        Assert.Contains("Grid.Column=\"1\"", settingsXaml);
+        Assert.Contains("Style=\"{StaticResource SettingsEditableComboBox}\"", weatherXaml);
+        Assert.DoesNotContain("Style=\"{StaticResource SettingsFieldInput}\"", weatherXaml);
         Assert.Contains("Style=\"{StaticResource SettingsFieldComboBox}\"", aiXaml);
         Assert.Contains("Style=\"{StaticResource SettingsDangerButton}\"", imageXaml);
         Assert.Contains("Style=\"{StaticResource SettingsDangerGhostButton}\"", logXaml);
@@ -170,6 +192,7 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"StorageHeaderGrid\"", storageXaml);
         Assert.Contains("x:Name=\"StoragePathsGrid\"", storageXaml);
         Assert.DoesNotContain("遇到图片、数据库或缓存问题时能快速定位。", storageXaml);
+        Assert.DoesNotContain("常用目录与数据位置。", storageXaml);
 
         Assert.Contains("x:Name=\"ImageStatsGrid\"", imageXaml);
         Assert.Contains("x:Name=\"ImageHealthGrid\"", imageXaml);
@@ -178,11 +201,15 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"ImageDangerActions\"", imageXaml);
         Assert.Contains("x:Key=\"SettingsDangerGhostButton\"", File.ReadAllText(FindProjectFile("ClosetApp.UI/Themes/Controls/Settings.xaml")));
         Assert.Contains("Style=\"{StaticResource SettingsDangerGhostButton}\"", imageXaml);
+        Assert.DoesNotContain("缓存、缺图和孤儿原图。", imageXaml);
+        Assert.DoesNotContain("SettingsEyebrowBadge", imageXaml);
 
         Assert.Contains("x:Name=\"LogHeaderGrid\"", logXaml);
         Assert.Contains("x:Name=\"LogSummaryCard\"", logXaml);
         Assert.Contains("Style=\"{StaticResource SettingsDangerGhostButton}\"", logXaml);
         Assert.DoesNotContain("查看目录并清理历史日志。", logXaml);
+        Assert.DoesNotContain("查看日志位置与清理状态。", logXaml);
+        Assert.DoesNotContain("SettingsEyebrowBadge", logXaml);
     }
 
     private static string FindProjectFile(string relativePath)

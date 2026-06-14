@@ -3,11 +3,6 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Border Style="{StaticResource SettingsSectionCard}">
         <StackPanel>
-            <Border Style="{StaticResource SettingsEyebrowBadge}">
-                <TextBlock Text="维护"
-                           Style="{StaticResource SettingsEyebrowBadgeText}"/>
-            </Border>
-
             <Grid Margin="0,0,0,14">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -16,8 +11,6 @@
                 <StackPanel>
                     <TextBlock Text="图片资产"
                                Style="{StaticResource PageSectionTitleText}"/>
-                    <TextBlock Text="缓存、缺图和孤儿原图。"
-                               Style="{StaticResource PageSectionBodyText}"/>
                 </StackPanel>
                 <Button x:Name="BtnRefreshStats"
                         Grid.Column="1"

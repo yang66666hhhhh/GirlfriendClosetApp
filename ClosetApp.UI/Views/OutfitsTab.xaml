@@ -236,119 +236,138 @@
                                         Padding="18,16"
                                         Margin="0,0,16,0"
                                         VerticalAlignment="Top">
-                                    <Grid>
+                                    <Grid x:Name="TodayHeroCardGrid">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="0.8*"/>
                                             <ColumnDefinition Width="224"/>
                                         </Grid.ColumnDefinitions>
-                                        <StackPanel Grid.Column="0"
-                                                    VerticalAlignment="Top"
-                                                    Margin="0,0,14,0">
-                                            <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding WeatherCompactSummaryText}"
-                                                           Foreground="{StaticResource OutfitSkyTextBrush}"
-                                                           Style="{StaticResource TodayHeroMetaText}"/>
-                                                <Border Width="1"
-                                                        Height="12"
-                                                        Background="{DynamicResource BorderDividerBrush}"
-                                                        Margin="10,0"
-                                                        VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding WeatherCityCompactText}"
-                                                           Style="{StaticResource TodayHeroMetaText}"/>
-                                                <Border Width="1"
-                                                        Height="12"
-                                                        Background="{DynamicResource BorderDividerBrush}"
-                                                        Margin="10,0"
-                                                        VerticalAlignment="Center"/>
-                                                <TextBlock Text="{Binding TodayWornStatusText}"
-                                                           Style="{StaticResource TodayHeroMetaText}"/>
+                                        <Grid x:Name="TodayHeroInfoColumn"
+                                              Grid.Column="0"
+                                              Margin="0,0,14,0">
+                                            <Grid.RowDefinitions>
+                                                <RowDefinition Height="Auto"/>
+                                                <RowDefinition Height="*"/>
+                                                <RowDefinition Height="Auto"/>
+                                            </Grid.RowDefinitions>
+
+                                            <StackPanel Grid.Row="0">
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding WeatherCompactSummaryText}"
+                                                               Foreground="{StaticResource OutfitSkyTextBrush}"
+                                                               Style="{StaticResource TodayHeroMetaText}"/>
+                                                    <Border Width="1"
+                                                            Height="12"
+                                                            Background="{DynamicResource BorderDividerBrush}"
+                                                            Margin="10,0"
+                                                            VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding WeatherCityCompactText}"
+                                                               Style="{StaticResource TodayHeroMetaText}"/>
+                                                    <Border Width="1"
+                                                            Height="12"
+                                                            Background="{DynamicResource BorderDividerBrush}"
+                                                            Margin="10,0"
+                                                            VerticalAlignment="Center"/>
+                                                    <TextBlock Text="{Binding TodayWornStatusText}"
+                                                               Style="{StaticResource TodayHeroMetaText}"/>
+                                                </StackPanel>
+
+                                                <TextBlock Text="今天穿什么"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                           FontSize="15"
+                                                           FontWeight="SemiBold"
+                                                           Margin="0,12,0,0"/>
+
+                                                <TextBlock Text="{Binding TodayHeroRecommendationNameText}"
+                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                           FontSize="24"
+                                                           FontWeight="SemiBold"
+                                                           Margin="0,6,0,0"
+                                                           TextWrapping="Wrap"
+                                                           MaxWidth="500"/>
+
+                                                <TextBlock Text="{Binding TodayHeroRecommendationSupportText}"
+                                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                                           FontSize="12.5"
+                                                           Margin="0,4,0,0"
+                                                           TextWrapping="Wrap"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxWidth="490"
+                                                           MaxHeight="40"/>
+
+                                                <WrapPanel Margin="0,12,0,0"
+                                                           Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                                    <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                            Margin="0,0,8,8">
+                                                        <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
+                                                                   Style="{StaticResource RecommendationStatusBadgeText}"/>
+                                                    </Border>
+                                                    <Border Style="{StaticResource RecommendationStatusBadge}"
+                                                            Margin="0,0,0,8"
+                                                            Background="{StaticResource OutfitMintSurfaceBrush}"
+                                                            BorderBrush="{StaticResource OutfitMintBorderBrush}">
+                                                        <TextBlock Text="{Binding RecommendationReadinessTitle}"
+                                                                   Style="{StaticResource RecommendationStatusBadgeText}"
+                                                                   Foreground="{StaticResource OutfitMintTextBrush}"/>
+                                                    </Border>
+                                                </WrapPanel>
+
+                                                <TextBlock Text="{Binding TodayHeroStatusSummaryText}"
+                                                           Style="{StaticResource RecommendationActionHintText}"
+                                                           Margin="0,2,0,0"
+                                                           TextWrapping="Wrap"
+                                                           TextTrimming="CharacterEllipsis"
+                                                           MaxHeight="34"/>
                                             </StackPanel>
 
-                                            <TextBlock Text="今天穿什么"
-                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                       FontSize="15"
-                                                       FontWeight="SemiBold"
-                                                       Margin="0,12,0,0"/>
+                                            <Border Grid.Row="1"
+                                                    Background="Transparent"
+                                                    MinHeight="18"/>
 
-                                            <TextBlock Text="{Binding TodayHeroRecommendationNameText}"
-                                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                                       FontSize="24"
-                                                       FontWeight="SemiBold"
-                                                       Margin="0,6,0,0"
-                                                       TextWrapping="Wrap"
-                                                       MaxWidth="500"/>
+                                            <StackPanel x:Name="TodayHeroActionsPanel"
+                                                        Grid.Row="2"
+                                                        VerticalAlignment="Bottom">
+                                                <StackPanel Orientation="Horizontal"
+                                                            Margin="0,0,0,0">
+                                                    <Button Content="{Binding TodayHeroPrimaryActionText}"
+                                                            Style="{StaticResource OutfitMintButton}"
+                                                            Padding="16,9"
+                                                            Margin="0,0,10,0"
+                                                            HorizontalAlignment="Left"
+                                                            Command="{Binding RecordRecommendedOutfitWornCommand}"
+                                                            CommandParameter="{Binding PrimaryWeatherRecommendation}"
+                                                            Click="TodayHeroPrimaryAction_Click"/>
+                                                    <Button Content="{Binding RefreshWeatherButtonText}"
+                                                            Style="{StaticResource TodayHeroInlineActionButton}"
+                                                            Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
+                                                            IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
+                                                </StackPanel>
 
-                                            <TextBlock Text="{Binding TodayHeroRecommendationSupportText}"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       FontSize="12.5"
-                                                       Margin="0,4,0,0"
-                                                       TextWrapping="NoWrap"
-                                                       TextTrimming="CharacterEllipsis"
-                                                       MaxWidth="490"/>
-
-                                            <WrapPanel Margin="0,10,0,0"
-                                                       Visibility="{Binding HasRecommendationReadiness, Converter={StaticResource BooleanToVisibilityConverter}}">
-                                                <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                        Margin="0,0,8,8">
-                                                    <TextBlock Text="{Binding RecommendationReadinessBadgeText}"
-                                                               Style="{StaticResource RecommendationStatusBadgeText}"/>
-                                                </Border>
-                                                <Border Style="{StaticResource RecommendationStatusBadge}"
-                                                        Margin="0,0,0,8"
-                                                        Background="{StaticResource OutfitMintSurfaceBrush}"
-                                                        BorderBrush="{StaticResource OutfitMintBorderBrush}">
-                                                    <TextBlock Text="{Binding RecommendationReadinessTitle}"
-                                                               Style="{StaticResource RecommendationStatusBadgeText}"
-                                                               Foreground="{StaticResource OutfitMintTextBrush}"/>
-                                                </Border>
-                                            </WrapPanel>
-
-                                            <TextBlock Text="{Binding TodayHeroStatusSummaryText}"
-                                                       Style="{StaticResource RecommendationActionHintText}"
-                                                       Margin="0,0,0,0"
-                                                       TextWrapping="NoWrap"
-                                                       TextTrimming="CharacterEllipsis"/>
-
-                                            <StackPanel Orientation="Horizontal"
-                                                        Margin="0,12,0,0">
-                                                <Button Content="{Binding TodayHeroPrimaryActionText}"
-                                                        Style="{StaticResource OutfitMintButton}"
-                                                        Padding="16,9"
-                                                        Margin="0,0,10,0"
-                                                        HorizontalAlignment="Left"
-                                                        Command="{Binding RecordRecommendedOutfitWornCommand}"
-                                                        CommandParameter="{Binding PrimaryWeatherRecommendation}"
-                                                        Click="TodayHeroPrimaryAction_Click"/>
-                                                <Button Content="{Binding RefreshWeatherButtonText}"
-                                                        Style="{StaticResource TodayHeroInlineActionButton}"
-                                                        Command="{Binding RefreshWeatherRecommendationsWithFeedbackCommand}"
-                                                        IsEnabled="{Binding CanRefreshWeatherRecommendations}"/>
+                                                <StackPanel x:Name="TodayHeroQuickLinksPanel"
+                                                            Orientation="Horizontal"
+                                                            Margin="0,10,0,0"
+                                                            VerticalAlignment="Center">
+                                                    <Button Content="查看记录"
+                                                            Style="{StaticResource TodayHeroLinkButton}"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Center"
+                                                            Click="OpenOutfitHistory_Click"/>
+                                                    <TextBlock Style="{StaticResource TodayHeroToolDivider}"/>
+                                                    <Button Content="推荐详情"
+                                                            Style="{StaticResource TodayHeroLinkButton}"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Center"
+                                                            Command="{Binding ShowRecommendationDebugCommand}"/>
+                                                    <TextBlock Style="{StaticResource TodayHeroToolDivider}"
+                                                               Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                                                    <Button Content="调偏好"
+                                                            Style="{StaticResource TodayHeroLinkButton}"
+                                                            HorizontalAlignment="Left"
+                                                            VerticalAlignment="Center"
+                                                            Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"
+                                                            Click="OpenSettings_Click"/>
+                                                </StackPanel>
                                             </StackPanel>
-
-                                            <StackPanel Orientation="Horizontal"
-                                                        Margin="0,8,0,0"
-                                                        VerticalAlignment="Center">
-                                                <Button Content="查看记录"
-                                                        Style="{StaticResource TodayHeroLinkButton}"
-                                                        HorizontalAlignment="Left"
-                                                        VerticalAlignment="Center"
-                                                        Click="OpenOutfitHistory_Click"/>
-                                                <TextBlock Style="{StaticResource TodayHeroToolDivider}"/>
-                                                <Button Content="推荐详情"
-                                                        Style="{StaticResource TodayHeroLinkButton}"
-                                                        HorizontalAlignment="Left"
-                                                        VerticalAlignment="Center"
-                                                        Command="{Binding ShowRecommendationDebugCommand}"/>
-                                                <TextBlock Style="{StaticResource TodayHeroToolDivider}"
-                                                           Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"/>
-                                                <Button Content="调偏好"
-                                                        Style="{StaticResource TodayHeroLinkButton}"
-                                                        HorizontalAlignment="Left"
-                                                        VerticalAlignment="Center"
-                                                        Visibility="{Binding HasRecommendationGap, Converter={StaticResource BooleanToVisibilityConverter}}"
-                                                        Click="OpenSettings_Click"/>
-                                            </StackPanel>
-                                        </StackPanel>
+                                        </Grid>
 
                                         <Border Grid.Column="1"
                                                 Background="{DynamicResource SurfaceHeroBrush}"
@@ -356,7 +375,7 @@
                                                 BorderThickness="1"
                                                 CornerRadius="14"
                                                 Padding="10"
-                                                MinHeight="340">
+                                                MinHeight="320">
                                             <Grid>
                                                 <Grid Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                     <outfit:OutfitPreviewCanvas Clothes="{Binding PrimaryWeatherRecommendation.PreviewClothes}"

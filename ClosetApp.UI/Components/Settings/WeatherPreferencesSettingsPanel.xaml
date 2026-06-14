@@ -4,18 +4,15 @@
              xmlns:conv="clr-namespace:ClosetApp.UI.Converters">
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <DataTemplate x:Key="SettingsLabelOptionTemplate">
+            <TextBlock Text="{Binding Label}"/>
+        </DataTemplate>
     </UserControl.Resources>
 
     <Border Style="{StaticResource SettingsSectionCard}">
         <StackPanel>
-            <Border Style="{StaticResource SettingsEyebrowBadge}">
-                <TextBlock Text="偏好"
-                           Style="{StaticResource SettingsEyebrowBadgeText}"/>
-            </Border>
             <TextBlock Text="天气与城市"
                        Style="{StaticResource PageSectionTitleText}"/>
-            <TextBlock Text="设置默认城市，并调整今日推荐偏好。"
-                       Style="{StaticResource PageSectionBodyText}"/>
 
             <Border x:Name="WeatherCityCard"
                     Style="{StaticResource SettingsInsetCard}"
@@ -31,11 +28,19 @@
                             <ColumnDefinition Width="8"/>
                             <ColumnDefinition Width="Auto"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="TxtWeatherCity"
-                                 Grid.Column="0"
-                                 Style="{StaticResource SettingsFieldInput}"
-                                 IsEnabled="{Binding CanEditWeather}"
-                                 Text="{Binding WeatherCity, UpdateSourceTrigger=PropertyChanged}"/>
+                        <ComboBox x:Name="TxtWeatherCity"
+                                  Grid.Column="0"
+                                  Style="{StaticResource SettingsEditableComboBox}"
+                                  IsEditable="True"
+                                  IsTextSearchEnabled="False"
+                                  StaysOpenOnEdit="True"
+                                  IsDropDownOpen="{Binding IsWeatherCitySuggestionOpen, Mode=TwoWay}"
+                                  ItemsSource="{Binding WeatherCitySuggestions}"
+                                  DisplayMemberPath="DisplayName"
+                                  Text="{Binding WeatherCity, UpdateSourceTrigger=PropertyChanged}"
+                                  IsEnabled="{Binding CanEditWeather}"
+                                  SelectionChanged="WeatherCitySuggestions_SelectionChanged"
+                                  LostFocus="WeatherCityInput_LostFocus"/>
                         <Button x:Name="BtnSaveWeatherCity"
                                 Grid.Column="2"
                                 Content="{Binding WeatherSaveButtonText}"
@@ -83,12 +88,8 @@
                 <StackPanel>
                     <TextBlock Text="今日推荐偏好"
                                Style="{StaticResource PageFieldLabelText}"/>
-                    <TextBlock Text="影响搭配页的天气推荐结果。"
-                               Foreground="{DynamicResource TextSecondaryBrush}"
-                               TextWrapping="Wrap"
-                               Margin="0,6,0,0"/>
 
-                    <Grid Margin="0,12,0,0">
+                    <Grid Margin="0,10,0,0">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
                             <ColumnDefinition Width="12"/>
@@ -98,14 +99,14 @@
                         <ComboBox Grid.Column="0"
                                   Style="{StaticResource SettingsFieldComboBox}"
                                   ItemsSource="{Binding RecommendationSceneOptions}"
-                                  DisplayMemberPath="Label"
+                                  ItemTemplate="{StaticResource SettingsLabelOptionTemplate}"
                                   SelectedValuePath="Value"
                                   IsEnabled="{Binding CanEditRecommendationPreferences}"
                                   SelectedValue="{Binding RecommendationDefaultScene, Mode=TwoWay}"/>
                         <ComboBox Grid.Column="2"
                                   Style="{StaticResource SettingsFieldComboBox}"
                                   ItemsSource="{Binding RecommendationRotationStrategyOptions}"
-                                  DisplayMemberPath="Label"
+                                  ItemTemplate="{StaticResource SettingsLabelOptionTemplate}"
                                   SelectedValuePath="Value"
                                   IsEnabled="{Binding CanEditRecommendationPreferences}"
                                   SelectedValue="{Binding RecommendationRotationStrategy, Mode=TwoWay}"/>

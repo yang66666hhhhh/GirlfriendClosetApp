@@ -65,10 +65,14 @@ public class ComboBoxLayoutRulesTests
         Assert.Contains("TextSearch.TextPath=\"AccountName\"", loginWindowXaml);
 
         Assert.Contains("ItemsSource=\"{Binding RecommendationSceneOptions}\"", weatherPanelXaml);
-        Assert.Contains("DisplayMemberPath=\"Label\"", weatherPanelXaml);
+        Assert.Contains("ItemTemplate=\"{StaticResource SettingsLabelOptionTemplate}\"", weatherPanelXaml);
 
         Assert.Contains("ItemsSource=\"{Binding RecommendationRotationStrategyOptions}\"", weatherPanelXaml);
-        Assert.Contains("DisplayMemberPath=\"Label\"", weatherPanelXaml);
+        Assert.Contains("ItemTemplate=\"{StaticResource SettingsLabelOptionTemplate}\"", weatherPanelXaml);
+
+        Assert.Contains("x:Name=\"TxtWeatherCity\"", weatherPanelXaml);
+        Assert.Contains("IsEditable=\"True\"", weatherPanelXaml);
+        Assert.Contains("DisplayMemberPath=\"DisplayName\"", weatherPanelXaml);
 
         Assert.Contains("ItemsSource=\"{Binding SortOptions}\"", wardrobeHeaderXaml);
         Assert.Contains("<ComboBox.ItemTemplate>", wardrobeHeaderXaml);

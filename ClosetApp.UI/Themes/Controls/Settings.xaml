@@ -129,4 +129,163 @@
         <Setter Property="FontSize" Value="13"/>
     </Style>
 
+    <Style x:Key="SettingsEditableComboBox" TargetType="ComboBox" BasedOn="{StaticResource AppComboBoxBase}">
+        <Setter Property="MinHeight" Value="40"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="Padding" Value="12,8"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid SnapsToDevicePixels="True">
+                        <Border x:Name="InputShell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{DynamicResource Radius.Control}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                RenderTransformOrigin="0.5,0.5">
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    <TranslateTransform Y="0"/>
+                                </TransformGroup>
+                            </Border.RenderTransform>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="36"/>
+                                </Grid.ColumnDefinitions>
+
+                                <ContentPresenter x:Name="ContentSite"
+                                                  Grid.Column="0"
+                                                  Margin="12,0,10,0"
+                                                  VerticalAlignment="Center"
+                                                  HorizontalAlignment="Left"
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"/>
+
+                                <TextBox x:Name="PART_EditableTextBox"
+                                         Grid.Column="0"
+                                         Margin="12,0,10,0"
+                                         Padding="0"
+                                         VerticalAlignment="Center"
+                                         HorizontalAlignment="Stretch"
+                                         Background="Transparent"
+                                         BorderThickness="0"
+                                         Text="{Binding Text, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                         FontSize="{TemplateBinding FontSize}"
+                                         Foreground="{TemplateBinding Foreground}"
+                                         CaretBrush="{DynamicResource PrimaryBrush}"
+                                         Cursor="IBeam"
+                                         Visibility="Hidden"/>
+
+                                <Border x:Name="ArrowSlot"
+                                        Grid.Column="1"
+                                        Background="{DynamicResource SurfaceSectionBrush}"
+                                        BorderBrush="{TemplateBinding BorderBrush}"
+                                        BorderThickness="1,0,0,0"
+                                        CornerRadius="0,15,15,0">
+                                    <Path x:Name="ArrowGlyph"
+                                          Data="M 1 1 L 5 5 L 9 1"
+                                          Stroke="{DynamicResource TextSecondaryBrush}"
+                                          StrokeThickness="1.6"
+                                          StrokeStartLineCap="Round"
+                                          StrokeEndLineCap="Round"
+                                          HorizontalAlignment="Center"
+                                          VerticalAlignment="Center"/>
+                                </Border>
+
+                                <ToggleButton x:Name="DropDownToggle"
+                                              Grid.Column="1"
+                                              Style="{StaticResource AppComboBoxToggleButton}"
+                                              IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}"
+                                              ClickMode="Press"/>
+                            </Grid>
+                        </Border>
+
+                        <Popup x:Name="PART_Popup"
+                               Placement="Bottom"
+                               AllowsTransparency="True"
+                               Focusable="False"
+                               PopupAnimation="Fade"
+                               IsOpen="{TemplateBinding IsDropDownOpen}">
+                            <Grid x:Name="DropDownHost"
+                                  Margin="0,6,0,0"
+                                  MinWidth="{TemplateBinding ActualWidth}"
+                                  MaxHeight="{TemplateBinding MaxDropDownHeight}"
+                                  SnapsToDevicePixels="True">
+                                <Border x:Name="DropDownShadow"
+                                        Margin="0,2,0,0"
+                                        Background="White"
+                                        CornerRadius="14"
+                                        Opacity="0.01"
+                                        Effect="{StaticResource ComboBoxPopupLift}"/>
+                                <Border x:Name="DropDownBorder"
+                                        Background="{DynamicResource SurfaceElevatedBrush}"
+                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="14">
+                                    <ScrollViewer Margin="0,4"
+                                                  Background="Transparent"
+                                                  CanContentScroll="True"
+                                                  VerticalScrollBarVisibility="Auto"
+                                                  HorizontalScrollBarVisibility="Disabled">
+                                        <StackPanel IsItemsHost="True"
+                                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Grid>
+                        </Popup>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsEditable" Value="True">
+                            <Setter TargetName="ContentSite" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
+                            <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                            <Setter TargetName="InputShell" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="1.004" ScaleY="1.004"/>
+                                        <TranslateTransform Y="-0.5"/>
+                                    </TransformGroup>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="InputShell" Property="Background" Value="White"/>
+                            <Setter TargetName="InputShell" Property="Effect" Value="{StaticResource InputFocusGlow}"/>
+                            <Setter TargetName="ArrowSlot" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="ArrowSlot" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                            <Setter TargetName="ArrowGlyph" Property="Stroke" Value="{DynamicResource PrimaryBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="InputShell" Property="Background" Value="White"/>
+                            <Setter TargetName="InputShell" Property="Effect" Value="{StaticResource InputFocusGlow}"/>
+                            <Setter TargetName="ArrowSlot" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="ArrowSlot" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                            <Setter TargetName="ArrowGlyph" Property="Stroke" Value="{DynamicResource PrimaryBrush}"/>
+                            <Setter TargetName="InputShell" Property="RenderTransform">
+                                <Setter.Value>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="1.004" ScaleY="1.004"/>
+                                        <TranslateTransform Y="-0.5"/>
+                                    </TransformGroup>
+                                </Setter.Value>
+                            </Setter>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="InputShell" Property="Opacity" Value="0.45"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
 </ResourceDictionary>

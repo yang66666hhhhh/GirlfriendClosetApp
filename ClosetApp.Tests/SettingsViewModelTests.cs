@@ -231,6 +231,22 @@ public class SettingsViewModelTests
     }
 
     [Fact]
+    public async Task SaveWeatherCityAsync_UpdatesWeatherSnapshotToPendingSelectedCity()
+    {
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService());
+        viewModel.WeatherSummary = "上海 · 上海市 · 中国 · 22°C · 阴";
+        viewModel.WeatherDetails = "湿度 74% · Asia/Shanghai";
+        viewModel.WeatherObservedAt = "观测时间 2026-06-13 20:00";
+
+        await viewModel.SaveWeatherCityAsync("佛山市 · 广东 · 中国");
+
+        Assert.Equal("默认城市已切换为 佛山市 · 广东 · 中国", viewModel.WeatherSummary);
+        Assert.Equal("点击刷新天气，更新当前城市的实时天气。", viewModel.WeatherDetails);
+        Assert.Equal(string.Empty, viewModel.WeatherObservedAt);
+        Assert.Equal("默认城市已保存为 佛山市 · 广东 · 中国。", viewModel.WeatherStatus);
+    }
+
+    [Fact]
     public async Task SaveOutfitCardDisplayModeAsync_PersistsDisplayMode()
     {
         var displayPreferences = CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst);
@@ -243,17 +259,101 @@ public class SettingsViewModelTests
         Assert.Equal("当前默认：效果图优先", viewModel.OutfitCardDisplaySummary);
     }
 
+    [Fact]
+    public void WeatherCityChanged_WithInput_ShowsPendingWeatherPrompt()
+    {
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService());
+
+        viewModel.WeatherCity = "foshan";
+
+        Assert.True(viewModel.IsWeatherStatusVisible);
+        Assert.Equal("城市已更新，点击保存或刷新天气。", viewModel.WeatherStatus);
+    }
+
+    [Fact]
+    public async Task InitializeAsync_LoadsSavedWeatherCity_WithoutPendingPrompt()
+    {
+        var weatherPreferences = new FakeWeatherPreferencesService
+        {
+            CurrentPreferences = new WeatherPreferences
+            {
+                DefaultCity = "Guangzhou"
+            }
+        };
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), weatherPreferences: weatherPreferences);
+
+        await viewModel.InitializeAsync();
+
+        Assert.Equal("Guangzhou", viewModel.WeatherCity);
+        Assert.False(viewModel.IsWeatherStatusVisible);
+        Assert.Equal(string.Empty, viewModel.WeatherStatus);
+    }
+
+    [Fact]
+    public async Task WeatherCityChanged_WithQuery_LoadsSuggestions()
+    {
+        var weatherService = new FakeWeatherService
+        {
+            Suggestions =
+            [
+                new WeatherCitySuggestion("Shanghai · China"),
+                new WeatherCitySuggestion("Shantou · Guangdong · China")
+            ]
+        };
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService(), weatherService: weatherService);
+
+        viewModel.WeatherCity = "sha";
+        await Task.Delay(260);
+
+        Assert.Equal("sha", weatherService.LastSearchedQuery);
+        Assert.True(viewModel.IsWeatherCitySuggestionOpen);
+        Assert.Equal(2, viewModel.WeatherCitySuggestions.Count);
+    }
+
+    [Fact]
+    public void SelectWeatherCitySuggestion_AppliesSuggestionAndClosesDropdown()
+    {
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService());
+
+        viewModel.SelectWeatherCitySuggestion(new WeatherCitySuggestion("Foshan · Guangdong · China"));
+
+        Assert.Equal("Foshan · Guangdong · China", viewModel.WeatherCity);
+        Assert.False(viewModel.IsWeatherCitySuggestionOpen);
+        Assert.Equal("城市已选中，点击保存或刷新天气。", viewModel.WeatherStatus);
+    }
+
+    [Fact]
+    public void SelectWeatherCitySuggestion_PreservesChosenDisplayText()
+    {
+        var viewModel = CreateViewModel(new FakeImageMaintenanceService());
+        viewModel.WeatherCitySuggestions =
+        [
+            new WeatherCitySuggestion("佛山市 · 广东 · 中国"),
+            new WeatherCitySuggestion("佛山 · 云南 · 中国")
+        ];
+        viewModel.IsWeatherCitySuggestionOpen = true;
+
+        viewModel.WeatherCity = "foshan";
+        viewModel.SelectWeatherCitySuggestion(new WeatherCitySuggestion("佛山市 · 广东 · 中国"));
+
+        Assert.Equal("佛山市 · 广东 · 中国", viewModel.WeatherCity);
+        Assert.False(viewModel.IsWeatherCitySuggestionOpen);
+        Assert.Equal(2, viewModel.WeatherCitySuggestions.Count);
+    }
+
     private static SettingsViewModel CreateViewModel(
         FakeImageMaintenanceService imageMaintenance,
         FakeBackupService? backup = null,
         FakeRecommendationPreferencesService? recommendationPreferences = null,
-        OutfitDisplayPreferencesService? outfitDisplayPreferences = null)
+        OutfitDisplayPreferencesService? outfitDisplayPreferences = null,
+        FakeWeatherPreferencesService? weatherPreferences = null,
+        FakeWeatherService? weatherService = null)
     {
         return new SettingsViewModel(
             backup ?? new FakeBackupService(),
             imageMaintenance,
-            new FakeWeatherService(),
-            new FakeWeatherPreferencesService(),
+            weatherService ?? new FakeWeatherService(),
+            weatherPreferences ?? new FakeWeatherPreferencesService(),
             recommendationPreferences ?? new FakeRecommendationPreferencesService(),
             new ThemeService(new ThemePreferencesService(Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.json"))),
             outfitDisplayPreferences ?? CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst));
@@ -328,14 +428,31 @@ public class SettingsViewModelTests
 
     private sealed class FakeWeatherService : IWeatherService
     {
+        public string? LastSearchedQuery { get; private set; }
+        public IReadOnlyList<WeatherCitySuggestion> Suggestions { get; set; } = [];
+
         public Task<WeatherInfo?> GetCurrentWeatherAsync(string city) => Task.FromResult<WeatherInfo?>(null);
+
+        public Task<IReadOnlyList<WeatherCitySuggestion>> SearchCitiesAsync(string query, int maxResults = 6)
+        {
+            LastSearchedQuery = query;
+            return Task.FromResult(Suggestions);
+        }
+
         public int GetFallbackTemperature(DateTimeOffset? date = null) => 22;
     }
 
     private sealed class FakeWeatherPreferencesService : IWeatherPreferencesService
     {
-        public Task<WeatherPreferences> GetAsync() => Task.FromResult(new WeatherPreferences());
-        public Task SaveAsync(WeatherPreferences preferences) => Task.CompletedTask;
+        public WeatherPreferences CurrentPreferences { get; set; } = new();
+
+        public Task<WeatherPreferences> GetAsync() => Task.FromResult(CurrentPreferences);
+
+        public Task SaveAsync(WeatherPreferences preferences)
+        {
+            CurrentPreferences = preferences;
+            return Task.CompletedTask;
+        }
     }
 
     private sealed class FakeRecommendationPreferencesService : IRecommendationPreferencesService

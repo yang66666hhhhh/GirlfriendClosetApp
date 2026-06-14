@@ -4,9 +4,9 @@
         Title="登录我的衣橱"
         Icon="../Assets/Icons/app-avatar.png"
         Width="1040"
-        Height="720"
+        Height="780"
         MinWidth="900"
-        MinHeight="660"
+        MinHeight="760"
         WindowStartupLocation="CenterScreen"
         Background="{DynamicResource SurfacePageBrush}">
     <Window.Resources>
@@ -26,19 +26,86 @@
         </Style>
 
         <Style x:Key="LoginTextBox"
-               TargetType="TextBox"
-               BasedOn="{StaticResource WorkbenchTextInput}">
-            <Setter Property="MinHeight" Value="46"/>
-            <Setter Property="Padding" Value="14,10"/>
+               TargetType="TextBox">
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="MinHeight" Value="52"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="InputShell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="16"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          HorizontalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="InputShell" Property="Background" Value="White"/>
+                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputShell" Property="Background" Value="White"/>
+                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="LoginPasswordBox"
-               TargetType="PasswordBox"
-               BasedOn="{StaticResource WorkbenchPasswordInput}">
-            <Setter Property="Height" Value="46"/>
-            <Setter Property="Padding" Value="14,0"/>
+               TargetType="PasswordBox">
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+            <Setter Property="FontFamily" Value="{StaticResource Font.Primary}"/>
             <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="CaretBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="PasswordBox">
+                        <Border x:Name="InputShell"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="16"
+                                SnapsToDevicePixels="True">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"
+                                          VerticalScrollBarVisibility="Hidden"
+                                          HorizontalScrollBarVisibility="Hidden"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="InputShell" Property="Background" Value="White"/>
+                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="InputShell" Property="Background" Value="White"/>
+                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="LoginInfoText" TargetType="TextBlock">
@@ -48,30 +115,80 @@
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
 
-        <Style x:Key="LoginHeroInfoCard" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="18"/>
-            <Setter Property="Padding" Value="16"/>
-        </Style>
-
         <Style x:Key="LoginSubmitButton"
                TargetType="Button"
-               BasedOn="{StaticResource PrimaryButton}">
-            <Setter Property="MinHeight" Value="52"/>
-            <Setter Property="Padding" Value="18,0"/>
-            <Setter Property="FontSize" Value="15"/>
+               BasedOn="{StaticResource AppButtonBase}">
+            <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="MinHeight" Value="56"/>
+            <Setter Property="Padding" Value="22,0"/>
+            <Setter Property="FontSize" Value="14"/>
             <Setter Property="MinWidth" Value="0"/>
+            <Setter Property="Effect" Value="{x:Null}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="BtnBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="16"
+                                Padding="{TemplateBinding Padding}"
+                                MinHeight="{TemplateBinding MinHeight}"
+                                RenderTransformOrigin="0.5,0.5"
+                                SnapsToDevicePixels="True">
+                            <Border.RenderTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                    <TranslateTransform Y="0"/>
+                                </TransformGroup>
+                            </Border.RenderTransform>
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="BtnBorder" Property="Background" Value="{DynamicResource PrimaryHoverBrush}"/>
+                                <Setter TargetName="BtnBorder" Property="BorderBrush" Value="{DynamicResource PrimaryHoverBrush}"/>
+                                <Setter TargetName="BtnBorder" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                            <TranslateTransform Y="-1"/>
+                                        </TransformGroup>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="BtnBorder" Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TransformGroup>
+                                            <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                                            <TranslateTransform Y="0"/>
+                                        </TransformGroup>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="BtnBorder" Property="Opacity" Value="0.42"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <Style x:Key="RecentAccountComboBox"
                TargetType="ComboBox"
                BasedOn="{StaticResource AppComboBoxBase}">
-            <Setter Property="Height" Value="46"/>
-            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="Padding" Value="16,0"/>
             <Setter Property="FontSize" Value="14"/>
             <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="ComboBox">
@@ -121,7 +238,7 @@
                                     </ToggleButton>
                                 </Grid>
                             </Border>
-                            <Popup x:Name="PART_Popup"
+                                    <Popup x:Name="PART_Popup"
                                    AllowsTransparency="True"
                                    Focusable="False"
                                    IsOpen="{TemplateBinding IsDropDownOpen}"
@@ -133,7 +250,7 @@
                                         Background="{DynamicResource SurfaceElevatedBrush}"
                                         BorderBrush="{DynamicResource BorderLightBrush}"
                                         BorderThickness="1"
-                                        CornerRadius="14"
+                                        CornerRadius="16"
                                         Effect="{StaticResource ComboBoxPopupLift}">
                                     <ScrollViewer MaxHeight="220"
                                                   VerticalScrollBarVisibility="Auto"
@@ -150,11 +267,11 @@
                             </Trigger>
                             <Trigger Property="IsKeyboardFocusWithin" Value="True">
                                 <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                                <Setter TargetName="InputShell" Property="Background" Value="White"/>
                             </Trigger>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="InputShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="InputShell" Property="Background" Value="White"/>
+                                <Setter TargetName="InputShell" Property="BorderBrush" Value="{DynamicResource PrimaryLightBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -192,246 +309,131 @@
 
     </Window.Resources>
 
-    <Border x:Name="LoginWorkspaceShell"
-            Margin="34"
-            Background="{DynamicResource SurfaceCardBrush}"
-            BorderBrush="{DynamicResource BorderLightBrush}"
-            BorderThickness="1"
-            CornerRadius="28">
-    <Grid Margin="0">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="360"/>
-            <ColumnDefinition Width="1"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
+    <Grid Background="#F8FAFF">
+        <StackPanel x:Name="LoginWorkspaceShell"
+                    Width="480"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Center"
+                    Margin="20,24,20,24">
+            <StackPanel x:Name="LoginHeroSurface"
+                        Margin="0,0,0,20"
+                        HorizontalAlignment="Center">
+                <Image Width="40"
+                       Height="40"
+                       HorizontalAlignment="Center"
+                       Source="../Assets/Icons/app-avatar.png"/>
+                <TextBlock Text="我的衣橱"
+                           Margin="0,10,0,0"
+                           HorizontalAlignment="Center"
+                           FontSize="28"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock x:Name="TxtSubtitle"
+                           Text="Closet Companion&#x0a;记录搭配与衣柜管理"
+                           Margin="0,6,0,0"
+                           HorizontalAlignment="Center"
+                           FontSize="12"
+                           LineHeight="18"
+                           TextAlignment="Center"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
+            </StackPanel>
 
-        <Border x:Name="LoginHeroSurface"
-                Grid.Column="0"
-                Background="{DynamicResource SurfaceSectionBrush}"
-                CornerRadius="28,0,0,28"
-                Padding="30">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <StackPanel>
-                    <Border x:Name="LoginSectionBadge"
-                            Background="{DynamicResource PrimaryLightBrush}"
-                            BorderBrush="{DynamicResource PrimaryBrush}"
-                            BorderThickness="1"
-                            CornerRadius="10"
-                            Padding="9,4"
-                            HorizontalAlignment="Left">
-                        <TextBlock Text="LOCAL WORKSPACE"
-                                   FontSize="10"
-                                   FontWeight="SemiBold"
-                                   Foreground="{DynamicResource PrimaryDarkBrush}"/>
-                    </Border>
-                    <TextBlock Text="我的衣橱"
-                               Margin="0,16,0,0"
-                               FontSize="28"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <TextBlock x:Name="TxtSubtitle"
-                               Text="输入账号和密码，进入对应的独立衣柜工作区。"
-                               Margin="0,8,0,0"
-                               FontSize="14"
-                               LineHeight="23"
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                </StackPanel>
+            <StackPanel x:Name="LoginFormSurface">
+                <TextBlock x:Name="TxtModeTitle"
+                           Text="登录"
+                           FontSize="26"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextPrimaryBrush}"/>
+                <TextBlock x:Name="TxtModeDescription"
+                           Text="使用本地账号继续"
+                           Margin="0,4,0,0"
+                           FontSize="12"
+                           LineHeight="18"
+                           TextWrapping="Wrap"
+                           Foreground="{DynamicResource TextSecondaryBrush}"/>
 
-                <StackPanel x:Name="WelcomeInsightStack"
-                            Grid.Row="1"
-                            Margin="0,42,0,0"
-                            VerticalAlignment="Bottom">
-                    <Border x:Name="WelcomeMetricsCard"
-                            Style="{StaticResource LoginHeroInfoCard}">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-                            <StackPanel>
-                                <TextBlock Text="本地工作区"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                <TextBlock Text="独立衣柜"
-                                           Margin="0,8,0,0"
-                                           FontSize="18"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            </StackPanel>
-                            <StackPanel Grid.Column="1">
-                                <TextBlock Text="快速回访"
-                                           FontSize="11"
-                                           Foreground="{DynamicResource TextSecondaryBrush}"/>
-                                <TextBlock Text="最近登录"
-                                           Margin="0,8,0,0"
-                                           FontSize="18"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            </StackPanel>
-                        </Grid>
-                    </Border>
-                    <Border x:Name="WelcomeAccountIdentityCard"
-                            Margin="0,14,0,0"
-                            Style="{StaticResource LoginHeroInfoCard}">
-                        <StackPanel>
-                            <TextBlock Text="账号工作区"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="每个账号拥有独立衣柜、搭配、标签、效果图和个人资料。"
-                                       Margin="0,8,0,0"
-                                       Style="{StaticResource LoginInfoText}"/>
-                        </StackPanel>
-                    </Border>
-                    <Border x:Name="WelcomeSessionCard"
-                            Margin="0,14,0,0"
-                            Style="{StaticResource LoginHeroInfoCard}"
-                            Background="{DynamicResource PrimaryLightBrush}">
-                        <StackPanel>
-                            <TextBlock Text="欢迎回来"
-                                       FontSize="16"
-                                       FontWeight="SemiBold"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"/>
-                            <TextBlock Text="重新进入时会优先帮你回到最近使用的账号。"
-                                       Margin="0,8,0,0"
-                                       Style="{StaticResource LoginInfoText}"/>
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <Border Grid.Column="1" Background="{DynamicResource BorderLightBrush}"/>
-
-        <Border x:Name="LoginFormSurface"
-                Grid.Column="2"
-                Background="{DynamicResource SurfaceCardBrush}"
-                CornerRadius="0,28,28,0"
-                Padding="46,42">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <StackPanel>
-                    <TextBlock x:Name="TxtModeTitle"
-                               Text="登录"
-                               FontSize="26"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource TextPrimaryBrush}"/>
-                    <TextBlock x:Name="TxtModeDescription"
-                               Text="输入账号和密码继续。"
-                               Margin="0,8,0,0"
-                               FontSize="14"
-                               LineHeight="23"
-                               TextWrapping="Wrap"
-                               Foreground="{DynamicResource TextSecondaryBrush}"/>
-                </StackPanel>
-
-                <ScrollViewer x:Name="LoginFormScrollViewer"
-                              Grid.Row="1"
-                              Margin="0,22,0,0"
-                              VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel MaxWidth="520"
-                                HorizontalAlignment="Stretch"
-                                VerticalAlignment="Top">
+                <StackPanel Margin="0,20,0,0"
+                            HorizontalAlignment="Stretch"
+                            VerticalAlignment="Top">
 
                 <StackPanel x:Name="SetupPanel" Visibility="Collapsed">
                     <TextBlock Text="管理员账号" Style="{StaticResource LoginInputLabel}"/>
                     <TextBox x:Name="SetupAccountBox"
-                             Margin="0,8,0,14"
+                             Margin="0,6,0,12"
                              Style="{StaticResource LoginTextBox}"/>
                     <TextBlock x:Name="TxtSetupAccountError"
                                Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="管理员密码" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="SetupPasswordBox"
-                                 Margin="0,8,0,14"
+                                 Margin="0,6,0,12"
                                  Style="{StaticResource LoginPasswordBox}"/>
                     <TextBlock x:Name="TxtSetupPasswordError"
                                Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="确认密码" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="SetupConfirmPasswordBox"
-                                 Margin="0,8,0,14"
+                                 Margin="0,6,0,12"
                                  Style="{StaticResource LoginPasswordBox}"/>
                     <TextBlock x:Name="TxtSetupConfirmPasswordError"
                                Style="{StaticResource LoginFieldErrorText}"/>
                     <TextBlock Text="快捷 PIN（可选）" Style="{StaticResource LoginInputLabel}"/>
                     <PasswordBox x:Name="SetupPinBox"
-                                 Margin="0,8,0,0"
+                                 Margin="0,6,0,0"
                                  Style="{StaticResource LoginPasswordBox}"/>
                     <TextBlock Text="PIN 只用于本机快捷登录，可以之后再设置。"
-                               Margin="2,8,0,0"
+                               Margin="2,6,0,0"
                                FontSize="11"
                                Foreground="{DynamicResource TextPlaceholderBrush}"/>
                 </StackPanel>
 
                 <StackPanel x:Name="LoginPanel">
-                    <Border x:Name="RecentAccountSectionCard"
-                            Margin="0,0,0,16"
-                            Padding="16,14"
-                            Background="{DynamicResource SurfaceSectionBrush}"
-                            BorderBrush="{DynamicResource BorderLightBrush}"
-                            BorderThickness="1"
-                            CornerRadius="18">
-                        <StackPanel>
-                            <TextBlock Text="账号" Style="{StaticResource LoginInputLabel}"/>
-                            <ComboBox x:Name="RecentAccountSelector"
-                                      Margin="0,8,0,14"
-                                      DisplayMemberPath="AccountName"
-                                      IsEditable="True"
-                                      ItemContainerStyle="{StaticResource RecentAccountComboBoxItem}"
-                                      Style="{StaticResource RecentAccountComboBox}"
-                                      TextSearch.TextPath="AccountName"
-                                      SelectionChanged="RecentAccountSelector_SelectionChanged"/>
-                            <TextBlock x:Name="TxtLoginAccountError"
-                                       Style="{StaticResource LoginFieldErrorText}"/>
-                            <Grid x:Name="CredentialModePanel">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="Auto"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <TextBlock Text="登录方式"
-                                           Style="{StaticResource LoginInputLabel}"
-                                           VerticalAlignment="Center"/>
-                                <Border x:Name="CredentialModeSurface"
-                                        Grid.Column="1"
-                                        Margin="14,0,0,0"
-                                        HorizontalAlignment="Right"
-                                        Style="{StaticResource AppSegmentedTabShell}">
-                                    <UniformGrid Columns="2">
-                                        <RadioButton x:Name="BtnPasswordMode"
-                                                     Content="密码"
-                                                     GroupName="LoginCredentialMode"
-                                                     IsChecked="True"
-                                                     Style="{StaticResource AppSegmentedTabButton}"
-                                                     Checked="PasswordMode_Checked"/>
-                                        <RadioButton x:Name="BtnPinMode"
-                                                     Content="PIN"
-                                                     GroupName="LoginCredentialMode"
-                                                     Style="{StaticResource AppSegmentedTabButton}"
-                                                     Checked="PinMode_Checked"/>
-                                    </UniformGrid>
-                                </Border>
-                            </Grid>
-                        </StackPanel>
-                    </Border>
+                    <ComboBox x:Name="RecentAccountSelector"
+                              Margin="0,0,0,12"
+                              DisplayMemberPath="AccountName"
+                              IsEditable="True"
+                              ItemContainerStyle="{StaticResource RecentAccountComboBoxItem}"
+                              Style="{StaticResource RecentAccountComboBox}"
+                              TextSearch.TextPath="AccountName"
+                              SelectionChanged="RecentAccountSelector_SelectionChanged"/>
+                    <TextBlock x:Name="TxtLoginAccountError"
+                               Style="{StaticResource LoginFieldErrorText}"/>
+                    <Grid x:Name="CredentialModePanel"
+                          Margin="0,0,0,10">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="登录凭证"
+                                   Style="{StaticResource LoginInputLabel}"
+                                   VerticalAlignment="Center"/>
+                        <Border x:Name="CredentialModeSurface"
+                                Grid.Column="1"
+                                Margin="10,0,0,0"
+                                HorizontalAlignment="Right"
+                                Style="{StaticResource AppSegmentedTabShell}">
+                            <UniformGrid Columns="2">
+                                <RadioButton x:Name="BtnPasswordMode"
+                                             Content="密码"
+                                             GroupName="LoginCredentialMode"
+                                             IsChecked="True"
+                                             Style="{StaticResource AppSegmentedTabButton}"
+                                             Checked="PasswordMode_Checked"/>
+                                <RadioButton x:Name="BtnPinMode"
+                                             Content="PIN"
+                                             GroupName="LoginCredentialMode"
+                                             Style="{StaticResource AppSegmentedTabButton}"
+                                             Checked="PinMode_Checked"/>
+                            </UniformGrid>
+                        </Border>
+                    </Grid>
                     <StackPanel x:Name="PasswordCredentialPanel">
-                        <TextBlock Text="密码" Style="{StaticResource LoginInputLabel}"/>
                         <PasswordBox x:Name="LoginPasswordBox"
-                                     Margin="0,8,0,14"
+                                     Margin="0,0,0,12"
                                      Style="{StaticResource LoginPasswordBox}"/>
                     </StackPanel>
                     <StackPanel x:Name="PinCredentialPanel"
                                 Visibility="Collapsed">
-                        <TextBlock Text="PIN" Style="{StaticResource LoginInputLabel}"/>
                         <PasswordBox x:Name="LoginPinBox"
-                                     Margin="0,8,0,14"
+                                     Margin="0,0,0,12"
                                      Style="{StaticResource LoginPasswordBox}"/>
                     </StackPanel>
                     <TextBlock x:Name="TxtLoginPasswordError"
@@ -439,8 +441,8 @@
                 </StackPanel>
 
                 <Border x:Name="LoginErrorHost"
-                        Margin="0,16,0,0"
-                        Padding="13,12"
+                        Margin="0,8,0,0"
+                        Padding="12,10"
                         Background="{DynamicResource DangerLightBrush}"
                         BorderBrush="{DynamicResource BorderLightBrush}"
                         BorderThickness="1"
@@ -482,12 +484,10 @@
                 </Border>
 
                 <Border x:Name="LoginActionRail"
-                        Margin="0,22,0,0"
-                        Padding="14"
-                        Background="{DynamicResource SurfaceSectionBrush}"
-                        BorderBrush="{DynamicResource BorderLightBrush}"
-                        BorderThickness="1"
-                        CornerRadius="18">
+                        Margin="0,12,0,0"
+                        Padding="0"
+                        Background="Transparent"
+                        BorderThickness="0">
                     <Button x:Name="BtnSubmit"
                             HorizontalAlignment="Stretch"
                             HorizontalContentAlignment="Center"
@@ -507,10 +507,15 @@
                         </StackPanel>
                     </Button>
                 </Border>
-                    </StackPanel>
-                </ScrollViewer>
-            </Grid>
-        </Border>
+                </StackPanel>
+
+                <TextBlock x:Name="HeroSessionHint"
+                           Margin="0,10,0,0"
+                           HorizontalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{DynamicResource TextSecondaryBrush}"
+                           Text="最近使用：admin"/>
+            </StackPanel>
+        </StackPanel>
     </Grid>
-    </Border>
 </Window>

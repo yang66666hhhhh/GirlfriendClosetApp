@@ -9,128 +9,26 @@
             <Setter Property="Padding" Value="0"/>
             <Setter Property="FontSize" Value="15"/>
         </Style>
-
-        <Style x:Key="PresetButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-            <Setter Property="MinHeight" Value="74"/>
-            <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-            <Setter Property="VerticalContentAlignment" Value="Top"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="FontSize" Value="11.5"/>
-            <Style.Triggers>
-                <Trigger Property="Tag" Value="active">
-                    <Setter Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                    <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                    <Setter Property="Foreground" Value="{DynamicResource PrimaryDarkBrush}"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
     </UserControl.Resources>
 
     <Border Style="{StaticResource SettingsSectionCard}">
         <StackPanel>
-            <Border Style="{StaticResource SettingsEyebrowBadge}">
-                <TextBlock Text="图片生成"
-                           Style="{StaticResource SettingsEyebrowBadgeText}"/>
-            </Border>
-
             <TextBlock Text="AI 图片生成"
                        Style="{StaticResource PageSectionTitleText}"/>
-            <TextBlock Text="管理接口、模型和 API Key。"
-                       Style="{StaticResource PageSectionBodyText}"/>
-
-            <Border x:Name="AiPresetCard"
-                    Style="{StaticResource SettingsInsetCard}">
-                <StackPanel>
-                    <DockPanel LastChildFill="False">
-                        <StackPanel>
-                            <TextBlock Text="快捷预设"
-                                       Style="{StaticResource PageFieldLabelText}"/>
-                        </StackPanel>
-                        <Button x:Name="BtnTestConnection"
-                                Content="测试连接"
-                                Style="{StaticResource SettingsGhostButton}"
-                                Click="TestConnection_Click"
-                                Margin="12,0,0,0"/>
-                    </DockPanel>
-
-                    <UniformGrid x:Name="AiPresetGrid"
-                                 Columns="2"
-                                 Margin="0,10,0,0">
-                        <Button x:Name="BtnPresetOpenAiMain"
-                                Margin="0,0,8,8"
-                                Style="{StaticResource PresetButton}"
-                                Click="Preset_Click">
-                            <StackPanel>
-                                <TextBlock x:Name="TxtPresetOpenAiMain"
-                                           Text="GPT Image 2"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="gpt-image-2 · 主路线"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,6,0,0"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="BtnPresetOpenAi15"
-                                Margin="0,0,0,8"
-                                Style="{StaticResource PresetButton}"
-                                Click="Preset_Click">
-                            <StackPanel>
-                                <TextBlock x:Name="TxtPresetOpenAi15"
-                                           Text="OpenAI 1.5"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="gpt-image-1.5 · 高质量"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,6,0,0"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="BtnPresetOpenAiMini"
-                                Margin="0,0,8,0"
-                                Style="{StaticResource PresetButton}"
-                                Click="Preset_Click">
-                            <StackPanel>
-                                <TextBlock x:Name="TxtPresetOpenAiMini"
-                                           Text="OpenAI Mini"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="gpt-image-1-mini · 低成本"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,6,0,0"/>
-                            </StackPanel>
-                        </Button>
-
-                        <Button x:Name="BtnPresetOpenAi55"
-                                Style="{StaticResource PresetButton}"
-                                Click="Preset_Click">
-                            <StackPanel>
-                                <TextBlock x:Name="TxtPresetOpenAi55"
-                                           Text="GPT-5.5"
-                                           FontSize="13"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource TextPrimaryBrush}"/>
-                                <TextBlock Text="responses · 实验兼容"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,6,0,0"/>
-                            </StackPanel>
-                        </Button>
-                    </UniformGrid>
-                </StackPanel>
-            </Border>
-
             <StackPanel x:Name="AiConnectionGrid"
-                        Margin="0,14,0,0">
+                        Margin="0,0,0,0">
                 <Border Style="{StaticResource SettingsInsetCard}">
                     <StackPanel x:Name="AiConnectionContent"
                                 VerticalAlignment="Stretch">
-                        <TextBlock Text="连接配置"
-                                   Style="{StaticResource PageFieldLabelText}"/>
+                        <DockPanel LastChildFill="False">
+                            <TextBlock Text="连接配置"
+                                       Style="{StaticResource PageFieldLabelText}"/>
+                            <Button x:Name="BtnTestConnection"
+                                    Content="测试连接"
+                                    Style="{StaticResource SettingsGhostButton}"
+                                    Click="TestConnection_Click"
+                                    Margin="12,0,0,0"/>
+                        </DockPanel>
 
                         <TextBlock Text="Base URL"
                                    Margin="0,12,0,6"

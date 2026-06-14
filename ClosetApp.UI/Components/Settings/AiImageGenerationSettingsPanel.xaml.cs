@@ -11,17 +11,6 @@ namespace ClosetApp.UI.Components.Settings;
 
 public partial class AiImageGenerationSettingsPanel : UserControl
 {
-    private sealed record AiConfigPreset(string Key, string BaseUrl, string Model, int TimeoutSeconds, string SuccessMessage);
-
-    private static readonly IReadOnlyDictionary<string, AiConfigPreset> Presets =
-        new Dictionary<string, AiConfigPreset>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["openai-main"] = new("openai-main", "https://api.openai.com/v1", "gpt-image-2", 180, "已切换到 GPT Image 2 图片配置"),
-            ["openai-1_5"] = new("openai-1_5", "https://api.openai.com/v1", "gpt-image-1.5", 120, "已切换到 OpenAI 1.5 图片配置"),
-            ["openai-mini"] = new("openai-mini", "https://api.openai.com/v1", "gpt-image-1-mini", 90, "已切换到 OpenAI Mini 图片配置"),
-            ["openai-gpt55"] = new("openai-gpt55", "https://api.openai.com/v1", "gpt-5.5", 180, "已切换到 GPT-5.5 兼容实验配置")
-        };
-
     private readonly SettingsViewModel _viewModel;
     private readonly IAiGenerationPreferencesService _preferencesService;
     private bool _isShowingApiKey;
@@ -93,7 +82,6 @@ public partial class AiImageGenerationSettingsPanel : UserControl
         TxtModel.Text = preferences.Model;
         TxtTimeoutSeconds.Text = preferences.TimeoutSeconds.ToString();
         ApplyModelPresetSelection(preferences.Model);
-        ApplyPresetHighlight(preferences);
         await LoadApiKeyAsync();
     }
 
@@ -115,72 +103,6 @@ public partial class AiImageGenerationSettingsPanel : UserControl
             GetCurrentApiKeyValue()));
 
         await _viewModel.RefreshAiGenerationSettingsAsync();
-    }
-
-    private async void Preset_Click(object sender, RoutedEventArgs e)
-    {
-        if (_isBusy)
-            return;
-
-        if (sender is not Button button)
-            return;
-
-        var presetKey = button.Name switch
-        {
-            nameof(BtnPresetOpenAiMain) => "openai-main",
-            nameof(BtnPresetOpenAi15) => "openai-1_5",
-            nameof(BtnPresetOpenAiMini) => "openai-mini",
-            nameof(BtnPresetOpenAi55) => "openai-gpt55",
-            _ => string.Empty
-        };
-
-        if (!Presets.TryGetValue(presetKey, out var preset))
-            return;
-
-        try
-        {
-            SetBusyState(true, "正在切换 AI 配置...");
-            var previousPreferences = await _preferencesService.GetAsync();
-            TxtBaseUrl.Text = preset.BaseUrl;
-            TxtModel.Text = preset.Model;
-            TxtTimeoutSeconds.Text = preset.TimeoutSeconds.ToString();
-            ApplyModelPresetSelection(preset.Model);
-            await PersistCurrentInputsAsync();
-
-            var hasApiKey = !string.IsNullOrWhiteSpace(await _preferencesService.GetApiKeyAsync());
-            if (hasApiKey)
-            {
-                try
-                {
-                    await _viewModel.TestAiConnectionAsync();
-                    await RefreshAsync();
-                    ToastService.Instance.ShowSuccess($"{preset.SuccessMessage}，接口连通性测试通过");
-                }
-                catch (Exception testEx)
-                {
-                    TxtBaseUrl.Text = previousPreferences.BaseUrl;
-                    TxtModel.Text = previousPreferences.Model;
-                    TxtTimeoutSeconds.Text = previousPreferences.TimeoutSeconds.ToString();
-                    ApplyModelPresetSelection(previousPreferences.Model);
-                    await PersistCurrentInputsAsync();
-                    await RefreshAsync();
-                    ToastService.Instance.ShowError("切换后连接失败，已回滚", testEx.Message);
-                }
-            }
-            else
-            {
-                await RefreshAsync();
-                ToastService.Instance.ShowSuccess($"{preset.SuccessMessage}，请再保存 API Key 后测试连接");
-            }
-        }
-        catch (Exception ex)
-        {
-            ToastService.Instance.ShowError("切换 AI 配置失败", ex.Message);
-        }
-        finally
-        {
-            SetBusyState(false);
-        }
     }
 
     private void ToggleApiKeyVisibility_Click(object sender, RoutedEventArgs e)
@@ -240,10 +162,6 @@ public partial class AiImageGenerationSettingsPanel : UserControl
     {
         _isBusy = isBusy;
 
-        BtnPresetOpenAiMain.IsEnabled = !isBusy;
-        BtnPresetOpenAi15.IsEnabled = !isBusy;
-        BtnPresetOpenAiMini.IsEnabled = !isBusy;
-        BtnPresetOpenAi55.IsEnabled = !isBusy;
         BtnSaveConfig.IsEnabled = !isBusy;
         BtnTestConnection.IsEnabled = !isBusy;
         BtnOpenProfile.IsEnabled = !isBusy;
@@ -287,27 +205,5 @@ public partial class AiImageGenerationSettingsPanel : UserControl
             .OfType<ComboBoxItem>()
             .FirstOrDefault(item => string.Equals(item.Tag?.ToString(), "__custom__", StringComparison.Ordinal));
         AiCustomModelPanel.Visibility = Visibility.Visible;
-    }
-
-    private void ApplyPresetHighlight(AiGenerationPreferences preferences)
-    {
-        SetPresetState(BtnPresetOpenAiMain, TxtPresetOpenAiMain, IsPresetActive(preferences, "openai-main"));
-        SetPresetState(BtnPresetOpenAi15, TxtPresetOpenAi15, IsPresetActive(preferences, "openai-1_5"));
-        SetPresetState(BtnPresetOpenAiMini, TxtPresetOpenAiMini, IsPresetActive(preferences, "openai-mini"));
-        SetPresetState(BtnPresetOpenAi55, TxtPresetOpenAi55, IsPresetActive(preferences, "openai-gpt55"));
-    }
-
-    private static bool IsPresetActive(AiGenerationPreferences preferences, string presetKey)
-    {
-        return Presets.TryGetValue(presetKey, out var preset)
-               && string.Equals(preferences.BaseUrl, preset.BaseUrl, StringComparison.OrdinalIgnoreCase)
-               && string.Equals(preferences.Model, preset.Model, StringComparison.OrdinalIgnoreCase)
-               && preferences.TimeoutSeconds == preset.TimeoutSeconds;
-    }
-
-    private void SetPresetState(Button button, TextBlock title, bool isActive)
-    {
-        button.Tag = isActive ? "active" : null;
-        title.Text = isActive ? $"{title.Text.Split('（')[0].Trim()}（当前）" : title.Text.Split('（')[0].Trim();
     }
 }

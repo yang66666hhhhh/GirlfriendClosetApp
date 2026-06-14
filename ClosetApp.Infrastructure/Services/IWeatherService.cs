@@ -10,6 +10,8 @@ public class WeatherInfo
     public DateTimeOffset? ObservedAt { get; set; }
 }
 
+public sealed record WeatherCitySuggestion(string DisplayName);
+
 public class WeatherPreferences
 {
     public string DefaultCity { get; set; } = "Shanghai";
@@ -18,6 +20,7 @@ public class WeatherPreferences
 public interface IWeatherService
 {
     Task<WeatherInfo?> GetCurrentWeatherAsync(string city);
+    Task<IReadOnlyList<WeatherCitySuggestion>> SearchCitiesAsync(string query, int maxResults = 6);
     int GetFallbackTemperature(DateTimeOffset? date = null);
 }
 

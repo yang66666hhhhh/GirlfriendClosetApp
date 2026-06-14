@@ -676,6 +676,9 @@ public class OutfitsViewModelTests
             return Task.FromResult(_weather);
         }
 
+        public Task<IReadOnlyList<WeatherCitySuggestion>> SearchCitiesAsync(string query, int maxResults = 6)
+            => Task.FromResult<IReadOnlyList<WeatherCitySuggestion>>([]);
+
         public int GetFallbackTemperature(DateTimeOffset? date = null) => 22;
 
         public void ResetRequestCount()
