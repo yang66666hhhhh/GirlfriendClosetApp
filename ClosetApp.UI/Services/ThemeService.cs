@@ -8,10 +8,13 @@ namespace ClosetApp.UI.Services;
 public sealed class ThemeService
 {
     private readonly ThemePreferencesService _preferencesService;
+    private readonly ICurrentUserContext? _currentUserContext;
+    private AppThemeKind? _pendingAnonymousTheme;
 
     public ThemeService(ThemePreferencesService preferencesService, ICurrentUserContext? currentUserContext = null)
     {
         _preferencesService = preferencesService;
+        _currentUserContext = currentUserContext;
         if (currentUserContext != null)
             currentUserContext.CurrentUserChanged += CurrentUserContext_CurrentUserChanged;
     }
@@ -29,6 +32,11 @@ public sealed class ThemeService
 
     public async Task ApplyThemeAsync(AppThemeKind theme)
     {
+        if (!await HasCurrentUserAsync().ConfigureAwait(false))
+            _pendingAnonymousTheme = theme;
+        else
+            _pendingAnonymousTheme = null;
+
         ApplyThemeCore(theme, CurrentFontSizeLevel, raiseThemeChanged: true, raiseFontSizeChanged: false);
         await _preferencesService.SaveAsync(new ThemePreferences
         {
@@ -49,13 +57,47 @@ public sealed class ThemeService
 
     private void CurrentUserContext_CurrentUserChanged(object? sender, CurrentUserChangedEventArgs e)
     {
-        ReloadPreferencesAsync(raiseThemeChanged: true, raiseFontSizeChanged: true).GetAwaiter().GetResult();
+        ReloadPreferencesForCurrentUserAsync().GetAwaiter().GetResult();
     }
 
     private async Task ReloadPreferencesAsync(bool raiseThemeChanged, bool raiseFontSizeChanged)
     {
         var preferences = await _preferencesService.GetAsync().ConfigureAwait(false);
         ApplyThemeCore(preferences.Theme, preferences.FontSizeLevel, raiseThemeChanged, raiseFontSizeChanged);
+    }
+
+    private async Task ReloadPreferencesForCurrentUserAsync()
+    {
+        var preferences = await _preferencesService.GetAsync().ConfigureAwait(false);
+
+        if (_pendingAnonymousTheme is AppThemeKind pendingTheme)
+        {
+            preferences = new ThemePreferences
+            {
+                Theme = pendingTheme,
+                FontSizeLevel = preferences.FontSizeLevel
+            };
+            _pendingAnonymousTheme = null;
+            await _preferencesService.SaveAsync(preferences).ConfigureAwait(false);
+        }
+
+        ApplyThemeCore(preferences.Theme, preferences.FontSizeLevel, raiseThemeChanged: true, raiseFontSizeChanged: true);
+    }
+
+    private async Task<bool> HasCurrentUserAsync()
+    {
+        if (_currentUserContext == null)
+            return false;
+
+        try
+        {
+            _ = await _currentUserContext.GetRequiredCurrentUserIdAsync().ConfigureAwait(false);
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
+        }
     }
 
     private void ApplyThemeCore(

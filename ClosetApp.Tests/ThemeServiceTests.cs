@@ -79,6 +79,47 @@ public class ThemeServiceTests
         });
     }
 
+    [Fact]
+    public async Task CurrentUserChanged_KeepsPreLoginThemeSelectionWhenUserHasSavedTheme()
+    {
+        await RunStaAsync(() =>
+        {
+            EnsureApplicationResources();
+            var baseDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));
+            var globalFilePath = Path.Combine(baseDirectory, "theme-settings.json");
+            var userId = Guid.NewGuid();
+            var currentUserContext = new FakeCurrentUserContext();
+            var preferencesService = new ThemePreferencesService(globalFilePath, currentUserContext);
+            var service = new ThemeService(preferencesService, currentUserContext);
+
+            preferencesService.SaveAsync(new ThemePreferences
+            {
+                Theme = AppThemeKind.Blue,
+                FontSizeLevel = AppFontSizeLevel.Standard
+            }).GetAwaiter().GetResult();
+
+            currentUserContext.SetUserWithoutEvent(userId);
+            preferencesService.SaveAsync(new ThemePreferences
+            {
+                Theme = AppThemeKind.Blue,
+                FontSizeLevel = AppFontSizeLevel.Large
+            }).GetAwaiter().GetResult();
+            currentUserContext.ClearUserWithoutEvent();
+
+            service.InitializeAsync().GetAwaiter().GetResult();
+            service.ApplyThemeAsync(AppThemeKind.Rose).GetAwaiter().GetResult();
+
+            currentUserContext.SetCurrentUserIdAsync(userId).GetAwaiter().GetResult();
+
+            Assert.Equal(AppThemeKind.Rose, service.CurrentTheme);
+            Assert.Equal(AppFontSizeLevel.Large, service.CurrentFontSizeLevel);
+
+            var persistedPreferences = preferencesService.GetAsync().GetAwaiter().GetResult();
+            Assert.Equal(AppThemeKind.Rose, persistedPreferences.Theme);
+            Assert.Equal(AppFontSizeLevel.Large, persistedPreferences.FontSizeLevel);
+        });
+    }
+
     private static void EnsureApplicationResources()
     {
         if (System.Windows.Application.Current == null)
