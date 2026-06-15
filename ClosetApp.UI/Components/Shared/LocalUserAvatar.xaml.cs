@@ -80,6 +80,11 @@ public partial class LocalUserAvatar : UserControl
         set => SetValue(AvatarAssetResolverProperty, value);
     }
 
+    /// <summary>
+    /// 强制重新加载头像图片，用于文件内容已替换但路径未变化的场景。
+    /// </summary>
+    public void Refresh() => RefreshAvatar();
+
     private static void OnAvatarPropertyChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         ((LocalUserAvatar)d).RefreshAvatar();

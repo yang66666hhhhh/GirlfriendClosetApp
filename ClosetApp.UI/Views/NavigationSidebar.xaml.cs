@@ -53,6 +53,7 @@ public partial class NavigationSidebar : UserControl
             CurrentUserAvatar.AvatarPath = ResolveAvatarPath(_currentUser);
             CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
             CurrentUserAvatar.IsCurrent = true;
+            CurrentUserAvatar.Refresh();
             RebuildUserMenu();
             ScheduleModalPrewarm();
         }
