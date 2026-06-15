@@ -10,7 +10,7 @@
     </UserControl.Resources>
 
     <Border Style="{StaticResource SettingsSectionCard}">
-        <StackPanel>
+        <StackPanel x:Name="WeatherContentStack">
             <TextBlock Text="天气与城市"
                        Style="{StaticResource PageSectionTitleText}"/>
 

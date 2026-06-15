@@ -5,7 +5,7 @@
             Background="Transparent"
             BorderThickness="0"
             Padding="0"
-            MinHeight="58"
+            MinHeight="72"
             RenderTransformOrigin="0.5,0.5"
             Click="BtnSelect_Click">
         <Button.RenderTransform>
@@ -16,7 +16,7 @@
         </Button.RenderTransform>
         <Border x:Name="CardBorder"
                 CornerRadius="16"
-                Padding="14,12">
+                Padding="14,14">
             <Grid>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

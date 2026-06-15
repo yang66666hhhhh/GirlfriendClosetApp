@@ -138,15 +138,15 @@
         <Style x:Key="CollapseBtnStyle" TargetType="Button">
             <Setter Property="Background" Value="Transparent"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
-            <Setter Property="Width" Value="28"/>
-            <Setter Property="Height" Value="28"/>
+            <Setter Property="Width" Value="32"/>
+            <Setter Property="Height" Value="32"/>
             <Setter Property="Cursor" Value="Hand"/>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border x:Name="BtnBg"
                                 Background="Transparent"
-                                CornerRadius="14"
+                                CornerRadius="16"
                                 RenderTransformOrigin="0.5,0.5">
                             <Border.RenderTransform>
                                 <TransformGroup>
@@ -224,15 +224,29 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Logo / Brand Area -->
-            <StackPanel x:Name="HeaderPanel" Grid.Row="0" Margin="12,24,12,20">
+            <Grid x:Name="HeaderPanel" Grid.Row="0" Margin="12,24,12,20">
+                <Button x:Name="SidebarCollapseButton"
+                        Style="{StaticResource CollapseBtnStyle}"
+                        Width="32"
+                        Height="32"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        Margin="0,4,0,0"
+                        Panel.ZIndex="2"
+                        ToolTip="收起侧边栏"
+                        Click="Collapse_Click">
+                    <TextBlock x:Name="CollapseGlyph"
+                               Text="◀"
+                               FontSize="{DynamicResource FontSize.Meta}"
+                               Foreground="{DynamicResource TextPlaceholderBrush}"/>
+                </Button>
                 <Button x:Name="CollapsedProfileButton"
                         Width="56"
                         Height="56"
-                        Margin="0,0,0,8"
+                        Margin="0,4,0,8"
                         HorizontalAlignment="Center"
                         Background="Transparent"
                         BorderThickness="0"
@@ -296,6 +310,7 @@
                         BorderThickness="0"
                         Padding="0"
                         MinHeight="70"
+                        Margin="0,6,0,0"
                         HorizontalAlignment="Stretch"
                         ToolTip="个人中心 / 账号菜单"
                         Click="Profile_Click">
@@ -350,19 +365,18 @@
                                      Style="{StaticResource WardrobeCard.MoreMenu}"
                                      ItemContainerStyle="{x:Null}"/>
                     </Button.ContextMenu>
-                        <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
+                    <Grid HorizontalAlignment="Stretch" VerticalAlignment="Center">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
                         <shared:LocalUserAvatar x:Name="CurrentUserAvatar"
                                                 Width="42"
                                                 Height="42"
                                                 ShowStatus="False"/>
-                            <StackPanel x:Name="ProfileTextPanel"
+                        <StackPanel x:Name="ProfileTextPanel"
                                     Grid.Column="1"
-                                    Margin="8,0,0,0"
+                                    Margin="8,0,28,0"
                                     VerticalAlignment="Center">
                             <TextBlock x:Name="TxtCurrentUserName"
                                        Text="私人衣橱"
@@ -384,27 +398,10 @@
                                            FontSize="{DynamicResource FontSize.Tiny}"
                                            Foreground="{DynamicResource TextPlaceholderBrush}"/>
                             </Border>
-                            </StackPanel>
-                        <Border x:Name="ProfileChevronShell"
-                                Grid.Column="2"
-                                Width="18"
-                                Height="18"
-                                Margin="4,0,0,0"
-                                VerticalAlignment="Center"
-                                Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="0"
-                                CornerRadius="9">
-                            <TextBlock x:Name="ProfileChevron"
-                                       Text="›"
-                                       FontSize="12"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center"
-                                       Foreground="{DynamicResource TextPlaceholderBrush}"/>
-                        </Border>
+                        </StackPanel>
                     </Grid>
                 </Button>
-            </StackPanel>
+            </Grid>
 
             <!-- Navigation Items -->
             <StackPanel x:Name="SidebarNavHost"
@@ -443,24 +440,6 @@
                              Checked="NavItem_Checked"/>
             </StackPanel>
 
-            <!-- Collapse Button -->
-            <Grid x:Name="CollapseButtonHost"
-                  Grid.Row="2"
-                  Margin="0,0,0,18">
-                <Button x:Name="BtnCollapse"
-                        Style="{StaticResource CollapseBtnStyle}"
-                        HorizontalAlignment="Center"
-                        Margin="0"
-                        ToolTip="展开侧边栏"
-                        Click="Collapse_Click">
-                    <Button.RenderTransform>
-                        <RotateTransform x:Name="CollapseRotate" Angle="0"/>
-                    </Button.RenderTransform>
-                    <TextBlock Text="◀"
-                               FontSize="{DynamicResource FontSize.Meta}"
-                               Foreground="{DynamicResource TextPlaceholderBrush}"/>
-                </Button>
-            </Grid>
         </Grid>
     </Border>
 </UserControl>

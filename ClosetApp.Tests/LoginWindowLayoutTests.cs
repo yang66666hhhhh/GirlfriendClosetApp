@@ -257,14 +257,15 @@ public class LoginWindowLayoutTests
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
 
         Assert.Contains("个人中心", xaml);
-        Assert.Contains("x:Name=\"ProfileChevronShell\"", xaml);
         Assert.Contains("x:Name=\"TxtClothingCount\"", xaml);
+        Assert.Contains("x:Name=\"SidebarCollapseButton\"", xaml);
         Assert.Contains("ToolTip=\"个人中心 / 账号菜单\"", xaml);
         Assert.Contains("RenderTransformOrigin=\"0.5,0.5\"", xaml);
         Assert.Contains("TransformGroup", xaml);
         Assert.Contains("Header = \"个人中心\"", code);
         Assert.Contains("ShowCached<PersonalCenterDialog>()", code);
         Assert.DoesNotContain("Header = \"编辑当前档案\"", code);
+        Assert.DoesNotContain("x:Name=\"ProfileChevronShell\"", xaml);
     }
 
     [Fact]

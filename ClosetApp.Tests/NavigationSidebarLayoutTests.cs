@@ -6,7 +6,7 @@ namespace ClosetApp.Tests;
 public class NavigationSidebarLayoutTests
 {
     [Fact]
-    public void NavigationSidebar_AccountCardUsesCompactBalancedLayout()
+    public void NavigationSidebar_AccountHeaderUsesIdentityRowWithInlineCollapseController()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
@@ -15,7 +15,6 @@ public class NavigationSidebarLayoutTests
 
         Assert.Contains("x:Name=\"CurrentUserAvatar\"", xaml);
         Assert.Contains("x:Name=\"ProfileTextPanel\"", xaml);
-        Assert.Contains("x:Name=\"ProfileChevronShell\"", xaml);
         Assert.Contains("Width=\"180\"", xaml);
         Assert.Contains("Width=\"180\"", mainWindowXaml);
         Assert.Contains("ExpandedSidebarWidth = 180", code);
@@ -27,15 +26,21 @@ public class NavigationSidebarLayoutTests
         Assert.Contains("Width=\"42\"", xaml);
         Assert.Contains("Height=\"42\"", xaml);
         Assert.Contains("MaxWidth=\"88\"", xaml);
-        Assert.Contains("Width=\"18\"", xaml);
-        Assert.Contains("Height=\"18\"", xaml);
+        Assert.Contains("x:Name=\"SidebarCollapseButton\"", xaml);
+        Assert.Contains("Width=\"32\"", xaml);
+        Assert.Contains("Height=\"32\"", xaml);
+        Assert.Contains("x:Name=\"CollapseGlyph\"", xaml);
+        Assert.Contains("SidebarCollapseButton.ToolTip", code);
+        Assert.Contains("CollapseGlyph.Text = _isCollapsed ? \"▶\" : \"◀\";", code);
         Assert.DoesNotContain("x:Name=\"TxtCurrentUserRole\"", xaml);
         Assert.DoesNotContain("超级管理员", xaml);
         Assert.DoesNotContain("TxtCurrentUserRole.Text", code);
         Assert.DoesNotContain("超管", code);
         Assert.DoesNotContain("成员", code);
         Assert.DoesNotContain("x:Name=\"ProfileIdentitySurface\"", xaml);
-        Assert.DoesNotContain("CornerRadius=\"18\"", xaml);
+        Assert.DoesNotContain("x:Name=\"ProfileChevronShell\"", xaml);
+        Assert.DoesNotContain("x:Name=\"CollapseButtonHost\"", xaml);
+        Assert.DoesNotContain("x:Name=\"BtnCollapse\"", xaml);
         Assert.DoesNotContain("MaxWidth=\"86\"", xaml);
     }
 
@@ -70,7 +75,7 @@ public class NavigationSidebarLayoutTests
         Assert.Contains("x:Name=\"CollapsedCurrentUserAvatar\"", xaml);
         Assert.Contains("x:Name=\"SidebarNavHost\"", xaml);
         Assert.Contains("x:Name=\"SidebarDivider\"", xaml);
-        Assert.Contains("x:Name=\"CollapseButtonHost\"", xaml);
+        Assert.Contains("x:Name=\"SidebarCollapseButton\"", xaml);
         Assert.Contains("x:Name=\"ExpandedLayout\"", xaml);
         Assert.Contains("x:Name=\"DockIcon\"", xaml);
         Assert.Contains("Trigger Property=\"Width\" Value=\"{StaticResource CollapsedNavButtonSize}\"", xaml);
@@ -79,6 +84,7 @@ public class NavigationSidebarLayoutTests
         Assert.Contains("var triggerButton = sender as FrameworkElement ?? BtnProfile;", code);
         Assert.Contains("88.0", mainWindowCode);
         Assert.DoesNotContain("72.0", mainWindowCode);
+        Assert.DoesNotContain("x:Name=\"CollapseButtonHost\"", xaml);
     }
 
     private static string FindProjectFile(string relativePath)

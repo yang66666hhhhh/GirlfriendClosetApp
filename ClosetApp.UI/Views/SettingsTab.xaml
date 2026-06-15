@@ -185,32 +185,54 @@
                                                   FontSizeLevelChanged="AppearancePanel_FontSizeLevelChanged"
                                                   OutfitCardDisplayModeChanged="AppearancePanel_OutfitCardDisplayModeChanged"/>
 
-                <Grid x:Name="SettingsWorkbenchColumns"
-                      Margin="0,0,0,8">
-                    <Grid.ColumnDefinitions>
-                        <ColumnDefinition Width="*"/>
-                        <ColumnDefinition Width="16"/>
-                        <ColumnDefinition Width="*"/>
-                    </Grid.ColumnDefinitions>
+                <StackPanel x:Name="SettingsSectionFlow"
+                            Margin="0,0,0,8">
+                    <Border x:Name="SettingsSystemSection"
+                            Style="{StaticResource SettingsOverviewSection}">
+                        <StackPanel>
+                            <TextBlock Text="系统"
+                                       Style="{StaticResource PageSectionTitleText}"/>
+                            <TextBlock Text="缓存、日志、图片维护和备份都收在这里。"
+                                       Style="{StaticResource PageMutedBodyText}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
 
-                    <StackPanel x:Name="SettingsDailyWorkbench"
-                                Grid.Column="0">
-                        <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
-                                                                  OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
-                        <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
-                    </StackPanel>
+                    <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
+                                                            WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
+                    <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
+                    <settings:BackupSettingsPanel x:Name="BackupPanel"
+                                                  BackupImported="BackupPanel_BackupImported"
+                                                  RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
 
-                    <StackPanel x:Name="SettingsMaintenanceWorkbench"
-                                Grid.Column="2">
-                        <settings:StorageLocationsSettingsPanel/>
-                        <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
-                                                                WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
-                        <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
-                        <settings:BackupSettingsPanel x:Name="BackupPanel"
-                                                      BackupImported="BackupPanel_BackupImported"
-                                                      RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
-                    </StackPanel>
-                </Grid>
+                    <Border x:Name="SettingsWeatherSection"
+                            Style="{StaticResource SettingsOverviewSection}">
+                        <StackPanel>
+                            <TextBlock Text="天气与城市"
+                                       Style="{StaticResource PageSectionTitleText}"/>
+                            <TextBlock Text="默认城市与今日推荐偏好都顺着这里调整。"
+                                       Style="{StaticResource PageMutedBodyText}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
+                                                              OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
+                    <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
+
+                    <Border x:Name="SettingsStorageSection"
+                            Style="{StaticResource SettingsOverviewSection}">
+                        <StackPanel>
+                            <TextBlock Text="文件位置"
+                                       Style="{StaticResource PageSectionTitleText}"/>
+                            <TextBlock Text="常用目录集中放在一起，定位更直接。"
+                                       Style="{StaticResource PageMutedBodyText}"
+                                       Margin="0,6,0,0"/>
+                        </StackPanel>
+                    </Border>
+
+                    <settings:StorageLocationsSettingsPanel/>
+                </StackPanel>
             </StackPanel>
         </ScrollViewer>
     </Grid>

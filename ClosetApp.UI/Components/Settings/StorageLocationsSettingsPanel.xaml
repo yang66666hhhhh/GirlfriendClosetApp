@@ -20,64 +20,54 @@
                         VerticalAlignment="Top"/>
             </Grid>
 
-            <Grid x:Name="StoragePathsGrid">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="*"/>
-                </Grid.ColumnDefinitions>
-
-                <StackPanel Grid.Column="0">
-                    <StackPanel>
-                        <TextBlock Text="数据目录" Style="{StaticResource PageFieldLabelText}"/>
-                        <Border Margin="0,6,0,0"
-                                Padding="12,10"
-                                Background="{DynamicResource SurfacePageBrush}"
-                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                BorderThickness="1"
-                                CornerRadius="14">
-                            <TextBlock x:Name="TxtDataDir"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                       TextWrapping="Wrap"/>
-                        </Border>
-                        <WrapPanel x:Name="StorageActionRail"
-                                   Style="{StaticResource SettingsActionWrap}">
-                            <Button Content="打开目录"
-                                    Style="{StaticResource SettingsGhostButton}"
-                                    Click="OpenDataDir_Click"
-                                    Margin="0,0,8,8"/>
-                            <Button Content="定位数据库"
-                                    Style="{StaticResource SettingsGhostButton}"
-                                    Click="OpenDatabase_Click"/>
-                        </WrapPanel>
-                    </StackPanel>
+            <StackPanel x:Name="StoragePathsStack">
+                <StackPanel>
+                    <TextBlock Text="数据目录" Style="{StaticResource PageFieldLabelText}"/>
+                    <Border Margin="0,6,0,0"
+                            Padding="12,10"
+                            Background="{DynamicResource SurfacePageBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="14">
+                        <TextBlock x:Name="TxtDataDir"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+                    <WrapPanel x:Name="StorageActionRail"
+                               Style="{StaticResource SettingsActionWrap}">
+                        <Button Content="打开目录"
+                                Style="{StaticResource SettingsGhostButton}"
+                                Click="OpenDataDir_Click"
+                                Margin="0,0,8,8"/>
+                        <Button Content="定位数据库"
+                                Style="{StaticResource SettingsGhostButton}"
+                                Click="OpenDatabase_Click"/>
+                    </WrapPanel>
                 </StackPanel>
 
-                <StackPanel Grid.Column="2">
-                    <StackPanel>
-                        <TextBlock Text="图片目录" Style="{StaticResource PageFieldLabelText}"/>
-                        <Border Margin="0,6,0,0"
-                                Padding="12,10"
-                                Background="{DynamicResource SurfacePageBrush}"
-                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                BorderThickness="1"
-                                CornerRadius="14">
-                            <TextBlock x:Name="TxtImagesDir"
-                                       Foreground="{DynamicResource TextPrimaryBrush}"
-                                       TextWrapping="Wrap"/>
-                        </Border>
-                        <WrapPanel Style="{StaticResource SettingsActionWrap}">
-                            <Button Content="打开图片"
-                                    Style="{StaticResource SettingsGhostButton}"
-                                    Click="OpenImagesDir_Click"
-                                    Margin="0,0,8,8"/>
-                            <Button Content="打开缓存"
-                                    Style="{StaticResource SettingsGhostButton}"
-                                    Click="OpenThumbnailsDir_Click"/>
-                        </WrapPanel>
-                    </StackPanel>
+                <StackPanel Margin="0,16,0,0">
+                    <TextBlock Text="图片目录" Style="{StaticResource PageFieldLabelText}"/>
+                    <Border Margin="0,6,0,0"
+                            Padding="12,10"
+                            Background="{DynamicResource SurfacePageBrush}"
+                            BorderBrush="{DynamicResource BorderLightBrush}"
+                            BorderThickness="1"
+                            CornerRadius="14">
+                        <TextBlock x:Name="TxtImagesDir"
+                                   Foreground="{DynamicResource TextPrimaryBrush}"
+                                   TextWrapping="Wrap"/>
+                    </Border>
+                    <WrapPanel Style="{StaticResource SettingsActionWrap}">
+                        <Button Content="打开图片"
+                                Style="{StaticResource SettingsGhostButton}"
+                                Click="OpenImagesDir_Click"
+                                Margin="0,0,8,8"/>
+                        <Button Content="打开缓存"
+                                Style="{StaticResource SettingsGhostButton}"
+                                Click="OpenThumbnailsDir_Click"/>
+                    </WrapPanel>
                 </StackPanel>
-            </Grid>
+            </StackPanel>
         </StackPanel>
     </Border>
 </UserControl>

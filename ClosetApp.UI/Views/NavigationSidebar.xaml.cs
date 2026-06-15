@@ -115,19 +115,11 @@ public partial class NavigationSidebar : UserControl
         _isCollapsed = !_isCollapsed;
         CollapseStateChanged?.Invoke(this, _isCollapsed);
 
-        var rotateTarget = _isCollapsed ? 180.0 : 0.0;
-        var rotateAnim = new DoubleAnimation(rotateTarget, TimeSpan.FromMilliseconds(220))
-        {
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-        };
-
         var widthAnim = new DoubleAnimation(_isCollapsed ? CollapsedSidebarWidth : ExpandedSidebarWidth, TimeSpan.FromMilliseconds(220))
         {
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
         BeginAnimation(WidthProperty, widthAnim);
-
-        CollapseRotate.BeginAnimation(RotateTransform.AngleProperty, rotateAnim);
         UpdateCollapsedDockState();
     }
 
@@ -362,7 +354,6 @@ public partial class NavigationSidebar : UserControl
         CollapsedProfileButton.Visibility = _isCollapsed ? Visibility.Visible : Visibility.Collapsed;
         ProfileTextPanel.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         ProfileCountBadge.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ProfileChevronShell.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
         BtnProfile.Padding = new Thickness(0);
         BtnProfile.HorizontalContentAlignment = HorizontalAlignment.Stretch;
@@ -375,16 +366,15 @@ public partial class NavigationSidebar : UserControl
             ? new Thickness(0, 18, 0, 16)
             : new Thickness(0, 16, 0, 14);
 
-        CollapseButtonHost.Margin = _isCollapsed
-            ? new Thickness(0, 0, 0, 16)
-            : new Thickness(0, 0, 0, 18);
-        BtnCollapse.Width = _isCollapsed ? 40 : 28;
-        BtnCollapse.Height = _isCollapsed ? 40 : 28;
-
         ApplyNavExpandedMode();
         UpdateNavTooltips();
 
-        BtnCollapse.ToolTip = _isCollapsed ? "展开侧边栏" : "收起侧边栏";
+        SidebarCollapseButton.ToolTip = _isCollapsed ? "展开侧边栏" : "收起侧边栏";
+        CollapseGlyph.Text = _isCollapsed ? "▶" : "◀";
+        SidebarCollapseButton.HorizontalAlignment = _isCollapsed ? HorizontalAlignment.Center : HorizontalAlignment.Right;
+        SidebarCollapseButton.Margin = _isCollapsed
+            ? new Thickness(0, 0, 0, 0)
+            : new Thickness(0, 4, 0, 0);
     }
 
     private void ApplyNavDockMode(RadioButton button)
