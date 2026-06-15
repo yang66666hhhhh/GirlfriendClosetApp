@@ -256,7 +256,7 @@ public class SettingsViewModelTests
 
         var saved = await displayPreferences.GetAsync();
         Assert.Equal(OutfitCardDisplayMode.EffectImageFirst, saved.DefaultCardDisplayMode);
-        Assert.Equal("当前默认：效果图优先", viewModel.OutfitCardDisplaySummary);
+        Assert.Equal("默认展示：效果图卡片", viewModel.OutfitCardDisplaySummary);
     }
 
     [Fact]
@@ -268,7 +268,10 @@ public class SettingsViewModelTests
         await viewModel.InitializeAsync();
 
         Assert.Equal(AppFontSizeLevel.Comfortable, viewModel.FontSizeLevel);
-        Assert.Equal("当前字体：舒适", viewModel.FontSizeSummary);
+        Assert.Equal("字体大小：舒适", viewModel.FontSizeSummary);
+        var presetProperty = typeof(SettingsViewModel).GetProperty("FontSizePreset");
+        Assert.NotNull(presetProperty);
+        Assert.Equal("Balanced", presetProperty!.GetValue(viewModel));
     }
 
     [Fact]
@@ -281,7 +284,10 @@ public class SettingsViewModelTests
 
         Assert.Equal(AppFontSizeLevel.Large, themeService.CurrentFontSizeLevel);
         Assert.Equal(AppFontSizeLevel.Large, viewModel.FontSizeLevel);
-        Assert.Equal("当前字体：大", viewModel.FontSizeSummary);
+        Assert.Equal("字体大小：大", viewModel.FontSizeSummary);
+        var presetProperty = typeof(SettingsViewModel).GetProperty("FontSizePreset");
+        Assert.NotNull(presetProperty);
+        Assert.Equal("Expanded", presetProperty!.GetValue(viewModel));
     }
 
     [Fact]

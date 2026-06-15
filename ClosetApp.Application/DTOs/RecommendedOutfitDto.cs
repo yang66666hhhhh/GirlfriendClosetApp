@@ -28,6 +28,7 @@ public sealed record RecommendedOutfitDto(
     public string ReasonSummaryText => BuildReasonSummaryText();
     public string UserReasonHeadline => BuildUserReasonHeadline();
     public IReadOnlyList<string> HighlightTags => BuildHighlightTags();
+    public IReadOnlyList<string> DisplayReasonTags => BuildDisplayReasonTags();
     public string? CautionText => BuildCautionText();
 
     private string BuildReasonChipText()
@@ -109,6 +110,32 @@ public sealed record RecommendedOutfitDto(
 
         if (tags.Count == 0)
             tags.Add("今天顺手");
+
+        return tags.Take(3).ToList();
+    }
+
+    private IReadOnlyList<string> BuildDisplayReasonTags()
+    {
+        var tags = new List<string> { ReasonChipText };
+
+        foreach (var tag in HighlightTags)
+        {
+            if (string.Equals(tag, "今天顺手", StringComparison.Ordinal) &&
+                tags.Any(existing => string.Equals(existing, ReasonChipText, StringComparison.Ordinal)))
+            {
+                continue;
+            }
+
+            if (string.Equals(tag, WearSummaryText, StringComparison.Ordinal))
+                continue;
+
+            tags.Add(tag);
+            if (tags.Count >= 3)
+                break;
+        }
+
+        if (!tags.Any(tag => string.Equals(tag, WearSummaryText, StringComparison.Ordinal)))
+            tags.Add(WearSummaryText);
 
         return tags.Take(3).ToList();
     }

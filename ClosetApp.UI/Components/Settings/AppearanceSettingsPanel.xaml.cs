@@ -1,10 +1,7 @@
-using System.Diagnostics;
-using System.IO;
-using System.Reflection;
 using System.Windows;
 using System.Windows.Controls;
-using ClosetApp.UI.ViewModels;
 using ClosetApp.UI.Logic.Services;
+using ClosetApp.UI.ViewModels;
 using ClosetApp.UI.Services;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -23,30 +20,17 @@ public partial class AppearanceSettingsPanel : UserControl
 
     public void Refresh()
     {
-        TxtVersion.Text = $"版本 {GetVersion()}";
         ApplyThemeCardSelection(_themeService.CurrentTheme);
         if (DataContext is SettingsViewModel viewModel)
         {
             ApplyOutfitCardDisplaySelection(viewModel.DefaultOutfitCardDisplayMode);
-            ApplyFontSizeSelection(viewModel.FontSizeLevel);
+            ApplyFontPresetSelection(viewModel.FontSizePreset);
         }
     }
 
     public event EventHandler<AppThemeKind>? ThemeChanged;
     public event EventHandler<OutfitCardDisplayMode>? OutfitCardDisplayModeChanged;
     public event EventHandler<AppFontSizeLevel>? FontSizeLevelChanged;
-
-    private static string GetVersion()
-    {
-        var version = Assembly.GetExecutingAssembly().GetName().Version;
-        return version == null ? "开发版" : $"{version.Major}.{version.Minor}.{version.Build}";
-    }
-
-    private static void OpenPath(string path)
-    {
-        Directory.CreateDirectory(path);
-        Process.Start(new ProcessStartInfo { FileName = path, UseShellExecute = true });
-    }
 
     private void ThemeCard_Selected(object sender, RoutedEventArgs e)
     {
@@ -70,15 +54,13 @@ public partial class AppearanceSettingsPanel : UserControl
         });
     }
 
-    public void ApplyFontSizeSelection(AppFontSizeLevel level)
+    public void ApplyFontPresetSelection(string preset)
     {
         ApplySelectionSilently(() =>
         {
-            RadioFontSmall.IsChecked = level == AppFontSizeLevel.Small;
-            RadioFontStandard.IsChecked = level == AppFontSizeLevel.Standard;
-            RadioFontComfortable.IsChecked = level == AppFontSizeLevel.Comfortable;
-            RadioFontLarge.IsChecked = level == AppFontSizeLevel.Large;
-            RadioFontExtraLarge.IsChecked = level == AppFontSizeLevel.ExtraLarge;
+            RadioFontCompact.IsChecked = string.Equals(preset, "Compact", StringComparison.Ordinal);
+            RadioFontBalanced.IsChecked = string.Equals(preset, "Balanced", StringComparison.Ordinal);
+            RadioFontExpanded.IsChecked = string.Equals(preset, "Expanded", StringComparison.Ordinal);
         });
     }
 
@@ -96,11 +78,6 @@ public partial class AppearanceSettingsPanel : UserControl
         }
     }
 
-    private void OpenAppDir_Click(object sender, RoutedEventArgs e)
-    {
-        OpenPath(AppDomain.CurrentDomain.BaseDirectory);
-    }
-
     private void OutfitDisplayMode_Checked(object sender, RoutedEventArgs e)
     {
         if (_isApplyingSelection)
@@ -109,7 +86,7 @@ public partial class AppearanceSettingsPanel : UserControl
         if (sender is not RadioButton radioButton || radioButton.IsChecked != true)
             return;
 
-        if (Equals(radioButton.Content, "效果图优先"))
+        if (Equals(radioButton.Content, "效果图卡片"))
         {
             OutfitCardDisplayModeChanged?.Invoke(this, OutfitCardDisplayMode.EffectImageFirst);
             return;
@@ -126,9 +103,17 @@ public partial class AppearanceSettingsPanel : UserControl
         if (sender is not RadioButton { IsChecked: true, Tag: string levelName })
             return;
 
-        if (!Enum.TryParse<AppFontSizeLevel>(levelName, out var level))
-            return;
-
+        var level = MapFontPresetToLevel(levelName);
         FontSizeLevelChanged?.Invoke(this, level);
+    }
+
+    private static AppFontSizeLevel MapFontPresetToLevel(string preset)
+    {
+        return preset switch
+        {
+            "Compact" => AppFontSizeLevel.Small,
+            "Expanded" => AppFontSizeLevel.Large,
+            _ => AppFontSizeLevel.Comfortable
+        };
     }
 }

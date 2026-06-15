@@ -1,10 +1,10 @@
+using System.Threading;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using System.Threading;
-using System.IO;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
@@ -71,7 +71,7 @@ public partial class NavigationSidebar : UserControl
 
     public void SetClothingCount(int count)
     {
-        TxtClothingCount.Text = $"{count} 件衣服";
+        TxtClothingCount.Text = $"{count}件衣服";
     }
 
     public void SetSelectedTab(int tabIndex)
@@ -206,7 +206,7 @@ public partial class NavigationSidebar : UserControl
     {
         if (_currentUser?.Role != LocalUserRole.SuperAdmin)
         {
-            ToastService.Instance.ShowError("无权管理用户", "只有超级管理员可以打开用户管理。");
+            ToastService.Instance.ShowError("无权管理用户", "当前账号无法打开用户管理。");
             return;
         }
 
@@ -243,7 +243,7 @@ public partial class NavigationSidebar : UserControl
 
         var account = new TextBlock
         {
-            Text = $"@{user.AccountName} · {(user.Role == LocalUserRole.SuperAdmin ? "超级管理员" : "本地用户")}",
+            Text = $"@{user.AccountName}",
             Margin = new Thickness(0, 4, 0, 0),
             FontSize = 11,
             TextTrimming = TextTrimming.CharacterEllipsis
@@ -346,14 +346,14 @@ public partial class NavigationSidebar : UserControl
     private void UpdateCollapsedDockState()
     {
         HeaderPanel.Margin = _isCollapsed
-            ? new Thickness(0, 22, 0, 18)
-            : new Thickness(12, 24, 12, 20);
+            ? new Thickness(0, 18, 0, 18)
+            : new Thickness(16, 18, 16, 20);
         Width = _isCollapsed ? CollapsedSidebarWidth : ExpandedSidebarWidth;
 
         BtnProfile.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         CollapsedProfileButton.Visibility = _isCollapsed ? Visibility.Visible : Visibility.Collapsed;
         ProfileTextPanel.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ProfileCountBadge.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
+        SidebarWorkspaceTitle.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
         BtnProfile.Padding = new Thickness(0);
         BtnProfile.HorizontalContentAlignment = HorizontalAlignment.Stretch;
@@ -366,7 +366,10 @@ public partial class NavigationSidebar : UserControl
             ? new Thickness(0, 18, 0, 16)
             : new Thickness(0, 16, 0, 14);
 
-        ApplyNavExpandedMode();
+        if (_isCollapsed)
+            ApplyNavDockMode();
+        else
+            ApplyNavExpandedMode();
         UpdateNavTooltips();
 
         SidebarCollapseButton.ToolTip = _isCollapsed ? "展开侧边栏" : "收起侧边栏";
@@ -374,29 +377,42 @@ public partial class NavigationSidebar : UserControl
         SidebarCollapseButton.HorizontalAlignment = _isCollapsed ? HorizontalAlignment.Center : HorizontalAlignment.Right;
         SidebarCollapseButton.Margin = _isCollapsed
             ? new Thickness(0, 0, 0, 0)
-            : new Thickness(0, 4, 0, 0);
+            : new Thickness(0, 0, 0, 0);
     }
 
-    private void ApplyNavDockMode(RadioButton button)
+    private void ApplyNavDockMode()
     {
-        button.Width = _isCollapsed ? 48 : double.NaN;
-        button.Height = 44;
-        button.HorizontalAlignment = HorizontalAlignment.Center;
-        button.Margin = _isCollapsed
-            ? new Thickness(0, 0, 0, 8)
-            : new Thickness(0);
-        button.Padding = _isCollapsed
-            ? new Thickness(0)
-            : new Thickness(0);
+        ApplyDockStyle(NavWardrobe);
+        ApplyDockStyle(NavOutfits);
+        ApplyDockStyle(NavTags);
+        ApplyDockStyle(NavSettings);
     }
 
     private void ApplyNavExpandedMode()
     {
-        // 展开和收起共用同一批按钮，集中设置尺寸避免两种状态留下排版残影。
-        ApplyNavDockMode(NavWardrobe);
-        ApplyNavDockMode(NavOutfits);
-        ApplyNavDockMode(NavTags);
-        ApplyNavDockMode(NavSettings);
+        // 展开态恢复为完整清单宽度，避免沿用图标坞尺寸导致文本区被压缩截断。
+        ApplyExpandedStyle(NavWardrobe);
+        ApplyExpandedStyle(NavOutfits);
+        ApplyExpandedStyle(NavTags);
+        ApplyExpandedStyle(NavSettings);
+    }
+
+    private static void ApplyDockStyle(RadioButton button)
+    {
+        button.Width = 48;
+        button.Height = 44;
+        button.HorizontalAlignment = HorizontalAlignment.Center;
+        button.Margin = new Thickness(0, 0, 0, 8);
+        button.Padding = new Thickness(0);
+    }
+
+    private static void ApplyExpandedStyle(RadioButton button)
+    {
+        button.Width = double.NaN;
+        button.Height = 44;
+        button.HorizontalAlignment = HorizontalAlignment.Stretch;
+        button.Margin = new Thickness(12, 0, 12, 0);
+        button.Padding = new Thickness(0);
     }
 
     private void UpdateNavTooltips()

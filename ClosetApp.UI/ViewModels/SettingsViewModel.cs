@@ -46,7 +46,7 @@ public partial class SettingsViewModel : ObservableObject
     private AppFontSizeLevel _fontSizeLevel = AppFontSizeLevel.Standard;
 
     [ObservableProperty]
-    private string _fontSizeSummary = "当前字体：标准";
+    private string _fontSizeSummary = "字体大小：标准";
 
     [ObservableProperty]
     private string _fontSizeDetail = "标准字号适合大多数桌面窗口。";
@@ -55,7 +55,7 @@ public partial class SettingsViewModel : ObservableObject
     private OutfitCardDisplayMode _defaultOutfitCardDisplayMode = OutfitCardDisplayMode.OutfitFirst;
 
     [ObservableProperty]
-    private string _outfitCardDisplaySummary = "当前默认：搭配优先";
+    private string _outfitCardDisplaySummary = "默认展示：搭配卡片";
 
     [ObservableProperty]
     private string _outfitCardDisplayDetail = "搭配列表会优先展示原始搭配预览；没有效果图管理压力时会更稳。";
@@ -217,6 +217,12 @@ public partial class SettingsViewModel : ObservableObject
     public string WeatherRefreshButtonText => IsWeatherBusy ? "刷新中..." : "刷新天气";
     public bool CanEditRecommendationPreferences => !IsRecommendationBusy;
     public string RecommendationSaveButtonText => IsRecommendationBusy ? "保存中..." : "保存推荐偏好";
+    public string FontSizePreset => FontSizeLevel switch
+    {
+        AppFontSizeLevel.Small => "Compact",
+        AppFontSizeLevel.Large or AppFontSizeLevel.ExtraLarge => "Expanded",
+        _ => "Balanced"
+    };
     public IReadOnlyList<OutfitSceneFilterOption> RecommendationSceneOptions { get; } =
     [
         new("不限场景", null),
@@ -340,7 +346,8 @@ public partial class SettingsViewModel : ObservableObject
     private void ApplyFontSizeLevel(AppFontSizeLevel level)
     {
         FontSizeLevel = level;
-        FontSizeSummary = $"当前字体：{GetFontSizeLevelLabel(level)}";
+        OnPropertyChanged(nameof(FontSizePreset));
+        FontSizeSummary = $"字体大小：{GetFontSizeLevelLabel(level)}";
         FontSizeDetail = level switch
         {
             AppFontSizeLevel.Small => "更紧凑，适合希望一屏看到更多内容的窗口。",
@@ -810,11 +817,11 @@ public partial class SettingsViewModel : ObservableObject
     {
         DefaultOutfitCardDisplayMode = mode;
         OutfitCardDisplaySummary = mode == OutfitCardDisplayMode.EffectImageFirst
-            ? "当前默认：效果图优先"
-            : "当前默认：搭配优先";
+            ? "默认展示：效果图卡片"
+            : "默认展示：搭配卡片";
         OutfitCardDisplayDetail = mode == OutfitCardDisplayMode.EffectImageFirst
-            ? "搭配列表会优先展示你保存的首选效果图；没有效果图时会自动回退到原始搭配。"
-            : "搭配列表会优先展示原始搭配预览；没有效果图管理压力时会更稳。";
+            ? "首页会优先显示你保存的效果图，没有效果图时会自动回退到原始搭配。"
+            : "首页会优先显示原始搭配卡片，适合先看穿搭结构。";
     }
 
     private void OutfitDisplayPreferencesService_PreferenceChanged(object? sender, OutfitDisplayPreferencesChangedEventArgs e)

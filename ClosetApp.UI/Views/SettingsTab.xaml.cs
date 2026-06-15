@@ -102,16 +102,11 @@ public partial class SettingsTab : UserControl
     private async void AppearancePanel_FontSizeLevelChanged(object sender, AppFontSizeLevel e)
     {
         await _viewModel.SaveFontSizeLevelAsync(e);
-        AppearancePanel.ApplyFontSizeSelection(e);
+        AppearancePanel.ApplyFontPresetSelection(_viewModel.FontSizePreset);
     }
 
-    private void OverviewThemeShortcut_Click(object sender, RoutedEventArgs e)
+    public void BringSectionIntoView(FrameworkElement target)
     {
-        AppearancePanel.BringIntoView();
-    }
-
-    private void OverviewAiShortcut_Click(object sender, RoutedEventArgs e)
-    {
-        AiImageGenerationPanel.BringIntoView();
+        target?.BringIntoView();
     }
 }

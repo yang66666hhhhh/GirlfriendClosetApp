@@ -2,13 +2,22 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
 
     <Style x:Key="SettingsSectionCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
-        <Setter Property="Margin" Value="0,0,0,16"/>
-        <Setter Property="Padding" Value="20,18"/>
-        <Setter Property="CornerRadius" Value="20"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="Padding" Value="16,14"/>
+        <Setter Property="CornerRadius" Value="18"/>
         <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="Effect" Value="{x:Null}"/>
+    </Style>
+
+    <Style x:Key="SettingsCompactSectionCard" TargetType="Border" BasedOn="{StaticResource SettingsSectionCard}">
+        <Setter Property="Padding" Value="14,12"/>
+        <Setter Property="CornerRadius" Value="16"/>
+    </Style>
+
+    <Style x:Key="SettingsWorkspaceGrid" TargetType="Grid">
+        <Setter Property="Margin" Value="0,0,0,12"/>
     </Style>
 
     <Style x:Key="SettingsEyebrowBadge" TargetType="Border">
@@ -32,7 +41,7 @@
         <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
         <Setter Property="BorderThickness" Value="1"/>
         <Setter Property="CornerRadius" Value="14"/>
-        <Setter Property="Padding" Value="14,12"/>
+        <Setter Property="Padding" Value="12,10"/>
     </Style>
 
     <Style x:Key="SettingsSurfacePanel" TargetType="Border">
@@ -83,7 +92,38 @@
     </Style>
 
     <Style x:Key="SettingsActionWrap" TargetType="WrapPanel">
-        <Setter Property="Margin" Value="0,14,0,0"/>
+        <Setter Property="Margin" Value="0,10,0,0"/>
+    </Style>
+
+    <Style x:Key="SettingsCardHeaderGrid" TargetType="Grid">
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+
+    <Style x:Key="SettingsCardTitleText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Body}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+    </Style>
+
+    <Style x:Key="SettingsCardSubtitleText" TargetType="TextBlock">
+        <Setter Property="Margin" Value="0,3,0,0"/>
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+
+    <Style x:Key="SettingsRowFieldLabelText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Label}"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="SettingsInlineHintText" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
     </Style>
 
     <Style x:Key="SettingsButton" TargetType="Button" BasedOn="{StaticResource PageToolbarCapsuleButton}">

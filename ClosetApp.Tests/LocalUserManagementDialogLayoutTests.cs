@@ -65,12 +65,12 @@ public class LocalUserManagementDialogLayoutTests
         Assert.Contains("Width=\"42\"", xaml);
         Assert.Contains("Height=\"42\"", xaml);
         Assert.Contains("ShowStatus=\"False\"", xaml);
-        Assert.Contains("MinHeight=\"70\"", xaml);
+        Assert.Contains("MinHeight=\"64\"", xaml);
         Assert.Contains("Padding=\"0\"", xaml);
-        Assert.Contains("x:Name=\"ProfileCountBadge\"", xaml);
         Assert.Contains("x:Name=\"TxtClothingCount\"", xaml);
-        Assert.Contains("Text=\"0 件衣服\"", xaml);
+        Assert.Contains("Text=\"16件衣服\"", xaml);
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
+        Assert.DoesNotContain("x:Name=\"ProfileCountBadge\"", xaml);
         Assert.DoesNotContain("x:Name=\"ProfileIdentitySurface\"", xaml);
         Assert.DoesNotContain("x:Name=\"TxtCurrentUserRole\"", xaml);
         Assert.DoesNotContain("TxtCurrentUserRole.Text", code);

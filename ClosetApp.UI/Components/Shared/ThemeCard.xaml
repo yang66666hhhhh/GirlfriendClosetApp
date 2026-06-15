@@ -5,6 +5,7 @@
             Background="Transparent"
             BorderThickness="0"
             Padding="0"
+            MinWidth="120"
             MinHeight="72"
             RenderTransformOrigin="0.5,0.5"
             Click="BtnSelect_Click">
@@ -15,55 +16,92 @@
             </TransformGroup>
         </Button.RenderTransform>
         <Border x:Name="CardBorder"
-                CornerRadius="16"
-                Padding="14,14">
+                CornerRadius="14"
+                Padding="12,10">
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="12"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="10"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
 
-                <Border x:Name="ThemeChoiceDot"
-                        Width="10"
-                        Height="10"
-                        CornerRadius="5"
-                        VerticalAlignment="Center"
-                        BorderThickness="1"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="10"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="2">
-                    <TextBlock x:Name="TxtName"
-                               FontSize="{DynamicResource FontSize.Body}"
-                               FontWeight="SemiBold"
-                               VerticalAlignment="Center"/>
-                    <TextBlock x:Name="StateHint"
-                               Margin="0,2,0,0"
-                               FontSize="{DynamicResource FontSize.Meta}"
-                               TextWrapping="Wrap"/>
-                </StackPanel>
+                    <Border x:Name="ThemeChoiceDot"
+                            Width="10"
+                            Height="10"
+                            CornerRadius="5"
+                            VerticalAlignment="Center"
+                            BorderThickness="1"/>
 
-                <WrapPanel x:Name="ThemeSwatchRow"
-                           Grid.Column="3"
-                           Margin="10,0,0,0"
-                           VerticalAlignment="Center">
-                    <Border x:Name="SwatchPrimary" Width="10" Height="10" CornerRadius="5" Margin="0,0,4,0"/>
-                    <Border x:Name="SwatchSoft" Width="10" Height="10" CornerRadius="5" Margin="0,0,4,0"/>
-                    <Border x:Name="SwatchSurface" Width="10" Height="10" CornerRadius="5"/>
-                </WrapPanel>
+                    <StackPanel Grid.Column="2">
+                        <TextBlock x:Name="TxtName"
+                                   FontSize="{DynamicResource FontSize.Body}"
+                                   FontWeight="SemiBold"
+                                   VerticalAlignment="Center"/>
+                        <TextBlock x:Name="StateHint"
+                                   Margin="0,3,0,0"
+                                   FontSize="{DynamicResource FontSize.Meta}"
+                                   TextWrapping="Wrap"/>
+                    </StackPanel>
+                </Grid>
 
-                <Border x:Name="ActionPill"
-                        Grid.Column="4"
-                        Margin="10,0,0,0"
-                        VerticalAlignment="Center"
-                        CornerRadius="9"
-                        Padding="8,3"
+                <Border x:Name="ThemePreviewField"
+                        Grid.Row="2"
+                        CornerRadius="12"
+                        Padding="10,8"
                         BorderThickness="1">
-                    <TextBlock x:Name="ActionPillText"
-                               FontSize="{DynamicResource FontSize.Tiny}"
-                               FontWeight="SemiBold"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <WrapPanel x:Name="ThemeSwatchRow"
+                                   VerticalAlignment="Center">
+                            <Border x:Name="SwatchPrimary" Width="10" Height="10" CornerRadius="5" Margin="0,0,6,0"/>
+                            <Border x:Name="SwatchSoft" Width="10" Height="10" CornerRadius="5" Margin="0,0,6,0"/>
+                            <Border x:Name="SwatchSurface" Width="10" Height="10" CornerRadius="5"/>
+                        </WrapPanel>
+                        <TextBlock x:Name="PreviewCaption"
+                                   Grid.Column="1"
+                                   Margin="10,0,0,0"
+                                   FontSize="{DynamicResource FontSize.Meta}"
+                                   Text="颜色样本"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+                    </Grid>
                 </Border>
+
+                <Grid x:Name="ThemeFooterRow"
+                      Grid.Row="4">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <TextBlock x:Name="ThemeFooterHint"
+                               FontSize="{DynamicResource FontSize.Meta}"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextSecondaryBrush}"/>
+
+                    <Border x:Name="ActionPill"
+                            Grid.Column="1"
+                            VerticalAlignment="Center"
+                            CornerRadius="9"
+                            Padding="8,2"
+                            BorderThickness="1">
+                        <TextBlock x:Name="ActionPillText"
+                                   FontSize="{DynamicResource FontSize.Tiny}"
+                                   FontWeight="SemiBold"/>
+                    </Border>
+                </Grid>
             </Grid>
         </Border>
     </Button>

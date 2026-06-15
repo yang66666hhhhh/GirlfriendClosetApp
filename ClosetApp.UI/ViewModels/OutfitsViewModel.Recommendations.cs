@@ -120,7 +120,7 @@ public partial class OutfitsViewModel
         ? $"{RecommendationReadinessTitle} · {RecommendationMissingSeasonText}"
         : $"{RecommendationReadinessTitle} · {WeatherStatusText}";
     public string SecondaryWeatherRecommendationSectionBody => HasSecondaryWeatherRecommendations
-        ? "轻候选"
+        ? "备选"
         : string.Empty;
 
     [RelayCommand]

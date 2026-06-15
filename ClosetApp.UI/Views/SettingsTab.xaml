@@ -1,44 +1,13 @@
 <UserControl x:Class="ClosetApp.UI.Views.SettingsTab"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:conv="clr-namespace:ClosetApp.UI.Converters"
-             xmlns:settings="clr-namespace:ClosetApp.UI.Components.Settings"
-             xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared">
+             xmlns:settings="clr-namespace:ClosetApp.UI.Components.Settings">
     <UserControl.Resources>
-        <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-
-        <Style x:Key="SettingsOverviewSection" TargetType="Border">
+        <Style x:Key="SettingsSectionHeading" TargetType="Border">
             <Setter Property="Margin" Value="0,0,0,14"/>
             <Setter Property="Padding" Value="0,0,0,12"/>
             <Setter Property="BorderBrush" Value="{DynamicResource BorderDividerBrush}"/>
             <Setter Property="BorderThickness" Value="0,0,0,1"/>
-        </Style>
-
-        <Style x:Key="SettingsOverviewRowLabel" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
-        </Style>
-
-        <Style x:Key="SettingsOverviewRowValue" TargetType="TextBlock">
-            <Setter Property="FontSize" Value="{DynamicResource FontSize.Input}"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Margin" Value="0,3,0,0"/>
-            <Setter Property="TextWrapping" Value="Wrap"/>
-        </Style>
-
-        <Style x:Key="SettingsOverviewSignalCard" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="Padding" Value="14,12"/>
-            <Setter Property="Margin" Value="0,0,0,0"/>
-        </Style>
-
-        <Style x:Key="SettingsOverviewActionButton" TargetType="Button" BasedOn="{StaticResource SettingsGhostButton}">
-            <Setter Property="Padding" Value="10,5"/>
-            <Setter Property="MinWidth" Value="68"/>
-            <Setter Property="MinHeight" Value="30"/>
         </Style>
     </UserControl.Resources>
 
@@ -58,126 +27,16 @@
             </Grid>
         </Border>
 
-        <ScrollViewer Grid.Row="1"
+        <ScrollViewer x:Name="SettingsScrollViewer"
+                      Grid.Row="1"
                       VerticalScrollBarVisibility="Auto"
-                      Padding="44,10,44,40">
-            <StackPanel>
-                <Border x:Name="SettingsOverviewStrip"
-                        Style="{StaticResource SettingsOverviewSection}">
-                    <StackPanel>
-                        <Grid x:Name="SettingsOverviewPrimaryGrid"
-                              Margin="0,0,0,12">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
-                            <TextBlock Text="设置概览"
-                                       Style="{StaticResource PageSectionTitleText}"/>
-
-                            <WrapPanel x:Name="SettingsOverviewActionRail"
-                                       Grid.Column="1"
-                                       VerticalAlignment="Center">
-                                <Button Content="主题"
-                                        Click="OverviewThemeShortcut_Click"
-                                        Style="{StaticResource SettingsOverviewActionButton}"/>
-                                <Button Content="AI"
-                                        Margin="6,0,0,0"
-                                        Click="OverviewAiShortcut_Click"
-                                        Style="{StaticResource SettingsOverviewActionButton}"/>
-                            </WrapPanel>
-                        </Grid>
-
-                        <Grid x:Name="SettingsOverviewStatusRows"
-                              Margin="0,2,0,0">
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="14"/>
-                                <RowDefinition Height="Auto"/>
-                            </Grid.RowDefinitions>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="28"/>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="28"/>
-                                <ColumnDefinition Width="*"/>
-                            </Grid.ColumnDefinitions>
-
-                            <StackPanel x:Name="SettingsOverviewPreferenceRow"
-                                        Grid.Column="0">
-                                <TextBlock Text="主题"
-                                           Style="{StaticResource SettingsOverviewRowLabel}"/>
-                                <TextBlock Text="{Binding ThemeSummary}"
-                                           Style="{StaticResource SettingsOverviewRowValue}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="2">
-                                <TextBlock Text="卡片默认"
-                                           Style="{StaticResource SettingsOverviewRowLabel}"/>
-                                <TextBlock Text="{Binding OutfitCardDisplaySummary}"
-                                           Style="{StaticResource SettingsOverviewRowValue}"/>
-                            </StackPanel>
-
-                            <StackPanel Grid.Column="4">
-                                <TextBlock Text="城市"
-                                           Style="{StaticResource SettingsOverviewRowLabel}"/>
-                                <TextBlock Text="{Binding WeatherCity}"
-                                           Style="{StaticResource SettingsOverviewRowValue}"/>
-                            </StackPanel>
-
-                            <Border x:Name="SettingsGroupDivider"
-                                    Grid.Row="1"
-                                    Grid.ColumnSpan="5"
-                                    Height="1"
-                                    Margin="0,7,0,6"
-                                    Background="{DynamicResource BorderDividerBrush}"
-                                    Opacity="0.65"/>
-
-                            <Grid x:Name="SettingsSystemRows"
-                                  Grid.Row="2"
-                                  Grid.ColumnSpan="5">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="28"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="28"/>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="28"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel x:Name="SettingsOverviewSystemRow"
-                                            Grid.Column="0">
-                                    <TextBlock Text="原图" Style="{StaticResource SettingsOverviewRowLabel}"/>
-                                    <TextBlock x:Name="TxtImageStats"
-                                               Text="{Binding ImageStats}"
-                                               Style="{StaticResource SettingsOverviewRowValue}"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="缓存" Style="{StaticResource SettingsOverviewRowLabel}"/>
-                                    <TextBlock x:Name="TxtCacheStats"
-                                               Text="{Binding CacheStats}"
-                                               Style="{StaticResource SettingsOverviewRowValue}"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="4">
-                                    <TextBlock Text="日志" Style="{StaticResource SettingsOverviewRowLabel}"/>
-                                    <TextBlock Text="{Binding LogStats}"
-                                               Style="{StaticResource SettingsOverviewRowValue}"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="6">
-                                    <TextBlock Text="AI" Style="{StaticResource SettingsOverviewRowLabel}"/>
-                                    <TextBlock Text="{Binding AiSettingsSummary}"
-                                               Style="{StaticResource SettingsOverviewRowValue}"/>
-                                </StackPanel>
-                            </Grid>
-                        </Grid>
-                    </StackPanel>
+                      Padding="44,10,44,32">
+            <StackPanel x:Name="SettingsSectionFlow"
+                        Margin="0,0,0,8">
+                <Border x:Name="SettingsAppearanceSection"
+                        Style="{StaticResource SettingsSectionHeading}">
+                    <TextBlock Text="外观"
+                               Style="{StaticResource PageSectionTitleText}"/>
                 </Border>
 
                 <settings:AppearanceSettingsPanel x:Name="AppearancePanel"
@@ -185,53 +44,62 @@
                                                   FontSizeLevelChanged="AppearancePanel_FontSizeLevelChanged"
                                                   OutfitCardDisplayModeChanged="AppearancePanel_OutfitCardDisplayModeChanged"/>
 
-                <StackPanel x:Name="SettingsSectionFlow"
-                            Margin="0,0,0,8">
-                    <Border x:Name="SettingsSystemSection"
-                            Style="{StaticResource SettingsOverviewSection}">
-                        <StackPanel>
-                            <TextBlock Text="系统"
-                                       Style="{StaticResource PageSectionTitleText}"/>
-                            <TextBlock Text="缓存、日志、图片维护和备份都收在这里。"
-                                       Style="{StaticResource PageMutedBodyText}"
-                                       Margin="0,6,0,0"/>
-                        </StackPanel>
-                    </Border>
+                <Border x:Name="SettingsLocationWeatherSection"
+                        Margin="0,20,0,12"
+                        Style="{StaticResource SettingsSectionHeading}">
+                    <TextBlock Text="位置与天气"
+                               Style="{StaticResource PageSectionTitleText}"/>
+                </Border>
 
-                    <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
-                                                            WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
-                    <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>
-                    <settings:BackupSettingsPanel x:Name="BackupPanel"
-                                                  BackupImported="BackupPanel_BackupImported"
-                                                  RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
+                <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
+                                                          OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
 
-                    <Border x:Name="SettingsWeatherSection"
-                            Style="{StaticResource SettingsOverviewSection}">
-                        <StackPanel>
-                            <TextBlock Text="天气与城市"
-                                       Style="{StaticResource PageSectionTitleText}"/>
-                            <TextBlock Text="默认城市与今日推荐偏好都顺着这里调整。"
-                                       Style="{StaticResource PageMutedBodyText}"
-                                       Margin="0,6,0,0"/>
-                        </StackPanel>
-                    </Border>
+                <Border x:Name="SettingsStorageSection"
+                        Margin="0,20,0,12"
+                        Style="{StaticResource SettingsSectionHeading}">
+                    <TextBlock Text="存储"
+                               Style="{StaticResource PageSectionTitleText}"/>
+                </Border>
 
-                    <settings:WeatherPreferencesSettingsPanel x:Name="WeatherPreferencesPanel"
-                                                              OutfitsRefreshRequested="WeatherPreferencesPanel_OutfitsRefreshRequested"/>
-                    <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"/>
+                <settings:StorageLocationsSettingsPanel x:Name="StorageLocationsPanel"/>
 
-                    <Border x:Name="SettingsStorageSection"
-                            Style="{StaticResource SettingsOverviewSection}">
-                        <StackPanel>
-                            <TextBlock Text="文件位置"
-                                       Style="{StaticResource PageSectionTitleText}"/>
-                            <TextBlock Text="常用目录集中放在一起，定位更直接。"
-                                       Style="{StaticResource PageMutedBodyText}"
-                                       Margin="0,6,0,0"/>
-                        </StackPanel>
-                    </Border>
+                <Border x:Name="SettingsSystemSection"
+                        Margin="0,20,0,12"
+                        Style="{StaticResource SettingsSectionHeading}">
+                    <TextBlock Text="系统"
+                               Style="{StaticResource PageSectionTitleText}"/>
+                </Border>
 
-                    <settings:StorageLocationsSettingsPanel/>
+                <StackPanel x:Name="SettingsSystemWorkspaceGrid">
+                    <Grid x:Name="SettingsSystemTopRow">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <settings:AiImageGenerationSettingsPanel x:Name="AiImageGenerationPanel"
+                                                                 Grid.Column="0"/>
+                        <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
+                                                                Grid.Column="2"
+                                                                WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
+                    </Grid>
+
+                    <Grid x:Name="SettingsSystemBottomRow"
+                          Margin="0,12,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="16"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"
+                                                              Grid.Column="0"/>
+                        <settings:BackupSettingsPanel x:Name="BackupPanel"
+                                                      Grid.Column="2"
+                                                      BackupImported="BackupPanel_BackupImported"
+                                                      RepairMissingImagesRequested="BackupPanel_RepairMissingImagesRequested"/>
+                    </Grid>
                 </StackPanel>
             </StackPanel>
         </ScrollViewer>

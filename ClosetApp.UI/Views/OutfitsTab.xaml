@@ -233,7 +233,8 @@
                       Padding="44,12,44,30"
                       Visibility="{Binding IsEmpty, Converter={StaticResource InverseBooleanToVisibilityConverter}}">
             <StackPanel>
-                <Grid Margin="0,0,0,14">
+                <Grid x:Name="TodayRecommendationWorkspace"
+                      Margin="0,0,0,14">
                     <Border Background="{StaticResource TodayHeroBackgroundBrush}"
                             BorderBrush="{DynamicResource BorderLightBrush}"
                             BorderThickness="1"
@@ -246,13 +247,15 @@
                             </Grid.ColumnDefinitions>
 
                             <Grid>
-                                <Border Background="{DynamicResource SurfaceCardBrush}"
+                                <Border x:Name="PrimaryRecommendationCardShell"
+                                        Background="{DynamicResource SurfaceCardBrush}"
                                         BorderBrush="{DynamicResource BorderLightBrush}"
                                         BorderThickness="1"
                                         CornerRadius="16"
                                         Padding="18,16"
                                         Margin="0,0,16,0"
-                                        VerticalAlignment="Top">
+                                        VerticalAlignment="Top"
+                                        MinHeight="336">
                                     <Grid x:Name="TodayHeroCardGrid">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="0.8*"/>
@@ -399,7 +402,7 @@
                                                 BorderThickness="1"
                                                 CornerRadius="14"
                                                 Padding="10"
-                                                MinHeight="320">
+                                                MinHeight="336">
                                             <Grid>
                                                 <Grid Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                     <outfit:OutfitPreviewCanvas Clothes="{Binding PrimaryWeatherRecommendation.PreviewClothes}"
@@ -438,7 +441,7 @@
                                     BorderThickness="1"
                                     CornerRadius="16"
                                     Padding="14,12"
-                                    MinHeight="320"
+                                    MinHeight="336"
                                     VerticalAlignment="Top"
                                     Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid>
@@ -483,7 +486,8 @@
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource WeatherRecommendationCard}"
-                                                        Margin="0,0,0,10">
+                                                        Margin="0,0,0,10"
+                                                        Height="148">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="118"/>
@@ -506,74 +510,48 @@
                                                             <Grid.RowDefinitions>
                                                                 <RowDefinition Height="Auto"/>
                                                                 <RowDefinition Height="Auto"/>
-                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="*"/>
                                                                 <RowDefinition Height="Auto"/>
                                                             </Grid.RowDefinitions>
 
-                                                            <WrapPanel>
-                                                                <Border Style="{StaticResource WeatherRecommendationChip}"
-                                                                        Margin="0,0,6,6">
-                                                                    <TextBlock Text="{Binding ReasonChipText}"
-                                                                               Style="{StaticResource WeatherRecommendationChipText}"/>
-                                                                </Border>
-                                                                <Border Background="{DynamicResource SurfaceSectionBrush}"
-                                                                        BorderBrush="{DynamicResource BorderLightBrush}"
-                                                                        BorderThickness="1"
-                                                                        CornerRadius="8"
-                                                                        Padding="8,3"
-                                                                        Margin="0,0,0,6">
-                                                                    <TextBlock Text="{Binding WearSummaryText}"
-                                                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                               FontSize="{DynamicResource FontSize.Tiny}"
-                                                                               FontWeight="SemiBold"/>
-                                                                </Border>
-                                                            </WrapPanel>
+                                                            <ItemsControl x:Name="SecondaryRecommendationTagRail"
+                                                                          ItemsSource="{Binding DisplayReasonTags}"
+                                                                          MaxHeight="28">
+                                                                <ItemsControl.ItemsPanel>
+                                                                    <ItemsPanelTemplate>
+                                                                        <WrapPanel/>
+                                                                    </ItemsPanelTemplate>
+                                                                </ItemsControl.ItemsPanel>
+                                                                <ItemsControl.ItemTemplate>
+                                                                    <DataTemplate>
+                                                                        <Border Style="{StaticResource WeatherRecommendationChip}"
+                                                                                Margin="0,0,6,6">
+                                                                            <TextBlock Text="{Binding}"
+                                                                                       Style="{StaticResource WeatherRecommendationChipText}"/>
+                                                                        </Border>
+                                                                    </DataTemplate>
+                                                                </ItemsControl.ItemTemplate>
+                                                            </ItemsControl>
 
                                                             <StackPanel Grid.Row="1"
-                                                                        Margin="0,1,0,0">
+                                                                        Margin="0,0,0,0">
                                                                 <TextBlock Text="{Binding Name}"
                                                                            Foreground="{DynamicResource TextPrimaryBrush}"
                                                                            FontSize="{DynamicResource FontSize.Body}"
                                                                            FontWeight="SemiBold"
                                                                            TextWrapping="Wrap"
-                                                                           MaxHeight="36"/>
+                                                                           MaxHeight="40"/>
                                                                 <TextBlock Text="{Binding UserReasonHeadline}"
                                                                            Foreground="{DynamicResource TextSecondaryBrush}"
                                                                            FontSize="{DynamicResource FontSize.Tiny}"
-                                                                           Margin="0,4,0,0"
+                                                                           Margin="0,3,0,0"
                                                                            TextWrapping="NoWrap"
                                                                            TextTrimming="CharacterEllipsis"/>
                                                             </StackPanel>
 
-                                                            <WrapPanel Grid.Row="2"
-                                                                       Margin="0,7,0,0"
-                                                                       MaxHeight="24">
-                                                                <ItemsControl ItemsSource="{Binding HighlightTags}">
-                                                                    <ItemsControl.ItemsPanel>
-                                                                        <ItemsPanelTemplate>
-                                                                            <WrapPanel/>
-                                                                        </ItemsPanelTemplate>
-                                                                    </ItemsControl.ItemsPanel>
-                                                                    <ItemsControl.ItemTemplate>
-                                                                        <DataTemplate>
-                                                                            <Border Background="{DynamicResource SurfaceSectionBrush}"
-                                                                                    BorderBrush="{DynamicResource BorderLightBrush}"
-                                                                                    BorderThickness="1"
-                                                                                    CornerRadius="8"
-                                                                                    Margin="0,0,6,0"
-                                                                                    Padding="7,3">
-                                                                                <TextBlock Text="{Binding}"
-                                                                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                                           FontSize="{DynamicResource FontSize.Tiny}"
-                                                                                           FontWeight="SemiBold"/>
-                                                                            </Border>
-                                                                        </DataTemplate>
-                                                                    </ItemsControl.ItemTemplate>
-                                                                </ItemsControl>
-                                                            </WrapPanel>
-
                                                             <Grid Grid.Row="3"
-                                                                  Margin="0,9,0,0">
+                                                                  Margin="0,8,0,0"
+                                                                  VerticalAlignment="Bottom">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="Auto"/>
                                                                     <ColumnDefinition Width="Auto"/>

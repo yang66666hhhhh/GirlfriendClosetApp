@@ -131,6 +131,8 @@ public partial class ThemeCard : UserControl
 
         ThemeChoiceDot.Background = new SolidColorBrush(IsSelected ? primary : Colors.Transparent);
         ThemeChoiceDot.BorderBrush = new SolidColorBrush(IsSelected ? primary : borderLight);
+        ThemePreviewField.BorderBrush = new SolidColorBrush(IsSelected ? primaryLight : borderLight);
+        ThemePreviewField.Background = new SolidColorBrush(surfacePage);
         ActionPill.BorderBrush = new SolidColorBrush(IsSelected ? primary : borderLight);
         ActionPill.Background = new SolidColorBrush(IsSelected ? primaryLight : Colors.White);
         ActionPillText.Text = IsSelected ? "已启用" : "切换";
@@ -140,6 +142,8 @@ public partial class ThemeCard : UserControl
         TxtName.Foreground = new SolidColorBrush(textPrimary);
         StateHint.Text = Description;
         StateHint.Foreground = new SolidColorBrush(IsSelected ? primary : textSecondary);
+        ThemeFooterHint.Text = IsSelected ? "当前已应用" : "点击切换";
+        ThemeFooterHint.Foreground = new SolidColorBrush(IsSelected ? primary : textSecondary);
 
         SwatchPrimary.Background = new SolidColorBrush(PrimaryColor);
         SwatchSoft.Background = new SolidColorBrush(SoftColor);

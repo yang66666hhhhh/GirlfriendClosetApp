@@ -11,8 +11,9 @@ public partial class StorageLocationsSettingsPanel : UserControl
     public StorageLocationsSettingsPanel()
     {
         InitializeComponent();
-        TxtDataDir.Text = AppPaths.BaseDir;
+        TxtDataDir.Text = AppPaths.DatabasePath;
         TxtImagesDir.Text = AppPaths.ImagesDir;
+        TxtLogsDir.Text = AppPaths.LogsDir;
     }
 
     private static void OpenPath(string path)
@@ -46,5 +47,6 @@ public partial class StorageLocationsSettingsPanel : UserControl
     private void OpenDatabase_Click(object sender, RoutedEventArgs e) => RevealFile(AppPaths.DatabasePath);
     private void OpenImagesDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.ImagesDir);
     private void OpenThumbnailsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.ThumbnailsDir);
+    private void OpenLogsDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppPaths.LogsDir);
     private void OpenAppDir_Click(object sender, RoutedEventArgs e) => OpenPath(AppDomain.CurrentDomain.BaseDirectory);
 }

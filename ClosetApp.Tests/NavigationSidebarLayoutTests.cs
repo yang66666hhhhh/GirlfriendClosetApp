@@ -6,26 +6,30 @@ namespace ClosetApp.Tests;
 public class NavigationSidebarLayoutTests
 {
     [Fact]
-    public void NavigationSidebar_AccountHeaderUsesIdentityRowWithInlineCollapseController()
+    public void NavigationSidebar_UsesWorkspaceShellHeaderAndLightIdentityBlock()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
         var mainWindowXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/MainWindow.xaml"));
         var mainWindowCode = File.ReadAllText(FindProjectFile("ClosetApp.UI/MainWindow.xaml.cs"));
 
+        Assert.Contains("x:Name=\"SidebarWorkspaceHeader\"", xaml);
+        Assert.Contains("Text=\"我的衣橱\"", xaml);
+        Assert.Contains("x:Name=\"SidebarWorkspaceTitle\"", xaml);
         Assert.Contains("x:Name=\"CurrentUserAvatar\"", xaml);
         Assert.Contains("x:Name=\"ProfileTextPanel\"", xaml);
+        Assert.Contains("Text=\"16件衣服\"", xaml);
         Assert.Contains("Width=\"180\"", xaml);
         Assert.Contains("Width=\"180\"", mainWindowXaml);
         Assert.Contains("ExpandedSidebarWidth = 180", code);
         Assert.Contains("180.0", mainWindowCode);
-        Assert.Contains("new Thickness(12, 24, 12, 20)", code);
-        Assert.Contains("Margin=\"12,24,12,20\"", xaml);
+        Assert.Contains("new Thickness(16, 18, 16, 20)", code);
+        Assert.Contains("Margin=\"16,18,16,20\"", xaml);
         Assert.Contains("Padding=\"0\"", xaml);
-        Assert.Contains("MinHeight=\"70\"", xaml);
+        Assert.Contains("MinHeight=\"64\"", xaml);
         Assert.Contains("Width=\"42\"", xaml);
         Assert.Contains("Height=\"42\"", xaml);
-        Assert.Contains("MaxWidth=\"88\"", xaml);
+        Assert.Contains("MaxWidth=\"116\"", xaml);
         Assert.Contains("x:Name=\"SidebarCollapseButton\"", xaml);
         Assert.Contains("Width=\"32\"", xaml);
         Assert.Contains("Height=\"32\"", xaml);
@@ -41,7 +45,10 @@ public class NavigationSidebarLayoutTests
         Assert.DoesNotContain("x:Name=\"ProfileChevronShell\"", xaml);
         Assert.DoesNotContain("x:Name=\"CollapseButtonHost\"", xaml);
         Assert.DoesNotContain("x:Name=\"BtnCollapse\"", xaml);
-        Assert.DoesNotContain("MaxWidth=\"86\"", xaml);
+        Assert.DoesNotContain("x:Name=\"ProfileCountBadge\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SidebarAiEntry\"", xaml);
+        Assert.DoesNotContain("AiEntryRequested", code);
+        Assert.DoesNotContain("AiEntryRequested", mainWindowXaml);
     }
 
     [Fact]
@@ -56,8 +63,8 @@ public class NavigationSidebarLayoutTests
         Assert.Contains("CornerRadius=\"2\"", xaml);
         Assert.Contains("PrimaryLightBrush", xaml);
         Assert.Contains("ApplyNavExpandedMode", code);
-        Assert.Contains("Padding=\"10,10\"", xaml);
-        Assert.Contains("Margin=\"8,2,8,2\"", xaml);
+        Assert.Contains("Padding=\"8,10\"", xaml);
+        Assert.Contains("Margin=\"0,2,0,2\"", xaml);
         Assert.DoesNotContain("<Setter Property=\"Foreground\" Value=\"White\"/>", xaml);
     }
 
@@ -85,6 +92,7 @@ public class NavigationSidebarLayoutTests
         Assert.Contains("88.0", mainWindowCode);
         Assert.DoesNotContain("72.0", mainWindowCode);
         Assert.DoesNotContain("x:Name=\"CollapseButtonHost\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SidebarAiEntry\"", xaml);
     }
 
     private static string FindProjectFile(string relativePath)

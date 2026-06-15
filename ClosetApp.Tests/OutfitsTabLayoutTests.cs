@@ -33,6 +33,31 @@ public class OutfitsTabLayoutTests
     }
 
     [Fact]
+    public void OutfitsTab_SecondaryRecommendationCards_UseUnifiedTagRail()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml"));
+
+        Assert.Contains("x:Name=\"SecondaryRecommendationTagRail\"", xaml);
+        Assert.Contains("ItemsSource=\"{Binding DisplayReasonTags}\"", xaml);
+        Assert.Contains("MaxHeight=\"28\"", xaml);
+        Assert.Contains("Height=\"148\"", xaml);
+        Assert.DoesNotContain("Text=\"{Binding WearSummaryText}\"", xaml);
+        Assert.DoesNotContain("ItemsSource=\"{Binding HighlightTags}\"", xaml);
+    }
+
+    [Fact]
+    public void OutfitsTab_RecommendationColumns_ShareVisualHeightAnchors()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml"));
+
+        Assert.Contains("x:Name=\"TodayRecommendationWorkspace\"", xaml);
+        Assert.Contains("x:Name=\"PrimaryRecommendationCardShell\"", xaml);
+        Assert.Contains("x:Name=\"SecondaryRecommendationRail\"", xaml);
+        Assert.Contains("Height=\"148\"", xaml);
+        Assert.Contains("MinHeight=\"336\"", xaml);
+    }
+
+    [Fact]
     public void OutfitsTab_TodayHeroCard_SeparatesInfoAndActionZones()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml"));
@@ -45,7 +70,7 @@ public class OutfitsTabLayoutTests
         Assert.Contains("x:Name=\"TodayHeroFooterRailHost\"", xaml);
         Assert.Contains("<WrapPanel x:Name=\"TodayHeroFooterRailHost\"", xaml);
         Assert.DoesNotContain("<Border x:Name=\"TodayHeroFooterRailHost\"", xaml);
-        Assert.Contains("MinHeight=\"320\"", xaml);
+        Assert.Contains("MinHeight=\"336\"", xaml);
         Assert.Contains("x:Name=\"SecondaryRecommendationRail\"", xaml);
         Assert.Contains("VerticalAlignment=\"Top\"", xaml);
     }

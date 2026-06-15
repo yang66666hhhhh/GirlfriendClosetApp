@@ -11,7 +11,7 @@
 
         <!-- Layout Tokens -->
         <sys:Double x:Key="NavIconSize">20</sys:Double>
-        <Thickness x:Key="NavItemPadding">16,14</Thickness>
+        <Thickness x:Key="NavItemPadding">8,10</Thickness>
         <CornerRadius x:Key="NavItemRadius">14</CornerRadius>
         <sys:Double x:Key="NavHeight">44</sys:Double>
         <sys:Double x:Key="CollapsedSidebarWidth">88</sys:Double>
@@ -43,8 +43,8 @@
                             <Border x:Name="NavBg"
                                 Background="Transparent"
                                 CornerRadius="{StaticResource NavItemRadius}"
-                                Padding="10,10"
-                                Margin="8,2,8,2"
+                                Padding="8,10"
+                                Margin="0,2,0,2"
                                 RenderTransformOrigin="0.5,0.5">
                                 <Border.RenderTransform>
                                     <TransformGroup>
@@ -226,27 +226,44 @@
                 <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
 
-            <!-- Logo / Brand Area -->
-            <Grid x:Name="HeaderPanel" Grid.Row="0" Margin="12,24,12,20">
-                <Button x:Name="SidebarCollapseButton"
-                        Style="{StaticResource CollapseBtnStyle}"
-                        Width="32"
-                        Height="32"
-                        HorizontalAlignment="Right"
-                        VerticalAlignment="Top"
-                        Margin="0,4,0,0"
-                        Panel.ZIndex="2"
-                        ToolTip="收起侧边栏"
-                        Click="Collapse_Click">
-                    <TextBlock x:Name="CollapseGlyph"
-                               Text="◀"
-                               FontSize="{DynamicResource FontSize.Meta}"
-                               Foreground="{DynamicResource TextPlaceholderBrush}"/>
-                </Button>
+            <Grid x:Name="HeaderPanel" Grid.Row="0" Margin="16,18,16,20">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+
+                <Grid x:Name="SidebarWorkspaceHeader">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock x:Name="SidebarWorkspaceTitle"
+                               Text="我的衣橱"
+                               FontSize="{DynamicResource FontSize.Body}"
+                               FontWeight="SemiBold"
+                               VerticalAlignment="Center"
+                               Foreground="{DynamicResource TextPrimaryBrush}"/>
+                    <Button x:Name="SidebarCollapseButton"
+                            Grid.Column="1"
+                            Style="{StaticResource CollapseBtnStyle}"
+                            Width="32"
+                            Height="32"
+                            HorizontalAlignment="Right"
+                            VerticalAlignment="Center"
+                            ToolTip="收起侧边栏"
+                            Click="Collapse_Click">
+                        <TextBlock x:Name="CollapseGlyph"
+                                   Text="◀"
+                                   FontSize="{DynamicResource FontSize.Meta}"
+                                   Foreground="{DynamicResource TextPlaceholderBrush}"/>
+                    </Button>
+                </Grid>
+
                 <Button x:Name="CollapsedProfileButton"
+                        Grid.Row="1"
                         Width="56"
                         Height="56"
-                        Margin="0,4,0,8"
+                        Margin="0,16,0,0"
                         HorizontalAlignment="Center"
                         Background="Transparent"
                         BorderThickness="0"
@@ -306,11 +323,12 @@
                                             ShowStatus="False"/>
                 </Button>
                 <Button x:Name="BtnProfile"
+                        Grid.Row="1"
                         Background="Transparent"
                         BorderThickness="0"
                         Padding="0"
-                        MinHeight="70"
-                        Margin="0,6,0,0"
+                        MinHeight="64"
+                        Margin="0,16,0,0"
                         HorizontalAlignment="Stretch"
                         ToolTip="个人中心 / 账号菜单"
                         Click="Profile_Click">
@@ -376,28 +394,20 @@
                                                 ShowStatus="False"/>
                         <StackPanel x:Name="ProfileTextPanel"
                                     Grid.Column="1"
-                                    Margin="8,0,28,0"
+                                    Margin="10,0,0,0"
                                     VerticalAlignment="Center">
                             <TextBlock x:Name="TxtCurrentUserName"
                                        Text="私人衣橱"
                                        FontSize="{DynamicResource FontSize.Input}"
                                        FontWeight="SemiBold"
-                                       MaxWidth="88"
+                                       MaxWidth="116"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                        TextTrimming="CharacterEllipsis"/>
-                            <Border x:Name="ProfileCountBadge"
-                                    Margin="0,4,0,0"
-                                    Padding="6,2"
-                                    HorizontalAlignment="Left"
-                                    Background="{DynamicResource SurfaceSectionBrush}"
-                                    BorderBrush="{DynamicResource BorderLightBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="9">
-                                <TextBlock x:Name="TxtClothingCount"
-                                           Text="0 件衣服"
-                                           FontSize="{DynamicResource FontSize.Tiny}"
-                                           Foreground="{DynamicResource TextPlaceholderBrush}"/>
-                            </Border>
+                            <TextBlock x:Name="TxtClothingCount"
+                                       Margin="0,4,0,0"
+                                       Text="16件衣服"
+                                       FontSize="{DynamicResource FontSize.Tiny}"
+                                       Foreground="{DynamicResource TextPlaceholderBrush}"/>
                         </StackPanel>
                     </Grid>
                 </Button>
