@@ -14,8 +14,6 @@
         <Thickness x:Key="NavItemPadding">16,14</Thickness>
         <CornerRadius x:Key="NavItemRadius">14</CornerRadius>
         <sys:Double x:Key="NavHeight">52</sys:Double>
-        <sys:Double x:Key="CollapsedSidebarWidth">88</sys:Double>
-        <sys:Double x:Key="CollapsedNavButtonSize">52</sys:Double>
 
         <!-- ═══════════════════════════════════════
              NAV ITEM STYLE
@@ -62,15 +60,6 @@
                                                Margin="12,0,0,0"
                                                Foreground="{TemplateBinding Foreground}"/>
                                 </Grid>
-                                <Grid x:Name="DockLayout"
-                                      Visibility="Collapsed">
-                                    <TextBlock x:Name="DockIcon"
-                                               Text="{TemplateBinding Tag}"
-                                               FontSize="{StaticResource NavIconSize}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               Foreground="{TemplateBinding Foreground}"/>
-                                </Grid>
                             </Grid>
                         </Border>
                         <ControlTemplate.Triggers>
@@ -102,65 +91,6 @@
                                     <Setter.Value>
                                         <TransformGroup>
                                             <ScaleTransform ScaleX="0.986" ScaleY="0.986"/>
-                                            <TranslateTransform Y="1"/>
-                                        </TransformGroup>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="Width" Value="{StaticResource CollapsedNavButtonSize}">
-                                <Setter TargetName="NavBg" Property="Width" Value="{StaticResource CollapsedNavButtonSize}"/>
-                                <Setter TargetName="NavBg" Property="Height" Value="{StaticResource CollapsedNavButtonSize}"/>
-                                <Setter TargetName="NavBg" Property="Padding" Value="0"/>
-                                <Setter TargetName="NavBg" Property="Margin" Value="0,0,0,10"/>
-                                <Setter TargetName="NavBg" Property="CornerRadius" Value="18"/>
-                                <Setter TargetName="ExpandedLayout" Property="Visibility" Value="Collapsed"/>
-                                <Setter TargetName="DockLayout" Property="Visibility" Value="Visible"/>
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <!-- Collapse button style -->
-        <Style x:Key="CollapseBtnStyle" TargetType="Button">
-            <Setter Property="Background" Value="Transparent"/>
-            <Setter Property="Foreground" Value="{DynamicResource TextPlaceholderBrush}"/>
-            <Setter Property="Width" Value="28"/>
-            <Setter Property="Height" Value="28"/>
-            <Setter Property="Cursor" Value="Hand"/>
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border x:Name="BtnBg"
-                                Background="Transparent"
-                                CornerRadius="14"
-                                RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                    <TranslateTransform Y="0"/>
-                                </TransformGroup>
-                            </Border.RenderTransform>
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="BtnBg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                                <Setter TargetName="BtnBg" Property="RenderTransform">
-                                    <Setter.Value>
-                                        <TransformGroup>
-                                            <ScaleTransform ScaleX="1.04" ScaleY="1.04"/>
-                                            <TranslateTransform Y="-1"/>
-                                        </TransformGroup>
-                                    </Setter.Value>
-                                </Setter>
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="BtnBg" Property="RenderTransform">
-                                    <Setter.Value>
-                                        <TransformGroup>
-                                            <ScaleTransform ScaleX="0.96" ScaleY="0.96"/>
                                             <TranslateTransform Y="1"/>
                                         </TransformGroup>
                                     </Setter.Value>
@@ -212,73 +142,10 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="Auto"/>
             </Grid.RowDefinitions>
 
             <!-- Logo / Brand Area -->
             <StackPanel x:Name="HeaderPanel" Grid.Row="0" Margin="12,28,12,24">
-                <Button x:Name="CollapsedProfileButton"
-                        Width="56"
-                        Height="56"
-                        Margin="0,0,0,8"
-                        HorizontalAlignment="Center"
-                        Background="Transparent"
-                        BorderThickness="0"
-                        ToolTip="个人中心 / 账号菜单"
-                        Visibility="Collapsed"
-                        Click="Profile_Click">
-                    <Button.Template>
-                        <ControlTemplate TargetType="Button">
-                            <Border x:Name="CollapsedProfileShell"
-                                    Width="56"
-                                    Height="56"
-                                    Background="{DynamicResource SurfaceCardBrush}"
-                                    BorderBrush="{DynamicResource BorderLightBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="28"
-                                    Padding="4"
-                                    RenderTransformOrigin="0.5,0.5">
-                                <Border.RenderTransform>
-                                    <TransformGroup>
-                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                        <TranslateTransform Y="0"/>
-                                    </TransformGroup>
-                                </Border.RenderTransform>
-                                <ContentPresenter HorizontalAlignment="Center"
-                                                  VerticalAlignment="Center"/>
-                            </Border>
-                            <ControlTemplate.Triggers>
-                                <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="CollapsedProfileShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                                    <Setter TargetName="CollapsedProfileShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                    <Setter TargetName="CollapsedProfileShell" Property="RenderTransform">
-                                        <Setter.Value>
-                                            <TransformGroup>
-                                                <ScaleTransform ScaleX="1.03" ScaleY="1.03"/>
-                                                <TranslateTransform Y="-1"/>
-                                            </TransformGroup>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                                <Trigger Property="IsPressed" Value="True">
-                                    <Setter TargetName="CollapsedProfileShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                                    <Setter TargetName="CollapsedProfileShell" Property="RenderTransform">
-                                        <Setter.Value>
-                                            <TransformGroup>
-                                                <ScaleTransform ScaleX="0.97" ScaleY="0.97"/>
-                                                <TranslateTransform Y="1"/>
-                                            </TransformGroup>
-                                        </Setter.Value>
-                                    </Setter>
-                                </Trigger>
-                            </ControlTemplate.Triggers>
-                        </ControlTemplate>
-                    </Button.Template>
-                    <shared:LocalUserAvatar x:Name="CollapsedCurrentUserAvatar"
-                                            Width="48"
-                                            Height="48"
-                                            ShowStatus="False"/>
-                </Button>
                 <Button x:Name="BtnProfile"
                         Background="Transparent"
                         BorderThickness="0"
@@ -446,24 +313,6 @@
                              Checked="NavItem_Checked"/>
             </StackPanel>
 
-            <!-- Collapse Button -->
-            <Grid x:Name="CollapseButtonHost"
-                  Grid.Row="2"
-                  Margin="0,0,0,20">
-                <Button x:Name="BtnCollapse"
-                        Style="{StaticResource CollapseBtnStyle}"
-                        HorizontalAlignment="Center"
-                        Margin="0"
-                        ToolTip="展开侧边栏"
-                        Click="Collapse_Click">
-                    <Button.RenderTransform>
-                        <RotateTransform x:Name="CollapseRotate" Angle="0"/>
-                    </Button.RenderTransform>
-                    <TextBlock Text="◀"
-                               FontSize="{DynamicResource FontSize.Meta}"
-                               Foreground="{DynamicResource TextPlaceholderBrush}"/>
-                </Button>
-            </Grid>
         </Grid>
     </Border>
 </UserControl>

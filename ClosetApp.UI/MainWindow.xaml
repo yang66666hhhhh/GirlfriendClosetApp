@@ -29,8 +29,7 @@
         <!-- Sidebar -->
         <views:NavigationSidebar x:Name="Sidebar"
                                 Grid.Column="0"
-                                NavigationChanged="Sidebar_NavigationChanged"
-                                CollapseStateChanged="Sidebar_CollapseStateChanged"/>
+                                NavigationChanged="Sidebar_NavigationChanged"/>
 
         <!-- Content Area -->
         <Border Grid.Column="1" Background="Transparent">

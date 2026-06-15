@@ -18,13 +18,9 @@ namespace ClosetApp.UI.Views;
 
 public partial class NavigationSidebar : UserControl
 {
-    private const double ExpandedSidebarWidth = 220;
-    private const double CollapsedSidebarWidth = 88;
     public event EventHandler<int>? NavigationChanged;
-    public event EventHandler<bool>? CollapseStateChanged;
     public event EventHandler? PersonalCenterRequested;
 
-    private bool _isCollapsed;
     private readonly ILocalUserService _localUserService;
     private readonly ILocalAuthService _localAuthService;
     private readonly ICurrentUserContext _currentUserContext;
@@ -33,8 +29,6 @@ public partial class NavigationSidebar : UserControl
     private LocalUser? _currentUser;
     private bool _profileDialogPrewarmed;
     private bool _userManagementDialogPrewarmed;
-
-    public bool IsCollapsed => _isCollapsed;
 
     public NavigationSidebar()
     {
@@ -59,9 +53,6 @@ public partial class NavigationSidebar : UserControl
             CurrentUserAvatar.AvatarPath = ResolveAvatarPath(_currentUser);
             CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
             CurrentUserAvatar.IsCurrent = true;
-            CollapsedCurrentUserAvatar.AvatarPath = CurrentUserAvatar.AvatarPath;
-            CollapsedCurrentUserAvatar.Initial = CurrentUserAvatar.Initial;
-            CollapsedCurrentUserAvatar.IsCurrent = true;
             RebuildUserMenu();
             ScheduleModalPrewarm();
         }
@@ -107,47 +98,8 @@ public partial class NavigationSidebar : UserControl
             NavigationChanged?.Invoke(this, 3);
     }
 
-    private void Collapse_Click(object sender, RoutedEventArgs e)
-    {
-        ToggleCollapse();
-    }
-
-    public void ToggleCollapse()
-    {
-        _isCollapsed = !_isCollapsed;
-        CollapseStateChanged?.Invoke(this, _isCollapsed);
-
-        var rotateTarget = _isCollapsed ? 180.0 : 0.0;
-        var rotateAnim = new DoubleAnimation(rotateTarget, TimeSpan.FromMilliseconds(220))
-        {
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-        };
-
-        var widthAnim = new DoubleAnimation(_isCollapsed ? CollapsedSidebarWidth : ExpandedSidebarWidth, TimeSpan.FromMilliseconds(220))
-        {
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-        };
-        BeginAnimation(WidthProperty, widthAnim);
-
-        CollapseRotate.BeginAnimation(RotateTransform.AngleProperty, rotateAnim);
-        UpdateCollapsedDockState();
-    }
-
-    public void Expand()
-    {
-        if (_isCollapsed)
-            ToggleCollapse();
-    }
-
-    public void Collapse()
-    {
-        if (!_isCollapsed)
-            ToggleCollapse();
-    }
-
     private async void NavigationSidebar_Loaded(object sender, RoutedEventArgs e)
     {
-        UpdateCollapsedDockState();
         await RefreshCurrentUserAsync();
     }
 
@@ -191,9 +143,6 @@ public partial class NavigationSidebar : UserControl
             Style = (Style)FindResource("WardrobeCard.MoreMenuItem")
         });
         ((MenuItem)ProfileMenu.Items[^1]).Click += Logout_Click;
-
-        if (CollapsedProfileButton.ContextMenu != null)
-            CollapsedProfileButton.ContextMenu = ProfileMenu;
     }
 
     private void Profile_Click(object sender, RoutedEventArgs e)
@@ -351,58 +300,6 @@ public partial class NavigationSidebar : UserControl
                 DispatcherPriority.ApplicationIdle,
                 new Action(() => ModalService.Instance.PrewarmCached<LocalUserManagementDialog>()));
         }
-    }
-
-    private void UpdateCollapsedDockState()
-    {
-        HeaderPanel.Margin = _isCollapsed
-            ? new Thickness(0, 22, 0, 18)
-            : new Thickness(16, 28, 16, 24);
-        Width = _isCollapsed ? CollapsedSidebarWidth : ExpandedSidebarWidth;
-
-        BtnProfile.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        CollapsedProfileButton.Visibility = _isCollapsed ? Visibility.Visible : Visibility.Collapsed;
-        ProfileTextPanel.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ProfileCountBadge.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-        ProfileChevronShell.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
-
-        BtnProfile.Padding = new Thickness(10);
-        BtnProfile.HorizontalContentAlignment = HorizontalAlignment.Stretch;
-
-        SidebarNavHost.Margin = _isCollapsed
-            ? new Thickness(0, 8, 0, 0)
-            : new Thickness(0, 4, 0, 0);
-        SidebarDivider.Width = _isCollapsed ? 28 : 52;
-        SidebarDivider.Margin = _isCollapsed
-            ? new Thickness(0, 18, 0, 18)
-            : new Thickness(18, 16, 18, 16);
-
-        CollapseButtonHost.Margin = _isCollapsed
-            ? new Thickness(0, 0, 0, 16)
-            : new Thickness(0, 0, 0, 20);
-        BtnCollapse.Width = _isCollapsed ? 40 : 28;
-        BtnCollapse.Height = _isCollapsed ? 40 : 28;
-
-        ApplyNavDockMode(NavWardrobe);
-        ApplyNavDockMode(NavOutfits);
-        ApplyNavDockMode(NavTags);
-        ApplyNavDockMode(NavSettings);
-        UpdateNavTooltips();
-
-        BtnCollapse.ToolTip = _isCollapsed ? "展开侧边栏" : "收起侧边栏";
-    }
-
-    private void ApplyNavDockMode(RadioButton button)
-    {
-        button.Width = _isCollapsed ? 52 : double.NaN;
-        button.Height = _isCollapsed ? 52 : 52;
-        button.HorizontalAlignment = HorizontalAlignment.Center;
-        button.Margin = _isCollapsed
-            ? new Thickness(0, 0, 0, 10)
-            : new Thickness(0);
-        button.Padding = _isCollapsed
-            ? new Thickness(0)
-            : new Thickness(0);
     }
 
     private void UpdateNavTooltips()

@@ -61,11 +61,10 @@ public class LocalUserManagementDialogLayoutTests
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
 
         Assert.Contains("x:Name=\"CurrentUserAvatar\"", xaml);
-        Assert.Contains("Width=\"56\"", xaml);
-        Assert.Contains("Height=\"56\"", xaml);
+        Assert.Contains("Width=\"52\"", xaml);
+        Assert.Contains("Height=\"52\"", xaml);
         Assert.Contains("ShowStatus=\"False\"", xaml);
-        Assert.Contains("MinHeight=\"116\"", xaml);
-        Assert.Contains("Padding=\"12\"", xaml);
+        Assert.Contains("MinHeight=\"108\"", xaml);
         Assert.Contains("x:Name=\"ProfileCountBadge\"", xaml);
         Assert.Contains("x:Name=\"TxtClothingCount\"", xaml);
         Assert.Contains("Text=\"0 件衣服\"", xaml);
@@ -73,7 +72,7 @@ public class LocalUserManagementDialogLayoutTests
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
         Assert.Contains("x:Name=\"ProfileIdentitySurface\"", xaml);
         Assert.DoesNotContain("x:Name=\"ProfileTouchHintCard\"", xaml);
-        Assert.DoesNotContain("Width=\"44\"\r\n                                                Height=\"44\"", xaml);
+        Assert.DoesNotContain("x:Name=\"CollapsedProfileButton\"", xaml);
     }
 
     [Fact]

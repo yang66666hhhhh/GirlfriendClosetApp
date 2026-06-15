@@ -4,8 +4,6 @@ using System.Windows.Controls.Primitives;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Media3D;
-using System.Windows.Media.Animation;
-using ClosetApp.UI.Components.Shared;
 using ClosetApp.UI.Views;
 using ClosetApp.Application.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,14 +23,12 @@ public partial class MainWindow : Window
         Sidebar.PersonalCenterRequested += Sidebar_PersonalCenterRequested;
         App.Services.GetRequiredService<ICurrentUserContext>().CurrentUserChanged += MainWindow_CurrentUserChanged;
         PreviewKeyDown += MainWindow_PreviewKeyDown;
-        SizeChanged += MainWindow_SizeChanged;
         Loaded += MainWindow_Loaded;
         Closed += MainWindow_Closed;
     }
 
     private void MainWindow_Loaded(object sender, RoutedEventArgs e)
     {
-        ApplyResponsiveSidebar();
         if (_hasLoadedInitialTab)
             return;
 
@@ -52,19 +48,6 @@ public partial class MainWindow : Window
         Sidebar.SetClothingCount(count);
     }
 
-    private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e)
-    {
-        ApplyResponsiveSidebar();
-    }
-
-    private void ApplyResponsiveSidebar()
-    {
-        if (ActualWidth < 1000 && !Sidebar.IsCollapsed)
-            Sidebar.Collapse();
-        else if (ActualWidth >= 1200 && Sidebar.IsCollapsed)
-            Sidebar.Expand();
-    }
-
     private async void Sidebar_NavigationChanged(object? sender, int tabIndex)
     {
         if (_currentTabIndex == tabIndex && _hasLoadedInitialTab)
@@ -72,19 +55,6 @@ public partial class MainWindow : Window
 
         ShowTab(tabIndex);
         await RefreshVisibleTabAsync(tabIndex);
-    }
-
-    private void Sidebar_CollapseStateChanged(object? sender, bool isCollapsed)
-    {
-        var targetWidth = isCollapsed ? 88.0 : 220.0;
-        var anim = new GridLengthAnimation
-        {
-            From = new GridLength(SidebarColumn.Width.Value),
-            To = new GridLength(targetWidth),
-            Duration = TimeSpan.FromMilliseconds(220),
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-        };
-        SidebarColumn.BeginAnimation(ColumnDefinition.WidthProperty, anim);
     }
 
     public async Task NavigateToSettingsAsync()

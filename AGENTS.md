@@ -176,7 +176,7 @@ Domain ← Application ← Infrastructure
 ### 7.1 导航
 
 MainWindow 2 列布局：
-- 左侧 `NavigationSidebar`（220px，可折叠到 72px）
+- 左侧 `NavigationSidebar`（220px 固定宽度，后续支持鼠标拖拽调节）
 - 右侧内容区：`ClothesTab`（默认）/ `OutfitsTab` / `TagsTab` / `SettingsTab`
 
 ### 7.2 页面职责
