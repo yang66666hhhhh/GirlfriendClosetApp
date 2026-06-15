@@ -7,44 +7,22 @@
     <UserControl.Resources>
         <conv:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
-        <Style x:Key="SettingsWorkbenchHeroCard" TargetType="Border" BasedOn="{StaticResource LookbookCard}">
-            <Setter Property="Margin" Value="0,0,0,12"/>
-            <Setter Property="Padding" Value="18,16"/>
-            <Setter Property="CornerRadius" Value="20"/>
-            <Setter Property="Background" Value="{DynamicResource SurfaceCardBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="Effect" Value="{x:Null}"/>
+        <Style x:Key="SettingsOverviewSection" TargetType="Border">
+            <Setter Property="Margin" Value="0,0,0,14"/>
+            <Setter Property="Padding" Value="0,0,0,12"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource BorderDividerBrush}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,1"/>
         </Style>
 
-        <Style x:Key="SettingsWorkbenchMetricCard" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="14"/>
-            <Setter Property="Padding" Value="14,12"/>
-            <Setter Property="Margin" Value="0"/>
-        </Style>
-
-        <Style x:Key="SettingsWorkbenchHeroNoteCard" TargetType="Border">
-            <Setter Property="Background" Value="{DynamicResource SurfacePageBrush}"/>
-            <Setter Property="BorderBrush" Value="{DynamicResource BorderLightBrush}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="CornerRadius" Value="16"/>
-            <Setter Property="Padding" Value="14,12"/>
-            <Setter Property="Margin" Value="0"/>
-        </Style>
-
-        <Style x:Key="SettingsWorkbenchMetricLabel" TargetType="TextBlock">
+        <Style x:Key="SettingsOverviewRowLabel" TargetType="TextBlock">
             <Setter Property="FontSize" Value="{DynamicResource FontSize.Tiny}"/>
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
         </Style>
 
-        <Style x:Key="SettingsWorkbenchMetricValue" TargetType="TextBlock">
+        <Style x:Key="SettingsOverviewRowValue" TargetType="TextBlock">
             <Setter Property="FontSize" Value="{DynamicResource FontSize.Input}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
             <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
-            <Setter Property="Margin" Value="0,5,0,0"/>
+            <Setter Property="Margin" Value="0,3,0,0"/>
             <Setter Property="TextWrapping" Value="Wrap"/>
         </Style>
 
@@ -84,10 +62,11 @@
                       VerticalScrollBarVisibility="Auto"
                       Padding="44,10,44,40">
             <StackPanel>
-                <Border x:Name="SettingsOverviewHero"
-                        Style="{StaticResource SettingsWorkbenchHeroCard}">
+                <Border x:Name="SettingsOverviewStrip"
+                        Style="{StaticResource SettingsOverviewSection}">
                     <StackPanel>
-                        <Grid x:Name="SettingsOverviewPrimaryGrid">
+                        <Grid x:Name="SettingsOverviewPrimaryGrid"
+                              Margin="0,0,0,12">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
                                 <ColumnDefinition Width="Auto"/>
@@ -109,116 +88,97 @@
                             </WrapPanel>
                         </Grid>
 
-                        <Border x:Name="SettingsOverviewHeroSurface"
-                                Margin="0,10,0,0"
-                                Style="{StaticResource SettingsWorkbenchHeroNoteCard}">
-                            <Grid x:Name="SettingsOverviewSummaryGrid">
-                                <Grid.RowDefinitions>
-                                    <RowDefinition Height="Auto"/>
-                                    <RowDefinition Height="10"/>
-                                    <RowDefinition Height="Auto"/>
-                                </Grid.RowDefinitions>
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="16"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="主题"
-                                               Style="{StaticResource PageSummaryHintText}"/>
-                                    <TextBlock Text="{Binding ThemeSummary}"
-                                               Style="{StaticResource PageSummaryValueText}"
-                                               Margin="0,4,0,0"
-                                               TextWrapping="Wrap"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Column="2">
-                                    <TextBlock Text="卡片"
-                                               Style="{StaticResource PageSummaryHintText}"/>
-                                    <TextBlock Text="{Binding OutfitCardDisplaySummary}"
-                                               Style="{StaticResource PageSummaryValueText}"
-                                               Margin="0,4,0,0"
-                                               TextWrapping="Wrap"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="2"
-                                            Grid.Column="0">
-                                    <TextBlock Text="AI"
-                                               Style="{StaticResource PageSummaryHintText}"/>
-                                    <TextBlock Text="{Binding AiSettingsSummary}"
-                                               Style="{StaticResource PageSummaryValueText}"
-                                               Margin="0,4,0,0"
-                                               TextWrapping="Wrap"/>
-                                </StackPanel>
-
-                                <StackPanel Grid.Row="2"
-                                            Grid.Column="2">
-                                    <TextBlock Text="城市"
-                                               Style="{StaticResource PageSummaryHintText}"/>
-                                    <TextBlock Text="{Binding WeatherCity}"
-                                               Style="{StaticResource PageSummaryValueText}"
-                                               Margin="0,4,0,0"
-                                               TextWrapping="Wrap"/>
-                                </StackPanel>
-                            </Grid>
-                        </Border>
-
-                        <Grid x:Name="SettingsOverviewMetricMatrix"
-                              Margin="0,10,0,0">
+                        <Grid x:Name="SettingsOverviewStatusRows"
+                              Margin="0,2,0,0">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="12"/>
+                                <RowDefinition Height="14"/>
                                 <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="28"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="28"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
-                            <Border Grid.Column="0"
-                                    Style="{StaticResource SettingsWorkbenchMetricCard}"
-                                    Margin="0">
-                                <StackPanel>
-                                    <TextBlock Text="原图" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
-                                    <TextBlock x:Name="TxtImageStats" Text="{Binding ImageStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
+                            <StackPanel x:Name="SettingsOverviewPreferenceRow"
+                                        Grid.Column="0">
+                                <TextBlock Text="主题"
+                                           Style="{StaticResource SettingsOverviewRowLabel}"/>
+                                <TextBlock Text="{Binding ThemeSummary}"
+                                           Style="{StaticResource SettingsOverviewRowValue}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="2">
+                                <TextBlock Text="卡片默认"
+                                           Style="{StaticResource SettingsOverviewRowLabel}"/>
+                                <TextBlock Text="{Binding OutfitCardDisplaySummary}"
+                                           Style="{StaticResource SettingsOverviewRowValue}"/>
+                            </StackPanel>
+
+                            <StackPanel Grid.Column="4">
+                                <TextBlock Text="城市"
+                                           Style="{StaticResource SettingsOverviewRowLabel}"/>
+                                <TextBlock Text="{Binding WeatherCity}"
+                                           Style="{StaticResource SettingsOverviewRowValue}"/>
+                            </StackPanel>
+
+                            <Border x:Name="SettingsGroupDivider"
+                                    Grid.Row="1"
+                                    Grid.ColumnSpan="5"
+                                    Height="1"
+                                    Margin="0,7,0,6"
+                                    Background="{DynamicResource BorderDividerBrush}"
+                                    Opacity="0.65"/>
+
+                            <Grid x:Name="SettingsSystemRows"
+                                  Grid.Row="2"
+                                  Grid.ColumnSpan="5">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="28"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="28"/>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="28"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel x:Name="SettingsOverviewSystemRow"
+                                            Grid.Column="0">
+                                    <TextBlock Text="原图" Style="{StaticResource SettingsOverviewRowLabel}"/>
+                                    <TextBlock x:Name="TxtImageStats"
+                                               Text="{Binding ImageStats}"
+                                               Style="{StaticResource SettingsOverviewRowValue}"/>
                                 </StackPanel>
-                            </Border>
-                            <Border Grid.Column="2"
-                                    Style="{StaticResource SettingsWorkbenchMetricCard}"
-                                    Margin="0">
-                                <StackPanel>
-                                    <TextBlock Text="缓存" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
-                                    <TextBlock x:Name="TxtCacheStats" Text="{Binding CacheStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
+
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Text="缓存" Style="{StaticResource SettingsOverviewRowLabel}"/>
+                                    <TextBlock x:Name="TxtCacheStats"
+                                               Text="{Binding CacheStats}"
+                                               Style="{StaticResource SettingsOverviewRowValue}"/>
                                 </StackPanel>
-                            </Border>
-                            <Border Grid.Row="2"
-                                    Grid.Column="0"
-                                    Style="{StaticResource SettingsWorkbenchMetricCard}"
-                                    Margin="0">
-                                <StackPanel>
-                                    <TextBlock Text="AI" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
-                                    <TextBlock Text="{Binding AiSettingsSummary}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
+
+                                <StackPanel Grid.Column="4">
+                                    <TextBlock Text="日志" Style="{StaticResource SettingsOverviewRowLabel}"/>
+                                    <TextBlock Text="{Binding LogStats}"
+                                               Style="{StaticResource SettingsOverviewRowValue}"/>
                                 </StackPanel>
-                            </Border>
-                            <Border Grid.Row="2"
-                                    Grid.Column="2"
-                                    Style="{StaticResource SettingsWorkbenchMetricCard}"
-                                    Margin="0">
-                                <StackPanel>
-                                    <TextBlock Text="日志" Style="{StaticResource SettingsWorkbenchMetricLabel}"/>
-                                    <TextBlock Text="{Binding LogStats}" Style="{StaticResource SettingsWorkbenchMetricValue}"/>
+
+                                <StackPanel Grid.Column="6">
+                                    <TextBlock Text="AI" Style="{StaticResource SettingsOverviewRowLabel}"/>
+                                    <TextBlock Text="{Binding AiSettingsSummary}"
+                                               Style="{StaticResource SettingsOverviewRowValue}"/>
                                 </StackPanel>
-                            </Border>
+                            </Grid>
                         </Grid>
                     </StackPanel>
                 </Border>
-
-                <Border x:Name="SettingsWorkbenchSectionDivider"
-                        Height="1"
-                        Margin="0,2,0,14"
-                        Background="{DynamicResource BorderDividerBrush}"/>
 
                 <settings:AppearanceSettingsPanel x:Name="AppearancePanel"
                                                   ThemeChanged="AppearancePanel_ThemeChanged"

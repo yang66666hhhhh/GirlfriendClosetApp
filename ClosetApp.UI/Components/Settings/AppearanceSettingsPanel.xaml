@@ -15,19 +15,27 @@
                 <TextBlock Text="外观"
                            Style="{StaticResource PageSectionTitleText}"/>
 
+                <Border x:Name="AppearanceSectionDivider"
+                        Height="1"
+                        Margin="0,10,0,12"
+                        Background="{DynamicResource BorderDividerBrush}"
+                        Opacity="0.7"/>
+
                 <Border x:Name="AppearanceThemeSelectionCard"
-                        Style="{StaticResource SettingsInsetCard}"
-                        Margin="0,10,0,0">
+                        Background="Transparent"
+                        BorderThickness="0"
+                        Padding="0"
+                        Margin="0">
                     <StackPanel x:Name="AppearanceWorkbenchHeader">
                         <TextBlock Text="主题"
                                    Style="{StaticResource PageFieldLabelText}"/>
 
-                        <Grid x:Name="AppearanceThemeGrid"
-                              Margin="0,10,0,0"
+                        <Grid x:Name="AppearanceThemeCompactList"
+                              Margin="0,8,0,0"
                               VerticalAlignment="Top">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="12"/>
+                                <ColumnDefinition Width="10"/>
                                 <ColumnDefinition Width="*"/>
                             </Grid.ColumnDefinitions>
 
@@ -53,150 +61,137 @@
                         </Grid>
                     </StackPanel>
                 </Border>
-
-                <Border x:Name="AppearancePreviewSummaryCard"
-                        Style="{StaticResource SettingsInsetCard}"
-                        Margin="0,12,0,0">
-                    <StackPanel x:Name="AppearancePreviewSummaryHeader">
-                        <TextBlock Text="预览"
-                                   Style="{StaticResource PageFieldLabelText}"/>
-                        <Border x:Name="AppearancePreviewSummarySurface"
-                                Margin="0,10,0,0"
-                                Style="{StaticResource SettingsSurfacePanel}">
-                            <StackPanel>
-                                <TextBlock Text="{Binding ThemeSummary}"
-                                           Style="{StaticResource PageSummaryValueText}"/>
-                                <TextBlock Text="{Binding FontSizeSummary}"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,6,0,0"/>
-                                <TextBlock Text="{Binding OutfitCardDisplaySummary}"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,4,0,0"/>
-                            </StackPanel>
-                        </Border>
-                    </StackPanel>
-                </Border>
             </StackPanel>
 
             <StackPanel x:Name="AppearanceRightRail"
                         Grid.Column="2">
                 <StackPanel x:Name="AppearanceControlsStack">
-                    <Border x:Name="AppearanceDisplayModeCard"
-                            Style="{StaticResource SettingsInsetCard}">
-                        <StackPanel>
-                            <StackPanel x:Name="AppearancePreferenceHeader">
-                                <TextBlock Text="卡片默认"
-                                           Style="{StaticResource PageFieldLabelText}"/>
-                            </StackPanel>
-
-                            <Border Style="{StaticResource AppSegmentedTabShell}"
-                                    Margin="0,6,0,0">
-                                <UniformGrid Columns="2">
-                                    <RadioButton x:Name="RadioOutfitFirst"
-                                                 Content="搭配优先"
-                                                 GroupName="OutfitDisplayMode"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="OutfitDisplayMode_Checked"/>
-                                    <RadioButton x:Name="RadioEffectImageFirst"
-                                                 Content="效果图优先"
-                                                 GroupName="OutfitDisplayMode"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="OutfitDisplayMode_Checked"/>
-                                </UniformGrid>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="AppearanceFontSizeCard"
-                            Style="{StaticResource SettingsInsetCard}"
-                            Margin="0,10,0,0">
-                        <StackPanel>
-                            <StackPanel x:Name="AppearanceFontSizeHeader">
-                                <TextBlock Text="字体大小"
-                                           Style="{StaticResource PageFieldLabelText}"/>
-                                <TextBlock Text="{Binding FontSizeSummary}"
-                                           Style="{StaticResource PageSummaryValueText}"
-                                           Margin="0,6,0,0"/>
-                                <TextBlock Text="{Binding FontSizeDetail}"
-                                           Style="{StaticResource PageMutedBodyText}"
-                                           Margin="0,4,0,0"/>
-                            </StackPanel>
-
-                            <Border Style="{StaticResource AppSegmentedTabShell}"
-                                    Margin="0,8,0,0">
-                                <UniformGrid Columns="5">
-                                    <RadioButton x:Name="RadioFontSmall"
-                                                 Content="小"
-                                                 Tag="Small"
-                                                 GroupName="FontSizeLevel"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="FontSizeLevel_Checked"/>
-                                    <RadioButton x:Name="RadioFontStandard"
-                                                 Content="标准"
-                                                 Tag="Standard"
-                                                 GroupName="FontSizeLevel"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="FontSizeLevel_Checked"/>
-                                    <RadioButton x:Name="RadioFontComfortable"
-                                                 Content="舒适"
-                                                 Tag="Comfortable"
-                                                 GroupName="FontSizeLevel"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="FontSizeLevel_Checked"/>
-                                    <RadioButton x:Name="RadioFontLarge"
-                                                 Content="大"
-                                                 Tag="Large"
-                                                 GroupName="FontSizeLevel"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="FontSizeLevel_Checked"/>
-                                    <RadioButton x:Name="RadioFontExtraLarge"
-                                                 Content="特大"
-                                                 Tag="ExtraLarge"
-                                                 GroupName="FontSizeLevel"
-                                                 Style="{StaticResource AppSegmentedTabButton}"
-                                                 Checked="FontSizeLevel_Checked"/>
-                                </UniformGrid>
-                            </Border>
-                        </StackPanel>
-                    </Border>
-
-                    <Border x:Name="AppearanceAppInfoCard"
-                            Style="{StaticResource SettingsInsetCard}"
-                            Margin="0,10,0,0">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="Auto"/>
-                            </Grid.ColumnDefinitions>
-
+                    <StackPanel x:Name="AppearancePreferenceGroup">
+                        <Border x:Name="AppearanceDisplayModeCard"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="0">
                             <StackPanel>
-                                <StackPanel x:Name="AppearanceInfoHeader">
-                                    <TextBlock Text="应用"
+                                <StackPanel x:Name="AppearancePreferenceHeader">
+                                    <TextBlock Text="卡片默认"
                                                Style="{StaticResource PageFieldLabelText}"/>
                                 </StackPanel>
 
-                                <Border Style="{StaticResource SettingsMicroCard}"
-                                        Margin="0,8,0,0"
-                                        Background="{DynamicResource SurfacePageBrush}">
-                                    <StackPanel>
-                                        <TextBlock x:Name="TxtVersion"
-                                                   Style="{StaticResource PageSummaryValueText}"/>
-                                        <TextBlock Text=".NET WPF / SQLite"
-                                                   Style="{StaticResource PageMutedBodyText}"
-                                                   Margin="0,4,0,0"/>
-                                    </StackPanel>
+                                <Border Style="{StaticResource AppSegmentedTabShell}"
+                                        Margin="0,6,0,0">
+                                    <UniformGrid Columns="2">
+                                        <RadioButton x:Name="RadioOutfitFirst"
+                                                     Content="搭配优先"
+                                                     GroupName="OutfitDisplayMode"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="OutfitDisplayMode_Checked"/>
+                                        <RadioButton x:Name="RadioEffectImageFirst"
+                                                     Content="效果图优先"
+                                                     GroupName="OutfitDisplayMode"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="OutfitDisplayMode_Checked"/>
+                                    </UniformGrid>
                                 </Border>
                             </StackPanel>
+                        </Border>
 
-                            <Button Grid.Column="1"
-                                    VerticalAlignment="Center"
-                                    Content="打开目录"
-                                    Style="{StaticResource SecondaryButton}"
-                                    Margin="12,0,0,0"
-                                    MinWidth="86"
-                                    Click="OpenAppDir_Click"/>
-                        </Grid>
-                    </Border>
+                        <Border x:Name="AppearanceFontSizeCard"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="0"
+                                Margin="0,16,0,0">
+                            <StackPanel>
+                                <StackPanel x:Name="AppearanceFontSizeHeader">
+                                    <TextBlock Text="字体大小"
+                                               Style="{StaticResource PageFieldLabelText}"/>
+                                    <TextBlock Text="{Binding FontSizeSummary}"
+                                               Style="{StaticResource PageSummaryValueText}"
+                                               Margin="0,6,0,0"/>
+                                    <TextBlock Text="{Binding FontSizeDetail}"
+                                               Style="{StaticResource PageMutedBodyText}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+
+                                <Border Style="{StaticResource AppSegmentedTabShell}"
+                                        Margin="0,8,0,0">
+                                    <UniformGrid Columns="5">
+                                        <RadioButton x:Name="RadioFontSmall"
+                                                     Content="小"
+                                                     Tag="Small"
+                                                     GroupName="FontSizeLevel"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="FontSizeLevel_Checked"/>
+                                        <RadioButton x:Name="RadioFontStandard"
+                                                     Content="标准"
+                                                     Tag="Standard"
+                                                     GroupName="FontSizeLevel"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="FontSizeLevel_Checked"/>
+                                        <RadioButton x:Name="RadioFontComfortable"
+                                                     Content="舒适"
+                                                     Tag="Comfortable"
+                                                     GroupName="FontSizeLevel"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="FontSizeLevel_Checked"/>
+                                        <RadioButton x:Name="RadioFontLarge"
+                                                     Content="大"
+                                                     Tag="Large"
+                                                     GroupName="FontSizeLevel"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="FontSizeLevel_Checked"/>
+                                        <RadioButton x:Name="RadioFontExtraLarge"
+                                                     Content="特大"
+                                                     Tag="ExtraLarge"
+                                                     GroupName="FontSizeLevel"
+                                                     Style="{StaticResource AppSegmentedTabButton}"
+                                                     Checked="FontSizeLevel_Checked"/>
+                                    </UniformGrid>
+                                </Border>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <StackPanel x:Name="AppearanceInfoGroup"
+                                Margin="0,16,0,0">
+                        <Border x:Name="AppearanceAppInfoCard"
+                                Background="Transparent"
+                                BorderThickness="0"
+                                Padding="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+
+                                <StackPanel>
+                                    <StackPanel x:Name="AppearanceInfoHeader">
+                                        <TextBlock Text="应用"
+                                                   Style="{StaticResource PageFieldLabelText}"/>
+                                    </StackPanel>
+
+                                    <Border Style="{StaticResource SettingsMicroCard}"
+                                            Margin="0,8,0,0"
+                                            Background="{DynamicResource SurfacePageBrush}">
+                                        <StackPanel>
+                                            <TextBlock x:Name="TxtVersion"
+                                                       Style="{StaticResource PageSummaryValueText}"/>
+                                            <TextBlock Text=".NET WPF / SQLite"
+                                                       Style="{StaticResource PageMutedBodyText}"
+                                                       Margin="0,4,0,0"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+
+                                <Button Grid.Column="1"
+                                        VerticalAlignment="Center"
+                                        Content="打开目录"
+                                        Style="{StaticResource SecondaryButton}"
+                                        Margin="12,0,0,0"
+                                        MinWidth="86"
+                                        Click="OpenAppDir_Click"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
                 </StackPanel>
             </StackPanel>
         </Grid>

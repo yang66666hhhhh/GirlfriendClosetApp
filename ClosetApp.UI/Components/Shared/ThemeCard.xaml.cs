@@ -124,36 +124,26 @@ public partial class ThemeCard : UserControl
         CardBorder.BorderBrush = new SolidColorBrush(IsSelected ? primary : borderLight);
         CardBorder.Background = new SolidColorBrush(SurfaceColor);
         CardBorder.Effect = IsSelected
-            ? new DropShadowEffect { Color = primary, BlurRadius = 18, ShadowDepth = 0, Opacity = 0.14 }
+            ? new DropShadowEffect { Color = primary, BlurRadius = 10, ShadowDepth = 0, Opacity = 0.08 }
             : null;
         CardRootButton.IsEnabled = !IsSelected;
         CardRootButton.Cursor = IsSelected ? Cursors.Arrow : Cursors.Hand;
 
-        SelectedBadge.Visibility = IsSelected ? Visibility.Visible : Visibility.Collapsed;
-        SelectedBadge.Background = new SolidColorBrush(primaryLight);
-        SelectedBadge.BorderBrush = new SolidColorBrush(primary);
-        if (SelectedBadge.Child is TextBlock badgeText)
-            badgeText.Foreground = new SolidColorBrush(primary);
+        ThemeChoiceDot.Background = new SolidColorBrush(IsSelected ? primary : Colors.Transparent);
+        ThemeChoiceDot.BorderBrush = new SolidColorBrush(IsSelected ? primary : borderLight);
         ActionPill.BorderBrush = new SolidColorBrush(IsSelected ? primary : borderLight);
         ActionPill.Background = new SolidColorBrush(IsSelected ? primaryLight : Colors.White);
-        ActionPillText.Text = IsSelected ? "已启用" : "点按切换";
+        ActionPillText.Text = IsSelected ? "已启用" : "切换";
         ActionPillText.Foreground = new SolidColorBrush(IsSelected ? primary : textSecondary);
 
         TxtName.Text = DisplayName;
         TxtName.Foreground = new SolidColorBrush(textPrimary);
-        TxtDescription.Text = Description;
-        TxtDescription.Foreground = new SolidColorBrush(textSecondary);
-        StateHint.Text = IsSelected ? "当前正在使用" : "点击切换到这套主题";
+        StateHint.Text = Description;
         StateHint.Foreground = new SolidColorBrush(IsSelected ? primary : textSecondary);
-        ActionHint.Text = IsSelected ? "已启用" : $"使用{DisplayName}";
-        ActionHint.Foreground = new SolidColorBrush(IsSelected ? textSecondary : primary);
 
         SwatchPrimary.Background = new SolidColorBrush(PrimaryColor);
         SwatchSoft.Background = new SolidColorBrush(SoftColor);
         SwatchSurface.Background = new SolidColorBrush(SurfaceColor);
-        PreviewBorder.Background = new SolidColorBrush(surfacePage);
-        PreviewBorder.BorderBrush = new SolidColorBrush(IsSelected ? primaryLight : borderLight);
-        PreviewBorder.BorderThickness = new Thickness(1);
     }
 
     private void BtnSelect_Click(object sender, RoutedEventArgs e)

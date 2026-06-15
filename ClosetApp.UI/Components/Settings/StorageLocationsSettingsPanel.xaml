@@ -15,7 +15,7 @@
                 </StackPanel>
                 <Button Grid.Column="1"
                         Content="应用目录"
-                        Style="{StaticResource SettingsButton}"
+                        Style="{StaticResource SettingsGhostButton}"
                         Click="OpenAppDir_Click"
                         VerticalAlignment="Top"/>
             </Grid>
@@ -27,43 +27,56 @@
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
 
-                <Border Grid.Column="0" Style="{StaticResource SettingsInsetCard}">
+                <StackPanel Grid.Column="0">
                     <StackPanel>
                         <TextBlock Text="数据目录" Style="{StaticResource PageFieldLabelText}"/>
-                        <TextBlock x:Name="TxtDataDir"
-                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,6,0,0"/>
-                        <WrapPanel Style="{StaticResource SettingsActionWrap}">
+                        <Border Margin="0,6,0,0"
+                                Padding="12,10"
+                                Background="{DynamicResource SurfacePageBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                            <TextBlock x:Name="TxtDataDir"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       TextWrapping="Wrap"/>
+                        </Border>
+                        <WrapPanel x:Name="StorageActionRail"
+                                   Style="{StaticResource SettingsActionWrap}">
                             <Button Content="打开目录"
-                                    Style="{StaticResource SettingsButton}"
+                                    Style="{StaticResource SettingsGhostButton}"
                                     Click="OpenDataDir_Click"
                                     Margin="0,0,8,8"/>
                             <Button Content="定位数据库"
-                                    Style="{StaticResource SettingsButton}"
+                                    Style="{StaticResource SettingsGhostButton}"
                                     Click="OpenDatabase_Click"/>
                         </WrapPanel>
                     </StackPanel>
-                </Border>
+                </StackPanel>
 
-                <Border Grid.Column="2" Style="{StaticResource SettingsInsetCard}">
+                <StackPanel Grid.Column="2">
                     <StackPanel>
                         <TextBlock Text="图片目录" Style="{StaticResource PageFieldLabelText}"/>
-                        <TextBlock x:Name="TxtImagesDir"
-                                   Foreground="{DynamicResource TextPrimaryBrush}"
-                                   TextWrapping="Wrap"
-                                   Margin="0,6,0,0"/>
+                        <Border Margin="0,6,0,0"
+                                Padding="12,10"
+                                Background="{DynamicResource SurfacePageBrush}"
+                                BorderBrush="{DynamicResource BorderLightBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14">
+                            <TextBlock x:Name="TxtImagesDir"
+                                       Foreground="{DynamicResource TextPrimaryBrush}"
+                                       TextWrapping="Wrap"/>
+                        </Border>
                         <WrapPanel Style="{StaticResource SettingsActionWrap}">
                             <Button Content="打开图片"
-                                    Style="{StaticResource SettingsButton}"
+                                    Style="{StaticResource SettingsGhostButton}"
                                     Click="OpenImagesDir_Click"
                                     Margin="0,0,8,8"/>
                             <Button Content="打开缓存"
-                                    Style="{StaticResource SettingsButton}"
+                                    Style="{StaticResource SettingsGhostButton}"
                                     Click="OpenThumbnailsDir_Click"/>
                         </WrapPanel>
                     </StackPanel>
-                </Border>
+                </StackPanel>
             </Grid>
         </StackPanel>
     </Border>

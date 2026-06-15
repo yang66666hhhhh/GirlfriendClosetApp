@@ -10,14 +10,17 @@ public class SettingsLayoutTests
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml"));
 
-        Assert.Contains("x:Name=\"SettingsOverviewHero\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewStrip\"", xaml);
         Assert.Contains("x:Name=\"SettingsOverviewPrimaryGrid\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewSummaryGrid\"", xaml);
-        Assert.Contains("x:Name=\"SettingsOverviewMetricMatrix\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewStatusRows\"", xaml);
+        Assert.Contains("x:Name=\"SettingsSystemRows\"", xaml);
+        Assert.Contains("x:Name=\"SettingsGroupDivider\"", xaml);
         Assert.Contains("x:Name=\"SettingsWorkbenchColumns\"", xaml);
         Assert.Contains("x:Name=\"SettingsDailyWorkbench\"", xaml);
         Assert.Contains("x:Name=\"SettingsMaintenanceWorkbench\"", xaml);
         Assert.Contains("Text=\"设置概览\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewHero\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewMetricMatrix\"", xaml);
         Assert.DoesNotContain("x:Name=\"SettingsOverviewCompactSummaryGrid\"", xaml);
         Assert.DoesNotContain("x:Name=\"SettingsOverviewMetricsGrid\"", xaml);
         Assert.DoesNotContain("设置工作台", xaml);
@@ -36,14 +39,16 @@ public class SettingsLayoutTests
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml"));
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/SettingsTab.xaml.cs"));
 
-        Assert.Contains("x:Name=\"SettingsOverviewHeroSurface\"", xaml);
+        Assert.Contains("x:Name=\"SettingsOverviewStrip\"", xaml);
         Assert.Contains("x:Name=\"SettingsOverviewActionRail\"", xaml);
-        Assert.Contains("x:Name=\"SettingsWorkbenchSectionDivider\"", xaml);
+        Assert.Contains("x:Name=\"SettingsGroupDivider\"", xaml);
         Assert.Contains("Click=\"OverviewThemeShortcut_Click\"", xaml);
         Assert.Contains("Click=\"OverviewAiShortcut_Click\"", xaml);
         Assert.Contains("OverviewThemeShortcut_Click", code);
         Assert.Contains("OverviewAiShortcut_Click", code);
         Assert.Contains("AiImageGenerationPanel.BringIntoView()", code);
+        Assert.DoesNotContain("x:Name=\"SettingsOverviewHeroSurface\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SettingsWorkbenchSectionDivider\"", xaml);
         Assert.DoesNotContain("x:Name=\"SettingsOverviewSignalRail\"", xaml);
     }
 
@@ -55,18 +60,18 @@ public class SettingsLayoutTests
         Assert.Contains("x:Name=\"AppearanceWorkbenchHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceLeftRail\"", xaml);
         Assert.Contains("x:Name=\"AppearanceRightRail\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceSectionDivider\"", xaml);
         Assert.Contains("x:Name=\"AppearanceThemeSelectionCard\"", xaml);
         Assert.Contains("x:Name=\"AppearanceControlsStack\"", xaml);
-        Assert.Contains("x:Name=\"AppearancePreviewSummaryCard\"", xaml);
-        Assert.Contains("x:Name=\"AppearancePreviewSummaryHeader\"", xaml);
-        Assert.Contains("x:Name=\"AppearancePreviewSummarySurface\"", xaml);
+        Assert.Contains("x:Name=\"AppearancePreferenceGroup\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceInfoGroup\"", xaml);
         Assert.Contains("x:Name=\"AppearanceDisplayModeCard\"", xaml);
         Assert.Contains("x:Name=\"AppearanceFontSizeCard\"", xaml);
         Assert.Contains("x:Name=\"AppearanceFontSizeHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceAppInfoCard\"", xaml);
         Assert.Contains("x:Name=\"AppearancePreferenceHeader\"", xaml);
         Assert.Contains("x:Name=\"AppearanceInfoHeader\"", xaml);
-        Assert.Contains("x:Name=\"AppearanceThemeGrid\"", xaml);
+        Assert.Contains("x:Name=\"AppearanceThemeCompactList\"", xaml);
         Assert.Contains("VerticalAlignment=\"Top\"", xaml);
         Assert.Contains("AppSegmentedTabShell", xaml);
         Assert.Contains("Text=\"外观\"", xaml);
@@ -81,6 +86,7 @@ public class SettingsLayoutTests
         Assert.DoesNotContain("选择整体配色，并设置搭配卡片默认展示方式。", xaml);
         Assert.DoesNotContain("设置列表默认更偏向搭配预览，还是效果图主视觉。", xaml);
         Assert.DoesNotContain("当前界面主题与运行环境摘要。", xaml);
+        Assert.DoesNotContain("x:Name=\"AppearancePreviewSummaryCard\"", xaml);
         Assert.DoesNotContain("SettingsEyebrowBadge", xaml);
         Assert.DoesNotContain("SettingsEyebrowBadgeText", xaml);
     }
@@ -116,18 +122,20 @@ public class SettingsLayoutTests
 
         Assert.Contains("x:Name=\"CardRootButton\"", xaml);
         Assert.Contains("RenderTransformOrigin=\"0.5,0.5\"", xaml);
-        Assert.Contains("x:Name=\"PreviewToneRail\"", xaml);
+        Assert.Contains("x:Name=\"ThemeChoiceDot\"", xaml);
+        Assert.Contains("x:Name=\"ThemeSwatchRow\"", xaml);
         Assert.Contains("x:Name=\"ActionPill\"", xaml);
-        Assert.Contains("MinHeight=\"172\"", xaml);
-        Assert.Contains("x:Name=\"TonePreviewPanel\"", xaml);
-        Assert.Contains("x:Name=\"PreviewHost\"", xaml);
-        Assert.Contains("MinHeight=\"76\"", xaml);
-        Assert.Contains("x:Name=\"SelectedBadge\"", xaml);
+        Assert.Contains("MinHeight=\"58\"", xaml);
+        Assert.Contains("Width=\"10\"", xaml);
+        Assert.Contains("Height=\"10\"", xaml);
         Assert.Contains("x:Name=\"StateHint\"", xaml);
         Assert.DoesNotContain("x:Name=\"BtnSelect\"", xaml);
+        Assert.DoesNotContain("MinHeight=\"172\"", xaml);
+        Assert.DoesNotContain("x:Name=\"PreviewHost\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SelectedBadge\"", xaml);
         Assert.Contains("CardRootButton.IsEnabled = !IsSelected;", code);
         Assert.Contains("ActionPill.BorderBrush", code);
-        Assert.Contains("PreviewBorder", code);
+        Assert.Contains("ThemeChoiceDot.BorderBrush", code);
         Assert.Contains("StateHint.Text", code);
     }
 
@@ -250,11 +258,14 @@ public class SettingsLayoutTests
         var storageXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/StorageLocationsSettingsPanel.xaml"));
         var imageXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/ImageMaintenanceSettingsPanel.xaml"));
         var logXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/LogMaintenanceSettingsPanel.xaml"));
+        var weatherXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Components/Settings/WeatherPreferencesSettingsPanel.xaml"));
 
         Assert.Contains("x:Name=\"StorageHeaderGrid\"", storageXaml);
         Assert.Contains("x:Name=\"StoragePathsGrid\"", storageXaml);
+        Assert.Contains("x:Name=\"StorageActionRail\"", storageXaml);
         Assert.DoesNotContain("遇到图片、数据库或缓存问题时能快速定位。", storageXaml);
         Assert.DoesNotContain("常用目录与数据位置。", storageXaml);
+        Assert.DoesNotContain("Style=\"{StaticResource SettingsMicroCard}\"", storageXaml);
 
         Assert.Contains("x:Name=\"ImageStatsGrid\"", imageXaml);
         Assert.Contains("x:Name=\"ImageHealthGrid\"", imageXaml);
@@ -272,6 +283,9 @@ public class SettingsLayoutTests
         Assert.DoesNotContain("查看目录并清理历史日志。", logXaml);
         Assert.DoesNotContain("查看日志位置与清理状态。", logXaml);
         Assert.DoesNotContain("SettingsEyebrowBadge", logXaml);
+
+        Assert.Contains("x:Name=\"WeatherActionRow\"", weatherXaml);
+        Assert.DoesNotContain("Style=\"{StaticResource SettingsInsetCard}\"", weatherXaml);
     }
 
     private static string FindProjectFile(string relativePath)

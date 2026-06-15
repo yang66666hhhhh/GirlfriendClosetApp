@@ -3,19 +3,19 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:shared="clr-namespace:ClosetApp.UI.Components.Shared"
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
-             Width="220">
+             Width="180">
     <UserControl.Resources>
         <!-- ═══════════════════════════════════════
              NAVIGATION DESIGN TOKENS
              ═══════════════════════════════════════ -->
 
         <!-- Layout Tokens -->
-        <sys:Double x:Key="NavIconSize">22</sys:Double>
+        <sys:Double x:Key="NavIconSize">20</sys:Double>
         <Thickness x:Key="NavItemPadding">16,14</Thickness>
         <CornerRadius x:Key="NavItemRadius">14</CornerRadius>
-        <sys:Double x:Key="NavHeight">52</sys:Double>
+        <sys:Double x:Key="NavHeight">44</sys:Double>
         <sys:Double x:Key="CollapsedSidebarWidth">88</sys:Double>
-        <sys:Double x:Key="CollapsedNavButtonSize">52</sys:Double>
+        <sys:Double x:Key="CollapsedNavButtonSize">48</sys:Double>
 
         <!-- ═══════════════════════════════════════
              NAV ITEM STYLE
@@ -31,48 +31,58 @@
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
-                        <Border x:Name="NavBg"
+                        <Grid>
+                            <Border x:Name="NavActiveIndicator"
+                                    Width="3"
+                                    Margin="0,10,0,10"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Stretch"
+                                    Background="{DynamicResource PrimaryBrush}"
+                                    CornerRadius="2"
+                                    Visibility="Collapsed"/>
+                            <Border x:Name="NavBg"
                                 Background="Transparent"
                                 CornerRadius="{StaticResource NavItemRadius}"
-                                Padding="{StaticResource NavItemPadding}"
-                                Margin="8,2"
+                                Padding="10,10"
+                                Margin="8,2,8,2"
                                 RenderTransformOrigin="0.5,0.5">
-                            <Border.RenderTransform>
-                                <TransformGroup>
-                                    <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                    <TranslateTransform Y="0"/>
-                                </TransformGroup>
-                            </Border.RenderTransform>
-                            <Grid>
-                                <Grid x:Name="ExpandedLayout">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="Auto"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <TextBlock x:Name="NavIcon"
-                                               Text="{TemplateBinding Tag}"
-                                               FontSize="{StaticResource NavIconSize}"
-                                               VerticalAlignment="Center"
-                                               Foreground="{TemplateBinding Foreground}"/>
-                                    <TextBlock x:Name="NavText"
-                                               Text="{TemplateBinding Content}"
-                                               FontSize="{DynamicResource FontSize.Body}" FontWeight="Medium"
-                                               VerticalAlignment="Center"
-                                               Grid.Column="1"
-                                               Margin="12,0,0,0"
-                                               Foreground="{TemplateBinding Foreground}"/>
+                                <Border.RenderTransform>
+                                    <TransformGroup>
+                                        <ScaleTransform ScaleX="1" ScaleY="1"/>
+                                        <TranslateTransform Y="0"/>
+                                    </TransformGroup>
+                                </Border.RenderTransform>
+                                <Grid>
+                                    <Grid x:Name="ExpandedLayout">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="Auto"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <TextBlock x:Name="NavIcon"
+                                                   Text="{TemplateBinding Tag}"
+                                                   FontSize="{StaticResource NavIconSize}"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{TemplateBinding Foreground}"/>
+                                        <TextBlock x:Name="NavText"
+                                                   Text="{TemplateBinding Content}"
+                                                   FontSize="{DynamicResource FontSize.Body}" FontWeight="Medium"
+                                                   VerticalAlignment="Center"
+                                                   Grid.Column="1"
+                                                   Margin="12,0,0,0"
+                                                   Foreground="{TemplateBinding Foreground}"/>
+                                    </Grid>
+                                    <Grid x:Name="DockLayout"
+                                          Visibility="Collapsed">
+                                        <TextBlock x:Name="DockIcon"
+                                                   Text="{TemplateBinding Tag}"
+                                                   FontSize="20"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Foreground="{TemplateBinding Foreground}"/>
+                                    </Grid>
                                 </Grid>
-                                <Grid x:Name="DockLayout"
-                                      Visibility="Collapsed">
-                                    <TextBlock x:Name="DockIcon"
-                                               Text="{TemplateBinding Tag}"
-                                               FontSize="{StaticResource NavIconSize}"
-                                               HorizontalAlignment="Center"
-                                               VerticalAlignment="Center"
-                                               Foreground="{TemplateBinding Foreground}"/>
-                                </Grid>
-                            </Grid>
-                        </Border>
+                            </Border>
+                        </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="NavBg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
@@ -80,22 +90,23 @@
                                     <Setter.Value>
                                         <TransformGroup>
                                             <ScaleTransform ScaleX="1.01" ScaleY="1.01"/>
-                                            <TranslateTransform Y="-1"/>
+                                            <TranslateTransform Y="-0.5"/>
                                         </TransformGroup>
                                     </Setter.Value>
                                 </Setter>
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="NavBg" Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                                <Setter TargetName="NavBg" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
+                                <Setter TargetName="NavActiveIndicator" Property="Visibility" Value="Visible"/>
                                 <Setter TargetName="NavBg" Property="RenderTransform">
                                     <Setter.Value>
                                         <TransformGroup>
                                             <ScaleTransform ScaleX="1" ScaleY="1"/>
-                                            <TranslateTransform Y="-0.5"/>
+                                            <TranslateTransform Y="0"/>
                                         </TransformGroup>
                                     </Setter.Value>
                                 </Setter>
-                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="Foreground" Value="{DynamicResource TextPrimaryBrush}"/>
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
                                 <Setter TargetName="NavBg" Property="RenderTransform">
@@ -111,10 +122,11 @@
                                 <Setter TargetName="NavBg" Property="Width" Value="{StaticResource CollapsedNavButtonSize}"/>
                                 <Setter TargetName="NavBg" Property="Height" Value="{StaticResource CollapsedNavButtonSize}"/>
                                 <Setter TargetName="NavBg" Property="Padding" Value="0"/>
-                                <Setter TargetName="NavBg" Property="Margin" Value="0,0,0,10"/>
-                                <Setter TargetName="NavBg" Property="CornerRadius" Value="18"/>
+                                <Setter TargetName="NavBg" Property="Margin" Value="0,0,0,8"/>
+                                <Setter TargetName="NavBg" Property="CornerRadius" Value="16"/>
                                 <Setter TargetName="ExpandedLayout" Property="Visibility" Value="Collapsed"/>
                                 <Setter TargetName="DockLayout" Property="Visibility" Value="Visible"/>
+                                <Setter TargetName="NavActiveIndicator" Property="Margin" Value="8,12,0,12"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -216,7 +228,7 @@
             </Grid.RowDefinitions>
 
             <!-- Logo / Brand Area -->
-            <StackPanel x:Name="HeaderPanel" Grid.Row="0" Margin="12,28,12,24">
+            <StackPanel x:Name="HeaderPanel" Grid.Row="0" Margin="12,24,12,20">
                 <Button x:Name="CollapsedProfileButton"
                         Width="56"
                         Height="56"
@@ -282,18 +294,18 @@
                 <Button x:Name="BtnProfile"
                         Background="Transparent"
                         BorderThickness="0"
-                        Padding="10"
-                        MinHeight="108"
+                        Padding="0"
+                        MinHeight="70"
                         HorizontalAlignment="Stretch"
                         ToolTip="个人中心 / 账号菜单"
                         Click="Profile_Click">
                     <Button.Template>
                         <ControlTemplate TargetType="Button">
                             <Border x:Name="ProfileShell"
-                                    Background="{DynamicResource SurfaceCardBrush}"
-                                    BorderBrush="{DynamicResource BorderLightBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="18"
+                                    Background="Transparent"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0"
+                                    CornerRadius="14"
                                     Padding="{TemplateBinding Padding}"
                                     RenderTransformOrigin="0.5,0.5"
                                     HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -304,32 +316,23 @@
                                         <TranslateTransform Y="0"/>
                                     </TransformGroup>
                                 </Border.RenderTransform>
-                                <Border x:Name="ProfileIdentitySurface"
-                                        Margin="0"
-                                        Padding="0"
-                                        Background="{DynamicResource SurfaceCardBrush}"
-                                        CornerRadius="15">
-                                    <ContentPresenter HorizontalAlignment="Stretch"
-                                                      VerticalAlignment="Center"/>
-                                </Border>
+                                <ContentPresenter HorizontalAlignment="Stretch"
+                                                  VerticalAlignment="Center"/>
                             </Border>
                             <ControlTemplate.Triggers>
                                 <Trigger Property="IsMouseOver" Value="True">
-                                    <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
-                                    <Setter TargetName="ProfileShell" Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
-                                    <Setter TargetName="ProfileIdentitySurface" Property="Background" Value="{DynamicResource SurfaceElevatedBrush}"/>
+                                    <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                                     <Setter TargetName="ProfileShell" Property="RenderTransform">
                                         <Setter.Value>
                                             <TransformGroup>
-                                                <ScaleTransform ScaleX="1.01" ScaleY="1.01"/>
-                                                <TranslateTransform Y="-1"/>
+                                                <ScaleTransform ScaleX="1.005" ScaleY="1.005"/>
+                                                <TranslateTransform Y="-0.5"/>
                                             </TransformGroup>
                                         </Setter.Value>
                                     </Setter>
                                 </Trigger>
                                 <Trigger Property="IsPressed" Value="True">
                                     <Setter TargetName="ProfileShell" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
-                                    <Setter TargetName="ProfileIdentitySurface" Property="Background" Value="{DynamicResource PrimaryLightBrush}"/>
                                     <Setter TargetName="ProfileShell" Property="RenderTransform">
                                         <Setter.Value>
                                             <TransformGroup>
@@ -354,29 +357,23 @@
                                 <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
                         <shared:LocalUserAvatar x:Name="CurrentUserAvatar"
-                                                Width="52"
-                                                Height="52"
+                                                Width="42"
+                                                Height="42"
                                                 ShowStatus="False"/>
                             <StackPanel x:Name="ProfileTextPanel"
                                     Grid.Column="1"
-                                    Margin="10,0,0,0"
+                                    Margin="8,0,0,0"
                                     VerticalAlignment="Center">
                             <TextBlock x:Name="TxtCurrentUserName"
                                        Text="私人衣橱"
                                        FontSize="{DynamicResource FontSize.Input}"
                                        FontWeight="SemiBold"
-                                       MaxWidth="104"
+                                       MaxWidth="88"
                                        Foreground="{DynamicResource TextPrimaryBrush}"
                                        TextTrimming="CharacterEllipsis"/>
-                            <TextBlock x:Name="TxtCurrentUserRole"
-                                       Text="个人中心"
-                                       FontSize="{DynamicResource FontSize.Meta}"
-                                       Foreground="{DynamicResource TextPlaceholderBrush}"
-                                       Margin="0,2,0,0"
-                                       TextTrimming="CharacterEllipsis"/>
                             <Border x:Name="ProfileCountBadge"
-                                    Margin="0,7,0,0"
-                                    Padding="8,4"
+                                    Margin="0,4,0,0"
+                                    Padding="6,2"
                                     HorizontalAlignment="Left"
                                     Background="{DynamicResource SurfaceSectionBrush}"
                                     BorderBrush="{DynamicResource BorderLightBrush}"
@@ -387,20 +384,20 @@
                                            FontSize="{DynamicResource FontSize.Tiny}"
                                            Foreground="{DynamicResource TextPlaceholderBrush}"/>
                             </Border>
-                        </StackPanel>
+                            </StackPanel>
                         <Border x:Name="ProfileChevronShell"
                                 Grid.Column="2"
-                                Width="24"
-                                Height="24"
-                                Margin="8,0,0,0"
+                                Width="18"
+                                Height="18"
+                                Margin="4,0,0,0"
                                 VerticalAlignment="Center"
-                                Background="{DynamicResource SurfaceSectionBrush}"
-                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                BorderThickness="1"
-                                CornerRadius="12">
+                                Background="Transparent"
+                                BorderBrush="Transparent"
+                                BorderThickness="0"
+                                CornerRadius="9">
                             <TextBlock x:Name="ProfileChevron"
                                        Text="›"
-                                       FontSize="14"
+                                       FontSize="12"
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        Foreground="{DynamicResource TextPlaceholderBrush}"/>
@@ -412,7 +409,7 @@
             <!-- Navigation Items -->
             <StackPanel x:Name="SidebarNavHost"
                         Grid.Row="1"
-                        Margin="0,4,0,0">
+                        Margin="0,10,0,0">
                 <RadioButton x:Name="NavWardrobe"
                              Content="衣柜" Tag="👗"
                              ToolTip="衣柜"
@@ -433,11 +430,11 @@
                 <!-- Divider -->
                 <Border x:Name="SidebarDivider"
                         Height="1"
-                        Width="52"
+                        Width="40"
                         Background="{DynamicResource SidebarBorderBrush}"
-                        Margin="18,16,18,16"
+                        Margin="0,16,0,14"
                         HorizontalAlignment="Center"
-                        Opacity="0.6"/>
+                        Opacity="0.5"/>
 
                 <RadioButton x:Name="NavSettings"
                              Content="设置" Tag="⚙"
@@ -449,7 +446,7 @@
             <!-- Collapse Button -->
             <Grid x:Name="CollapseButtonHost"
                   Grid.Row="2"
-                  Margin="0,0,0,20">
+                  Margin="0,0,0,18">
                 <Button x:Name="BtnCollapse"
                         Style="{StaticResource CollapseBtnStyle}"
                         HorizontalAlignment="Center"

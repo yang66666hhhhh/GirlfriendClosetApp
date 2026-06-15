@@ -22,7 +22,7 @@
 
     <Grid Background="{DynamicResource SurfacePageBrush}">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition x:Name="SidebarColumn" Width="220"/>
+            <ColumnDefinition x:Name="SidebarColumn" Width="180"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
 

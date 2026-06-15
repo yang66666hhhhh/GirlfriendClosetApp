@@ -58,20 +58,22 @@ public class LocalUserManagementDialogLayoutTests
     [Fact]
     public void NavigationSidebar_ProfileAvatarHasEnoughRoom()
     {
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
 
         Assert.Contains("x:Name=\"CurrentUserAvatar\"", xaml);
-        Assert.Contains("Width=\"56\"", xaml);
-        Assert.Contains("Height=\"56\"", xaml);
+        Assert.Contains("Width=\"42\"", xaml);
+        Assert.Contains("Height=\"42\"", xaml);
         Assert.Contains("ShowStatus=\"False\"", xaml);
-        Assert.Contains("MinHeight=\"116\"", xaml);
-        Assert.Contains("Padding=\"12\"", xaml);
+        Assert.Contains("MinHeight=\"70\"", xaml);
+        Assert.Contains("Padding=\"0\"", xaml);
         Assert.Contains("x:Name=\"ProfileCountBadge\"", xaml);
         Assert.Contains("x:Name=\"TxtClothingCount\"", xaml);
         Assert.Contains("Text=\"0 件衣服\"", xaml);
-        Assert.Contains("x:Name=\"TxtCurrentUserRole\"", xaml);
         Assert.Contains("TextTrimming=\"CharacterEllipsis\"", xaml);
-        Assert.Contains("x:Name=\"ProfileIdentitySurface\"", xaml);
+        Assert.DoesNotContain("x:Name=\"ProfileIdentitySurface\"", xaml);
+        Assert.DoesNotContain("x:Name=\"TxtCurrentUserRole\"", xaml);
+        Assert.DoesNotContain("TxtCurrentUserRole.Text", code);
         Assert.DoesNotContain("x:Name=\"ProfileTouchHintCard\"", xaml);
         Assert.DoesNotContain("Width=\"44\"\r\n                                                Height=\"44\"", xaml);
     }

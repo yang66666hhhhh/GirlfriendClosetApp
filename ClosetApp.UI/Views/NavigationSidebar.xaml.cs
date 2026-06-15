@@ -18,7 +18,7 @@ namespace ClosetApp.UI.Views;
 
 public partial class NavigationSidebar : UserControl
 {
-    private const double ExpandedSidebarWidth = 220;
+    private const double ExpandedSidebarWidth = 180;
     private const double CollapsedSidebarWidth = 88;
     public event EventHandler<int>? NavigationChanged;
     public event EventHandler<bool>? CollapseStateChanged;
@@ -54,8 +54,6 @@ public partial class NavigationSidebar : UserControl
         {
             _currentUser = await _localUserService.GetCurrentAsync();
             TxtCurrentUserName.Text = _currentUser.DisplayName;
-            // 侧边栏账号卡宽度固定，身份文案保持简短避免挤压昵称和数量徽标。
-            TxtCurrentUserRole.Text = _currentUser.Role == LocalUserRole.SuperAdmin ? "超管" : "成员";
             CurrentUserAvatar.AvatarPath = ResolveAvatarPath(_currentUser);
             CurrentUserAvatar.Initial = BuildAvatarInitial(_currentUser.DisplayName);
             CurrentUserAvatar.IsCurrent = true;
@@ -357,7 +355,7 @@ public partial class NavigationSidebar : UserControl
     {
         HeaderPanel.Margin = _isCollapsed
             ? new Thickness(0, 22, 0, 18)
-            : new Thickness(16, 28, 16, 24);
+            : new Thickness(12, 24, 12, 20);
         Width = _isCollapsed ? CollapsedSidebarWidth : ExpandedSidebarWidth;
 
         BtnProfile.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
@@ -366,27 +364,24 @@ public partial class NavigationSidebar : UserControl
         ProfileCountBadge.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
         ProfileChevronShell.Visibility = _isCollapsed ? Visibility.Collapsed : Visibility.Visible;
 
-        BtnProfile.Padding = new Thickness(10);
+        BtnProfile.Padding = new Thickness(0);
         BtnProfile.HorizontalContentAlignment = HorizontalAlignment.Stretch;
 
         SidebarNavHost.Margin = _isCollapsed
             ? new Thickness(0, 8, 0, 0)
-            : new Thickness(0, 4, 0, 0);
-        SidebarDivider.Width = _isCollapsed ? 28 : 52;
+            : new Thickness(0, 10, 0, 0);
+        SidebarDivider.Width = _isCollapsed ? 28 : 40;
         SidebarDivider.Margin = _isCollapsed
-            ? new Thickness(0, 18, 0, 18)
-            : new Thickness(18, 16, 18, 16);
+            ? new Thickness(0, 18, 0, 16)
+            : new Thickness(0, 16, 0, 14);
 
         CollapseButtonHost.Margin = _isCollapsed
             ? new Thickness(0, 0, 0, 16)
-            : new Thickness(0, 0, 0, 20);
+            : new Thickness(0, 0, 0, 18);
         BtnCollapse.Width = _isCollapsed ? 40 : 28;
         BtnCollapse.Height = _isCollapsed ? 40 : 28;
 
-        ApplyNavDockMode(NavWardrobe);
-        ApplyNavDockMode(NavOutfits);
-        ApplyNavDockMode(NavTags);
-        ApplyNavDockMode(NavSettings);
+        ApplyNavExpandedMode();
         UpdateNavTooltips();
 
         BtnCollapse.ToolTip = _isCollapsed ? "展开侧边栏" : "收起侧边栏";
@@ -394,15 +389,24 @@ public partial class NavigationSidebar : UserControl
 
     private void ApplyNavDockMode(RadioButton button)
     {
-        button.Width = _isCollapsed ? 52 : double.NaN;
-        button.Height = _isCollapsed ? 52 : 52;
+        button.Width = _isCollapsed ? 48 : double.NaN;
+        button.Height = 44;
         button.HorizontalAlignment = HorizontalAlignment.Center;
         button.Margin = _isCollapsed
-            ? new Thickness(0, 0, 0, 10)
+            ? new Thickness(0, 0, 0, 8)
             : new Thickness(0);
         button.Padding = _isCollapsed
             ? new Thickness(0)
             : new Thickness(0);
+    }
+
+    private void ApplyNavExpandedMode()
+    {
+        // 展开和收起共用同一批按钮，集中设置尺寸避免两种状态留下排版残影。
+        ApplyNavDockMode(NavWardrobe);
+        ApplyNavDockMode(NavOutfits);
+        ApplyNavDockMode(NavTags);
+        ApplyNavDockMode(NavSettings);
     }
 
     private void UpdateNavTooltips()

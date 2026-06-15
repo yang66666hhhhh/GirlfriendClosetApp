@@ -10,21 +10,50 @@ public class NavigationSidebarLayoutTests
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
         var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
+        var mainWindowXaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/MainWindow.xaml"));
+        var mainWindowCode = File.ReadAllText(FindProjectFile("ClosetApp.UI/MainWindow.xaml.cs"));
 
         Assert.Contains("x:Name=\"CurrentUserAvatar\"", xaml);
         Assert.Contains("x:Name=\"ProfileTextPanel\"", xaml);
         Assert.Contains("x:Name=\"ProfileChevronShell\"", xaml);
-        Assert.Contains("new Thickness(16, 28, 16, 24)", code);
-        Assert.Contains("Margin=\"12,28,12,24\"", xaml);
-        Assert.Contains("Padding=\"10\"", xaml);
-        Assert.Contains("Width=\"52\"", xaml);
-        Assert.Contains("Height=\"52\"", xaml);
-        Assert.Contains("MaxWidth=\"104\"", xaml);
-        Assert.Contains("Width=\"24\"", xaml);
-        Assert.Contains("Height=\"24\"", xaml);
-        Assert.Contains("超管", code);
-        Assert.Contains("成员", code);
+        Assert.Contains("Width=\"180\"", xaml);
+        Assert.Contains("Width=\"180\"", mainWindowXaml);
+        Assert.Contains("ExpandedSidebarWidth = 180", code);
+        Assert.Contains("180.0", mainWindowCode);
+        Assert.Contains("new Thickness(12, 24, 12, 20)", code);
+        Assert.Contains("Margin=\"12,24,12,20\"", xaml);
+        Assert.Contains("Padding=\"0\"", xaml);
+        Assert.Contains("MinHeight=\"70\"", xaml);
+        Assert.Contains("Width=\"42\"", xaml);
+        Assert.Contains("Height=\"42\"", xaml);
+        Assert.Contains("MaxWidth=\"88\"", xaml);
+        Assert.Contains("Width=\"18\"", xaml);
+        Assert.Contains("Height=\"18\"", xaml);
+        Assert.DoesNotContain("x:Name=\"TxtCurrentUserRole\"", xaml);
+        Assert.DoesNotContain("超级管理员", xaml);
+        Assert.DoesNotContain("TxtCurrentUserRole.Text", code);
+        Assert.DoesNotContain("超管", code);
+        Assert.DoesNotContain("成员", code);
+        Assert.DoesNotContain("x:Name=\"ProfileIdentitySurface\"", xaml);
+        Assert.DoesNotContain("CornerRadius=\"18\"", xaml);
         Assert.DoesNotContain("MaxWidth=\"86\"", xaml);
+    }
+
+    [Fact]
+    public void NavigationSidebar_SelectedItemUsesQuietIndicatorInsteadOfHeavyPill()
+    {
+        var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml"));
+        var code = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/NavigationSidebar.xaml.cs"));
+
+        Assert.Contains("<sys:Double x:Key=\"NavHeight\">44</sys:Double>", xaml);
+        Assert.Contains("x:Name=\"NavActiveIndicator\"", xaml);
+        Assert.Contains("Width=\"3\"", xaml);
+        Assert.Contains("CornerRadius=\"2\"", xaml);
+        Assert.Contains("PrimaryLightBrush", xaml);
+        Assert.Contains("ApplyNavExpandedMode", code);
+        Assert.Contains("Padding=\"10,10\"", xaml);
+        Assert.Contains("Margin=\"8,2,8,2\"", xaml);
+        Assert.DoesNotContain("<Setter Property=\"Foreground\" Value=\"White\"/>", xaml);
     }
 
     [Fact]

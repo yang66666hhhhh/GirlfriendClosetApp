@@ -76,7 +76,7 @@ public partial class MainWindow : Window
 
     private void Sidebar_CollapseStateChanged(object? sender, bool isCollapsed)
     {
-        var targetWidth = isCollapsed ? 88.0 : 220.0;
+        var targetWidth = isCollapsed ? 88.0 : 180.0;
         var anim = new GridLengthAnimation
         {
             From = new GridLength(SidebarColumn.Width.Value),
