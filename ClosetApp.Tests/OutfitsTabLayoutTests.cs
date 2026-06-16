@@ -26,6 +26,7 @@ public class OutfitsTabLayoutTests
         Assert.Contains("x:Name=\"SecondaryRecommendationRail\"", xaml);
         Assert.Contains("x:Name=\"SecondaryRecommendationCardsHost\"", xaml);
         Assert.Contains("SecondaryRecommendationCardsPanel", xaml);
+        Assert.Contains("Width=\"150\"", xaml);
         Assert.Contains("x:Name=\"SecondaryRecommendationTagRail\"", xaml);
         Assert.Contains("ItemsSource=\"{Binding CandidateDisplayTags}\"", xaml);
         Assert.Contains("Text=\"{Binding CandidateIndexLabel}\"", xaml);
@@ -35,6 +36,8 @@ public class OutfitsTabLayoutTests
         Assert.Contains("Background=\"Transparent\"", xaml);
         Assert.Contains("BorderThickness=\"0\"", xaml);
         Assert.Contains("Padding=\"0\"", xaml);
+        Assert.DoesNotContain("Height=\"126\"", xaml);
+        Assert.Contains("VerticalAlignment=\"Stretch\"", xaml);
     }
 
     [Fact]
