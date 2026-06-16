@@ -38,6 +38,8 @@ public class OutfitsTabLayoutTests
         Assert.Contains("Padding=\"0\"", xaml);
         Assert.DoesNotContain("Height=\"126\"", xaml);
         Assert.Contains("VerticalAlignment=\"Stretch\"", xaml);
+        Assert.Contains("x:Name=\"SecondaryRecommendationContentStack\"", xaml);
+        Assert.Contains("Margin=\"0,6,0,0\"", xaml);
     }
 
     [Fact]
