@@ -72,6 +72,30 @@
             <Setter Property="FontWeight" Value="SemiBold"/>
         </Style>
 
+        <Style x:Key="CandidateIndexChip" TargetType="Border" BasedOn="{StaticResource WeatherRecommendationChip}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsFirstCandidate}" Value="True">
+                    <Setter Property="Background" Value="{StaticResource OutfitLavenderSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource OutfitLavenderBorderBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsFirstCandidate}" Value="False">
+                    <Setter Property="Background" Value="{StaticResource OutfitMintSurfaceBrush}"/>
+                    <Setter Property="BorderBrush" Value="{StaticResource OutfitMintBorderBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="CandidateIndexChipText" TargetType="TextBlock" BasedOn="{StaticResource WeatherRecommendationChipText}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsFirstCandidate}" Value="True">
+                    <Setter Property="Foreground" Value="{StaticResource OutfitLavenderTextBrush}"/>
+                </DataTrigger>
+                <DataTrigger Binding="{Binding IsFirstCandidate}" Value="False">
+                    <Setter Property="Foreground" Value="{StaticResource OutfitMintTextBrush}"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
         <Style x:Key="WeatherRecommendationMetaText" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource TextSecondaryBrush}"/>
             <Setter Property="FontSize" Value="{DynamicResource FontSize.Meta}"/>
@@ -246,7 +270,8 @@
                             </Grid.ColumnDefinitions>
 
                             <Grid>
-                                <Border Background="{DynamicResource SurfaceCardBrush}"
+                                <Border x:Name="TodayHeroCardHost"
+                                        Background="{DynamicResource SurfaceCardBrush}"
                                         BorderBrush="{DynamicResource BorderLightBrush}"
                                         BorderThickness="1"
                                         CornerRadius="16"
@@ -399,7 +424,7 @@
                                                 BorderThickness="1"
                                                 CornerRadius="14"
                                                 Padding="10"
-                                                MinHeight="320">
+                                                MinHeight="332">
                                             <Grid>
                                                 <Grid Visibility="{Binding HasPrimaryWeatherRecommendation, Converter={StaticResource BooleanToVisibilityConverter}}">
                                                     <outfit:OutfitPreviewCanvas Clothes="{Binding PrimaryWeatherRecommendation.PreviewClothes}"
@@ -433,57 +458,41 @@
 
                             <Border x:Name="SecondaryRecommendationRail"
                                     Grid.Column="1"
-                                    Background="{DynamicResource SurfaceCardBrush}"
-                                    BorderBrush="{DynamicResource BorderLightBrush}"
-                                    BorderThickness="1"
-                                    CornerRadius="16"
-                                    Padding="14,12"
-                                    MinHeight="320"
+                                    Background="Transparent"
+                                    BorderThickness="0"
+                                    Padding="0"
+                                    Height="{Binding ElementName=TodayHeroCardHost, Path=ActualHeight}"
+                                    MinHeight="332"
                                     VerticalAlignment="Top"
                                     Visibility="{Binding HasSecondaryWeatherRecommendations, Converter={StaticResource BooleanToVisibilityConverter}}">
                                 <Grid>
-                                    <Grid.RowDefinitions>
-                                        <RowDefinition Height="Auto"/>
-                                        <RowDefinition Height="*"/>
-                                    </Grid.RowDefinitions>
-
-                                    <Grid x:Name="SecondaryRecommendationHeader">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="*"/>
-                                            <ColumnDefinition Width="Auto"/>
-                                        </Grid.ColumnDefinitions>
-
-                                        <TextBlock x:Name="SecondaryRecommendationHintText"
-                                                   Text="{Binding SecondaryWeatherRecommendationSectionBody}"
-                                                   Foreground="{DynamicResource TextSecondaryBrush}"
-                                                   FontSize="{DynamicResource FontSize.Meta}"
-                                                   FontWeight="SemiBold"
-                                                   VerticalAlignment="Center"
-                                                   TextTrimming="CharacterEllipsis"/>
-
-                                        <Border Grid.Column="1"
-                                                Background="{DynamicResource SurfaceSectionBrush}"
-                                                BorderBrush="{DynamicResource BorderLightBrush}"
-                                                BorderThickness="1"
-                                                CornerRadius="10"
-                                                Padding="8,4"
-                                                Margin="10,0,0,0"
-                                                VerticalAlignment="Center">
-                                            <TextBlock Text="{Binding SecondaryWeatherRecommendations.Count, StringFormat=再看 {0} 套}"
-                                                       Foreground="{DynamicResource TextSecondaryBrush}"
-                                                       FontSize="{DynamicResource FontSize.Tiny}"
-                                                       FontWeight="SemiBold"/>
-                                        </Border>
-                                    </Grid>
-
                                     <ItemsControl x:Name="SecondaryRecommendationCardsHost"
-                                                  Grid.Row="1"
-                                                  ItemsSource="{Binding SecondaryWeatherRecommendations}"
-                                                  Margin="0,10,0,0">
+                                                  ItemsSource="{Binding SecondaryWeatherRecommendationCards}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <Grid x:Name="SecondaryRecommendationCardsPanel">
+                                                    <Grid.RowDefinitions>
+                                                        <RowDefinition Height="*"/>
+                                                        <RowDefinition Height="10"/>
+                                                        <RowDefinition Height="*"/>
+                                                    </Grid.RowDefinitions>
+                                                </Grid>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemContainerStyle>
+                                            <Style TargetType="ContentPresenter">
+                                                <Setter Property="Grid.Row" Value="0"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding DisplayIndex}" Value="1">
+                                                        <Setter Property="Grid.Row" Value="2"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ItemsControl.ItemContainerStyle>
                                         <ItemsControl.ItemTemplate>
                                             <DataTemplate>
                                                 <Border Style="{StaticResource WeatherRecommendationCard}"
-                                                        Margin="0,0,0,10">
+                                                        Margin="0">
                                                     <Grid>
                                                         <Grid.ColumnDefinitions>
                                                             <ColumnDefinition Width="118"/>
@@ -506,49 +515,18 @@
                                                             <Grid.RowDefinitions>
                                                                 <RowDefinition Height="Auto"/>
                                                                 <RowDefinition Height="Auto"/>
-                                                                <RowDefinition Height="Auto"/>
+                                                                <RowDefinition Height="*"/>
                                                                 <RowDefinition Height="Auto"/>
                                                             </Grid.RowDefinitions>
 
-                                                            <WrapPanel>
-                                                                <Border Style="{StaticResource WeatherRecommendationChip}"
-                                                                        Margin="0,0,6,6">
-                                                                    <TextBlock Text="{Binding ReasonChipText}"
-                                                                               Style="{StaticResource WeatherRecommendationChipText}"/>
-                                                                </Border>
-                                                                <Border Background="{DynamicResource SurfaceSectionBrush}"
-                                                                        BorderBrush="{DynamicResource BorderLightBrush}"
-                                                                        BorderThickness="1"
-                                                                        CornerRadius="8"
-                                                                        Padding="8,3"
-                                                                        Margin="0,0,0,6">
-                                                                    <TextBlock Text="{Binding WearSummaryText}"
-                                                                               Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                               FontSize="{DynamicResource FontSize.Tiny}"
-                                                                               FontWeight="SemiBold"/>
-                                                                </Border>
-                                                            </WrapPanel>
-
-                                                            <StackPanel Grid.Row="1"
-                                                                        Margin="0,1,0,0">
-                                                                <TextBlock Text="{Binding Name}"
-                                                                           Foreground="{DynamicResource TextPrimaryBrush}"
-                                                                           FontSize="{DynamicResource FontSize.Body}"
-                                                                           FontWeight="SemiBold"
-                                                                           TextWrapping="Wrap"
-                                                                           MaxHeight="36"/>
-                                                                <TextBlock Text="{Binding UserReasonHeadline}"
-                                                                           Foreground="{DynamicResource TextSecondaryBrush}"
-                                                                           FontSize="{DynamicResource FontSize.Tiny}"
-                                                                           Margin="0,4,0,0"
-                                                                           TextWrapping="NoWrap"
-                                                                           TextTrimming="CharacterEllipsis"/>
-                                                            </StackPanel>
-
-                                                            <WrapPanel Grid.Row="2"
-                                                                       Margin="0,7,0,0"
+                                                            <WrapPanel x:Name="SecondaryRecommendationTagRail"
                                                                        MaxHeight="24">
-                                                                <ItemsControl ItemsSource="{Binding HighlightTags}">
+                                                                <Border Style="{StaticResource CandidateIndexChip}"
+                                                                        Margin="0,0,6,0">
+                                                                    <TextBlock Text="{Binding CandidateIndexLabel}"
+                                                                               Style="{StaticResource CandidateIndexChipText}"/>
+                                                                </Border>
+                                                                <ItemsControl ItemsSource="{Binding CandidateDisplayTags}">
                                                                     <ItemsControl.ItemsPanel>
                                                                         <ItemsPanelTemplate>
                                                                             <WrapPanel/>
@@ -570,10 +548,40 @@
                                                                         </DataTemplate>
                                                                     </ItemsControl.ItemTemplate>
                                                                 </ItemsControl>
+                                                                <Border Background="{DynamicResource SurfaceSectionBrush}"
+                                                                        BorderBrush="{DynamicResource BorderLightBrush}"
+                                                                        BorderThickness="1"
+                                                                        CornerRadius="8"
+                                                                        Padding="8,3"
+                                                                        Margin="0,0,0,0">
+                                                                    <TextBlock Text="{Binding WearSummaryText}"
+                                                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                               FontSize="{DynamicResource FontSize.Tiny}"
+                                                                               FontWeight="SemiBold"/>
+                                                                </Border>
                                                             </WrapPanel>
 
+                                                            <StackPanel Grid.Row="1"
+                                                                        Margin="0,1,0,0">
+                                                                <TextBlock Text="{Binding Name}"
+                                                                           Foreground="{DynamicResource TextPrimaryBrush}"
+                                                                           FontSize="{DynamicResource FontSize.Body}"
+                                                                           FontWeight="SemiBold"
+                                                                           TextWrapping="Wrap"
+                                                                           MaxHeight="38"/>
+                                                                <TextBlock Text="{Binding UserReasonHeadline}"
+                                                                           Foreground="{DynamicResource TextSecondaryBrush}"
+                                                                           FontSize="{DynamicResource FontSize.Tiny}"
+                                                                           Margin="0,4,0,0"
+                                                                           TextWrapping="NoWrap"
+                                                                           TextTrimming="CharacterEllipsis"/>
+                                                            </StackPanel>
+
+                                                            <Border Grid.Row="2"
+                                                                    Background="Transparent"/>
+
                                                             <Grid Grid.Row="3"
-                                                                  Margin="0,9,0,0">
+                                                                  Margin="0,8,0,0">
                                                                 <Grid.ColumnDefinitions>
                                                                     <ColumnDefinition Width="Auto"/>
                                                                     <ColumnDefinition Width="Auto"/>
@@ -585,7 +593,7 @@
                                                                         HorizontalAlignment="Left"
                                                                         MinWidth="74"
                                                                         Command="{Binding DataContext.RecordRecommendedOutfitWornCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                        CommandParameter="{Binding}"/>
+                                                                        CommandParameter="{Binding Recommendation}"/>
                                                                 <Button Grid.Column="1"
                                                                         Content="详情"
                                                                         Style="{StaticResource SecondaryRecommendationDetailButton}"
@@ -593,7 +601,7 @@
                                                                         HorizontalAlignment="Left"
                                                                         MinWidth="52"
                                                                         Command="{Binding DataContext.ShowRecommendationDebugForOutfitCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
-                                                                        CommandParameter="{Binding}"/>
+                                                                        CommandParameter="{Binding Recommendation}"/>
                                                             </Grid>
                                                         </Grid>
                                                     </Grid>

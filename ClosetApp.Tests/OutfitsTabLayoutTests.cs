@@ -19,17 +19,22 @@ public class OutfitsTabLayoutTests
     }
 
     [Fact]
-    public void OutfitsTab_SecondaryRecommendationHint_UsesLightweightTextHint()
+    public void OutfitsTab_SecondaryRecommendationRail_UsesCompactHeaderAndUnifiedTagRail()
     {
         var xaml = File.ReadAllText(FindProjectFile("ClosetApp.UI/Views/OutfitsTab.xaml"));
 
         Assert.Contains("x:Name=\"SecondaryRecommendationRail\"", xaml);
-        Assert.Contains("x:Name=\"SecondaryRecommendationHeader\"", xaml);
         Assert.Contains("x:Name=\"SecondaryRecommendationCardsHost\"", xaml);
-        Assert.Contains("x:Name=\"SecondaryRecommendationHintText\"", xaml);
-        Assert.Contains("Text=\"{Binding SecondaryWeatherRecommendationSectionBody}\"", xaml);
-        Assert.Contains("Text=\"{Binding SecondaryWeatherRecommendations.Count, StringFormat=再看 {0} 套}\"", xaml);
-        Assert.DoesNotContain("Foreground=\"{DynamicResource TextTertiaryBrush}\"", xaml);
+        Assert.Contains("SecondaryRecommendationCardsPanel", xaml);
+        Assert.Contains("x:Name=\"SecondaryRecommendationTagRail\"", xaml);
+        Assert.Contains("ItemsSource=\"{Binding CandidateDisplayTags}\"", xaml);
+        Assert.Contains("Text=\"{Binding CandidateIndexLabel}\"", xaml);
+        Assert.DoesNotContain("ItemsSource=\"{Binding HighlightTags}\"", xaml);
+        Assert.DoesNotContain("x:Name=\"SecondaryRecommendationHeader\"", xaml);
+        Assert.DoesNotContain("Text=\"{Binding SecondaryWeatherRecommendations.Count, StringFormat=再看 {0} 套}\"", xaml);
+        Assert.Contains("Background=\"Transparent\"", xaml);
+        Assert.Contains("BorderThickness=\"0\"", xaml);
+        Assert.Contains("Padding=\"0\"", xaml);
     }
 
     [Fact]
@@ -45,9 +50,13 @@ public class OutfitsTabLayoutTests
         Assert.Contains("x:Name=\"TodayHeroFooterRailHost\"", xaml);
         Assert.Contains("<WrapPanel x:Name=\"TodayHeroFooterRailHost\"", xaml);
         Assert.DoesNotContain("<Border x:Name=\"TodayHeroFooterRailHost\"", xaml);
-        Assert.Contains("MinHeight=\"320\"", xaml);
+        Assert.Contains("MinHeight=\"332\"", xaml);
         Assert.Contains("x:Name=\"SecondaryRecommendationRail\"", xaml);
         Assert.Contains("VerticalAlignment=\"Top\"", xaml);
+        Assert.Contains("MaxHeight=\"24\"", xaml);
+        Assert.Contains("<RowDefinition Height=\"*\"/>", xaml);
+        Assert.Contains("x:Name=\"TodayHeroCardHost\"", xaml);
+        Assert.Contains("Height=\"{Binding ElementName=TodayHeroCardHost, Path=ActualHeight}\"", xaml);
     }
 
     private static string FindProjectFile(string relativePath)

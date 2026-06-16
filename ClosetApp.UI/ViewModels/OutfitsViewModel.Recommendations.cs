@@ -3,6 +3,7 @@ using CommunityToolkit.Mvvm.Input;
 using ClosetApp.Application.DTOs;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Application.UseCases.Outfits;
+using ClosetApp.Domain.Entities;
 using ClosetApp.Domain.Enums;
 using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Logic.Services;
@@ -40,13 +41,13 @@ public partial class OutfitsViewModel
         nameof(WeatherRecommendationCountText),
         nameof(PrimaryWeatherRecommendation),
         nameof(SecondaryWeatherRecommendations),
+        nameof(SecondaryWeatherRecommendationCards),
         nameof(WeatherRecommendationHintText),
         nameof(TodayHeroRecommendationNameText),
         nameof(TodayHeroRecommendationSupportText),
         nameof(TodayHeroCompactSummaryText),
         nameof(TodayHeroPrimaryActionText),
-        nameof(TodayHeroStatusSummaryText),
-        nameof(SecondaryWeatherRecommendationSectionBody)
+        nameof(TodayHeroStatusSummaryText)
     ];
 
     private readonly IOutfitRecommendationService _outfitRecommendationService;
@@ -87,6 +88,13 @@ public partial class OutfitsViewModel
     public string WeatherRecommendationCountText => OutfitPresentationText.BuildRecommendationCountText(WeatherRecommendations);
     public RecommendedOutfitDto? PrimaryWeatherRecommendation => WeatherRecommendations.FirstOrDefault();
     public IReadOnlyList<RecommendedOutfitDto> SecondaryWeatherRecommendations => WeatherRecommendations.Skip(1).Take(2).ToList();
+    // 右侧候选卡只消费一个轻量投影，避免把标签裁剪和展示拼接逻辑塞进 XAML。
+    public IReadOnlyList<SecondaryRecommendationCardItem> SecondaryWeatherRecommendationCards => SecondaryWeatherRecommendations
+        .Select((recommendation, index) => new SecondaryRecommendationCardItem(
+            recommendation,
+            index,
+            OutfitPresentationText.BuildSecondaryRecommendationReasonTags(recommendation)))
+        .ToList();
     public bool CanRefreshWeatherRecommendations => !IsWeatherLoading;
     public string RefreshWeatherButtonText => IsWeatherLoading ? "刷新中..." : "刷新天气推荐";
     public bool HasRecommendationReadiness => RecommendationReadiness != null;
@@ -119,9 +127,6 @@ public partial class OutfitsViewModel
     public string TodayHeroStatusSummaryText => HasRecommendationGap
         ? $"{RecommendationReadinessTitle} · {RecommendationMissingSeasonText}"
         : $"{RecommendationReadinessTitle} · {WeatherStatusText}";
-    public string SecondaryWeatherRecommendationSectionBody => HasSecondaryWeatherRecommendations
-        ? "轻候选"
-        : string.Empty;
 
     [RelayCommand]
     public async Task ShowRecommendationDebugAsync()
@@ -323,5 +328,18 @@ public partial class OutfitsViewModel
     {
         _cachedBestDebug = null;
         _cachedOutfitDebugs.Clear();
+    }
+
+    public sealed record SecondaryRecommendationCardItem(
+        RecommendedOutfitDto Recommendation,
+        int DisplayIndex,
+        IReadOnlyList<string> CandidateDisplayTags)
+    {
+        public string CandidateIndexLabel => $"候选 {DisplayIndex + 1}";
+        public bool IsFirstCandidate => DisplayIndex == 0;
+        public string Name => Recommendation.Name;
+        public string UserReasonHeadline => Recommendation.UserReasonHeadline;
+        public string WearSummaryText => Recommendation.WearSummaryText;
+        public IList<Clothing> PreviewClothes => Recommendation.PreviewClothes;
     }
 }

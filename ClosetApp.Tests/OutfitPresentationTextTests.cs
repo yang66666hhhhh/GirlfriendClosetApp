@@ -176,6 +176,25 @@ public class OutfitPresentationTextTests
     }
 
     [Fact]
+    public void BuildSecondaryRecommendationReasonTags_LimitsToTwoTags()
+    {
+        var recommendation = CreateRecommendation(
+            primaryReason: "这套被你标记过收藏，值得优先翻出来穿。",
+            reasons:
+            [
+                "这套被你标记过收藏，值得优先翻出来穿。",
+                "颜色也接近你常选的那一类。",
+                "风格标签也比较贴近你的常用偏好。",
+                "场景上也比较贴合今天的安排。"
+            ]);
+
+        var tags = OutfitPresentationText.BuildSecondaryRecommendationReasonTags(recommendation);
+
+        Assert.Equal(2, tags.Count);
+        Assert.Equal(["你的偏爱", "场景贴合"], tags);
+    }
+
+    [Fact]
     public void RecommendedOutfitDto_CautionText_WhenAlreadyWornToday_ReturnsRepeatWarning()
     {
         var recommendation = CreateRecommendation(isWornToday: true);

@@ -159,6 +159,49 @@ public static class OutfitPresentationText
         return hasTodayWornRecords ? "再记这套" : "今天穿它";
     }
 
+    public static IReadOnlyList<string> BuildSecondaryRecommendationReasonTags(RecommendedOutfitDto recommendation)
+    {
+        var tags = new List<string>();
+
+        if (recommendation.Reasons.Any(reason =>
+                reason.Contains("收藏", StringComparison.OrdinalIgnoreCase) ||
+                reason.Contains("偏爱", StringComparison.OrdinalIgnoreCase)))
+        {
+            tags.Add("你的偏爱");
+        }
+
+        if (recommendation.Reasons.Any(reason =>
+                reason.Contains("场景", StringComparison.OrdinalIgnoreCase)))
+        {
+            tags.Add("场景贴合");
+        }
+
+        if (recommendation.Reasons.Any(reason =>
+                reason.Contains("颜色", StringComparison.OrdinalIgnoreCase)))
+        {
+            tags.Add("颜色顺手");
+        }
+
+        if (recommendation.Reasons.Any(reason =>
+                reason.Contains("没穿", StringComparison.OrdinalIgnoreCase) ||
+                reason.Contains("新鲜", StringComparison.OrdinalIgnoreCase) ||
+                reason.Contains("轮换", StringComparison.OrdinalIgnoreCase)))
+        {
+            tags.Add("还没穿过");
+        }
+
+        if (tags.Count == 0)
+        {
+            tags.AddRange(
+                recommendation.HighlightTags.Where(tag => !string.IsNullOrWhiteSpace(tag)));
+        }
+
+        return tags
+            .Distinct(StringComparer.Ordinal)
+            .Take(2)
+            .ToList();
+    }
+
     public static string ResolveHeroSummaryText(RecommendedOutfitDto recommendation)
     {
         var summary = recommendation.ReasonSummaryText?.Trim();
