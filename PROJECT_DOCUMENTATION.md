@@ -1,6 +1,6 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-06-14
+> 最后更新时间：2026-06-16
 > 文档目标：对齐当前代码真实状态，作为项目结构、运行机制、AI 效果图能力与维护约定的主说明文档
 
 ---
@@ -337,19 +337,29 @@ View / Component
 
 - 数据根目录：`%LocalAppData%\ClosetApp\`
 - 数据库：`%LocalAppData%\ClosetApp\closet.db`
-- 图片根目录：`%LocalAppData%\ClosetApp\images\`
-- 原图：`images/originals`
-- 显示图：`images/display`
-- 缩略图：`images/thumbnails`
 - 日志：`logs`
 - 备份：`backups`
+- 未登录回退图片目录：
+  - `images/originals`
+  - `images/display`
+  - `images/thumbnails`
+- 当前用户图片目录：
+  - `users/{userId}/images/originals`
+  - `users/{userId}/images/display`
+  - `users/{userId}/images/thumbnails`
 
 ### 7.2 AI 目录
 
-- `ai/profile`
-- `ai/renders/originals`
-- `ai/renders/display`
-- `ai/renders/thumbnails`
+- 未登录回退 AI 目录：
+  - `ai/profile`
+  - `ai/renders/originals`
+  - `ai/renders/display`
+  - `ai/renders/thumbnails`
+- 当前用户 AI 目录：
+  - `users/{userId}/ai/profile`
+  - `users/{userId}/ai/renders/originals`
+  - `users/{userId}/ai/renders/display`
+  - `users/{userId}/ai/renders/thumbnails`
 
 设计原则：
 
@@ -808,7 +818,7 @@ AI 相关备份范围已扩展为：
 
 - `rtk dotnet build ClosetApp.slnx /m:1`
 - `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1`
-- **203 tests passed**
+- **358 tests passed**
 
 ---
 

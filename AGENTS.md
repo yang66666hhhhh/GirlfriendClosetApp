@@ -308,7 +308,7 @@ OutfitPreviewCanvas (WPF 渲染)
 
 三层资产：Original（原图）/ Display（~900px）/ Thumbnail（~200px）
 
-存储路径：`%LocalAppData%\ClosetApp\images\{originals|display|thumbnails}\`
+存储路径：未登录回退为 `%LocalAppData%\ClosetApp\images\{originals|display|thumbnails}\`，登录后按当前用户隔离到 `%LocalAppData%\ClosetApp\users\{userId}\images\{originals|display|thumbnails}\`
 
 前景提取：`ClothingImageLoader` 自动抠除浅色背景。
 

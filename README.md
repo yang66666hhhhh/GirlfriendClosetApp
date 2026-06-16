@@ -2,7 +2,7 @@
 
 Windows 桌面端私人数字衣橱应用，面向个人衣物整理、搭配管理、穿着记录，以及 AI 搭配效果图生成与管理。
 
-> 最后更新：2026-06-14
+> 最后更新：2026-06-16
 > 当前运行时：`ClosetApp.UI` / `ClosetApp.Tests` 为 `net10.0-windows`，Domain / Application / Infrastructure 为 `net8.0`
 
 ## 项目定位
@@ -152,7 +152,7 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 - `rtk dotnet build ClosetApp.slnx /m:1`
 - `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1`
 
-当前测试规模为 **322 个测试**。
+当前测试规模为 **358 个测试**。
 
 ## 文档入口
 
