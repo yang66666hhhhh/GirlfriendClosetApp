@@ -18,6 +18,7 @@ publish/
 artifacts/
 TestResults/
 *.trx
+*.pubxml.user
 
 # NuGet
 packages/
