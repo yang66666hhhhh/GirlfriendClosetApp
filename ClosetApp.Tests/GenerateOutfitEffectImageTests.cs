@@ -350,5 +350,8 @@ public class GenerateOutfitEffectImageTests
         public string GetProfileReferenceFullPath(string relativePath, Guid? userId = null) => relativePath;
         public string GetGeneratedImageFullPath(string relativePath) => relativePath;
         public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath) => [relativePath];
+        public string GetAiRendersDisplayDirectory() => "";
+        public string GetAiRendersThumbnailsDirectory() => "";
+        public Task MigrateGlobalAiAssetsAsync() => Task.CompletedTask;
     }
 }

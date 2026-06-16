@@ -44,6 +44,23 @@ public static class ClothingImageLoader
     private static readonly string DisplayFolder = Path.Combine(ImagesFolder, "display");
     private static readonly string ThumbnailFolder = Path.Combine(ImagesFolder, "thumbnails");
 
+    // 用户作用域目录，启动时由 Configure() 设置；未设置时回退到全局目录。
+    private static string? _scopedOriginalFolder;
+    private static string? _scopedDisplayFolder;
+    private static string? _scopedThumbnailFolder;
+
+    /// <summary>
+    /// 设置用户作用域的图片目录。调用后 ResolvePath 会优先在用户目录中查找，
+    /// 找不到时仍回退到全局目录。
+    /// </summary>
+    public static void Configure(string originalsDir, string displayDir, string thumbnailsDir)
+    {
+        _scopedOriginalFolder = originalsDir;
+        _scopedDisplayFolder = displayDir;
+        _scopedThumbnailFolder = thumbnailsDir;
+        ClearMemoryCaches();
+    }
+
     private static readonly ConcurrentDictionary<string, WeakReference<ImageSource>> ImageCache = new();
     private static readonly ConcurrentDictionary<string, Size?> SizeCache = new();
     private static readonly ConcurrentDictionary<string, DateTimeOffset> FailedImageCache = new();
@@ -235,6 +252,25 @@ public static class ClothingImageLoader
         if (File.Exists(appPath))
             return appPath;
 
+        // 优先在用户作用域目录中查找（按 LocalUserId 隔离）。
+        if (_scopedOriginalFolder != null)
+        {
+            var scopedOriginal = Path.Combine(_scopedOriginalFolder, path);
+            var scopedDisplay = Path.Combine(_scopedDisplayFolder!, path);
+            var scopedThumbnail = BuildThumbnailPath(_scopedThumbnailFolder!, path);
+
+            var scopedResult = variant switch
+            {
+                ImageVariant.Original => FirstExisting(scopedOriginal, scopedDisplay, scopedThumbnail),
+                ImageVariant.Thumbnail => FirstExisting(scopedThumbnail, scopedDisplay, scopedOriginal),
+                _ => FirstExisting(scopedDisplay, scopedOriginal, scopedThumbnail)
+            };
+
+            if (scopedResult != null)
+                return scopedResult;
+        }
+
+        // 回退到全局目录（兼容旧数据和未配置场景）。
         var originalPath = Path.Combine(OriginalFolder, path);
         var displayPath = Path.Combine(DisplayFolder, path);
         var thumbnailPath = BuildThumbnailPath(ThumbnailFolder, path);

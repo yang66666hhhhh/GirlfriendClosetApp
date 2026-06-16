@@ -12,15 +12,26 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
     private readonly IDbContextFactory<ClosetDbContext> _dbContextFactory;
     private readonly IImageAssetResolver _imageAssetResolver;
     private readonly IImageStorageService _imageStorageService;
+    private readonly ICurrentUserContext? _currentUserContext;
 
     public ImageMaintenanceService(
         IDbContextFactory<ClosetDbContext> dbContextFactory,
         IImageAssetResolver imageAssetResolver,
-        IImageStorageService imageStorageService)
+        IImageStorageService imageStorageService,
+        ICurrentUserContext? currentUserContext = null)
     {
         _dbContextFactory = dbContextFactory;
         _imageAssetResolver = imageAssetResolver;
         _imageStorageService = imageStorageService;
+        _currentUserContext = currentUserContext;
+    }
+
+    private async Task<Guid?> GetCurrentUserIdAsync()
+    {
+        if (_currentUserContext == null)
+            return null;
+        try { return await _currentUserContext.GetCurrentUserIdAsync(); }
+        catch { return null; }
     }
 
     public async Task<int> CountMissingImagesAsync()
@@ -86,10 +97,14 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
         if (!Directory.Exists(sourceDirectory))
             throw new DirectoryNotFoundException($"目录不存在：{sourceDirectory}");
 
+        var userId = await GetCurrentUserIdAsync();
         await using var context = await _dbContextFactory.CreateDbContextAsync();
-        var clothes = await context.Clothes
-            .Where(c => c.ImagePath != null && c.ImagePath != "")
-            .ToListAsync();
+        var query = context.Clothes
+            .Where(c => c.ImagePath != null && c.ImagePath != "");
+        if (userId.HasValue)
+            query = query.Where(c => c.LocalUserId == userId.Value);
+
+        var clothes = await query.ToListAsync();
 
         var repairedCount = 0;
         foreach (var clothing in clothes)
@@ -157,14 +172,21 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
 
     private async Task<List<string>> GetTrackedImagePathsAsync()
     {
+        var userId = await GetCurrentUserIdAsync();
         await using var context = await _dbContextFactory.CreateDbContextAsync();
-        var clothingImagePaths = await context.Clothes
+
+        var clothingQuery = context.Clothes
             .AsNoTracking()
-            .Where(c => c.ImagePath != null && c.ImagePath != "")
+            .Where(c => c.ImagePath != null && c.ImagePath != "");
+        if (userId.HasValue)
+            clothingQuery = clothingQuery.Where(c => c.LocalUserId == userId.Value);
+
+        var clothingImagePaths = await clothingQuery
             .Select(c => c.ImagePath!)
             .Distinct()
             .ToListAsync();
-        var snapshotImagePaths = await GetSnapshotImagePathsAsync(context);
+
+        var snapshotImagePaths = await GetSnapshotImagePathsAsync(context, userId);
 
         return clothingImagePaths
             .Concat(snapshotImagePaths)
@@ -173,11 +195,15 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
             .ToList();
     }
 
-    private static async Task<List<string>> GetSnapshotImagePathsAsync(ClosetDbContext context)
+    private static async Task<List<string>> GetSnapshotImagePathsAsync(ClosetDbContext context, Guid? userId)
     {
-        var snapshots = await context.OutfitWornRecords
+        var snapshotQuery = context.OutfitWornRecords
             .AsNoTracking()
-            .Where(record => record.ClothingDetailsSnapshot != null && record.ClothingDetailsSnapshot != "")
+            .Where(record => record.ClothingDetailsSnapshot != null && record.ClothingDetailsSnapshot != "");
+        if (userId.HasValue)
+            snapshotQuery = snapshotQuery.Where(record => record.LocalUserId == userId.Value);
+
+        var snapshots = await snapshotQuery
             .Select(record => record.ClothingDetailsSnapshot!)
             .ToListAsync();
 
@@ -271,8 +297,9 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
 
     public Task CleanupImageCacheAsync()
     {
-        DeleteFilesInDirectory(AppPaths.DisplayDir);
-        DeleteFilesInDirectory(AppPaths.ThumbnailsDir);
+        // 按当前用户隔离缓存目录，避免误删其他账号的缓存文件。
+        DeleteFilesInDirectory(_imageStorageService.GetDisplayDirectory());
+        DeleteFilesInDirectory(_imageStorageService.GetThumbnailsDirectory());
         return Task.CompletedTask;
     }
 

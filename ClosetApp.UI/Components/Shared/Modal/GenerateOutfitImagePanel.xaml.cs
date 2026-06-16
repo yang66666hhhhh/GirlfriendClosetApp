@@ -364,19 +364,7 @@ public partial class GenerateOutfitImagePanel : UserControl
 
     private static BitmapImage? BuildPreviewImage(string relativePath)
     {
-        var extension = Path.GetExtension(relativePath);
-        var fileName = Path.GetFileNameWithoutExtension(relativePath);
-        var thumbnailPath = Path.Combine(ClosetApp.Infrastructure.AppPaths.AiRendersThumbnailsDir, $"{fileName}_thumb{extension}");
-        var displayPath = Path.Combine(ClosetApp.Infrastructure.AppPaths.AiRendersDisplayDir, relativePath);
-        var candidatePath = File.Exists(thumbnailPath)
-            ? thumbnailPath
-            : File.Exists(displayPath)
-                ? displayPath
-                : null;
-        if (candidatePath == null)
-            return null;
-
-        return AiImageBitmapCache.GetOrLoad(candidatePath, 280);
+        return OutfitGeneratedImageDisplayHelper.BuildBitmap(relativePath, 280, preferThumbnail: true);
     }
 
     private static string BuildActiveProviderText(AiGenerationPreferences preferences)

@@ -833,6 +833,10 @@ public class BackupServiceTests
         public string GetThumbnailFullPath(string relativePath) => _inner.GetThumbnailFullPath(relativePath);
         public IReadOnlyList<string> GetOriginalImageFullPaths() => _inner.GetOriginalImageFullPaths();
         public IReadOnlyList<string> GetImageAssetFullPaths(string relativePath) => _inner.GetImageAssetFullPaths(relativePath);
+        public string GetOriginalsDirectory() => _inner.GetOriginalsDirectory();
+        public string GetDisplayDirectory() => _inner.GetDisplayDirectory();
+        public string GetThumbnailsDirectory() => _inner.GetThumbnailsDirectory();
+        public Task MigrateGlobalImagesAsync() => _inner.MigrateGlobalImagesAsync();
     }
 
     private sealed class FakeAiAssetStorageService : IAiAssetStorageService
@@ -924,5 +928,9 @@ public class BackupServiceTests
                 Path.Combine(_renderThumbnailsDir, $"{Path.GetFileNameWithoutExtension(relativePath)}_thumb{Path.GetExtension(relativePath)}")
             ];
         }
+
+        public string GetAiRendersDisplayDirectory() => "";
+        public string GetAiRendersThumbnailsDirectory() => "";
+        public Task MigrateGlobalAiAssetsAsync() => Task.CompletedTask;
     }
 }

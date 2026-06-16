@@ -15,6 +15,7 @@ public partial class SettingsViewModel : ObservableObject
 {
     private readonly IBackupService _backupService;
     private readonly IImageMaintenanceService _imageMaintenanceService;
+    private readonly IImageStorageService _imageStorageService;
     private readonly IWeatherService _weatherService;
     private readonly IWeatherPreferencesService _weatherPreferencesService;
     private readonly IRecommendationPreferencesService _recommendationPreferencesService;
@@ -190,6 +191,7 @@ public partial class SettingsViewModel : ObservableObject
     public SettingsViewModel(
         IBackupService backupService,
         IImageMaintenanceService imageMaintenanceService,
+        IImageStorageService imageStorageService,
         IWeatherService weatherService,
         IWeatherPreferencesService weatherPreferencesService,
         IRecommendationPreferencesService recommendationPreferencesService,
@@ -201,6 +203,7 @@ public partial class SettingsViewModel : ObservableObject
     {
         _backupService = backupService;
         _imageMaintenanceService = imageMaintenanceService;
+        _imageStorageService = imageStorageService;
         _weatherService = weatherService;
         _weatherPreferencesService = weatherPreferencesService;
         _recommendationPreferencesService = recommendationPreferencesService;
@@ -635,12 +638,18 @@ public partial class SettingsViewModel : ObservableObject
 
     public async Task RefreshStatsAsync()
     {
-        var originalCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.OriginalsDir);
-        var originalSize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.OriginalsDir);
-        var displayCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.DisplayDir);
-        var displaySize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.DisplayDir);
-        var thumbnailCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.ThumbnailsDir);
-        var thumbnailSize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.ThumbnailsDir);
+        // 图片目录按当前登录用户隔离，避免看到其他账号的资产统计。
+        var originalsDir = _imageStorageService.GetOriginalsDirectory();
+        var displayDir = _imageStorageService.GetDisplayDirectory();
+        var thumbnailsDir = _imageStorageService.GetThumbnailsDirectory();
+
+        var originalCount = await _imageMaintenanceService.CountFilesAsync(originalsDir);
+        var originalSize = await _imageMaintenanceService.GetDirectorySizeAsync(originalsDir);
+        var displayCount = await _imageMaintenanceService.CountFilesAsync(displayDir);
+        var displaySize = await _imageMaintenanceService.GetDirectorySizeAsync(displayDir);
+        var thumbnailCount = await _imageMaintenanceService.CountFilesAsync(thumbnailsDir);
+        var thumbnailSize = await _imageMaintenanceService.GetDirectorySizeAsync(thumbnailsDir);
+        // 日志是全局共享的，不按用户隔离。
         var logCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.LogsDir);
         var logSize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.LogsDir);
         var missingImageCount = await _imageMaintenanceService.CountMissingImagesAsync();

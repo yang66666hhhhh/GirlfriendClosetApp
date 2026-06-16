@@ -187,5 +187,9 @@ public class ClearWardrobeByTypesTests
         public string GetThumbnailFullPath(string relativePath) => relativePath;
         public IReadOnlyList<string> GetOriginalImageFullPaths() => [];
         public IReadOnlyList<string> GetImageAssetFullPaths(string relativePath) => [];
+        public string GetOriginalsDirectory() => "";
+        public string GetDisplayDirectory() => "";
+        public string GetThumbnailsDirectory() => "";
+        public Task MigrateGlobalImagesAsync() => Task.CompletedTask;
     }
 }

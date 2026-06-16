@@ -6,6 +6,19 @@ namespace ClosetApp.UI.Services;
 
 public static class OutfitGeneratedImageDisplayHelper
 {
+    // 用户作用域目录，启动时由 Configure() 设置；未设置时回退到全局 AppPaths。
+    private static string? _scopedDisplayDir;
+    private static string? _scopedThumbnailsDir;
+
+    /// <summary>
+    /// 设置用户作用域的 AI 效果图目录。
+    /// </summary>
+    public static void Configure(string displayDir, string thumbnailsDir)
+    {
+        _scopedDisplayDir = displayDir;
+        _scopedThumbnailsDir = thumbnailsDir;
+    }
+
     public static IReadOnlyList<OutfitGeneratedImage> GetSucceededImages(IEnumerable<OutfitGeneratedImage>? images)
     {
         return images?
@@ -68,6 +81,22 @@ public static class OutfitGeneratedImageDisplayHelper
     {
         var extension = Path.GetExtension(relativePath);
         var fileName = Path.GetFileNameWithoutExtension(relativePath);
+
+        // 优先使用用户作用域目录。
+        if (_scopedDisplayDir != null)
+        {
+            var scopedThumbnail = Path.Combine(_scopedThumbnailsDir!, $"{fileName}_thumb{extension}");
+            var scopedDisplay = Path.Combine(_scopedDisplayDir, relativePath);
+
+            var scopedResult = preferThumbnail
+                ? (File.Exists(scopedThumbnail) ? scopedThumbnail : (File.Exists(scopedDisplay) ? scopedDisplay : null))
+                : (File.Exists(scopedDisplay) ? scopedDisplay : (File.Exists(scopedThumbnail) ? scopedThumbnail : null));
+
+            if (scopedResult != null)
+                return scopedResult;
+        }
+
+        // 回退到全局目录。
         var thumbnailPath = Path.Combine(ClosetApp.Infrastructure.AppPaths.AiRendersThumbnailsDir, $"{fileName}_thumb{extension}");
         var displayPath = Path.Combine(ClosetApp.Infrastructure.AppPaths.AiRendersDisplayDir, relativePath);
 

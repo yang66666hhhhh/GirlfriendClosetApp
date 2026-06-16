@@ -43,6 +43,28 @@ public sealed class AppStartupCoordinator
             Log.Information("Initializing database migration chain in background");
             await ClosetDatabaseInitializer.InitializeAsync(dbContext, CancellationToken.None).ConfigureAwait(false);
             await scope.ServiceProvider.GetRequiredService<ILocalUserService>().EnsureInitializedAsync().ConfigureAwait(false);
+
+            // 一次性迁移：将旧的全局图片目录文件复制到当前用户的隔离目录。
+            var imageStorage = scope.ServiceProvider.GetRequiredService<IImageStorageService>();
+            await imageStorage.MigrateGlobalImagesAsync().ConfigureAwait(false);
+
+            var aiAssetStorage = scope.ServiceProvider.GetService<IAiAssetStorageService>();
+            if (aiAssetStorage != null)
+                await aiAssetStorage.MigrateGlobalAiAssetsAsync().ConfigureAwait(false);
+
+            // 配置静态图片加载器使用用户作用域目录（优先查找用户目录，回退到全局目录）。
+            ClothingImageLoader.Configure(
+                imageStorage.GetOriginalsDirectory(),
+                imageStorage.GetDisplayDirectory(),
+                imageStorage.GetThumbnailsDirectory());
+
+            if (aiAssetStorage != null)
+            {
+                OutfitGeneratedImageDisplayHelper.Configure(
+                    aiAssetStorage.GetAiRendersDisplayDirectory(),
+                    aiAssetStorage.GetAiRendersThumbnailsDirectory());
+            }
+
             Log.Information("Background startup initialization completed");
             _startupReadyTcs.TrySetResult();
         }

@@ -119,6 +119,45 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
         ];
     }
 
+    public string GetAiRendersDisplayDirectory() => GetAiRendersDisplayDir(ResolveStorageRoot());
+
+    public string GetAiRendersThumbnailsDirectory() => GetAiRendersThumbnailsDir(ResolveStorageRoot());
+
+    public Task MigrateGlobalAiAssetsAsync()
+    {
+        var storageRoot = ResolveStorageRoot();
+        if (string.Equals(storageRoot, _appFolder, StringComparison.OrdinalIgnoreCase))
+            return Task.CompletedTask;
+
+        MigrateDirectory(GetAiProfileDir(_appFolder), GetAiProfileDir(storageRoot));
+        MigrateDirectory(GetAiRendersOriginalsDir(_appFolder), GetAiRendersOriginalsDir(storageRoot));
+        MigrateDirectory(GetAiRendersDisplayDir(_appFolder), GetAiRendersDisplayDir(storageRoot));
+        MigrateDirectory(GetAiRendersThumbnailsDir(_appFolder), GetAiRendersThumbnailsDir(storageRoot));
+
+        return Task.CompletedTask;
+    }
+
+    private static void MigrateDirectory(string globalDir, string userDir)
+    {
+        if (!Directory.Exists(globalDir))
+            return;
+
+        Directory.CreateDirectory(userDir);
+
+        if (Directory.EnumerateFiles(userDir).Any())
+            return;
+
+        foreach (var file in Directory.EnumerateFiles(globalDir))
+        {
+            var destPath = Path.Combine(userDir, Path.GetFileName(file));
+            if (!File.Exists(destPath))
+            {
+                try { File.Copy(file, destPath); }
+                catch { /* 忽略锁定或权限问题 */ }
+            }
+        }
+    }
+
     private static async Task SaveVariantAsync(Image<Rgba32> image, string path, int maxSize)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);

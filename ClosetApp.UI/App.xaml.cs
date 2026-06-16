@@ -138,7 +138,12 @@ public partial class App : System.Windows.Application
         services.AddTransient<SaveUploadedOutfitGeneratedImage>();
         services.AddMemoryCache();
         services.AddSingleton<IBackupService, BackupService>();
-        services.AddSingleton<IImageMaintenanceService, ImageMaintenanceService>();
+        services.AddSingleton<IImageMaintenanceService>(sp =>
+            new ImageMaintenanceService(
+                sp.GetRequiredService<IDbContextFactory<ClosetDbContext>>(),
+                sp.GetRequiredService<IImageAssetResolver>(),
+                sp.GetRequiredService<IImageStorageService>(),
+                sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<IImageStorageService>(sp =>
             new ImageStorageService(currentUserContext: sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<IImageAssetResolver, ImageAssetResolver>();

@@ -288,6 +288,57 @@ public class ImageStorageService : IImageStorageService
             .ToList();
     }
 
+    public string GetOriginalsDirectory() => GetOriginalFolder(ResolveStorageRoot());
+
+    public string GetDisplayDirectory() => GetDisplayFolder(ResolveStorageRoot());
+
+    public string GetThumbnailsDirectory() => GetThumbnailFolder(ResolveStorageRoot());
+
+    public Task MigrateGlobalImagesAsync()
+    {
+        var storageRoot = ResolveStorageRoot();
+        // 只有用户作用域目录和全局目录不同时才需要迁移。
+        if (string.Equals(storageRoot, _appFolder, StringComparison.OrdinalIgnoreCase))
+            return Task.CompletedTask;
+
+        MigrateDirectory(
+            Path.Combine(GetImageFolder(_appFolder), "originals"),
+            GetOriginalFolder(storageRoot));
+        MigrateDirectory(
+            Path.Combine(GetImageFolder(_appFolder), "display"),
+            GetDisplayFolder(storageRoot));
+        MigrateDirectory(
+            Path.Combine(GetImageFolder(_appFolder), "thumbnails"),
+            GetThumbnailFolder(storageRoot));
+
+        return Task.CompletedTask;
+    }
+
+    private static void MigrateDirectory(string globalDir, string userDir)
+    {
+        if (!Directory.Exists(globalDir))
+            return;
+
+        Directory.CreateDirectory(userDir);
+
+        // 只有当用户目录为空时才迁移，避免覆盖已有文件。
+        if (Directory.EnumerateFiles(userDir).Any())
+            return;
+
+        foreach (var file in Directory.EnumerateFiles(globalDir))
+        {
+            var destPath = Path.Combine(userDir, Path.GetFileName(file));
+            if (!File.Exists(destPath))
+            {
+                try { File.Copy(file, destPath); }
+                catch { /* 忽略锁定或权限问题 */ }
+            }
+        }
+
+        Log.Information("Migrated {Count} files from {Source} to {Dest}",
+            Directory.EnumerateFiles(userDir).Count(), globalDir, userDir);
+    }
+
     private IEnumerable<string> EnumerateVariantPaths(string relativePath)
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);

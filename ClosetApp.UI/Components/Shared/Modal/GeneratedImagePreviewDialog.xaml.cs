@@ -72,24 +72,7 @@ public partial class GeneratedImagePreviewDialog : UserControl
 
     private static BitmapImage? BuildImageBitmap(string relativePath, int decodePixelWidth, bool preferThumbnail)
     {
-        var extension = Path.GetExtension(relativePath);
-        var fileName = Path.GetFileNameWithoutExtension(relativePath);
-        var thumbnailPath = Path.Combine(ClosetApp.Infrastructure.AppPaths.AiRendersThumbnailsDir, $"{fileName}_thumb{extension}");
-        var displayPath = Path.Combine(ClosetApp.Infrastructure.AppPaths.AiRendersDisplayDir, relativePath);
-        var imagePath = preferThumbnail
-            ? File.Exists(thumbnailPath) ? thumbnailPath : displayPath
-            : File.Exists(displayPath) ? displayPath : thumbnailPath;
-        if (string.IsNullOrWhiteSpace(imagePath) || !File.Exists(imagePath))
-            return null;
-
-        var bitmap = new BitmapImage();
-        bitmap.BeginInit();
-        bitmap.UriSource = new Uri(imagePath);
-        bitmap.CacheOption = BitmapCacheOption.OnLoad;
-        bitmap.DecodePixelWidth = decodePixelWidth;
-        bitmap.EndInit();
-        bitmap.Freeze();
-        return bitmap;
+        return OutfitGeneratedImageDisplayHelper.BuildBitmap(relativePath, decodePixelWidth, preferThumbnail);
     }
 
     private sealed record GeneratedImageHistoryItem(

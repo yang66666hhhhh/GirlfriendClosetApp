@@ -378,11 +378,33 @@ public class SettingsViewModelTests
         return new SettingsViewModel(
             backup ?? new FakeBackupService(),
             imageMaintenance,
+            new FakeImageStorageService(),
             weatherService ?? new FakeWeatherService(),
             weatherPreferences ?? new FakeWeatherPreferencesService(),
             recommendationPreferences ?? new FakeRecommendationPreferencesService(),
             themeService ?? CreateThemeService(AppFontSizeLevel.Standard),
             outfitDisplayPreferences ?? CreateDisplayPreferencesService(OutfitCardDisplayMode.OutfitFirst));
+    }
+
+    private sealed class FakeImageStorageService : IImageStorageService
+    {
+        public Task<string> SaveImageAsync(string sourcePath) => Task.FromResult(sourcePath);
+        public Task<string> SaveThumbnailAsync(string sourcePath, int maxSize = 200) => Task.FromResult(sourcePath);
+        public Task<bool> EnsureThumbnailAsync(string imagePath, int maxSize = 200) => Task.FromResult(true);
+        public Task<bool> EnsureDisplayAsync(string imagePath, int maxWidth = 900) => Task.FromResult(true);
+        public Task RestoreImageAsync(string sourcePath, string storedFileName) => Task.CompletedTask;
+        public Task DeleteImageAsync(string imagePath) => Task.CompletedTask;
+        public Task DeleteImageWithThumbnailAsync(string imagePath) => Task.CompletedTask;
+        public Task TryDeleteImageAsync(string? imagePath) => Task.CompletedTask;
+        public string GetImageFullPath(string relativePath) => relativePath;
+        public string GetDisplayFullPath(string relativePath) => relativePath;
+        public string GetThumbnailFullPath(string relativePath) => relativePath;
+        public IReadOnlyList<string> GetOriginalImageFullPaths() => [];
+        public IReadOnlyList<string> GetImageAssetFullPaths(string relativePath) => [];
+        public string GetOriginalsDirectory() => "";
+        public string GetDisplayDirectory() => "";
+        public string GetThumbnailsDirectory() => "";
+        public Task MigrateGlobalImagesAsync() => Task.CompletedTask;
     }
 
     private static ThemeService CreateThemeService(AppFontSizeLevel fontSizeLevel)
