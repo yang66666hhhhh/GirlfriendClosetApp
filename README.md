@@ -2,7 +2,7 @@
 
 Windows 桌面端私人数字衣橱应用，面向个人衣物整理、搭配管理、穿着记录，以及 AI 搭配效果图生成与管理。
 
-> 最后更新：2026-06-16
+> 最后更新：2026-06-29
 > 当前运行时：`ClosetApp.UI` / `ClosetApp.Tests` 为 `net10.0-windows`，Domain / Application / Infrastructure 为 `net8.0`
 
 ## 项目定位
@@ -47,12 +47,12 @@ GirlfriendClosetApp 不是内容社区，也不是纯图片浏览器。它的核
 
 - SQLite 本地数据库
 - 本地用户隔离：衣物、搭配、标签、记录、效果图、个人档案和主要设置按用户隔离
-- 三层图片缓存：默认全局为 `images/originals / display / thumbnails`，登录后按用户隔离到 `users/{userId}/images/*`
-- AI 资产独立目录：默认全局为 `ai/profile`、`ai/renders/*`，登录后按用户隔离到 `users/{userId}/ai/profile` 与 `users/{userId}/ai/renders/*`
+- 三层图片缓存：默认全局为 `images/originals / display / thumbnails`，登录后按用户隔离到 `images/{userId}/*`
+- AI 资产独立目录：默认全局为 `ai/profile`、`ai/renders/*`，登录后按用户隔离到 `ai/{userId}/profile` 与 `ai/{userId}/renders/*`
 - 主题、天气城市、推荐偏好、AI 配置、搭配卡片展示模式等设置写入 `users/{userId}/*.json`
 - ZIP 备份与恢复
 - 图片缓存重建、缺图修复、孤儿原图清理、历史图片健康检查
-- 本地滚动日志
+- 本地滚动日志（全局 + 按用户子目录双写）
 
 ## 当前 UI 结构
 
@@ -110,12 +110,10 @@ GirlfriendClosetApp/
 
 ## 启动与运行
 
-仓库约定命令优先通过 `rtk` 执行。
-
 ```powershell
-rtk dotnet build ClosetApp.slnx /m:1
-rtk dotnet run --project ClosetApp.UI
-rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
+dotnet build ClosetApp.slnx
+dotnet run --project ClosetApp.UI
+dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj
 ```
 
 ## 当前架构要点
@@ -149,8 +147,8 @@ rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
 
 最近一次完整验证目标：
 
-- `rtk dotnet build ClosetApp.slnx /m:1`
-- `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1`
+- `dotnet build ClosetApp.slnx`
+- `dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj`
 
 当前测试规模为 **358 个测试**。
 

@@ -139,6 +139,5 @@ public class ImportClothesFromImagesTests
         public string GetOriginalsDirectory() => "";
         public string GetDisplayDirectory() => "";
         public string GetThumbnailsDirectory() => "";
-        public Task MigrateGlobalImagesAsync() => Task.CompletedTask;
     }
 }

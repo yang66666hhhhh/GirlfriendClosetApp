@@ -352,6 +352,5 @@ public class GenerateOutfitEffectImageTests
         public IReadOnlyList<string> GetGeneratedImageAssetFullPaths(string relativePath) => [relativePath];
         public string GetAiRendersDisplayDirectory() => "";
         public string GetAiRendersThumbnailsDirectory() => "";
-        public Task MigrateGlobalAiAssetsAsync() => Task.CompletedTask;
     }
 }

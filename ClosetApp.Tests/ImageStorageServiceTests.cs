@@ -65,7 +65,7 @@ public class ImageStorageServiceTests
             var displayPath = service.GetDisplayFullPath(storedFileName);
             var thumbnailPath = service.GetThumbnailFullPath(storedFileName);
 
-            var expectedUserRoot = Path.Combine(tempDir, "users", userId.ToString("N"));
+            var expectedUserRoot = Path.Combine(tempDir, "images", userId.ToString("N"));
             Assert.StartsWith(expectedUserRoot, originalPath);
             Assert.StartsWith(expectedUserRoot, displayPath);
             Assert.StartsWith(expectedUserRoot, thumbnailPath);
@@ -141,7 +141,7 @@ public class ImageStorageServiceTests
             await CreateSourceImageAsync(sourcePath, width: 720, height: 360);
 
             var thumbnailFileName = await service.SaveThumbnailAsync(sourcePath, maxSize: 120);
-            var thumbnailPath = Path.Combine(tempDir, "images", "thumbnails", thumbnailFileName);
+            var thumbnailPath = Path.Combine(tempDir, "thumbnails", thumbnailFileName);
 
             Assert.True(File.Exists(thumbnailPath));
 

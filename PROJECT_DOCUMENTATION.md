@@ -1,6 +1,6 @@
 # GirlfriendClosetApp 项目文档
 
-> 最后更新时间：2026-06-16
+> 最后更新时间：2026-06-29
 > 文档目标：对齐当前代码真实状态，作为项目结构、运行机制、AI 效果图能力与维护约定的主说明文档
 
 ---
@@ -337,16 +337,16 @@ View / Component
 
 - 数据根目录：`%LocalAppData%\ClosetApp\`
 - 数据库：`%LocalAppData%\ClosetApp\closet.db`
-- 日志：`logs`
+- 日志：`logs`（全局启动/系统事件），登录后由 `UserLogConfigurator` 监听用户变化自动双写全局日志 + `logs/{userId}/` 用户操作日志
 - 备份：`backups`
 - 未登录回退图片目录：
   - `images/originals`
   - `images/display`
   - `images/thumbnails`
-- 当前用户图片目录：
-  - `users/{userId}/images/originals`
-  - `users/{userId}/images/display`
-  - `users/{userId}/images/thumbnails`
+- 当前用户图片目录（按用户 ID 独立隔离）：
+  - `images/{userId}/originals`
+  - `images/{userId}/display`
+  - `images/{userId}/thumbnails`
 
 ### 7.2 AI 目录
 
@@ -355,11 +355,20 @@ View / Component
   - `ai/renders/originals`
   - `ai/renders/display`
   - `ai/renders/thumbnails`
-- 当前用户 AI 目录：
-  - `users/{userId}/ai/profile`
-  - `users/{userId}/ai/renders/originals`
-  - `users/{userId}/ai/renders/display`
-  - `users/{userId}/ai/renders/thumbnails`
+- 当前用户 AI 目录（按用户 ID 独立隔离）：
+  - `ai/{userId}/profile`
+  - `ai/{userId}/renders/originals`
+  - `ai/{userId}/renders/display`
+  - `ai/{userId}/renders/thumbnails`
+
+### 7.3 用户配置目录
+
+- 用户配置目录仅存放 JSON 设置文件（主题、天气、推荐偏好等）：
+  - `users/{userId}/theme-settings.json`
+  - `users/{userId}/weather-settings.json`
+  - `users/{userId}/recommendation-settings.json`
+  - `users/{userId}/outfit-display-settings.json`
+  - `users/{userId}/ai-generation-settings.json`
 
 设计原则：
 
@@ -731,6 +740,7 @@ AI 工作流不完全依赖远端生成。
 - `ImageMaintenanceService`
 - `ImageAssetResolver`
 - `AiAssetStorageService`
+- `UserLogConfigurator`（监听当前用户变化，自动重配 Serilog 双写全局 + 用户子目录日志）
 
 ### 12.3 当前图片治理能力
 
@@ -738,8 +748,9 @@ AI 工作流不完全依赖远端生成。
 - Display / Thumbnail 缓存重建
 - 孤儿原图扫描和清理
 - 历史图片健康检查
-- 旧目录修复
 - 缓存清理
+- 日志清理使用 `AllDirectories` 自动覆盖全局日志和用户子目录日志
+- 不再支持旧目录结构迁移（`MigrateGlobalImagesAsync` / `MigrateGlobalAiAssetsAsync` 已移除）
 
 ### 12.4 性能侧约束
 
@@ -816,22 +827,21 @@ AI 相关备份范围已扩展为：
 
 最近验证结果：
 
-- `rtk dotnet build ClosetApp.slnx /m:1`
-- `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1`
+- `dotnet build ClosetApp.slnx`
+- `dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj`
 - **358 tests passed**
 
 ---
 
 ## 15. 开发命令
 
-仓库要求优先使用 `rtk`：
-
 ```powershell
-rtk dotnet build ClosetApp.slnx /m:1
-rtk dotnet run --project ClosetApp.UI
-rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
-rtk pwsh -Command "Get-ChildItem -Force"
+dotnet build ClosetApp.slnx
+dotnet run --project ClosetApp.UI
+dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj
 ```
+
+注意：`rtk dotnet build ClosetApp.slnx /m:1` 中的 `/m:1` 在此项目会导致参数解析冲突，直接使用 `dotnet build` 即可。
 
 ---
 

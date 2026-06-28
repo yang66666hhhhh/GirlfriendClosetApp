@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using ClosetApp.Application.Interfaces;
 using ClosetApp.Infrastructure;
+using ClosetApp.Infrastructure.Services;
 using ClosetApp.UI.Components.Shared.Modal;
 using ClosetApp.UI.Services;
 using ClosetApp.UI.ViewModels;
@@ -14,20 +15,29 @@ namespace ClosetApp.UI.Components.Settings;
 public partial class LogMaintenanceSettingsPanel : UserControl
 {
     private readonly IImageMaintenanceService _imageMaintenanceService;
+    private readonly UserLogConfigurator? _userLogConfigurator;
     private bool _isBusy;
 
     public LogMaintenanceSettingsPanel()
     {
         InitializeComponent();
         _imageMaintenanceService = App.Services.GetRequiredService<IImageMaintenanceService>();
-        TxtLogDir.Text = AppPaths.LogsDir;
+        _userLogConfigurator = App.Services.GetService<UserLogConfigurator>();
+        UpdateDisplayedPath();
     }
 
     private SettingsViewModel ViewModel => (SettingsViewModel)DataContext;
 
     public Task RefreshAsync()
     {
+        UpdateDisplayedPath();
         return ViewModel.RefreshStatsAsync();
+    }
+
+    private void UpdateDisplayedPath()
+    {
+        var userLogsDir = _userLogConfigurator?.UserLogsDir;
+        TxtLogDir.Text = userLogsDir ?? AppPaths.LogsDir;
     }
 
     private static void OpenPath(string path)
@@ -41,7 +51,9 @@ public partial class LogMaintenanceSettingsPanel : UserControl
         if (_isBusy)
             return;
 
-        OpenPath(AppPaths.LogsDir);
+        // 优先打开用户日志目录，未登录时打开全局日志目录。
+        var targetDir = _userLogConfigurator?.UserLogsDir ?? AppPaths.LogsDir;
+        OpenPath(targetDir);
     }
 
     private async void RefreshStats_Click(object sender, RoutedEventArgs e)
@@ -73,7 +85,7 @@ public partial class LogMaintenanceSettingsPanel : UserControl
         var confirmed = await ConfirmModal.ShowAsync(
             "清理日志",
             "今天正在写入的日志会保留。",
-            "只会清理历史日志文件，方便释放空间并保持日志目录整洁。确定继续吗？",
+            "只会清理历史日志文件（含全局和用户日志），方便释放空间并保持日志目录整洁。确定继续吗？",
             confirmText: "清理日志");
 
         if (!confirmed)

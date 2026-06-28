@@ -836,7 +836,6 @@ public class BackupServiceTests
         public string GetOriginalsDirectory() => _inner.GetOriginalsDirectory();
         public string GetDisplayDirectory() => _inner.GetDisplayDirectory();
         public string GetThumbnailsDirectory() => _inner.GetThumbnailsDirectory();
-        public Task MigrateGlobalImagesAsync() => _inner.MigrateGlobalImagesAsync();
     }
 
     private sealed class FakeAiAssetStorageService : IAiAssetStorageService
@@ -931,6 +930,5 @@ public class BackupServiceTests
 
         public string GetAiRendersDisplayDirectory() => "";
         public string GetAiRendersThumbnailsDirectory() => "";
-        public Task MigrateGlobalAiAssetsAsync() => Task.CompletedTask;
     }
 }

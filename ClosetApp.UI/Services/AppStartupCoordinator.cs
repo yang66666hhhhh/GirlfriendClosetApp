@@ -44,20 +44,14 @@ public sealed class AppStartupCoordinator
             await ClosetDatabaseInitializer.InitializeAsync(dbContext, CancellationToken.None).ConfigureAwait(false);
             await scope.ServiceProvider.GetRequiredService<ILocalUserService>().EnsureInitializedAsync().ConfigureAwait(false);
 
-            // 一次性迁移：将旧的全局图片目录文件复制到当前用户的隔离目录。
+            // 配置静态图片加载器使用用户作用域目录。
             var imageStorage = scope.ServiceProvider.GetRequiredService<IImageStorageService>();
-            await imageStorage.MigrateGlobalImagesAsync().ConfigureAwait(false);
-
-            var aiAssetStorage = scope.ServiceProvider.GetService<IAiAssetStorageService>();
-            if (aiAssetStorage != null)
-                await aiAssetStorage.MigrateGlobalAiAssetsAsync().ConfigureAwait(false);
-
-            // 配置静态图片加载器使用用户作用域目录（优先查找用户目录，回退到全局目录）。
             ClothingImageLoader.Configure(
                 imageStorage.GetOriginalsDirectory(),
                 imageStorage.GetDisplayDirectory(),
                 imageStorage.GetThumbnailsDirectory());
 
+            var aiAssetStorage = scope.ServiceProvider.GetService<IAiAssetStorageService>();
             if (aiAssetStorage != null)
             {
                 OutfitGeneratedImageDisplayHelper.Configure(

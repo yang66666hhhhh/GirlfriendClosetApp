@@ -65,7 +65,7 @@ public class AiAssetStorageServiceTests
             var service = new AiAssetStorageService(tempDir, new StaticCurrentUserContext(userId));
             var storedFileName = await service.SaveGeneratedImageAsync(await File.ReadAllBytesAsync(sourcePath), "image/jpeg");
 
-            var expectedUserRoot = Path.Combine(tempDir, "users", userId.ToString("N"));
+            var expectedUserRoot = Path.Combine(tempDir, "ai", userId.ToString("N"));
             Assert.StartsWith(expectedUserRoot, service.GetGeneratedImageFullPath(storedFileName));
             Assert.All(service.GetGeneratedImageAssetFullPaths(storedFileName), path => Assert.StartsWith(expectedUserRoot, path));
             Assert.True(File.Exists(service.GetGeneratedImageFullPath(storedFileName)));
@@ -99,7 +99,7 @@ public class AiAssetStorageServiceTests
             var resolvedPath = service.GetProfileReferenceFullPath(storedFileName, targetUserId);
             var unexpectedPath = service.GetProfileReferenceFullPath(storedFileName, currentUserId);
 
-            Assert.StartsWith(Path.Combine(tempDir, "users", targetUserId.ToString("N")), resolvedPath);
+            Assert.StartsWith(Path.Combine(tempDir, "ai", targetUserId.ToString("N")), resolvedPath);
             Assert.True(File.Exists(resolvedPath));
             Assert.False(File.Exists(unexpectedPath));
         }

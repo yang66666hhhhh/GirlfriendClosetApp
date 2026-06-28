@@ -649,7 +649,7 @@ public partial class SettingsViewModel : ObservableObject
         var displaySize = await _imageMaintenanceService.GetDirectorySizeAsync(displayDir);
         var thumbnailCount = await _imageMaintenanceService.CountFilesAsync(thumbnailsDir);
         var thumbnailSize = await _imageMaintenanceService.GetDirectorySizeAsync(thumbnailsDir);
-        // 日志是全局共享的，不按用户隔离。
+        // 日志目录包含全局日志和用户子目录日志，统计使用 AllDirectories 自动覆盖。
         var logCount = await _imageMaintenanceService.CountFilesAsync(AppPaths.LogsDir);
         var logSize = await _imageMaintenanceService.GetDirectorySizeAsync(AppPaths.LogsDir);
         var missingImageCount = await _imageMaintenanceService.CountMissingImagesAsync();

@@ -242,7 +242,7 @@
 
                     <StackPanel x:Name="SettingsMaintenanceWorkbench"
                                 Grid.Column="2">
-                        <settings:StorageLocationsSettingsPanel/>
+                        <settings:StorageLocationsSettingsPanel x:Name="StorageLocationsPanel"/>
                         <settings:ImageMaintenanceSettingsPanel x:Name="ImageMaintenancePanel"
                                                                 WardrobeImagesChanged="ImageMaintenancePanel_WardrobeImagesChanged"/>
                         <settings:LogMaintenanceSettingsPanel x:Name="LogMaintenancePanel"/>

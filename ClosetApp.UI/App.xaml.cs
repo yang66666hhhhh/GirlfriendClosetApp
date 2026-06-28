@@ -173,6 +173,7 @@ public partial class App : System.Windows.Application
             sp.GetRequiredService<ThemePreferencesService>(),
             sp.GetRequiredService<ICurrentUserContext>()));
         services.AddSingleton<AppStartupCoordinator>();
+        services.AddSingleton<UserLogConfigurator>();
 
         services.AddTransient<ViewModels.MainViewModel>();
         services.AddTransient<ViewModels.WardrobeViewModel>();
@@ -188,6 +189,8 @@ public partial class App : System.Windows.Application
         try
         {
             _ = Services.GetRequiredService<AppStartupCoordinator>().EnsureStartedAsync();
+            // 提前激活日志隔离，确保能捕获用户登录事件。
+            _ = Services.GetRequiredService<UserLogConfigurator>();
             Log.Information("Application startup completed");
         }
         catch (Exception ex)

@@ -37,7 +37,7 @@ public class ImageStorageService : IImageStorageService
         try
         {
             var userId = _currentUserContext.GetRequiredStoredUserIdAsync().GetAwaiter().GetResult();
-            return Path.Combine(_appFolder, "users", userId.ToString("N"));
+            return Path.Combine(_appFolder, "images", userId.ToString("N"));
         }
         catch (InvalidOperationException)
         {
@@ -294,51 +294,6 @@ public class ImageStorageService : IImageStorageService
 
     public string GetThumbnailsDirectory() => GetThumbnailFolder(ResolveStorageRoot());
 
-    public Task MigrateGlobalImagesAsync()
-    {
-        var storageRoot = ResolveStorageRoot();
-        // 只有用户作用域目录和全局目录不同时才需要迁移。
-        if (string.Equals(storageRoot, _appFolder, StringComparison.OrdinalIgnoreCase))
-            return Task.CompletedTask;
-
-        MigrateDirectory(
-            Path.Combine(GetImageFolder(_appFolder), "originals"),
-            GetOriginalFolder(storageRoot));
-        MigrateDirectory(
-            Path.Combine(GetImageFolder(_appFolder), "display"),
-            GetDisplayFolder(storageRoot));
-        MigrateDirectory(
-            Path.Combine(GetImageFolder(_appFolder), "thumbnails"),
-            GetThumbnailFolder(storageRoot));
-
-        return Task.CompletedTask;
-    }
-
-    private static void MigrateDirectory(string globalDir, string userDir)
-    {
-        if (!Directory.Exists(globalDir))
-            return;
-
-        Directory.CreateDirectory(userDir);
-
-        // 只有当用户目录为空时才迁移，避免覆盖已有文件。
-        if (Directory.EnumerateFiles(userDir).Any())
-            return;
-
-        foreach (var file in Directory.EnumerateFiles(globalDir))
-        {
-            var destPath = Path.Combine(userDir, Path.GetFileName(file));
-            if (!File.Exists(destPath))
-            {
-                try { File.Copy(file, destPath); }
-                catch { /* 忽略锁定或权限问题 */ }
-            }
-        }
-
-        Log.Information("Migrated {Count} files from {Source} to {Dest}",
-            Directory.EnumerateFiles(userDir).Count(), globalDir, userDir);
-    }
-
     private IEnumerable<string> EnumerateVariantPaths(string relativePath)
     {
         var name = Path.GetFileNameWithoutExtension(relativePath);
@@ -349,13 +304,13 @@ public class ImageStorageService : IImageStorageService
         yield return Path.Combine(GetThumbnailFolder(storageRoot), $"{name}_thumb{ext}");
     }
 
-    private static string GetImageFolder(string storageRoot) => Path.Combine(storageRoot, "images");
+    private static string GetImageFolder(string storageRoot) => storageRoot;
 
-    private static string GetOriginalFolder(string storageRoot) => Path.Combine(GetImageFolder(storageRoot), "originals");
+    private static string GetOriginalFolder(string storageRoot) => Path.Combine(storageRoot, "originals");
 
-    private static string GetDisplayFolder(string storageRoot) => Path.Combine(GetImageFolder(storageRoot), "display");
+    private static string GetDisplayFolder(string storageRoot) => Path.Combine(storageRoot, "display");
 
-    private static string GetThumbnailFolder(string storageRoot) => Path.Combine(GetImageFolder(storageRoot), "thumbnails");
+    private static string GetThumbnailFolder(string storageRoot) => Path.Combine(storageRoot, "thumbnails");
 
     private static IImageEncoder CreateDisplayEncoder(string destinationPath, bool hasTransparency)
     {

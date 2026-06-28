@@ -123,40 +123,6 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
 
     public string GetAiRendersThumbnailsDirectory() => GetAiRendersThumbnailsDir(ResolveStorageRoot());
 
-    public Task MigrateGlobalAiAssetsAsync()
-    {
-        var storageRoot = ResolveStorageRoot();
-        if (string.Equals(storageRoot, _appFolder, StringComparison.OrdinalIgnoreCase))
-            return Task.CompletedTask;
-
-        MigrateDirectory(GetAiProfileDir(_appFolder), GetAiProfileDir(storageRoot));
-        MigrateDirectory(GetAiRendersOriginalsDir(_appFolder), GetAiRendersOriginalsDir(storageRoot));
-        MigrateDirectory(GetAiRendersDisplayDir(_appFolder), GetAiRendersDisplayDir(storageRoot));
-        MigrateDirectory(GetAiRendersThumbnailsDir(_appFolder), GetAiRendersThumbnailsDir(storageRoot));
-
-        return Task.CompletedTask;
-    }
-
-    private static void MigrateDirectory(string globalDir, string userDir)
-    {
-        if (!Directory.Exists(globalDir))
-            return;
-
-        Directory.CreateDirectory(userDir);
-
-        if (Directory.EnumerateFiles(userDir).Any())
-            return;
-
-        foreach (var file in Directory.EnumerateFiles(globalDir))
-        {
-            var destPath = Path.Combine(userDir, Path.GetFileName(file));
-            if (!File.Exists(destPath))
-            {
-                try { File.Copy(file, destPath); }
-                catch { /* 忽略锁定或权限问题 */ }
-            }
-        }
-    }
 
     private static async Task SaveVariantAsync(Image<Rgba32> image, string path, int maxSize)
     {
@@ -188,7 +154,7 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
     private string ResolveStorageRoot(Guid? explicitUserId = null)
     {
         if (explicitUserId.HasValue && explicitUserId.Value != Guid.Empty)
-            return Path.Combine(_appFolder, "users", explicitUserId.Value.ToString("N"));
+            return Path.Combine(_appFolder, "ai", explicitUserId.Value.ToString("N"));
 
         if (_currentUserContext == null)
             return _appFolder;
@@ -196,7 +162,7 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
         try
         {
             var userId = _currentUserContext.GetRequiredStoredUserIdAsync().GetAwaiter().GetResult();
-            return Path.Combine(_appFolder, "users", userId.ToString("N"));
+            return Path.Combine(_appFolder, "ai", userId.ToString("N"));
         }
         catch (InvalidOperationException)
         {
@@ -212,7 +178,16 @@ public sealed class AiAssetStorageService : IAiAssetStorageService
         Directory.CreateDirectory(GetAiRendersThumbnailsDir(storageRoot));
     }
 
-    private static string GetAiDir(string storageRoot) => Path.Combine(storageRoot, "ai");
+    private static string GetAiDir(string storageRoot)
+    {
+        // 当 storageRoot 已经是 per-user AI 目录（_appFolder/ai/{userId}），直接返回；
+        // 当 storageRoot 是全局目录（_appFolder），需要添加 "ai" 子目录。
+        // 通过检查 storageRoot 的父目录名是否为 "ai" 来判断。
+        var parentDirName = Path.GetFileName(Path.GetDirectoryName(storageRoot));
+        if (string.Equals(parentDirName, "ai", StringComparison.OrdinalIgnoreCase))
+            return storageRoot;
+        return Path.Combine(storageRoot, "ai");
+    }
 
     private static string GetAiProfileDir(string storageRoot) => Path.Combine(GetAiDir(storageRoot), "profile");
 

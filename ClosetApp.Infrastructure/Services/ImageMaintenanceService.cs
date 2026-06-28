@@ -283,7 +283,8 @@ public sealed class ImageMaintenanceService : IImageMaintenanceService
             return Task.CompletedTask;
 
         var today = DateTime.Today;
-        foreach (var file in Directory.EnumerateFiles(logsDir, "*.log", SearchOption.TopDirectoryOnly))
+        // 同时清理全局日志和用户子目录日志。
+        foreach (var file in Directory.EnumerateFiles(logsDir, "*.log", SearchOption.AllDirectories))
         {
             var info = new FileInfo(file);
             if (info.LastWriteTime.Date >= today)

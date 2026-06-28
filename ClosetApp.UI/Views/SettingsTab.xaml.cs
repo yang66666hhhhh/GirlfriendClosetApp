@@ -34,6 +34,7 @@ public partial class SettingsTab : UserControl
             await _startupCoordinator.WaitUntilReadyAsync();
             await _viewModel.InitializeAsync();
             AppearancePanel.Refresh();
+            await StorageLocationsPanel.RefreshAsync();
             await ImageMaintenancePanel.RefreshAsync();
             await LogMaintenancePanel.RefreshAsync();
             await BackupPanel.RefreshAsync();

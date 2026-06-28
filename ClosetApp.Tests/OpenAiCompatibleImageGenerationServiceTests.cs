@@ -187,7 +187,6 @@ public class OpenAiCompatibleImageGenerationServiceTests
         public Task TryDeleteGeneratedImageAsync(string? imagePath) => Task.CompletedTask;
         public string GetAiRendersDisplayDirectory() => "";
         public string GetAiRendersThumbnailsDirectory() => "";
-        public Task MigrateGlobalAiAssetsAsync() => Task.CompletedTask;
     }
 
     private sealed class CapturingHttpMessageHandler : HttpMessageHandler

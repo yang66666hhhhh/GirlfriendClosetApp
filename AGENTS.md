@@ -33,14 +33,16 @@ WPF 桌面端穿搭管理应用。Clean Architecture 分层，SQLite 持久化�
 
 ```bash
 # 构建
-rtk dotnet build ClosetApp.slnx /m:1
+dotnet build ClosetApp.slnx
 
 # 运行
-rtk dotnet run --project ClosetApp.UI
+dotnet run --project ClosetApp.UI
 
 # 测试
-rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
+dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj
 ```
+
+> 注意：`rtk dotnet build ClosetApp.slnx /m:1` 中的 `/m:1` 在此项目会导致参数解析冲突，直接使用 `dotnet build` 即可。
 
 ---
 
@@ -117,6 +119,7 @@ Domain ← Application ← Infrastructure
 | Service | Scoped | `IClothingService`, `IOutfitService` |
 | UseCase | Scoped | `GetWardrobeOverview`, `GetTodayRecommendations` |
 | 图片服务 | Singleton | `IImageStorageService`, `IImageMaintenanceService` |
+| 日志服务 | Singleton | `UserLogConfigurator`（监听用户变化自动双写全局 + 用户日志） |
 | UI 服务 | Singleton | `ThemeService`, `ModalService`, `ToastService` |
 | 偏好服务 | Singleton | `IWeatherPreferencesService`, `IRecommendationPreferencesService` |
 | 天气服务 | HttpClient | `IWeatherService` 通过 `AddHttpClient` 注册 |
@@ -308,7 +311,7 @@ OutfitPreviewCanvas (WPF 渲染)
 
 三层资产：Original（原图）/ Display（~900px）/ Thumbnail（~200px）
 
-存储路径：未登录回退为 `%LocalAppData%\ClosetApp\images\{originals|display|thumbnails}\`，登录后按当前用户隔离到 `%LocalAppData%\ClosetApp\users\{userId}\images\{originals|display|thumbnails}\`
+存储路径：未登录回退为 `%LocalAppData%\ClosetApp\images\{originals|display|thumbnails}\`，登录后按当前用户隔离到 `%LocalAppData%\ClosetApp\images\{userId}\{originals|display|thumbnails}\`；AI 资产隔离到 `%LocalAppData%\ClosetApp\ai\{userId}\`；`users\{userId}\` 仅存放配置 JSON。日志登录后由 `UserLogConfigurator` 自动双写全局 `logs\` + `logs\{userId}\`
 
 前景提取：`ClothingImageLoader` 自动抠除浅色背景。
 
@@ -578,10 +581,10 @@ DON'T:
 
 ```bash
 # 运行所有测试
-rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1
+dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj
 
 # 运行指定测试
-rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj --filter "FullyQualifiedName~MyTest"
+dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj --filter "FullyQualifiedName~MyTest"
 ```
 
 ### 12.2 测试结构
@@ -703,8 +706,8 @@ public async Task DoSomethingAsync() { ... }
 完成任务前，检查以下项目：
 
 ### 编译与测试
-- [ ] `rtk dotnet build ClosetApp.slnx /m:1` 编译通过，0 错误
-- [ ] `rtk dotnet test ClosetApp.Tests\ClosetApp.Tests.csproj /m:1` 全部通过
+- [ ] `dotnet build ClosetApp.slnx` 编译通过，0 错误
+- [ ] `dotnet test ClosetApp.Tests/ClosetApp.Tests.csproj` 全部通过
 - [ ] 测试 Fake 已更新（如新增了接口方法）
 
 ### 代码质量

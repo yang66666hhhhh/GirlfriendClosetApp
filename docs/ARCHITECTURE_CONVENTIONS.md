@@ -1,6 +1,6 @@
 # Architecture Conventions
 
-> 最后更新时间：2026-06-16
+> 最后更新时间：2026-06-29
 > 本文档记录当前项目的高价值架构约束，重点是分层、页面职责、AI 工作流边界、历史快照和图片资产规则。
 
 ## 1. 分层与依赖
@@ -15,8 +15,9 @@
 
 - DI 注册集中在 `ClosetApp.UI/App.xaml.cs`。
 - 新业务流程优先注册为 UseCase，再由 UI 组合调用。
-- 启动遵循“先首屏、后准备”的策略：
+- 启动遵循”先首屏、后准备”的策略：
   - 主题初始化在主窗口前完成
+  - `UserLogConfigurator` 作为单例在后台初始化时激活，监听 `ICurrentUserContext.CurrentUserChanged` 自动重配 Serilog 双写全局日志 + `logs/{userId}/` 用户日志
   - 数据库初始化由 `AppStartupCoordinator` 后台执行
   - 页面真正读取数据前统一等待 readiness
 - 不要把数据库迁移重新挪回主窗口显示前。
@@ -149,10 +150,15 @@
 
 - 衣物图片使用：
   - 未登录回退：`images/originals` / `images/display` / `images/thumbnails`
-  - 当前用户：`users/{userId}/images/originals` / `display` / `thumbnails`
+  - 当前用户：`images/{userId}/originals` / `display` / `thumbnails`
 - AI 图片使用：
-  - 未登录回退：`ai/profile` / `ai/renders/originals` / `display` / `thumbnails`
-  - 当前用户：`users/{userId}/ai/profile` / `ai/renders/originals` / `display` / `thumbnails`
+  - 未登录回退：`ai/profile` / `ai/renders/originals` / `ai/renders/display` / `ai/renders/thumbnails`
+  - 当前用户：`ai/{userId}/profile` / `ai/{userId}/renders/originals` / `display` / `thumbnails`
+- 日志使用：
+  - 全局日志：`logs/`（启动/系统事件）
+  - 用户日志：`logs/{userId}/`（登录后由 `UserLogConfigurator` 自动配置双写）
+- `users/{userId}/` 仅存放配置 JSON，不再存放图片或 AI 资产
+- 不再支持旧目录结构迁移（`MigrateGlobalImagesAsync` / `MigrateGlobalAiAssetsAsync` 已移除）
 - UI 预览解析必须优先通过存储服务按目标用户解析，不能在 UI 层手写全局 `AppPaths.AiProfileDir` 拼接。
 
 ### 9.1 不可破坏规则
